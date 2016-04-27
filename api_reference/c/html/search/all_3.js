@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['pfmodule_5fcreate',['pfModule_Create',['../module_8h.html#a9996e71b3277da630721f2cf0585f41a',1,'module.h']]],
-  ['pfmodule_5fdestroy',['pfModule_Destroy',['../module_8h.html#a36b33ce08187861d5e0b99feb4d55e62',1,'module.h']]],
-  ['pfmodule_5fgetapis',['pfModule_GetAPIS',['../module_8h.html#ad4727177ae7853e7a166b569723a0288',1,'module.h']]],
-  ['pfmodule_5freceive',['pfModule_Receive',['../module_8h.html#ad3a2b86fa831d95da8ce1f52fb0316ab',1,'module.h']]]
+  ['size',['size',['../struct_m_e_s_s_a_g_e___c_o_n_f_i_g___t_a_g.html#a07ebe3741b55c3292d3fe7b67f4d6192',1,'MESSAGE_CONFIG_TAG']]],
+  ['source',['source',['../struct_m_e_s_s_a_g_e___c_o_n_f_i_g___t_a_g.html#a5ee3e18dd1321f30a17c5c0ccf18b095',1,'MESSAGE_CONFIG_TAG']]],
+  ['sourcecontent',['sourceContent',['../struct_m_e_s_s_a_g_e___b_u_f_f_e_r___c_o_n_f_i_g___t_a_g.html#af857d984a65a423b0eff96b2014fa5e1',1,'MESSAGE_BUFFER_CONFIG_TAG']]],
+  ['sourceproperties',['sourceProperties',['../struct_m_e_s_s_a_g_e___c_o_n_f_i_g___t_a_g.html#aea59d0f058a6cda0625ef6c1875dfdf3',1,'MESSAGE_CONFIG_TAG::sourceProperties()'],['../struct_m_e_s_s_a_g_e___b_u_f_f_e_r___c_o_n_f_i_g___t_a_g.html#a458f2ba745e0b2919646852a1793423f',1,'MESSAGE_BUFFER_CONFIG_TAG::sourceProperties()']]]
 ];
