@@ -1,0 +1,55 @@
+{
+    "modules" :
+    [ 
+        {
+            "module name" : "IoTHub",
+            "module path" : "libiothubhttp_hl.so",
+            "args" : 
+            {
+                "IoTHubName" : "<<insert here IoTHubName>>",
+                "IoTHubSuffix" : "<<insert here IoTHubSuffix>>"
+            }
+        },
+        {
+            "module name" : "mapping",
+            "module path" : "libidentity_map_hl.so",
+            "args" : 
+            [
+                {
+                    "macAddress" : "01:01:01:01:01:01",
+                    "deviceId"   : "<<insert here deviceId>>",
+                    "deviceKey"  : "<<insert here deviceKey>>"
+                },
+                {
+                    "macAddress" : "02:02:02:02:02:02",
+                    "deviceId"   : "<<insert here deviceId>>",
+                    "deviceKey"  : "<<insert here deviceKey>>"
+                }
+            ]
+        },
+        {
+            "module name":"BLE1",
+            "module path" : "libsimulated_device_hl.so",
+            "args":
+            {
+                "macAddress" : "01:01:01:01:01:01"
+            }
+        },
+        {
+            "module name":"BLE2",
+            "module path" : "libsimulated_device_hl.so",
+            "args":
+            {
+                "macAddress" : "02:02:02:02:02:02"
+            }
+        },
+        {
+            "module name":"Logger",
+            "module path" : "liblogger_hl.so",
+            "args":
+            {
+                "filename":"deviceCloudUploadGatewaylog.log"
+            }
+        }
+    ]
+}

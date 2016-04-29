@@ -1,0 +1,26 @@
+/*! \mainpage Microsoft Azure IoT Gateway SDK
+ *
+ * \section intro_sec Introduction
+ *
+ * The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules 
+ * to create IoT gateway solutions. The SDK can be used and extended to create
+ * gateways tailored to any end-to-end scenario.
+ *
+ * \section features_sec Features
+ *
+ * - Provides a message bus with dynamically loadable modules 
+ * - Utility to load modules using a JSON configuration file
+ * - BLE module (Linux only) supporting reading, writing and polling based on GATT characteristics
+ * - IoTHub module supporting multiplexing device connections to Azure IoTHub.
+ * - Is written in ANSI C (C99) to maximize code portability.
+ *
+ * \section tested_platforms_sec Tested platforms
+ *
+ * The following platforms have been tested against this library:
+ *
+ * - Ubuntu 14 (14.04)
+ * - Ubuntu 15 (15.10)
+ * - Yocto Linux 3.0 on Intel Edison
+ * - Windows 10
+ *
+ */

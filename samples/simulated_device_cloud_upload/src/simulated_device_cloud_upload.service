@@ -1,0 +1,12 @@
+[Unit]
+Description=Azure Iot Gateway as a service.
+After=systemd-hostnamed.service
+
+[Service]
+ExecStartPre=/bin/systemctl start wpa_supplicant
+
+ExecStart=/usr/bin/simulated_device_cloud_upload /usr/bin/simulated_device_cloud_upload_intel_edison.json
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

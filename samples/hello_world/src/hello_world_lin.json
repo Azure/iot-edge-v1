@@ -1,0 +1,15 @@
+{
+    "modules" :
+    [
+        {
+            "module name" : "logger_hl",
+            "module path" : "./modules/logger/liblogger_hl.so",
+            "args" : {"filename":"log.txt"}
+        },
+        {
+            "module name" : "hello_world",
+            "module path" : "./modules/hello_world/libhello_world_hl.so",
+            "args" : null
+        }
+    ]
+}

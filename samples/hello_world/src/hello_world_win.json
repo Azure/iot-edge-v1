@@ -1,0 +1,15 @@
+{
+    "modules" :
+    [
+        {
+            "module name" : "logger_hl",
+            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+            "args" : {"filename":"d:\\log.txt"}
+        },
+        {
+            "module name" : "hello_world",
+            "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+            "args" : null
+        }
+    ]
+}
