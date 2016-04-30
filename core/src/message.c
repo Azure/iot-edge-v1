@@ -8,6 +8,7 @@
 #include "azure_c_shared_utility/gballoc.h"
 
 #include <stddef.h>
+#include <inttypes.h>
 
 #include "message.h"
 #include "azure_c_shared_utility/buffer_.h"
@@ -24,6 +25,49 @@ typedef struct MESSAGE_HANDLE_DATA_TAG
 }MESSAGE_HANDLE_DATA;
 
 DEFINE_REFCOUNT_TYPE(MESSAGE_HANDLE_DATA);
+
+static MESSAGE_HANDLE_DATA* Message_CreateImpl(const MESSAGE_CONFIG * cfg)
+{
+    MESSAGE_HANDLE_DATA* result;
+    /*Codes_SRS_MESSAGE_02_006: [Otherwise, Message_Create shall return a non-NULL handle and shall set the internal ref count to "1".]*/
+    result = REFCOUNT_TYPE_CREATE(MESSAGE_HANDLE_DATA);
+    if (result == NULL)
+    {
+        LogError("malloc returned NULL");
+        /*return as is*/
+    }
+    else
+    {
+        /*Codes_SRS_MESSAGE_02_004: [Mesages shall be allowed to be created from zero-size content.]*/
+        /*Codes_SRS_MESSAGE_02_015: [The MESSAGE_CONTENT's field size shall have the same value as the cfg's field size.]*/
+        /*Codes_SRS_MESSAGE_17_003: [Message_Create shall copy the source to a readonly CONSTBUFFER.]*/
+        result->content = CONSTBUFFER_Create(cfg->source, cfg->size);
+        if (result->content == NULL)
+        {
+            LogError("CONSBUFFER Create failed");
+            free(result);
+            result = NULL;
+        }
+        else
+        {
+            /*Codes_SRS_MESSAGE_02_019: [Message_Create shall clone the sourceProperties to a readonly CONSTMAP.]*/
+            result->properties = ConstMap_Create(cfg->sourceProperties);
+            if (result->properties == NULL)
+            {
+                /*Codes_SRS_MESSAGE_02_005: [If Message_Create encounters an error while building the internal structures of the message, then it shall return NULL.] */
+                LogError("ConstMap_Create failed");
+                CONSTBUFFER_Destroy(result->content);
+                free(result);
+                result = NULL;
+            }
+            else
+            {
+                /*all is fine, return as is.*/
+            }
+        }
+    }
+    return result;
+}
 
 MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG * cfg)
 {
@@ -42,43 +86,8 @@ MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG * cfg)
     }
     else
     {
-        /*Codes_SRS_MESSAGE_02_006: [Otherwise, Message_Create shall return a non-NULL handle and shall set the internal ref count to "1".]*/
-        result = REFCOUNT_TYPE_CREATE(MESSAGE_HANDLE_DATA);
-        if (result == NULL)
-        {
-            LogError("malloc returned NULL");
-            /*return as is*/
-        }
-        else
-        {
-            /*Codes_SRS_MESSAGE_02_004: [Mesages shall be allowed to be created from zero-size content.]*/
-			/*Codes_SRS_MESSAGE_02_015: [The MESSAGE_CONTENT's field size shall have the same value as the cfg's field size.]*/
-			/*Codes_SRS_MESSAGE_17_003: [Message_Create shall copy the source to a readonly CONSTBUFFER.]*/
-			result->content = CONSTBUFFER_Create(cfg->source, cfg->size);
-			if (result->content == NULL)
-			{
-				LogError("CONSBUFFER Create failed");
-				free(result);
-				result = NULL;
-			}
-			else
-			{
-				/*Codes_SRS_MESSAGE_02_019: [Message_Create shall clone the sourceProperties to a readonly CONSTMAP.]*/
-				result->properties = ConstMap_Create(cfg->sourceProperties);
-				if (result->properties == NULL)
-				{
-					/*Codes_SRS_MESSAGE_02_005: [If Message_Create encounters an error while building the internal structures of the message, then it shall return NULL.] */
-					LogError("ConstMap_Create failed");
-					CONSTBUFFER_Destroy(result->content);
-					free(result);
-					result = NULL;
-				}
-				else
-				{
-					/*all is fine, return as is.*/
-				}
-			}
-        }
+        /*delegate to internal function that does not do validation*/
+        result = Message_CreateImpl(cfg);
     }
     return (MESSAGE_HANDLE)result;
 }
@@ -241,4 +250,321 @@ void Message_Destroy(MESSAGE_HANDLE message)
             free(message);
         }
     }
+}
+
+/*this function parses the buffer pointed to by source, having size sourceSize, starting at index position for a int32_t value*/
+/*if the parsing succeeds then *parsed is updated to reflect how many charcaters have been consumed*/
+/*and *value is updated to the parsed value and the function return 0*/
+/*if parsing fails, the function returns different than 0*/
+static int parse_int32_t(const unsigned char* source, int32_t sourceSize, int32_t position, int32_t *parsed, int32_t* value)
+{
+    int result;
+    if (position + 4 > sourceSize)
+    {
+        /*Codes_SRS_MESSAGE_02_025: [ If while parsing the message content, a read would occur past the end of the array (as indicated by size) then Message_CreateFromByteArray shall fail and return NULL. ]*/
+        LogError("unable to parse a int32_t because it would go past the end of the source");
+        result = __LINE__;
+    }
+    else
+    {
+        *parsed = 4;
+        *value = 
+            (source[position + 0] << 24) +
+            (source[position + 1] << 16) +
+            (source[position + 2] << 8) +
+            (source[position + 3]);
+        result = 0;
+    }
+    return result;
+}
+
+static int parse_nullTerminatedconstchar(const unsigned char* source, int32_t sourceSize, int32_t position, int32_t *parsed, const char** value)
+{
+    int result;
+    const unsigned char* whereIsnull = (unsigned char*)memchr(source + position, '\0', sourceSize - position);
+    
+    if (whereIsnull == NULL)
+    {
+        /*Codes_SRS_MESSAGE_02_025: [ If while parsing the message content, a read would occur past the end of the array (as indicated by size) then Message_CreateFromByteArray shall fail and return NULL. ]*/
+        LogError("was not able to find the end of the string");
+        result = __LINE__;
+    }
+    else
+    {
+        *parsed = whereIsnull - ( source + position - 1);
+        *value = (const char*)source + position;
+        result = 0;
+    }
+    return result;
+}
+
+/*creates a MESSAGE_HANDLE from a serialized byte array*/
+MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size)
+{
+    MESSAGE_HANDLE_DATA* result;
+    /*Codes_SRS_MESSAGE_02_022: [ If source is NULL then Message_CreateFromByteArray shall fail and return NULL. ]*/
+    /*Codes_SRS_MESSAGE_02_023: [ If source is not NULL and and size parameter is smaller than 14 then Message_CreateFromByteArray shall fail and return NULL. ]*/
+    if (
+        (source == NULL) ||
+        (size<14)
+        )
+    {
+        LogError("invalid parameter source=[%p] size=%" PRId32, source, size);
+        result = NULL;
+    }
+    else
+    {
+        /*Codes_SRS_MESSAGE_02_024: [ If the first two bytes of source are not 0xA1 0x60 then Message_CreateFromByteArray shall fail and return NULL. ]*/
+        if (
+            (source[0] != 0xA1) ||
+            (source[1] != 0x60)
+            )
+        {
+            LogError("byte array is not a gateway message serialization");
+            result = NULL;
+        }
+        else
+        {
+            int32_t currentPosition = 2; /*current position is always the first character that "we are about to look at"*/
+
+            int32_t parsed; /*reused in all parsings*/
+            int32_t messageSize;
+            /*Codes_SRS_MESSAGE_02_037: [ If the size embedded in the message is not the same as size parameter then Message_CreateFromByteArray shall fail and return NULL. ]*/
+            if (parse_int32_t(source, size, currentPosition, &parsed, &messageSize) != 0)
+            {
+                LogError("unable to parse an int32_t");
+                result = NULL;
+            }
+            else
+            {
+                currentPosition += parsed;
+                if (messageSize != size)
+                {
+                    LogError("message size is inconsistent");
+                    result = NULL;
+                }
+                else
+                {
+                    /*Codes_SRS_MESSAGE_02_026: [ A MAP_HANDLE shall be created. ]*/
+                    MAP_HANDLE configMap = Map_Create(NULL);
+                    if (configMap == NULL)
+                    {
+                        /*Codes_SRS_MESSAGE_02_030: [ If any of the above steps fails, then Message_CreateFromByteArray shall fail and return NULL. ]*/
+                        LogError("failed to create a MAP_HANDLE");
+                        result = NULL;
+                    }
+                    else
+                    {
+                        /*add all the properties to the map*/
+                        int32_t nProperties;
+                        if (parse_int32_t(source, size, currentPosition, &parsed, &nProperties) != 0)
+                        {
+                            LogError("unable to parse an int32_t");
+                            result = NULL;
+                        }
+                        else
+                        {
+                            currentPosition += parsed;
+
+                            if (
+                                (nProperties < 0) ||
+                                (nProperties == INT32_MAX)
+                                )
+                            {
+                                /*Codes_SRS_MESSAGE_02_030: [ If any of the above steps fails, then Message_CreateFromByteArray shall fail and return NULL. ]*/
+                                LogError("invalid message detected with wrong number of properties =%" PRId32, nProperties);
+                                result = NULL;
+                            }
+                            else
+                            {
+                                int32_t i;
+
+                                for (i = 0;i < nProperties;i++)
+                                {
+                                    const char* firstString;
+                                    if (parse_nullTerminatedconstchar(source, size, currentPosition, &parsed, &firstString) != 0)
+                                    {
+                                        LogError("unabke to parse the name string of the property");
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        const char* secondString;
+                                        currentPosition += parsed;
+                                        if (parse_nullTerminatedconstchar(source, size, currentPosition, &parsed, &secondString) != 0)
+                                        {
+                                            LogError("unable to parse the name string of the property");
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            currentPosition += parsed;
+                                            /*Codes_SRS_MESSAGE_02_027: [ All the properties of the byte array shall be added to the MAP_HANDLE. ]*/
+                                            if (Map_Add(configMap, firstString, secondString) != MAP_OK)
+                                            {
+                                                LogError("Map_Add failed\n");
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                /*all is fine, proceed to the next property*/
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (i != nProperties)
+                                {
+                                    result = NULL;
+                                }
+                                else
+                                {
+                                    /*all is fine*/
+                                    int32_t messageContentSize;
+
+                                    if(parse_int32_t(source, size, currentPosition, &parsed, &messageContentSize)!=0)
+                                    {
+                                        LogError("no space to read the number of bytes making the message");
+                                        result = NULL;
+                                    }
+                                    else
+                                    {
+                                        currentPosition += parsed;
+                                        if (currentPosition + messageContentSize != messageSize)
+                                        {
+                                            LogError("the message content doesn't up to the message size %" PRId32 " %" PRId32 "\n", (int32_t)(currentPosition + messageContentSize), messageSize);
+                                            result = NULL;
+                                        }
+                                        else
+                                        {
+                                            /*Codes_SRS_MESSAGE_02_028: [ A structure of type MESSAGE_CONFIG shall be populated with the MAP_HANDLE previously constructed and the message content ]*/
+                                            MESSAGE_CONFIG msgConfig = { (size_t)messageContentSize, source + currentPosition, configMap };
+
+                                            /*Codes_SRS_MESSAGE_02_029: [ A MESSAGE_HANDLE shall be constructed from the MESSAGE_CONFIG. ]*/
+                                            /*Codes_SRS_MESSAGE_02_031: [ Otherwise Message_CreateFromByteArray shall succeed and return a non-NULL handle. ]*/
+                                            result = Message_CreateImpl(&msgConfig);
+
+                                            /*return as is*/
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Map_Destroy(configMap);
+                    }
+                }
+            }
+        }
+    }
+    return (MESSAGE_HANDLE)result;
+
+}
+
+const unsigned char* Message_ToByteArray(MESSAGE_HANDLE messageHandle, int32_t* size)
+{
+    unsigned char* result;
+    /*Codes_SRS_MESSAGE_02_032: [ If messageHandle is NULL then Message_ToByteArray shall fail and return NULL. ]*/
+    /*Codes_SRS_MESSAGE_02_038: [ If size is NULL then Message_ToByteArray shall fail and return NULL. ]*/
+    if (
+        (messageHandle == NULL) ||
+        (size == NULL)
+        )
+    {
+        LogError("invalid (NULL) parameter detected messageHandle = %p, size=%p", messageHandle, size);
+        result = NULL;
+    }
+    else
+    {
+        MESSAGE_HANDLE_DATA* messageHandleData = (MESSAGE_HANDLE_DATA*)messageHandle;
+
+        /*Codes_SRS_MESSAGE_02_033: [Message_ToByteArray shall precompute the needed memory size and shall pre allocate it.]*/
+        size_t byteArraySize =
+            + 2 /*header*/
+            + 4 /*total size of byte array*/
+            + 4 /*total number of properties*/
+            + 0 /*an unknown at this moment number of bytes for properties*/
+            + 4 /*number of bytes in messageContent*/
+            + 0 /*an unknown at this moment number of bytes for message content*/
+            ;
+        
+        const char* const * keys;
+        const char* const * values;
+        size_t nProperties;
+
+        /*Codes_SRS_MESSAGE_02_035: [ If any of the above steps fails then Message_ToByteArray shall fail and return NULL. ]*/
+        if (ConstMap_GetInternals(messageHandleData->properties, &keys, &values, &nProperties) != CONSTMAP_OK)
+        {
+            LogError("failed to get the keys and values from the message properties");
+            result = NULL;
+        }
+        else
+        {
+            size_t i;
+            for (i = 0;i < nProperties;i++)
+            {
+                /*add to the needed size the name and value of property i*/
+                byteArraySize += (strlen(keys[i]) + 1) + (strlen(values[i]) + 1);
+            }
+
+            const CONSTBUFFER* messageContent = CONSTBUFFER_GetContent(messageHandleData->content);
+            byteArraySize += messageContent->size;
+            
+            result = (unsigned char*)malloc(byteArraySize);
+            if (result == NULL)
+            {
+                /*Codes_SRS_MESSAGE_02_035: [ If any of the above steps fails then Message_ToByteArray shall fail and return NULL. ]*/
+                LogError("oom");
+                /*return as is*/
+            }
+            else
+            {
+                /*Codes_SRS_MESSAGE_02_034: [ Message_ToByteArray shall populate the memory with values as indicated in the implementation details. ]*/
+
+                size_t currentPosition; /*always points to the byte we are about to write*/
+                /*a header formed of the following hex characters in this order: 0xA1 0x60*/
+                result[0] = 0xA1;
+                result[1] = 0x60;
+                /*4 bytes in MSB order representing the total size of the byte array. */
+                result[2] = byteArraySize >> 24;
+                result[3] = (byteArraySize >> 16) & 0xFF;
+                result[4] = (byteArraySize >> 8) & 0xFF;
+                result[5] = (byteArraySize) & 0xFF;
+                /*4 bytes in MSB order representing the number of properties*/
+                result[6] = nProperties >> 24;
+                result[7] = (nProperties >> 16) & 0xFF;
+                result[8] = (nProperties >> 8) & 0xFF;
+                result[9] = nProperties & 0xFF;
+                /*for every property, 2 arrays of null terminated characters representing the name of the property and the value.*/
+                currentPosition = 10;
+                for (i = 0;i < nProperties;i++)
+                {
+                    size_t nameLength = strlen(keys[i]) + 1;/*the +1 will take care of copying '\0' too*/
+                    size_t valueLength = strlen(values[i]) + 1;/*the +1 will take care of copying '\0' too*/
+
+                    /*copy name*/
+                    memcpy(result + currentPosition, keys[i], nameLength);
+                    currentPosition += nameLength;
+                    
+                    /*copy value*/
+                    memcpy(result + currentPosition, values[i], valueLength);
+                    currentPosition += valueLength;
+                }
+
+                /*4 bytes in MSB order representing the number of bytes in the message content array*/
+                result[currentPosition++] = (messageContent->size) >> 24;
+                result[currentPosition++] = ((messageContent->size) >> 16) & 0xFF;
+                result[currentPosition++] = ((messageContent->size) >> 8) & 0xFF;
+                result[currentPosition++] = (messageContent->size) & 0xFF;
+
+                /*n bytes of message content follows.*/
+                memcpy(result + currentPosition, messageContent->buffer, messageContent->size);
+
+                /*Codes_SRS_MESSAGE_02_036: [ Otherwise Message_ToByteArray shall succeed, write in *size the byte array size and return a non-NULL result. ]*/
+                *size = byteArraySize;
+                /*return as is*/
+            }
+        }
+    }
+    return result;
 }
