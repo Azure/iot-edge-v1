@@ -1,1 +1,1 @@
-The directions to run this sample can be found at [doc/sample_simple_device_cloud_upload.md](../../doc/sample_simple_device_cloud_upload.md).
+The directions to run this sample can be found at [doc/sample_simulated_device_cloud_upload.md](../../doc/sample_simulated_device_cloud_upload.md).
