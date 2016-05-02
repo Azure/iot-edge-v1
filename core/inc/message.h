@@ -99,6 +99,34 @@ typedef struct MESSAGE_BUFFER_CONFIG_TAG
 */
 extern MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
 
+/** @brief		Creates a new reference counted message from a byte array containing
+*               the serialized form of a message.
+*
+*	@details	The newly created message shall have all the properties of the original
+*               message and the same content.
+*
+*	@param		source		Pointer to a byte array.
+*               size        size in bytes of the array
+*
+*	@return		A non-NULL #MESSAGE_HANDLE for the newly created message, or NULL
+*				upon failure.
+*/
+extern MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
+
+/** @brief		Creates a byte array representation of a MESSAGE_HANDLE. 
+*
+*	@details	The byte array created can be used with function #Message_CreateFromByteArray
+*               to reproduce the message. The returned byte array needs to be deallocated by free function.
+*
+*	@param		messageHandle		A #MESSAGE_HANDLE. This parameter cannot be NULL.
+*               size                pointer to a int32_t that will receive the size of the byte array
+*
+*	@return		A non-NULL const unsigned char* is returned when creating the serialized form succeeds. *size is updated to the size of the array
+*               A NULL value is returned when the array cannot be created.
+*/
+extern const unsigned char* Message_ToByteArray(MESSAGE_HANDLE messageHandle, int32_t* size);
+
+
 /** @brief		Creates a new message from a @c CONSTBUFFER source and @c MAP_HANDLE.
 *
 *	@details	This function will create its own @c CONSTBUFFER and @c ConstMap

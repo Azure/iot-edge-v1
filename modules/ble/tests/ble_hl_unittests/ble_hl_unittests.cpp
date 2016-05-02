@@ -597,7 +597,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, Map_Destroy, MAP_HANDLE, handl
 BEGIN_TEST_SUITE(ble_hl_unittests)
     TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
-        INITIALIZE_MEMORY_DEBUG(g_dllByDll);
+        TEST_INITIALIZE_MEMORY_DEBUG(g_dllByDll);
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
@@ -609,7 +609,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
     TEST_SUITE_CLEANUP(TestClassCleanup)
     {
         MicroMockDestroyMutex(g_testByTest);
-        DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
+        TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
     }
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
