@@ -367,11 +367,6 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
         REGISTER_GLOBAL_MOCK_HOOK(CONSTBUFFER_GetContent, my_CONSTBUFFER_GetContent);
         REGISTER_GLOBAL_MOCK_HOOK(CONSTBUFFER_Destroy, my_CONSTBUFFER_Destroy);
 
-        //REGISTER_GLOBAL_MOCK_HOOK(Map_Create, my_Map_Create);
-        //REGISTER_GLOBAL_MOCK_HOOK(Map_Destroy, my_Map_Destroy);
-        //REGISTER_GLOBAL_MOCK_HOOK(Map_Add, my_Map_Add);
-        //REGISTER_GLOBAL_MOCK_RETURN(Map_Create, TEST_MAP_HANDLE);
-
         REGISTER_UMOCK_ALIAS_TYPE(MAP_HANDLE, void*);
         REGISTER_UMOCK_ALIAS_TYPE(MAP_FILTER_CALLBACK, void*);
         REGISTER_UMOCK_ALIAS_TYPE(CONSTMAP_HANDLE, void*);
@@ -1234,8 +1229,7 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
             .SetReturn(TEST_MAP_HANDLE);
         EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreAllCalls();
-        STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument_source();
+        STRICT_EXPECTED_CALL(CONSTBUFFER_Create(notFail____minimalMessage + 14, 0));
         STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
         STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
 

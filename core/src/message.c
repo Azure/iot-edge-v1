@@ -18,6 +18,11 @@
 
 #include "azure_c_shared_utility/refcount.h"
 
+#define FIRST_MESSAGE_BYTE 0xA1  /*0xA1 comes from (A)zure (I)oT*/
+#define SECOND_MESSAGE_BYTE 0x60 /*0x60 comes from (G)ateway*/
+
+#define MIN_MESSAGE_BUFFER_LENGTH 14 /*14 is the minimum message length that is still valid*/
+
 typedef struct MESSAGE_HANDLE_DATA_TAG
 {
     CONSTMAP_HANDLE properties;
@@ -253,7 +258,7 @@ void Message_Destroy(MESSAGE_HANDLE message)
 }
 
 /*this function parses the buffer pointed to by source, having size sourceSize, starting at index position for a int32_t value*/
-/*if the parsing succeeds then *parsed is updated to reflect how many charcaters have been consumed*/
+/*if the parsing succeeds then *parsed is updated to reflect how many characters have been consumed*/
 /*and *value is updated to the parsed value and the function return 0*/
 /*if parsing fails, the function returns different than 0*/
 static int parse_int32_t(const unsigned char* source, int32_t sourceSize, int32_t position, int32_t *parsed, int32_t* value)
@@ -269,16 +274,16 @@ static int parse_int32_t(const unsigned char* source, int32_t sourceSize, int32_
     {
         *parsed = 4;
         *value = 
-            (source[position + 0] << 24) +
-            (source[position + 1] << 16) +
-            (source[position + 2] << 8) +
+            (source[position + 0] << 24) |
+            (source[position + 1] << 16) |
+            (source[position + 2] <<  8) |
             (source[position + 3]);
         result = 0;
     }
     return result;
 }
 
-static int parse_nullTerminatedconstchar(const unsigned char* source, int32_t sourceSize, int32_t position, int32_t *parsed, const char** value)
+static int parse_null_terminated_const_char(const unsigned char* source, int32_t sourceSize, int32_t position, int32_t *parsed, const char** value)
 {
     int result;
     const unsigned char* whereIsnull = (unsigned char*)memchr(source + position, '\0', sourceSize - position);
@@ -306,7 +311,7 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
     /*Codes_SRS_MESSAGE_02_023: [ If source is not NULL and and size parameter is smaller than 14 then Message_CreateFromByteArray shall fail and return NULL. ]*/
     if (
         (source == NULL) ||
-        (size<14)
+        (size < MIN_MESSAGE_BUFFER_LENGTH)
         )
     {
         LogError("invalid parameter source=[%p] size=%" PRId32, source, size);
@@ -316,8 +321,8 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
     {
         /*Codes_SRS_MESSAGE_02_024: [ If the first two bytes of source are not 0xA1 0x60 then Message_CreateFromByteArray shall fail and return NULL. ]*/
         if (
-            (source[0] != 0xA1) ||
-            (source[1] != 0x60)
+            (source[0] != FIRST_MESSAGE_BYTE) ||
+            (source[1] != SECOND_MESSAGE_BYTE)
             )
         {
             LogError("byte array is not a gateway message serialization");
@@ -356,8 +361,8 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
                     else
                     {
                         /*add all the properties to the map*/
-                        int32_t nProperties;
-                        if (parse_int32_t(source, size, currentPosition, &parsed, &nProperties) != 0)
+                        int32_t propertiesCount;
+                        if (parse_int32_t(source, size, currentPosition, &parsed, &propertiesCount) != 0)
                         {
                             LogError("unable to parse an int32_t");
                             result = NULL;
@@ -367,31 +372,31 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
                             currentPosition += parsed;
 
                             if (
-                                (nProperties < 0) ||
-                                (nProperties == INT32_MAX)
+                                (propertiesCount < 0) ||
+                                (propertiesCount == INT32_MAX)
                                 )
                             {
                                 /*Codes_SRS_MESSAGE_02_030: [ If any of the above steps fails, then Message_CreateFromByteArray shall fail and return NULL. ]*/
-                                LogError("invalid message detected with wrong number of properties =%" PRId32, nProperties);
+                                LogError("invalid message detected with wrong number of properties =%" PRId32, propertiesCount);
                                 result = NULL;
                             }
                             else
                             {
                                 int32_t i;
 
-                                for (i = 0;i < nProperties;i++)
+                                for (i = 0;i < propertiesCount;i++)
                                 {
-                                    const char* firstString;
-                                    if (parse_nullTerminatedconstchar(source, size, currentPosition, &parsed, &firstString) != 0)
+                                    const char* keyName;
+                                    if (parse_null_terminated_const_char(source, size, currentPosition, &parsed, &keyName) != 0)
                                     {
-                                        LogError("unabke to parse the name string of the property");
+                                        LogError("unable to parse the name string of the property");
                                         break;
                                     }
                                     else
                                     {
-                                        const char* secondString;
+                                        const char* keyValue;
                                         currentPosition += parsed;
-                                        if (parse_nullTerminatedconstchar(source, size, currentPosition, &parsed, &secondString) != 0)
+                                        if (parse_null_terminated_const_char(source, size, currentPosition, &parsed, &keyValue) != 0)
                                         {
                                             LogError("unable to parse the name string of the property");
                                             break;
@@ -400,7 +405,7 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
                                         {
                                             currentPosition += parsed;
                                             /*Codes_SRS_MESSAGE_02_027: [ All the properties of the byte array shall be added to the MAP_HANDLE. ]*/
-                                            if (Map_Add(configMap, firstString, secondString) != MAP_OK)
+                                            if (Map_Add(configMap, keyName, keyValue) != MAP_OK)
                                             {
                                                 LogError("Map_Add failed\n");
                                                 break;
@@ -413,7 +418,7 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
                                     }
                                 }
 
-                                if (i != nProperties)
+                                if (i != propertiesCount)
                                 {
                                     result = NULL;
                                 }
@@ -514,7 +519,7 @@ const unsigned char* Message_ToByteArray(MESSAGE_HANDLE messageHandle, int32_t* 
             if (result == NULL)
             {
                 /*Codes_SRS_MESSAGE_02_035: [ If any of the above steps fails then Message_ToByteArray shall fail and return NULL. ]*/
-                LogError("oom");
+                LogError("Out Of Memory [oom]");
                 /*return as is*/
             }
             else
@@ -523,8 +528,8 @@ const unsigned char* Message_ToByteArray(MESSAGE_HANDLE messageHandle, int32_t* 
 
                 size_t currentPosition; /*always points to the byte we are about to write*/
                 /*a header formed of the following hex characters in this order: 0xA1 0x60*/
-                result[0] = 0xA1;
-                result[1] = 0x60;
+                result[0] = FIRST_MESSAGE_BYTE;
+                result[1] = SECOND_MESSAGE_BYTE;
                 /*4 bytes in MSB order representing the total size of the byte array. */
                 result[2] = byteArraySize >> 24;
                 result[3] = (byteArraySize >> 16) & 0xFF;
