@@ -222,7 +222,7 @@ interface Message {
  * A message bus object.
  */
 interface MessageBus {
-    publish: (message: Message) => void;
+    publish: (message: Message) => boolean;
 }
 
 /**
