@@ -181,11 +181,11 @@ c/common/tools/macro_utils_h_generator/macro_utils_h_generator.exe
 **/hg/
 
 # Java
-java/**/.idea/
-java/**/out/
-java/**/target/
-java/**/*.iml
-java/**/*dependency-reduced-pom.xml
+**/java/**/.idea/
+**/java/**/out/
+**/java/**/target/
+**/java/**/*.iml
+**/java/**/*dependency-reduced-pom.xml
 tools/jenkins-cli.jar
 
 # Node.js
@@ -196,13 +196,6 @@ tools/jenkins-cli.jar
 # VS Code stuff
 typings/**
 .vscode/**
-
-csharp/NuGet/*.exe
-csharp/NuGet/*.nupkg
-csharp/.vs/*
-service/java/.idea
-service/java/target
-service/java/iot.service.sdk.java.iml
 
 # ignore cmake build folder
 .cmake/**
