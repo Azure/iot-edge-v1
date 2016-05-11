@@ -12,24 +12,24 @@ understand how the binding works.
 
 Types
 -----
-```c
-typedef struct NODEJS_MODULE_CONFIG_TAG
-{
-    const char* main_path;
-    const char* configuration_json;
-}NODEJS_MODULE_CONFIG;
+```c++
+struct NODEJS_MODULE_HANDLE_DATA;
 
-typedef struct NODEJS_MODULE_HANDLE_DATA_TAG
+typedef void(*PFNMODULE_START)(NODEJS_MODULE_HANDLE_DATA* handle_data);
+
+struct NODEJS_MODULE_HANDLE_DATA
 {
     MESSAGE_BUS_HANDLE          bus;
-    STRING_HANDLE               main_path;
-    STRING_HANDLE               configuration_json;
-    THREAD_HANDLE               nodejs_thread;
+    std::string                 main_path;
+    std::string                 configuration_json;
+    v8::Isolate                 *v8_isolate;
     v8::Persistent<v8::Object>  module_object;
-}NODEJS_MODULE_HANDLE_DATA;
+    size_t                      module_id;
+    PFNMODULE_START             on_module_start;
+};
 ```
 
-NodeJS_Create
+NODEJS_Create
 -------------
 ```c
 MODULE_HANDLE NodeJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
@@ -52,17 +52,11 @@ pointer to a `NODEJS_MODULE_CONFIG` object.
 
 **SRS_NODEJS_13_005: [** `NodeJS_Create` shall return a non-`NULL` `MODULE_HANDLE` when successful. **]**
 
-**SRS_NODEJS_13_006: [** `NodeJS_Create` shall allocate memory for an instance of the `NODEJS_MODULE_HANDLE_DATA` structure and use that as the backing structure for the module handle. **]**
+**SRS_NODEJS_13_035: [** `NodeJS_Create` shall acquire a reference to the singleton `ModulesManager` object. **]**
 
-**SRS_NODEJS_13_007: [** `NodeJS_Create` shall construct and initialize the `STRING_HANDLE` member `NODEJS_MODULE_HANDLE_DATA::main_path` from `configuration->main_path`. **]**
+**SRS_NODEJS_13_036: [** `NodeJS_Create` shall invoke `ModulesManager::AddModule` to add a new module to it's internal list. **]**
 
-**SRS_NODEJS_13_008: [** `NodeJS_Create` shall construct and initialize the `STRING_HANDLE` member `NODEJS_MODULE_HANDLE_DATA::configuration_json` from `configuration->configuration_json`. **]**
-
-**SRS_NODEJS_13_009: [** `NodeJS_Create` shall create a new thread to run the Node JS event loop. **]**
-
-**SRS_NODEJS_13_010: [** The Node JS event thread shall setup a idle handler on the default libuv loop. **]**
-
-**SRS_NODEJS_13_011: [** When the libuv handler is invoked, a new JavaScript object shall be created and added to the v8 global context with the name `gatewayHost`. The object shall implement the following interface (TypeScript syntax used below is just for the purpose of description):
+**SRS_NODEJS_13_011: [** When the `NODEJS_MODULE_HANDLE_DATA::on_module_start` function is invoked, a new JavaScript object shall be created and added to the v8 global context with the name `gatewayHost`. The object shall implement the following interface (TypeScript syntax used below is just for the purpose of description):
 ```ts
 interface GatewayModuleHost {
     registerModule: (module: GatewayModule) => void;
@@ -77,9 +71,11 @@ gatewayHost.registerModule(require(js_main_path));
 ```
 **]**
 
-**SRS_NODEJS_13_014: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if no parameter is passed to it. **]**
+**SRS_NODEJS_13_014: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if at least 2 parameters have not been passed to it. **]**
 
-**SRS_NODEJS_13_015: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if the parameter passed to it is not a JavaScript object. **]**
+**SRS_NODEJS_13_015: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if the first parameter passed to it is not a JavaScript object. **]**
+
+**SRS_NODEJS_13_037: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if the second parameter passed to it is not a number. **]**
 
 **SRS_NODEJS_13_016: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if the parameter is an object but does not conform to the following interface:
 ```ts
@@ -110,7 +106,7 @@ interface MessageBus {
  
  **SRS_NODEJS_13_018: [** The `GatewayModule.create` method shall be invoked passing the `MessageBus` instance and a parsed instance of the configuration JSON string. **]**
 
-NodeJS_Receive
+NODEJS_Receive
 ---------------
 ```c
 void NodeJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
@@ -119,6 +115,8 @@ void NodeJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
 **SRS_NODEJS_13_020: [** `NodeJS_Receive` shall do nothing if `module` is `NULL`. **]**
 
 **SRS_NODEJS_13_021: [** `NodeJS_Receive` shall do nothing if `message` is `NULL`. **]**
+
+**SRS_NODEJS_13_038: [** `NodeJS_Receive` shall schedule a callback to be invoked on Node JS's event loop. **]**
 
 **SRS_NODEJS_13_022: [** `NodeJS_Receive` shall construct an instance of the `Message` interface as defined below:
 ```ts
@@ -168,13 +166,17 @@ interface Message {
 
 **SRS_NODEJS_13_034: [** `message_bus_publish` shall destroy the `MESSAGE_HANDLE`. **]**
 
-NodeJS_Destroy
+NODEJS_Destroy
 --------------
 ```c
 void NodeJS_Destroy(MODULE_HANDLE module);
 ```
 
 **SRS_NODEJS_13_024: [** `NodeJS_Destroy` shall do nothing if `module` is `NULL`. **]**
+
+**SRS_NODEJS_13_039: [** `NodeJS_Destroy` shall schedule a callback to be invoked on Node JS's event loop. **]**
+
+**SRS_NODEJS_13_040: [** `NodeJS_Destroy` shall invoke the `destroy` method on module's JS implementation. **]**
 
 **SRS_NODEJS_13_025: [** `NodeJS_Destroy` shall free all resources. **]**
 

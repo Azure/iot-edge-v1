@@ -49,39 +49,39 @@ typedef struct MESSAGE_HANDLE_DATA_TAG* MESSAGE_HANDLE;
 */
 typedef struct MESSAGE_CONFIG_TAG
 {
-	/** @brief	Specifies the size of the buffer pointed at by @c source. This
-	*			can be zero when the message has only properties and no content.
-	*			It is an error for the size to be greater than zero when @c
-	*			source is equal to @c NULL.
-	*/
+    /** @brief	Specifies the size of the buffer pointed at by @c source. This
+    *			can be zero when the message has only properties and no content.
+    *			It is an error for the size to be greater than zero when @c
+    *			source is equal to @c NULL.
+    */
     size_t size;
 
-	/** @brief	Pointer to the buffer containing the data that will be the 
-	*			content of this message. This can be @c NULL when @c size is
-	*			zero.
-	*/
+    /** @brief	Pointer to the buffer containing the data that will be the 
+    *			content of this message. This can be @c NULL when @c size is
+    *			zero.
+    */
     const unsigned char* source;
 
-	/** @brief	A collection of key/value pairs where both the key and value are
-	*			strings representing the properties of this message. This field 
-	*			must not be @c NULL.
-	*/
+    /** @brief	A collection of key/value pairs where both the key and value are
+    *			strings representing the properties of this message. This field 
+    *			must not be @c NULL.
+    */
     MAP_HANDLE sourceProperties;
 }MESSAGE_CONFIG;
 
 /** @brief Struct defining the Message buffer configuration. */
 typedef struct MESSAGE_BUFFER_CONFIG_TAG
 {
-	/** @brief	The buffer containing the data that will be the content of the 
-	*			message.
-	*/
+    /** @brief	The buffer containing the data that will be the content of the 
+    *			message.
+    */
     CONSTBUFFER_HANDLE sourceContent;
     
-	/** @brief	A collection of key/value pairs where both the key and value are
-	*			strings representing the properties of this message. This field 
-	*			must not be @c NULL.
-	*/
-	MAP_HANDLE sourceProperties;
+    /** @brief	A collection of key/value pairs where both the key and value are
+    *			strings representing the properties of this message. This field 
+    *			must not be @c NULL.
+    */
+    MAP_HANDLE sourceProperties;
 }MESSAGE_BUFFER_CONFIG;
 
 /** @brief		Creates a new reference counted message from a #MESSAGE_CONFIG
@@ -144,7 +144,7 @@ extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg)
 /** @brief		Creates a clone of the message.
 *
 *	@details	Since messages are immutable, this function only increments the inner
-				reference count.
+                reference count.
 *
 *	@param		message		The #MESSAGE_HANDLE that will be cloned.
 *

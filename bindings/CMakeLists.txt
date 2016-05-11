@@ -6,3 +6,7 @@ cmake_minimum_required(VERSION 2.8.11)
 if(${enable_dotnet_binding})
     add_subdirectory(dotnet)
 endif()
+
+if(${enable_nodejs_binding})
+    add_subdirectory(nodejs)
+endif()

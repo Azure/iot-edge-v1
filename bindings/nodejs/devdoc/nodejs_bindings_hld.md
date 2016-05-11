@@ -19,7 +19,7 @@ embedded in another application. It is, however, possible to enable embedding
 and build it as a shared library - i.e., a `.so` on Linux and as a `.dll` on
 Windows - with some minor tweaks to the build scripts. The Node JS project has
 been forked to enable embedding and the changes in [this
-commit](https://github.com/nodejs/node/compare/ce3e3c5fe15479475c068482c48eb9cbf1ac9df5...f4f891c4e921559fdd466363573715b79b2dc774)
+commit](https://github.com/nodejs/node/compare/ce3e3c5fe15479475c068482c48eb9cbf1ac9df5...06be56bd01c0ed923eb389cba551cfe27bfff686)
 show the changes necessary to make this possible. Once Node JS has been built as
 a shared library, building a simple
 [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
@@ -163,16 +163,30 @@ So how will an Azure IoT Gateway module written using Node JS integrate into a
 gateway instance? Here's a picture that attempts to depict the relationship
 between the gateway and the module implemented using Node JS.
 
-![](./gateway_node_bindings.png)
+![](./gateway_nodejs_bindings.png)
 
 ### Node JS Module Host
 
 The *Node JS Module Host* is a regular gateway module written in C. This module
 hosts the Node JS engine and is responsible for managing the interaction between
-the gateway process and the JavaScript code. The configuration for this module
-will include the path to the root JavaScript file that is to be loaded and run
-when the module starts up. Here’s a sample configuration provided in JSON
-syntax:
+the gateway process and the JavaScript code. There will only be a single
+instance of the Node JS engine in the host. All Node JS modules participating in
+a given gateway process will be hosted by the same Node JS engine. The Node JS
+engine is instantiated and bootstrapped the first time that a gateway module
+that uses Node JS is instantiated. Subsequent instances of Node JS modules
+re-use the instance that was created before.
+
+Once the Node JS engine has been initialized, it will stay resident in memory
+indefinitely. The Node JS engine is not designed for being embedded and does not
+support being unloaded from memory. The only way to terminate an instance of the
+Node JS engine is to quit the process that is hosting the engine. Therefore, the
+gateway does not *unload* Node JS once it has been unloaded. Individual gateway
+modules will however have their *destroy* callback invoked when it is time for
+them to be unloaded.
+
+The configuration for this module will include the path to the root JavaScript
+file that is to be loaded and run when the module starts up. Here’s a sample
+configuration provided in JSON syntax:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json
 {
@@ -243,7 +257,7 @@ interface GatewayModule {
  * is "gatewayHost".
  */
 interface GatewayModuleHost {
-    registerModule: (module: GatewayModule) => void;
+    registerModule: (module: GatewayModule, module_id: Number) => void;
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -252,26 +266,29 @@ interface GatewayModuleHost {
 When the `Module_Create` function is invoked by the gateway, it performs the
 following actions:
 
--   Starts a new thread to run the Node JS engine and returns.
+-   If this is the first time that this API is being called, then it starts a
+    new thread to run the Node JS engine and starts up Node JS.
 
--   When the new thread starts up, it sets up a *libuv* idle handler to be
-    called once the Node JS runtime has been initialized and starts up Node JS.
+-   It then sets up a *libuv* idle handler to be called from Node JS’s event
+    loop.
 
 -   When the *libuv* idle handler is invoked, it creates an instance of a proxy
     object for the Message Bus (conforming to the `MessageBus` interface defined
     above).
 
--   It then adds an object to V8’s global context that implements the
+-   If this is the first time that a Node JS module is being loaded, then it
+    adds an object to V8’s global context that implements the
     `GatewayModuleHost` interface (defined in the TypeScript snippet above).
     This object is identified using the name `gatewayHost`.
 
 -   The module then proceeds to execute the following piece of JavaScript where
     the variable `js_main_path` points to the fully qualified path to the root
     JavaScript file that *default exports* the object that implements the
-    `GatewayModule` interface.
+    `GatewayModule` interface. The `module_id` is an internal identifier used by
+    the Node JS hosting module to distinguish between multiple Node JS modules.
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ js
-    gatewayHost.registerModule(require(js_main_path));
+    gatewayHost.registerModule(require(js_main_path, module_id));
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -   The `registerModule` call results in control shifting back to native code
@@ -289,8 +306,7 @@ constructs an object that implements the `Message` interface and invokes
 ### Module\_Destroy
 
 The call to `Module_Destroy` is simply forwarded on to `GatewayModule.destroy`.
-Once that function returns, the module proceeds to shut down the Node JS engine
-instance.
+It then removes the module reference from it’s internal list of modules.
 
 ### Publishing of messages to the bus
 

@@ -708,7 +708,7 @@ static void BLE_Destroy(MODULE_HANDLE module)
                         g_main_context_iteration(loop_context, FALSE);
                         if ((g_get_monotonic_time() - start_time) >= DESTROY_COMPLETE_TIMEOUT)
                         {
-							LogError("on_destroy_complete did not get called in time");
+                            LogError("on_destroy_complete did not get called in time");
                             break;
                         }
                     }
