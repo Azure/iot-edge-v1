@@ -23,10 +23,10 @@ public abstract class GatewayModule {
 ```java
 public GatewayModule(long address, MessageBus bus, String configuration);
 ```
-**SRS_JAVA_MESSAGE_14_001: [** The constructor shall save `address`, `bus`, 
+**SRS_JAVA_GATEWAY_MODULE_14_001: [** The constructor shall save `address`, `bus`, 
 and `configuration` into class variables. **]**
 
-**SRS_JAVA_MESSAGE_14_002: [** If `address` or `bus` is `null` the constructor 
+**SRS_JAVA_GATEWAY_MODULE_14_002: [** If `address` or `bus` is `null` the constructor 
 shall throw an IllegalArgumentException. **]**
 
 When extending this abstract class, the module-creator must create their own 

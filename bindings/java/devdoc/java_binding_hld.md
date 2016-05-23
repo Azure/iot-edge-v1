@@ -39,6 +39,9 @@ this module will be similar to the configuration for the Node Module Host:
             "args": {
                 "class_path": "/path/to/relevant/class/files",
                 "class_name": "Poller",
+                "args": {
+                    "frequency": 30
+                },
                 "jvm_options": {
                     "version": 8,
                     "debug": true,
@@ -62,10 +65,13 @@ or:
         {
             "module name": "java_poller",
             "module path": "/path/to/java_module_host.so|.dll",
-            "tags": ["java"]
+            "tags": ["java"],
             "args": {
                 "class_path": "/path/to/relevant/class/files",
-                "class_name": "Poller"
+                "class_name": "Poller",
+                "args": {
+                    "frequency": 30
+                }
             }
         }
     ]
