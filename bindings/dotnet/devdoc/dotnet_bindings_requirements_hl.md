@@ -46,13 +46,13 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
 }```
 
 
-**SRS_DOTNET_HL_04_001: [** `busHandle` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
-**SRS_DOTNET_HL_04_002: [** `configuration` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
+**SRS_DOTNET_HL_04_001: [** If `busHandle` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
+**SRS_DOTNET_HL_04_002: [** If `configuration` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
 **SRS_DOTNET_HL_04_003: [** If configuration is not a JSON object, then `DotNET_HL_Create` shall fail and return NULL. **]**
 **SRS_DOTNET_HL_04_004: [** If the JSON object does not contain a value named "dotnet_module_path" then `DotNET_HL_Create` shall fail and return NULL. **]**
 **SRS_DOTNET_HL_04_005: [** If the JSON object does not contain a value named "dotnet_module_entry_class" then `DotNET_HL_Create` shall fail and return NULL. **]**
 **SRS_DOTNET_HL_04_006: [** If the JSON object does not contain a value named "dotnet_module_args" then `DotNET_HL_Create` shall fail and return NULL. **]**
-**SRS_DOTNET_HL_04_007: [** `DotNET_HL_Create` shall pass `busHandle` and the filename to `DotNET_Create`. **]**
+**SRS_DOTNET_HL_04_007: [** `DotNET_HL_Create` shall pass `busHandle` and `const char* configuration` (`dotnet_module_path`, `dotnet_module_entry_class` and `dotnet_module_args` as string) to `DotNET_Create`. **]**
 **SRS_DOTNET_HL_04_008: [** If `DotNET_Create` succeeds then `DotNET_HL_Create` shall succeed and return a non-NULL value. **]**
 **SRS_DOTNET_HL_04_009: [** If `DotNET_Create` fails then `DotNET_HL_Create` shall fail and return NULL. **]**
 
@@ -69,7 +69,7 @@ DotNET_HL_Destroy
 void DotNET_HL_Destroy(MODULE_HANDLE module);
 ```
 
-**SRS_DOTNET_HL_04_011: [** `DotNET_HL_Destroy` shall destroy all used resources. **]**
+**SRS_DOTNET_HL_04_011: [** `DotNET_HL_Destroy` shall destroy all used resources for the associated module. **]**
 
 Module_GetAPIs
 --------------

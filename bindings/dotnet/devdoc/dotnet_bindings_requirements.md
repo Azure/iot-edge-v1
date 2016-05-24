@@ -43,14 +43,14 @@ pointer to a `DOTNET_HOST_CONFIG` object.
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 **SRS_DOTNET_04_003: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_path` is `NULL`. **]**
 **SRS_DOTNET_04_004: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_entry_class` is `NULL`. **]**
-**SRS_DOTNET_04_005: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_configuration` is `NULL`. **]**
+**SRS_DOTNET_04_005: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_args` is `NULL`. **]**
 **SRS_DOTNET_04_006: [** `DotNET_Create` shall return `NULL` if an underlying API call fails. **]**
 **SRS_DOTNET_04_007: [** `DotNET_Create` shall return a non-`NULL` `MODULE_HANDLE` when successful. **]**
 **SRS_DOTNET_04_008: [** `DotNET_Create` shall allocate memory for an instance of the `DOTNET_HOST_HANDLE_DATA` structure and use that as the backing structure for the module handle. **]**
-**SRS_DOTNET_04_009: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_module_path` with a copy of `configuration->dotnet_module_path`. **]**
-**SRS_DOTNET_04_010: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_module_entry_class` from `configuration->dotnet_module_entry_class`. **]**
-**SRS_DOTNET_04_011: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_configuration` from `configuration->dotnet_configuration`. **]**
-**SRS_DOTNET_04_012: [** `DotNET_Create` shall get the 3 CLR Host Interfaces (MetaHost, MetaHostPolicy and Debugging) and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
+**SRS_DOTNET_04_009: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_path` with a copy of `configuration->dotnet_module_path`. **]**
+**SRS_DOTNET_04_010: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_entry_class` from `configuration->dotnet_module_entry_class`. **]**
+**SRS_DOTNET_04_011: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_args` from `configuration->dotnet_module_args`. **]**
+**SRS_DOTNET_04_012: [** `DotNET_Create` shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
 **SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created and saved to: **]**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
@@ -69,7 +69,7 @@ pointer to a `DOTNET_HOST_CONFIG` object.
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `MessageBus` object created and `configuration->dotnet_configuration`. **]**
+**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `MessageBus` object created and `configuration->dotnet_module_args`. **]**
 
 
 DotNET_Receive
@@ -109,7 +109,7 @@ DotNET_Destroy
 void DotNET_Destroy(MODULE_HANDLE module);
 ```
 **SRS_DOTNET_04_019: [** `DotNET_Destroy` shall do nothing if `module` is `NULL`. **]**
-**SRS_DOTNET_04_020: [** `DotNET_Destroy` shall free all resources. **]**
+**SRS_DOTNET_04_020: [** `DotNET_Destroy` shall free all resources associated with the given module.. **]**
 
 Module_GetAPIs
 --------------
