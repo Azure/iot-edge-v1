@@ -36,8 +36,8 @@ The JSON configuration for .NET Module will be similar to the configuration for 
             "module path": "/path/to/dotnet_module_host.dll",
             "args": {
                 "dotnet_module_path": "/path/to/csharp_module.dll",
-                "dotnet_entry_class": "mycsharpmodule.classname",
-                "args": "module configuration"
+                "dotnet_module_entry_class": "mycsharpmodule.classname",
+                "dotnet_module_args": "module configuration"
             }
         }
     ]
@@ -51,8 +51,8 @@ The JSON configuration for .NET Module will be similar to the configuration for 
 3. `args` is the configuration specifically for the .NET Module. 
 
     3.1 `dotnet_module_path`: place where the .NET module is located;
-    3.2 `dotnet_entry_class`: class that implements `IGatewayModule`; 
-    3.3 `args`: The value of this property is used to supply configuration information specific to a given .NET module. The value is serialized as a string and passed verbatim to the .NET module;  
+    3.2 `dotnet_module_entry_class`: class that implements `IGatewayModule`; 
+    3.3 `dotnet_module_args`: The value of this property is used to supply configuration information specific to a given .NET module. The value is serialized as a string and passed verbatim to the .NET module;  
 
 ##Native methods description
 ### Module\_Create
@@ -62,7 +62,7 @@ gateway process, it:
 
 -   Creates a CLR instance (if not created yet); 
 
--   Loads the .NET module from the path indicated on the configuration (dotnet_module_path) into Default App domain, by calling `ExecuteInDefaultAppDomain`, invokes default constructor at the class (dotnet_entry_class) and calls `Create` method, implemented by the `IGatewayModule` interface;
+-   Loads the .NET module from the path indicated on the configuration (dotnet_module_path) into Default App domain, by calling `ExecuteInDefaultAppDomain`, invokes default constructor at the class (dotnet_module_entry_class) and calls `Create` method, implemented by the `IGatewayModule` interface;
 
 ### Module\_Receive
 
