@@ -14,20 +14,20 @@ understand how the binding works.
 Types
 -----
 ```c
-typedef struct DOTNET_MODULE_CONFIG_TAG
+typedef struct DOTNET_HOST_CONFIG_TAG
 {
     const char* dotnet_module_path;
-    const char* dotnet_entry_class;
-    const char* configuration;
-}DOTNET_MODULE_CONFIG;
+    const char* dotnet_module_entry_class;
+    const char* dotnet_module_args;
+}DOTNET_HOST_CONFIG;
 
-typedef struct DOTNET_MODULE_HANDLE_DATA_TAG
+typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 {
     MESSAGE_BUS_HANDLE          bus;
     ICLRMetaHost                *pMetaHost;
     ICLRRuntimeInfo             *pRuntimeInfo;
     ICorRuntimeHost             *pCorRuntimeHost;
-}DOTNET_MODULE_HANDLE_DATA;
+}DOTNET_HOST_HANDLE_DATA;
 ```
 
 DotNET_Create
@@ -36,22 +36,22 @@ DotNET_Create
 MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
 ```
 Creates a new .NET module instance. The parameter `configuration` is a
-pointer to a `DOTNET_MODULE_CONFIG` object.
+pointer to a `DOTNET_HOST_CONFIG` object.
 
 
 **SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `bus` is `NULL`. **]**
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 **SRS_DOTNET_04_003: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_path` is `NULL`. **]**
-**SRS_DOTNET_04_004: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_entry_class` is `NULL`. **]**
-**SRS_DOTNET_04_005: [** `DotNET_Create` shall return `NULL` if `configuration->configuration` is `NULL`. **]**
+**SRS_DOTNET_04_004: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_entry_class` is `NULL`. **]**
+**SRS_DOTNET_04_005: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_configuration` is `NULL`. **]**
 **SRS_DOTNET_04_006: [** `DotNET_Create` shall return `NULL` if an underlying API call fails. **]**
 **SRS_DOTNET_04_007: [** `DotNET_Create` shall return a non-`NULL` `MODULE_HANDLE` when successful. **]**
-**SRS_DOTNET_04_008: [** `DotNET_Create` shall allocate memory for an instance of the `DOTNET_MODULE_HANDLE_DATA` structure and use that as teh backing structure for the module handle. **]**
-**SRS_DOTNET_04_009: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_MODULE_HANDLE_DATA::dotnet_module_path` from `configuration->dotnet_module_path`. **]**
-**SRS_DOTNET_04_010: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_MODULE_HANDLE_DATA::dotnet_entry_class` from `configuration->dotnet_entry_class`. **]**
-**SRS_DOTNET_04_011: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_MODULE_HANDLE_DATA::configuration` from `configuration->configuration`. **]**
-**SRS_DOTNET_04_012: [** `DotNET_Create` shall get the 3 CLR Host Interfaces (MetaHost, MetaHostPolicy and Debugging) and save it on `DOTNET_MODULE_HANDLE_DATA`. **]**
-**SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created: **]**
+**SRS_DOTNET_04_008: [** `DotNET_Create` shall allocate memory for an instance of the `DOTNET_HOST_HANDLE_DATA` structure and use that as the backing structure for the module handle. **]**
+**SRS_DOTNET_04_009: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_module_path` with a copy of `configuration->dotnet_module_path`. **]**
+**SRS_DOTNET_04_010: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_module_entry_class` from `configuration->dotnet_module_entry_class`. **]**
+**SRS_DOTNET_04_011: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_HANDLE_DATA::dotnet_configuration` from `configuration->dotnet_configuration`. **]**
+**SRS_DOTNET_04_012: [** `DotNET_Create` shall get the 3 CLR Host Interfaces (MetaHost, MetaHostPolicy and Debugging) and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
+**SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created and saved to: **]**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
@@ -69,7 +69,7 @@ pointer to a `DOTNET_MODULE_CONFIG` object.
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method passing the `MessageBus` object created and `configuration->configuration`. **]**
+**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `MessageBus` object created and `configuration->dotnet_configuration`. **]**
 
 
 DotNET_Receive

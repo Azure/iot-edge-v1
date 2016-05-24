@@ -4,13 +4,6 @@
 #ifndef DOTNET_H
 #define DOTNET_H
 
-/**
- * Including module.h dictates that:
- *
- *      MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
- *
- * is implemented by the module.
- */
 #include "module.h"
 
 #ifdef __cplusplus
@@ -18,14 +11,14 @@ extern "C"
 {
 #endif
 
-typedef struct DOTNET_MODULE_CONFIG_TAG
+typedef struct DOTNET_HOST_CONFIG_TAG
 {
     const char* dotnet_module_path;
-    const char* dotnet_entry_class;
-    const char* configuration;
-}DOTNET_MODULE_CONFIG;
+    const char* dotnet_module_entry_class;
+    const char* dotnet_module_args;
+}DOTNET_HOST_CONFIG;
 
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_MODULE)(void);
+MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_HOST)(void);
 
 #ifdef __cplusplus
 }
