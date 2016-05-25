@@ -298,6 +298,7 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
             temp.iotHubSuffix = STRING_c_str(moduleHandleData->IoTHubSuffix);
             temp.protocol = HTTP_Protocol;
             temp.protocolGatewayHostName = NULL;
+            temp.deviceSasToken = NULL;
             if ((result->iothubHandle = IoTHubClient_CreateWithTransport(moduleHandleData->transportHandle, &temp)) == NULL)
             {
                 LogError("unable to IoTHubClient_CreateWithTransport");
