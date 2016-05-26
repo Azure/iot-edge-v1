@@ -1,0 +1,47 @@
+{
+  "modules": [
+    {
+      "module name": "java_module_host",
+      "module path": "../../bindings/java/libjava_module_host_hl.so",
+      "args": {
+        "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.0-SNAPSHOT-with-deps.jar:../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.0-SNAPSHOT-with-deps.jar",
+        "library_path": "../../bindings/java",
+        "class_name": "Printer",
+        "args": null,
+        "jvm_options": {
+          "version": 8,
+          "debug": false,
+          "debug_port": 8118,
+          "verbose": false,
+          "additional_options": [
+            "-Djava.version=1.8"
+          ]
+        }
+      }
+    },
+    {
+      "module name": "java_module_host",
+      "module path": "../../bindings/java/libjava_module_host_hl.so",
+      "args": {
+        "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.0-SNAPSHOT-with-deps.jar;../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.0-SNAPSHOT-with-deps.jar",
+        "library_path": "../../bindings/java",
+        "class_name": "Sensor",
+        "args": null,
+        "jvm_options": {
+          "version": 8,
+          "debug": false,
+          "debug_port": 8118,
+          "verbose": false,
+          "additional_options": [
+            "-Djava.version=1.8"
+          ]
+        }
+      }
+    },
+    {
+      "module name": "logger_hl",
+      "module path": "../../modules/logger/liblogger_hl.so",
+      "args": { "filename": "log.txt" }
+    }
+  ]
+}

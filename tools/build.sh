@@ -10,6 +10,8 @@ log_dir=$build_root
 run_unit_tests=ON
 run_e2e_tests=ON
 run_valgrind=0
+enable_java_binding=OFF
+
 cd "$build_root"
 usage ()
 {
@@ -22,6 +24,7 @@ fore building"
     echo "   Example: -cl -O1 -cl ..."
     echo "-rv, --run_valgrind will execute ctest with valgrind"
     echo " --skip-e2e-tests              skip the running of end-to-end tests (e2e tests are run by default)"
+    echo " --enable-java-binding         enables building of Java binding; environment variable JAVA_HOME must be defined"
     exit 1
 }
 
@@ -45,6 +48,7 @@ process_args ()
               "--skip-e2e-tests" ) run_e2e_tests=OFF;;
               "-cl" | "--compileoption" ) save_next_arg=1;;
               "-rv" | "--run_valgrind" ) run_valgrind=1;;
+              "--enable-java-binding" ) enable_java_binding=ON;;
               * ) usage;;
           esac
       fi
@@ -53,11 +57,20 @@ process_args ()
 
 process_args $*
 
+if [[ $enable_java_binding == ON]]
+then
+    sh ./build_java.sh
+fi
+
 cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=$run_e2e_tests -Drun_valgrind:BOOL=$run_valgrind "$build_root"
+cmake -DCMAKE_BUILD_TYPE=Debug \
+      -Drun_e2e_tests:BOOL=$run_e2e_tests \
+      -Drun_valgrind:BOOL=$run_valgrind \
+      -Denable_java_binding:BOOL=$enable_java_binding \
+      "$build_root"
 make --jobs=$(nproc)
 
 

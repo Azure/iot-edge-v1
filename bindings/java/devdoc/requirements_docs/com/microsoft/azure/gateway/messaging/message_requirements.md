@@ -41,4 +41,4 @@ public byte[] toByteArray();
 ```
 **SRS_JAVA_MESSAGE_14_004: [** The function shall serialize the Message content and properties according to the specification in [message.h](../../../../../../../../../core/devdoc/message_requirements.md) **]**
 
-**SRS_JAVA_MESSAGE_14_005: [** The function shall return `null` if the Message could not be serialized. **]**
+**SRS_JAVA_MESSAGE_14_005: [** The function shall return throw an IOException if the Message could not be serialized. **]**

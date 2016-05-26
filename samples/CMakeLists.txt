@@ -7,6 +7,10 @@ cmake_minimum_required(VERSION 2.8.11)
 add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
 
+if(${enable_java_binding})
+    add_subdirectory(java_sample)
+endif()
+
 if(LINUX)
     add_subdirectory(ble_gateway_hl)
 endif()
