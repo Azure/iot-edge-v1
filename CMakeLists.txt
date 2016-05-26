@@ -40,6 +40,10 @@ function(add_module_to_solution undecoratedModuleName)
         PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
 endfunction()
     
+function(add_binding_to_solution bindingLanguage)
+    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
+endfunction()
+    
 function(add_sample_to_solution sampleName)
     	set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
 endfunction()
