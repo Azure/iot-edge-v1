@@ -31,8 +31,9 @@ Use the **master** branch to ensure you fetch the latest release version.
 
 This section shows you how to set up a development environment for the Azure IoT Gateway SDK on Ubuntu.
  
-1. The following packages are needed and they can be installed with the following command line:
+1. The following packages are needed and they can be installed with the following commands:
 ```
+sudo apt-get update 
 sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-dev uuid-dev valgrind libglib2.0-dev
 ``` 
 2. Clone the latest version of this repository to your Ubuntu machine with the recursive parameter
