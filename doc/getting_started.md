@@ -150,7 +150,7 @@ Windows
 
 - From a Developer Command for VS2015 run `build.cmd`. `build.cmd` produces a folder called `build` in the root repo folder. This is where the two modules used in this sample are built.
 
-> Note: 'logger_hl.dll''s relative pathe is 'modules\logger\logger_hl.dll' and 'hello_world_hl.dll' is built in 'modules\hello_world\hello_world_hl.dll'. Use these paths for the "module path" value in the json below.
+> Note: 'logger_hl.dll''s relative path is 'modules\logger\logger_hl.dll' and 'hello_world_hl.dll' is built in 'modules\hello_world\hello_world_hl.dll'. Use these paths for the "module path" value in the json below.
 
 - Copy the JSON file from folder: `samples\hello_world\src\hello_world_win.json` to folder: `build\samples\hello_world\Debug\`.
 
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 The JSON file specifying the modules to be loaded is quite simple. It contains a list of modules to load. Each module must specify a:
 - `module name` – a unique name for the module
 - `module path` – the path to the library containing the module. For Linux this will be a .so while on Windows this will be a .dll file
-- `args` – any arguments/configuration the module needs. Specificaly, they are really another json value which is passed (as string) to the Module's `_Create` function.
+- `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
 
 Copied below is the code from one of the JSON files (hello_world_lin.json)[(../samples/hello_world/src/hello_world_lin.json) used to configure the Hello World sample. There are a couple things to note:
 
@@ -338,7 +338,7 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 
 The logger module receives messages from the message bus and writes them to a file. It never has to publish messages to the message bus. Therefore, the code of the logger module never calls 'MessageBus_Publish'.
 
-`Logger_Recieve`, located in [`logger.c`](../modules/logger/src/logger.c), is the logger module's callback invoked by the message bus when it wants to deliver a message to the logger module. An amended version has been reproduced below. Comments call out parts of message processing have been provided. Again, error checks have been omitted for the sake of brevity.
+`Logger_Receive`, located in [`logger.c`](../modules/logger/src/logger.c), is the logger module's callback invoked by the message bus when it wants to deliver a message to the logger module. An amended version has been reproduced below. Comments call out parts of message processing have been provided. Again, error checks have been omitted for the sake of brevity.
 ```c
 static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {

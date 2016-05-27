@@ -1,5 +1,7 @@
 # Simulated Device Cloud Upload sample for Azure IoT Gateway SDK
 
+These are step by step instructions on how to build and run this sample. A more in depth walkthrough can be found [here.](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-linux-gateway-sdk-simulated-device/)
+
 This sample contains the following modules:
 
 1. A logger module
@@ -54,17 +56,53 @@ Windows
 ## How to run the sample:
 Linux
 
-1. Navigate to `azure-iot-gateway-sdk/build`.
+- In a text editor, open the file `samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json` in your local copy
+of the azure-iot-gateway-sdk repository. This file configures the modules in the sample gateway:
 
-2. Run `$ ./samples/simulated_device_cloud_upload/simulated_device_cloud_upload_sample <path to JSON config file>`
+>Note: You will need connection information for two devices in IoT Hub before continuing. Refer to the sample [walkthrough](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-linux-gateway-sdk-simulated-device/)
+if you need help getting this information. 
+
+>The `IoTHub` module connects to your IoT hub. You must configure it to send data to your IoT hub. Specifically, set the `IoTHubName`
+value to the name of your IoT hub and set the value of `IoTHubSuffix` to `azure-devices.net`.
+
+>The `mapping` module maps the MAC addresses of your simulated devices to your IoT Hub device ids. Make sure that `deviceId` values
+match the ids of the two devices you added to your IoT hub, and that the `deviceKey` values contain the keys of your two devices.
+
+>The `BLE1` and `BLE2` modules are the simulated devices. Note how their MAC addresses match those in the `mapping` module.
+
+>The `Logger` module logs your gateway activity to a file.
+
+>The `module path` values shown below assume that you will run the sample from the root of your local copy of the `azure-iot-gateway-sdk` repository.
+
+- Navigate to `azure-iot-gateway-sdk/build`.
+
+- Run `$ ./samples/simulated_device_cloud_upload/simulated_device_cloud_upload_sample <path to JSON config file>`
 
 >Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json'. 
 
 Windows
 
-1. Navigate to `azure-iot-gateway-sdk\build\samples\simulated_device_cloud_upload\Debug`.
+- In a text editor, open the file `samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_win.json` in your local copy
+of the azure-iot-gateway-sdk repository. This file configures the modules in the sample gateway:
 
-2. Run `.\simulated_device_cloud_upload_sample.exe <path to JSON config file>`
+>Note: You will need connection information for two devices in IoT Hub before continuing. Refer to the sample [walkthrough](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-windows-gateway-sdk-simulated-device/)
+if you need help getting this information. 
+
+>The `IoTHub` module connects to your IoT hub. You must configure it to send data to your IoT hub. Specifically, set the `IoTHubName`
+value to the name of your IoT hub and set the value of `IoTHubSuffix` to `azure-devices.net`.
+
+>The `mapping` module maps the MAC addresses of your simulated devices to your IoT Hub device ids. Make sure that `deviceId` values
+match the ids of the two devices you added to your IoT hub, and that the `deviceKey` values contain the keys of your two devices.
+
+>The `BLE1` and `BLE2` modules are the simulated devices. Note how their MAC addresses match those in the `mapping` module.
+
+>The `Logger` module logs your gateway activity to a file.
+
+>The `module path` values shown below assume that you will run the sample from the root of your local copy of the `azure-iot-gateway-sdk` repository.
+
+- Navigate to `azure-iot-gateway-sdk\build\samples\simulated_device_cloud_upload\Debug`.
+
+- Run `.\simulated_device_cloud_upload_sample.exe <path to JSON config file>`
 
 >Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\simulated_device_cloud_upload\src\simulated_device_cloud_upload_win.json'.
 
