@@ -244,7 +244,7 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
                         else
                         {
                             /*Codes_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call MessageBus_Publish with the new message and the busHandle. ]*/
-                            if (MessageBus_Publish(personality->busHandle, gatewayMsg) != MESSAGE_BUS_OK)
+                            if (MessageBus_Publish(personality->busHandle, NULL, gatewayMsg) != MESSAGE_BUS_OK)
                             {
                                 /*Codes_SRS_IOTHUBHTTP_17_019: [ If the message fails to publish, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]*/
                                 LogError("Failed to publish gateway message");

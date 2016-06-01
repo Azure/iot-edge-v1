@@ -14,6 +14,7 @@
 #include "azure_c_shared_utility/crt_abstractions.h"
 #include "messageproperties.h"
 #include "message.h"
+#include "message_bus.h"
 #include "identitymap.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/constbuffer.h"
@@ -385,7 +386,7 @@ static void publish_with_new_properties(MAP_HANDLE newProperties, MESSAGE_HANDLE
 		{
 			MESSAGE_BUS_RESULT busStatus;
 			/*Codes_SRS_IDMAP_17_038: [IdentityMap_Receive shall call MessageBus_Publish with busHandle and new message.]*/
-			busStatus = MessageBus_Publish(idModule->busHandle, newMessage);
+			busStatus = MessageBus_Publish(idModule->busHandle, (MODULE_HANDLE)idModule, newMessage);
 			if (busStatus != MESSAGE_BUS_OK)
 			{
 				LogError("Message bus publish failure: %s", ENUM_TO_STRING(MESSAGE_BUS_RESULT, busStatus));

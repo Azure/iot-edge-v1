@@ -163,7 +163,7 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
 		((RefCountObject*)bus)->dec_ref();
 	MOCK_VOID_METHOD_END()
 
-	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MESSAGE_HANDLE, message)
+	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 		MESSAGE_BUS_RESULT busResult = currentMessageBusResult;
 	MOCK_METHOD_END(MESSAGE_BUS_RESULT, busResult)
 
@@ -433,7 +433,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, gballoc_free, void*, ptr
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CIdentitymapMocks, , MESSAGE_BUS_HANDLE, MessageBus_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, MessageBus_Destroy, MESSAGE_BUS_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_3(CIdentitymapMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Create, MAP_HANDLE, sourceMap);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
@@ -2212,8 +2212,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		currentMessageBusResult = MESSAGE_BUS_ERROR;
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(bus, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(bus, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
 
 		///Act
@@ -2305,8 +2305,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
 
 		///Act
@@ -2390,8 +2390,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
 
 		///Act
