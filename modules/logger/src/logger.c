@@ -354,7 +354,7 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                             STRING_HANDLE contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
                             if (contentAsJSON == NULL)
                             {
-								LogError("unable to Base64_Encode_Bytes");
+                                LogError("unable to Base64_Encode_Bytes");
                             }
                             else
                             {
@@ -410,9 +410,9 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
  */
 static const MODULE_APIS Logger_APIS_all =
 {
-	Logger_Create,
-	Logger_Destroy,
-	Logger_Receive
+    Logger_Create,
+    Logger_Destroy,
+    Logger_Receive
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -422,5 +422,5 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
 #endif
 {
     /*Codes_SRS_LOGGER_02_016: [Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL.]*/
-	return &Logger_APIS_all;
+    return &Logger_APIS_all;
 }

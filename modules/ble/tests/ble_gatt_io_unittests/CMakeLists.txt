@@ -65,7 +65,7 @@ set(${theseTestsName}_h_files
 )
 
 if(WIN32)
-	build_test_artifacts(${theseTestsName} ON)
+    build_test_artifacts(${theseTestsName} ON)
 else()
-	build_test_artifacts(${theseTestsName} ON ADDITIONAL_LIBS ${LIBS} VALGRIND_SUPPRESSIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../../../../core/valgrind_suppressions.txt)
+    build_test_artifacts(${theseTestsName} ON ADDITIONAL_LIBS ${LIBS} VALGRIND_SUPPRESSIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../../../../core/valgrind_suppressions.txt)
 endif()

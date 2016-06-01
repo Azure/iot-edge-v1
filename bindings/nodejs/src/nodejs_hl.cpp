@@ -57,10 +57,12 @@ static MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* config
                 else
                 {
                     /*Codes_SRS_NODEJS_HL_13_006: [ NODEJS_HL_Create shall extract the value of the args property from the configuration JSON. ]*/
-                    const char* args = json_object_get_string(obj, "args"); // args is allowed to be NULL
+                    JSON_Value* args = json_object_get_value(obj, "args"); // args is allowed to be NULL
+                    char* args_str = json_serialize_to_string(args);
+
                     NODEJS_MODULE_CONFIG config =
                     {
-                        main_path, args
+                        main_path, args_str
                     };
 
                     /*Codes_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle the config object. ]*/
@@ -103,9 +105,9 @@ static void NODEJS_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE message
  */
 static const MODULE_APIS NODEJS_HL_APIS_all =
 {
-	NODEJS_HL_Create,
-	NODEJS_HL_Destroy,
-	NODEJS_HL_Receive
+    NODEJS_HL_Create,
+    NODEJS_HL_Destroy,
+    NODEJS_HL_Receive
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -115,5 +117,5 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
 #endif
 {
     /*Codes_SRS_NODEJS_HL_13_011: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
-	return &NODEJS_HL_APIS_all;
+    return &NODEJS_HL_APIS_all;
 }

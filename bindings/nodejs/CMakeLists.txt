@@ -19,16 +19,17 @@ if(
 endif()
 
 # add the node include/lib folders
-include_directories($ENV{NODE_INCLUDE})
 link_directories($ENV{NODE_LIB})
 
 if(${LINUX})
-    set(node_libs
+    set(v8_libs
         v8_base
+        v8_nosnapshot
+    )
+    set(node_libs
         pthread
         dl
         uv
-        v8_nosnapshot
         openssl
     )
 endif()
@@ -38,11 +39,16 @@ if(WIN32)
     )
 endif()
 
-set(node_libs
-    ${node_libs}
-    node
+set(v8_libs
+    ${v8_libs}
     v8_libbase
     v8_libplatform
+)
+
+set(node_libs
+    ${node_libs}
+    ${v8_libs}
+    node
 )
 
 # app sources
@@ -52,12 +58,14 @@ include_directories(./inc)
 # Node JS binding DLL/SO sources and headers
 set(nodejs_sources
     ./src/nodejs.cpp
+    ./src/nodejs_utils.cpp
     ./src/modules_manager.cpp
 )
 set(nodejs_headers
     ./inc/lock.h
     ./inc/nodejs_common.h
     ./inc/nodejs.h
+    ./inc/nodejs_utils.h
     ./inc/modules_manager.h
 )
 
@@ -86,7 +94,7 @@ if(${LINUX})
 endif()
 
 if(WIN32)
-    # prefix the lib names with the path to debug and release bits
+    # suffix the lib names with '.lib'
     set(LIBS "")
     foreach(lib ${node_libs})
         list(APPEND LIBS ${lib}.lib)
@@ -104,26 +112,46 @@ endif()
 
 set(LIBS ${LIBS} gateway)
 
+function(add_pic_flag target)
+    if(${LINUX})
+        # need the -fPIC flag on Linux; see:
+        #   https://cmake.org/pipermail/cmake/2007-May/014350.html
+        if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+            set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-fPIC")
+        endif( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+    endif()
+endfunction()
+
 # build nodejs_binding module as a dynamic library
 add_library(nodejs_binding MODULE ${nodejs_sources} ${nodejs_headers})
 target_link_libraries(nodejs_binding ${LIBS})
 linkSharedUtil(nodejs_binding)
+add_pic_flag(nodejs_binding)
+target_include_directories(nodejs_binding PUBLIC $ENV{NODE_INCLUDE})
 
 # build nodejs_binding as a static library
 add_library(nodejs_binding_static ${nodejs_static_sources} ${nodejs_static_headers})
 target_compile_definitions(nodejs_binding_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(nodejs_binding_static ${LIBS})
 linkSharedUtil(nodejs_binding_static)
+add_pic_flag(nodejs_binding_static)
+target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
 
 #this builds the nodejs_binding_hl dynamic library
 add_library(nodejs_binding_hl MODULE ${nodejs_hl_sources} ${nodejs_hl_headers})
 target_link_libraries(nodejs_binding_hl nodejs_binding_static ${LIBS})
 linkSharedUtil(nodejs_binding_hl)
+add_pic_flag(nodejs_binding_hl)
+target_include_directories(nodejs_binding_hl PUBLIC $ENV{NODE_INCLUDE})
 
 #this builds the nodejs_binding_hl static library
 add_library(nodejs_binding_hl_static ${nodejs_hl_static_sources} ${nodejs_hl_static_headers})
 target_compile_definitions(nodejs_binding_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(nodejs_binding_hl_static nodejs_binding_static ${LIBS})
 linkSharedUtil(nodejs_binding_hl_static)
+add_pic_flag(nodejs_binding_hl_static)
+target_include_directories(nodejs_binding_hl_static PUBLIC $ENV{NODE_INCLUDE})
 
 add_module_to_solution(nodejs_binding)
+
+add_subdirectory(tests)

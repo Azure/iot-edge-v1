@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#ifndef NODEJS_MODULESTATE_H
-#define NODEJS_MODULESTATE_H
+#ifndef NODEJS_MODULESMANAGER_H
+#define NODEJS_MODULESMANAGER_H
 
 #include <stdlib.h>
-#include <unordered_map>
+#include <map>
+#include <functional>
+#include <memory>
 
 #include "uv.h"
 
@@ -28,7 +30,7 @@ namespace nodejs_module
         /**
          * The list of active modules.
          */
-        std::unordered_map<size_t, NODEJS_MODULE_HANDLE_DATA> m_modules;
+        std::map<size_t, NODEJS_MODULE_HANDLE_DATA> m_modules;
 
         /**
          * Lock used to protect access to members of this object.
@@ -39,6 +41,16 @@ namespace nodejs_module
          * Counter used to assign module identifiers.
          */
         size_t m_moduleid_counter;
+
+        /**
+         * List of functions to be invoked when Node initializes completely.
+         */
+        std::vector<std::shared_ptr<std::function<void()>>> m_call_on_init;
+
+        /**
+         * Tracks whether NodeJS has been initialized.
+         */
+        bool m_node_initialized;
 
         /**
          * Private constructor to enforce singleton instance.
@@ -57,8 +69,8 @@ namespace nodejs_module
         /**
          * Object lock/unlock methods.
          */
-        LOCK_RESULT Lock() const;
-        LOCK_RESULT Unlock() const;
+        void AcquireLock() const;
+        void ReleaseLock() const;
 
         /**
          * Add/remove modules.
@@ -71,12 +83,11 @@ namespace nodejs_module
     private:
         THREADAPI_RESULT StartNode();
         bool StartModule(size_t module_id);
-        void OnStartModule(size_t module_id, uv_idle_t* handle);
         int NodeJSRunner();
 
         static int NodeJSRunnerInternal(void* user_data);
-        static void OnStartModuleInternal(uv_idle_t* handle);
+        static void OnNodeInitComplete(const v8::FunctionCallbackInfo<v8::Value>& info);
     };
 };
 
-#endif // NODEJS_MODULESTATE_H
+#endif // NODEJS_MODULESMANAGER_H

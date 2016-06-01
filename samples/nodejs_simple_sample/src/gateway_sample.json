@@ -1,0 +1,37 @@
+{
+  "modules": [
+    {
+      "module name": "node_printer",
+      "module path": "C:\\code\\azure-iot-gateway-sdk\\build\\bindings\\nodejs\\Debug\\nodejs_binding_hl.dll",
+      "args": {
+        "main_path": "C:\\\\code\\\\azure-iot-gateway-sdk\\\\samples\\\\nodejs_simple_sample\\\\nodejs_modules\\\\printer.js",
+        "args": null
+      }
+    },
+    {
+      "module name": "node_sensor",
+      "module path": "C:\\code\\azure-iot-gateway-sdk\\build\\bindings\\nodejs\\Debug\\nodejs_binding_hl.dll",
+      "args": {
+        "main_path": "C:\\\\code\\\\azure-iot-gateway-sdk\\\\samples\\\\nodejs_simple_sample\\\\nodejs_modules\\\\sensor.js",
+        "args": null
+      }
+    },
+    {
+      "module name": "iothub_writer",
+      "module path": "C:\\code\\azure-iot-gateway-sdk\\build\\bindings\\nodejs\\Debug\\nodejs_binding_hl.dll",
+      "args": {
+        "main_path": "C:\\\\code\\\\azure-iot-gateway-sdk\\\\samples\\\\nodejs_simple_sample\\\\nodejs_modules\\\\iothub_writer.js",
+        "args": {
+          "connection_string": "HostName=raj-devhub-01.azure-devices.net;DeviceId=prickly_raj;SharedAccessKey=w1Z1WTshjgcwjVHdnk0KgCQvZ2yMXvbQdM+HA2LldLQ="
+        }
+      }
+    },
+    {
+      "module name": "Logger",
+      "module path": "C:\\code\\azure-iot-gateway-sdk\\build\\modules\\logger\\Debug\\logger_hl.dll",
+      "args": {
+        "filename": "C:\\Temp\\nodejs_simple_sample_log.json"
+      }
+    }
+  ]
+}

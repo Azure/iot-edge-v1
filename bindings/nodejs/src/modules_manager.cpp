@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <new>
+#include <memory>
 
 #include "uv.h"
-#include "v8.h"
 #include "node.h"
 
 #include "azure_c_shared_utility/threadapi.h"
@@ -15,13 +15,24 @@
 
 #include "lock.h"
 #include "nodejs_common.h"
+#include "nodejs_utils.h"
 #include "modules_manager.h"
 
 using namespace nodejs_module;
 
+#define NODE_STARTUP_SCRIPT  ""             \
+"(function () {"                            \
+"    _gatewayInit.onNodeInitComplete();"    \
+"    function onTimer() {"                  \
+"        setTimeout(onTimer, 2147483648);"  \
+"    }"                                     \
+"    onTimer();"                            \
+"})();"
+
 ModulesManager::ModulesManager() :
-    m_nodejs_thread{ NULL },
-    m_moduleid_counter{ 0 }
+    m_nodejs_thread{ nullptr },
+    m_moduleid_counter{ 0 },
+    m_node_initialized{ false }
 {}
 
 ModulesManager::~ModulesManager()
@@ -39,7 +50,7 @@ ModulesManager* ModulesManager::Get()
     static ModulesManager* instance = nullptr;
     static LOCK_HANDLE lock = Lock_Init();
 
-    if (lock == NULL)
+    if (lock == nullptr)
     {
         /*Codes_SRS_NODEJS_MODULES_MGR_13_002: [ This method shall return NULL if an underlying API call fails. ]*/
         LogError("Could not instantiate LOCK_HANDLE");
@@ -58,19 +69,24 @@ ModulesManager* ModulesManager::Get()
                     /*Codes_SRS_NODEJS_MODULES_MGR_13_004: [ This method shall return a non-NULL pointer to a ModulesManager instance when the object has been successfully insantiated. ]*/
                     instance = new ModulesManager();
                 }
+                catch (LOCK_RESULT err)
+                {
+                    LogError("Could not initialize lock when creating ModulesManager - %d", err);
+                }
                 catch (std::bad_alloc& err)
                 {
                     /*Codes_SRS_NODEJS_MODULES_MGR_13_002: [ This method shall return NULL if an underlying API call fails. ]*/
                     LogError("new operator failed with %s", err.what());
-                    instance = nullptr;
                 }
             }
+
+            /*Codes_SRS_NODEJS_MODULES_MGR_13_016: [ This method shall release the lock on the static lock object before returning. ]*/
             if (::Unlock(lock) != LOCK_OK)
             {
                 /*Codes_SRS_NODEJS_MODULES_MGR_13_002: [ This method shall return NULL if an underlying API call fails. ]*/
                 LogError("Could not unlock LOCK_HANDLE");
                 delete instance;
-                instance = NULL;
+                instance = nullptr;
             }
         }
         else
@@ -84,14 +100,14 @@ ModulesManager* ModulesManager::Get()
     return instance;
 }
 
-LOCK_RESULT ModulesManager::Lock() const
+void ModulesManager::AcquireLock() const
 {
-    return m_lock.Acquire();
+    m_lock.Acquire();
 }
 
-LOCK_RESULT ModulesManager::Unlock() const
+void ModulesManager::ReleaseLock() const
 {
-    return m_lock.Release();
+    m_lock.Release();
 }
 
 bool ModulesManager::HasModule(size_t module_id) const
@@ -111,62 +127,53 @@ NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_
     /*Codes_SRS_NODEJS_MODULES_MGR_13_005: [ AddModule shall acquire a lock on the ModulesManager object. ]*/
     LockGuard<ModulesManager> lock_guard{ *this };
 
-    if (lock_guard.GetResult() == LOCK_OK)
+    // start NodeJS if not already started
+    if (m_nodejs_thread == nullptr)
     {
-        // start NodeJS if not already started
-        if (m_nodejs_thread == NULL)
-        {
-            /*Codes_SRS_NODEJS_MODULES_MGR_13_007: [ If this is the first time that this method is being called then it shall start a new thread and start up Node JS from the thread. ]*/
-            StartNode();
-        }
+        /*Codes_SRS_NODEJS_MODULES_MGR_13_007: [ If this is the first time that this method is being called then it shall start a new thread and start up Node JS from the thread. ]*/
+        StartNode();
+    }
 
-        // if m_nodejs_thread is still NULL then StartNode failed
-        if (m_nodejs_thread != NULL)
+    // if m_nodejs_thread is still NULL then StartNode failed
+    if (m_nodejs_thread != nullptr)
+    {
+        auto module_id = m_moduleid_counter++;
+        try
         {
-            auto module_id = m_moduleid_counter++;
-            try
+            /*Codes_SRS_NODEJS_MODULES_MGR_13_008: [ AddModule shall add the module to it's internal collection of modules. ]*/
+            m_modules.insert(
+                std::make_pair(
+                    module_id,
+                    NODEJS_MODULE_HANDLE_DATA{ handle_data, module_id }
+                )
+            );
+
+            // start up the module
+            if (StartModule(module_id) == true)
             {
-                /*Codes_SRS_NODEJS_MODULES_MGR_13_008: [ AddModule shall add the module to it's internal collection of modules. ]*/
-                m_modules.insert(
-                    std::make_pair(
-                        module_id,
-                        NODEJS_MODULE_HANDLE_DATA{ handle_data, module_id }
-                    )
-                );
-
-                // start up the module
-                if (StartModule(module_id) == false)
-                {
-                    LogError("Could not start Node JS module from path '%s'", handle_data.main_path.c_str());
-                    result = &(m_modules[module_id]);
-                }
-                else
-                {
-                    /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-                    // remove the module from the map
-                    m_modules.erase(module_id);
-                    result = NULL;
-                }
+                result = &(m_modules[module_id]);
             }
-            catch (std::bad_alloc& err)
+            else
             {
                 /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-                LogError("Memory allocation error occurred with %s", err.what());
-                result = NULL;
+                // remove the module from the map
+                LogError("Could not start Node JS module from path '%s'", handle_data.main_path.c_str());
+                m_modules.erase(module_id);
+                result = nullptr;
             }
         }
-        else
+        catch (std::bad_alloc& err)
         {
             /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-            LogError("Could not start Node JS thread.");
-            result = NULL;
+            LogError("Memory allocation error occurred with %s", err.what());
+            result = nullptr;
         }
     }
     else
     {
         /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-        LogError("LockGuard failed");
-        result = NULL;
+        LogError("Could not start Node JS thread.");
+        result = nullptr;
     }
 
     return result;
@@ -179,19 +186,11 @@ void ModulesManager::RemoveModule(size_t module_id)
 {
     /*Codes_SRS_NODEJS_MODULES_MGR_13_012: [ RemoveModule shall acquire a lock on the ModulesManager object. ]*/
     LockGuard<ModulesManager> lock_guard{ *this };
-    if (lock_guard.GetResult() == LOCK_OK)
+    auto entry = m_modules.find(module_id);
+    if (entry != m_modules.end())
     {
-        auto entry = m_modules.find(module_id);
-        if (entry != m_modules.end())
-        {
-            /*Codes_SRS_NODEJS_MODULES_MGR_13_014: [ RemoveModule shall remove the module from it's internal collection of modules. ]*/
-            m_modules.erase(entry);
-        }
-    }
-    else
-    {
-        /*Codes_SRS_NODEJS_MODULES_MGR_13_013: [ RemoveModule shall do nothing if an underlying API call fails. ]*/
-        LogError("LockGuard failed");
+        /*Codes_SRS_NODEJS_MODULES_MGR_13_014: [ RemoveModule shall remove the module from it's internal collection of modules. ]*/
+        m_modules.erase(entry);
     }
 
     /*Codes_SRS_NODEJS_MODULES_MGR_13_015: [ RemoveModule shall release the lock on the ModulesManager object. ]*/
@@ -201,9 +200,10 @@ void ModulesManager::RemoveModule(size_t module_id)
 int ModulesManager::NodeJSRunner()
 {
     // start up Node.js!
-    int argc = 1;
-    char *argv[] = { "node" };
-    return node::Start(argc, argv);
+    int argc = 3;
+    const char *argv[] = { "node", "-e", NODE_STARTUP_SCRIPT };
+
+    return node::Start(argc, const_cast<char**>(argv));
 }
 
 int ModulesManager::NodeJSRunnerInternal(void* user_data)
@@ -211,79 +211,111 @@ int ModulesManager::NodeJSRunnerInternal(void* user_data)
     return reinterpret_cast<ModulesManager*>(user_data)->NodeJSRunner();
 }
 
+void ModulesManager::OnNodeInitComplete(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    auto manager = ModulesManager::Get();
+    LockGuard<ModulesManager> lock_guard{ *manager };
+    manager->m_node_initialized = true;
+    for (const auto& callback : manager->m_call_on_init)
+    {
+        (*callback)();
+    }
+
+    manager->m_call_on_init.clear();
+}
+
 THREADAPI_RESULT ModulesManager::StartNode()
 {
-    // The caller of this method would have already acquired an
-    // object lock.
-    auto result = ThreadAPI_Create(
-        &m_nodejs_thread,
-        ModulesManager::NodeJSRunnerInternal,
-        reinterpret_cast<void*>(this)
-    );
-    if (result != THREADAPI_OK)
+    THREADAPI_RESULT result;
+
+    // setup a method in the global context that the startup script
+    // will invoke to notify us of completion of initialization of Node
+    bool idle_status = nodejs_module::NodeJSUtils::SetIdle([]() {
+        auto notify_init = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+            "onNodeInitComplete",
+            ModulesManager::OnNodeInitComplete
+        );
+        if (notify_init.IsEmpty() == true)
+        {
+            LogError("Could not create v8 object");
+        }
+        else
+        {
+            // add the object to global context
+            if (nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_gatewayInit", notify_init) == false)
+            {
+                LogError("Could not add v8 object to global context");
+            }
+
+            notify_init.Reset();
+        }
+    });
+
+    if (idle_status == false)
     {
-        LogError("ThreadAPI_Create failed");
-        m_nodejs_thread = NULL;
+        LogError("Could not schedule idle callback in libuv");
+        result = THREADAPI_ERROR;
+    }
+    else
+    {
+        // The caller of this method would have already acquired an
+        // object lock.
+        result = ThreadAPI_Create(
+            &m_nodejs_thread,
+            ModulesManager::NodeJSRunnerInternal,
+            reinterpret_cast<void*>(this)
+        );
+        if (result != THREADAPI_OK)
+        {
+            LogError("ThreadAPI_Create failed");
+            m_nodejs_thread = nullptr;
+        }
     }
 
     return result;
-}
-
-void ModulesManager::OnStartModuleInternal(uv_idle_t* handle)
-{
-    size_t module_id = reinterpret_cast<size_t>(
-        reinterpret_cast<uv_handle_t*>(handle)->data
-    );
-    ModulesManager::Get()->OnStartModule(module_id, handle);
-}
-
-void ModulesManager::OnStartModule(size_t module_id, uv_idle_t* handle)
-{
-    auto& handle_data = m_modules[module_id];
-
-    // save the v8 isolate in the handle's data
-    handle_data.v8_isolate = v8::Isolate::GetCurrent();
-
-    /*Codes_SRS_NODEJS_MODULES_MGR_13_010: [ When the callback is invoked via libuv, it shall invoke the NODEJS_MODULE_HANDLE_DATA::on_module_start function. ]*/
-    handle_data.on_module_start(&handle_data);
-    uv_idle_stop(handle);
 }
 
 bool ModulesManager::StartModule(size_t module_id)
 {
     bool result;
 
-    uv_loop_t* default_loop = uv_default_loop();
-    if (default_loop == NULL)
+#ifdef INTEGRATION_TEST
+    m_modules[module_id].create_running = true;
+#endif
+
+    // we cannot proceed till node has been initialized completely so
+    // postpone addition of the module till then
+    if (m_node_initialized == false)
     {
-        LogError("uv_default_loop() failed");
-        result = false;
+        auto callback = std::make_shared<std::function<void()>>([this, module_id]() {
+            if (StartModule(module_id) == false)
+            {
+                LogInfo("Could not start module");
+                RemoveModule(module_id);
+            }
+        });
+
+        m_call_on_init.push_back(callback);
+        result = true;
     }
     else
     {
-        uv_idle_t idler;
-        if (uv_idle_init(default_loop, &idler) != 0)
-        {
-            LogError("uv_idle_init failed");
-            result = false;
-        }
-        else
-        {
-            // save the handle data so we can later use this from the callback
-            reinterpret_cast<uv_handle_t*>(&idler)->data = reinterpret_cast<void*>(module_id);
-
-            /*Codes_SRS_NODEJS_MODULES_MGR_13_009: [ AddModule shall schedule a callback to be invoked on the Node engine's event loop via libuv. ]*/
-            if (uv_idle_start(&idler, ModulesManager::OnStartModuleInternal) != 0)
+        result = nodejs_module::NodeJSUtils::SetIdle([module_id, this]() {
+            // it is possible that the module has been deleted by the time
+            // we get here; so we check that the module exists before we
+            // do anything
+            if (HasModule(module_id) == true)
             {
-                LogError("uv_idle_start failed");
-                uv_idle_stop(&idler);
-                result = false;
+                auto& handle_data = m_modules[module_id];
+
+                /*Codes_SRS_NODEJS_MODULES_MGR_13_010: [ When the callback is invoked via libuv, it shall invoke the NODEJS_MODULE_HANDLE_DATA::on_module_start function. ]*/
+                handle_data.on_module_start(&handle_data);
             }
             else
             {
-                result = true;
+                LogError("Module has already been deleted");
             }
-        }
+        });
     }
 
     return result;

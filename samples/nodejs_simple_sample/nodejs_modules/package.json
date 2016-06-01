@@ -1,0 +1,12 @@
+{
+  "name": "nodejs_modules",
+  "version": "1.0.0",
+  "description": "",
+  "main": "iothub_writer.js",
+  "author": "Rajasekharan Vengalil",
+  "license": "MIT",
+  "dependencies": {
+    "azure-iot-device": "^1.0.6",
+    "azure-iot-device-amqp": "^1.0.6"
+  }
+}

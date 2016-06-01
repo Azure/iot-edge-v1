@@ -23,10 +23,12 @@
 #include "node.h"
 
 #include "azure_c_shared_utility/map.h"
+#include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/iot_logging.h"
 #include "azure_c_shared_utility/threadapi.h"
+#include "azure_c_shared_utility/agenttime.h"
 #include "parson.h"
 
 #include "module.h"
@@ -36,9 +38,28 @@
 
 #include "nodejs_common.h"
 #include "nodejs.h"
+#include "nodejs_utils.h"
 #include "modules_manager.h"
 
+#define DESTROY_WAIT_TIME_IN_SECS   (5)
+
+#define NODE_LOAD_SCRIPT(ss, main_path, module_id)    ss <<       \
+    "(function() {"                                               \
+    "  try {"                                                     \
+    "    var path = require('path');"                             \
+    "    return gatewayHost.registerModule("                      \
+    "      require(path.resolve('" << (main_path) << "')), " <<   \
+           (module_id) <<                                         \
+    "    ); "                                                     \
+    "  } "                                                        \
+    "  catch(err) { "                                             \
+    "    console.error(`ERROR: ${err.toString()}`);"              \
+    "    return false;"                                           \
+    "  }"                                                         \
+    "})();"
+
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
+static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
 
 static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
 {
@@ -51,24 +72,8 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
     /*Codes_SRS_NODEJS_13_019: [ NodeJS_Create shall return NULL if configuration->configuration_json is not valid JSON. ]*/
     /*Codes_SRS_NODEJS_13_003: [ NodeJS_Create shall return NULL if configuration->main_path is NULL. ]*/
     /*Codes_SRS_NODEJS_13_013: [ NodeJS_Create shall return NULL if configuration->main_path is an invalid file system path. ]*/
-    if (
-            bus == NULL
-            ||
-            configuration == NULL
-            ||
-            module_config->main_path == NULL
-            ||
-            (
-                module_config->configuration_json != NULL
-                &&
-                (json = json_parse_string(module_config->configuration_json)) == NULL
-            )
-            ||
-            _access(module_config->main_path, 4) != 0
-       )
+    if (validate_input(bus, module_config, &json) == false)
     {
-        /*Codes_SRS_NODEJS_13_004: [ NodeJS_Create shall return NULL if an underlying API call fails. ]*/
-        LogError("Invalid input supplied.");
         result = NULL;
     }
     else
@@ -91,18 +96,70 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
                 on_module_start
             };
 
-            auto handle_data = modules_manager->AddModule(handle_data_input);
-            if (handle_data == NULL)
+            try
             {
-                LogError("Could not add Node JS module");
+                auto handle_data = modules_manager->AddModule(handle_data_input);
+                if (handle_data == NULL)
+                {
+                    LogError("Could not add Node JS module");
+                    result = NULL;
+                }
+                else
+                {
+                    handle_data->module_state = NodeModuleState::initializing;
+
+                    /*Codes_SRS_NODEJS_13_005: [ NodeJS_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
+                    result = reinterpret_cast<MODULE_HANDLE>(handle_data);
+                }
+            }
+            catch (LOCK_RESULT err)
+            {
+                LogError("A lock API error occurred when adding the module to the modules manager - %d", err);
                 result = NULL;
             }
-            else
-            {
-                /*Codes_SRS_NODEJS_13_005: [ NodeJS_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
-                result = reinterpret_cast<MODULE_HANDLE>(handle_data);
-            }
         }
+    }
+
+    return result;
+}
+
+static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
+{
+    bool result;
+
+    if (bus == NULL || module_config == NULL)
+    {
+        LogError("bus and/or configuration is NULL");
+        result = false;
+    }
+    else if (module_config->main_path == NULL)
+    {
+        LogError("main_path is NULL");
+        result = false;
+    }
+    else if (
+        module_config->configuration_json != NULL
+        &&
+        (*json = json_parse_string(module_config->configuration_json)) == NULL
+    )
+    {
+        LogError("Unable to parse configuration JSON");
+        result = false;
+    }
+    else if(
+#ifdef WIN32
+        _access(module_config->main_path, 4) != 0
+#else
+        access(module_config->main_path, 4) != 0
+#endif
+        )
+    {
+        LogError("Unable to access the JavaScript file at path '%s'", module_config->main_path);
+        result = false;
+    }
+    else
+    {
+        result = true;
     }
 
     return result;
@@ -126,7 +183,7 @@ static bool validate_prop(
     }
     else
     {
-        if (object->HasOwnProperty(prop_key) == false)
+        if (object->Has(prop_key) == false)
         {
             LogInfo("Object does not have expected property '%s'", prop_name);
             result = false;
@@ -157,36 +214,38 @@ static bool validate_object_prop(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> val,
-    const char* prop_name)
+    const char* prop_name
+)
 {
     auto object = val->ToObject();
     return object.IsEmpty() == false
-        &&
-        validate_prop(
-            isolate, context, object, prop_name,
-            [](v8::Local<v8::Value> object)
-    {
-        return object->IsObject();
-    }
-    );
+           &&
+           validate_prop(
+               isolate, context, object, prop_name,
+               [](v8::Local<v8::Value> object)
+               {
+                   return object->IsObject();
+               }
+           );
 }
 
 static bool validate_function_prop(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> val,
-    const char* prop_name)
+    const char* prop_name
+)
 {
     auto object = val->ToObject();
     return object.IsEmpty() == false
-        &&
-        validate_prop(
-            isolate, context, object, prop_name,
-            [](v8::Local<v8::Value> object)
-    {
-        return object->IsFunction();
-    }
-    );
+           &&
+           validate_prop(
+               isolate, context, object, prop_name,
+               [](v8::Local<v8::Value> object)
+               {
+                   return object->IsFunction();
+               }
+           );
 }
 
 static bool validate_gateway(
@@ -233,20 +292,18 @@ static bool validate_message(
 
 static std::string v8_to_std_string(v8::Local<v8::String> str)
 {
-    std::string str_value;
-
     try
     {
         auto buffer_length = str->Utf8Length() + 1;
-        char* buffer = new char[buffer_length];
-        if (str->WriteUtf8(buffer, buffer_length) != buffer_length)
+        std::vector<char> buffer;
+        buffer.resize(buffer_length);
+        if (str->WriteUtf8(&(buffer[0]), buffer_length) != buffer_length)
         {
             LogError("An error occurred when converting string");
-            delete[] buffer;
         }
         else
         {
-            str_value = buffer;
+            return std::string(std::begin(buffer), std::end(buffer));
         }
     }
     catch (std::bad_alloc err)
@@ -254,7 +311,7 @@ static std::string v8_to_std_string(v8::Local<v8::String> str)
         LogError("An error occurred when allocating buffer for string: %s", err.what());
     }
 
-    return str_value;
+    return std::string();
 }
 
 static bool copy_properties_from_message(
@@ -344,59 +401,52 @@ static unsigned char* copy_contents(
     unsigned char* result;
 
     *psize = 0;
-    if (validate_object_prop(isolate, context, message, "contents") == true)
+    auto prop_key = v8::String::NewFromUtf8(isolate, "content");
+    if (prop_key.IsEmpty() == true)
     {
-        auto prop_key = v8::String::NewFromUtf8(isolate, "contents");
-        if (prop_key.IsEmpty() == true)
+        LogError("Could not instantiate v8 string for constant 'content'");
+        result = NULL;
+    }
+    else
+    {
+        // we know this is an object
+        auto contents = message->Get(prop_key)->ToObject();
+
+        if (contents->IsUint8Array() == false)
         {
-            LogError("Could not instantiate v8 string for constant 'contents'");
+            LogInfo("Message contents is not a Uint8Array");
             result = NULL;
         }
         else
         {
-            // we know this is an object
-            auto contents = message->Get(prop_key)->ToObject();
-
-            if (contents->IsUint8Array() == false)
+            auto arr = contents.As<v8::Uint8Array>();
+            if (arr.IsEmpty() == true)
             {
-                LogInfo("Message contents is not a Uint8Array");
+                LogError("Could not convert message contents to a v8 Uint8Array");
                 result = NULL;
             }
             else
             {
-                auto arr = contents.As<v8::Uint8Array>();
-                if (arr.IsEmpty() == true)
+                *psize = arr->ByteLength();
+                result = (unsigned char*)malloc(*psize);
+                if (result == NULL)
                 {
-                    LogError("Could not convert message contents to a v8 Uint8Array");
-                    result = NULL;
+                    *psize = 0;
+                    LogError("malloc failed");
                 }
                 else
                 {
-                    *psize = arr->ByteLength();
-                    result = (unsigned char*)malloc(*psize);
-                    if (result == NULL)
+                    auto copied = arr->CopyContents(result, *psize);
+                    if (copied != *psize)
                     {
+                        LogError("CopyContents failed");
+                        result = NULL;
                         *psize = 0;
-                        LogError("malloc failed");
-                    }
-                    else
-                    {
-                        auto copied = arr->CopyContents(result, *psize);
-                        if (copied != *psize)
-                        {
-                            LogError("CopyContents failed");
-                            result = NULL;
-                            *psize = 0;
-                            free((void*)result);
-                        }
+                        free((void*)result);
                     }
                 }
             }
         }
-    }
-    else
-    {
-        result = NULL;
     }
 
     return result;
@@ -407,15 +457,15 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
     // this MUST NOT be NULL
     auto isolate = info.GetIsolate();
     auto context = isolate->GetCurrentContext();
-
-    // get a reference to NODEJS_MODULE_HANDLE_DATA; this MUST NOT be NULL
-    NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(isolate->GetData(0));
+    auto this_object = info.This();
 
     // there must be one parameter whose type is 'object'
     if (
             info.Length() < 1
             ||
             info[0]->IsObject() == false
+            ||
+            this_object.IsEmpty() == true
             ||
             validate_message(isolate, context, info[0]) == false
        )
@@ -438,63 +488,91 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     else
     {
-        // create and copy the message properties
-        MAP_HANDLE message_properties = Map_Create(NULL);
-        if (message_properties == NULL)
+        // get a reference to NODEJS_MODULE_HANDLE_DATA; this MUST NOT be NULL
+        auto module_id_value = this_object->GetInternalField(0);
+        if (module_id_value.IsEmpty() == true)
         {
-            /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-            LogError("Map_Create() failed");
+            LogError("message_bus_publish() was called with an unexpected object as the 'this' variable");
             info.GetReturnValue().Set(false);
         }
         else
         {
-            auto message_obj = info[0]->ToObject();
-            if (copy_properties_from_message(isolate, context, message_obj, message_properties) == false)
-            {
-                /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-                LogError("An error occurred when copying properties to the message handle");
-                info.GetReturnValue().Set(false);
-            }
-            else
-            {
-                // copy the message contents
-                MESSAGE_CONFIG message_config;
-                message_config.sourceProperties = message_properties;
-                message_config.source = copy_contents(
-                    isolate, context, message_obj, &(message_config.size)
-                );
+            auto module_id = module_id_value->Uint32Value();
+            auto modules_manager = nodejs_module::ModulesManager::Get();
 
-                /*Codes_SRS_NODEJS_13_030: [ message_bus_publish shall construct and initialize a MESSAGE_HANDLE from the first argument. ]*/
-                MESSAGE_HANDLE message = Message_Create(&message_config);
-                if (message == NULL)
+            // The module might not exist if there's a race condition between a message being
+            // published and the module being removed from modules manager.
+            if(modules_manager->HasModule(module_id) == true)
+            {
+                auto& handle_data = modules_manager->GetModuleFromId(module_id);
+
+                // create and copy the message properties
+                MAP_HANDLE message_properties = Map_Create(NULL);
+                if (message_properties == NULL)
                 {
                     /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-                    LogError("Message_Create() failed");
+                    LogError("Map_Create() failed");
                     info.GetReturnValue().Set(false);
                 }
                 else
                 {
-                    /*Codes_SRS_NODEJS_13_032: [ message_bus_publish shall call MessageBus_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
-                    if (MessageBus_Publish(handle_data->bus, message) != MESSAGE_BUS_OK)
+                    auto message_obj = info[0]->ToObject();
+                    if (copy_properties_from_message(isolate, context, message_obj, message_properties) == false)
                     {
                         /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-                        LogError("MessageBus_Publish() failed");
+                        LogError("An error occurred when copying properties to the message handle");
                         info.GetReturnValue().Set(false);
                     }
                     else
                     {
-                        /*Codes_SRS_NODEJS_13_033: [ message_bus_publish shall set the return value to true or false depending on the status of the MessageBus_Publish call. ]*/
-                        info.GetReturnValue().Set(true);
+                        // copy the message contents if we have any
+                        MESSAGE_CONFIG message_config;
+                        message_config.sourceProperties = message_properties;
+
+                        if (validate_object_prop(isolate, context, message_obj, "content") == true)
+                        {
+                            message_config.source = copy_contents(
+                                isolate, context, message_obj, &(message_config.size)
+                            );
+                        }
+                        else
+                        {
+                            message_config.source = nullptr;
+                        }
+
+                        /*Codes_SRS_NODEJS_13_030: [ message_bus_publish shall construct and initialize a MESSAGE_HANDLE from the first argument. ]*/
+                        MESSAGE_HANDLE message = Message_Create(&message_config);
+                        if (message == NULL)
+                        {
+                            /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
+                            LogError("Message_Create() failed");
+                            info.GetReturnValue().Set(false);
+                        }
+                        else
+                        {
+                            /*Codes_SRS_NODEJS_13_032: [ message_bus_publish shall call MessageBus_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
+                            if (MessageBus_Publish(handle_data.bus, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != MESSAGE_BUS_OK)
+                            {
+                                /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
+                                LogError("MessageBus_Publish() failed");
+                                info.GetReturnValue().Set(false);
+                            }
+                            else
+                            {
+                                /*Codes_SRS_NODEJS_13_033: [ message_bus_publish shall set the return value to true or false depending on the status of the MessageBus_Publish call. ]*/
+                                info.GetReturnValue().Set(true);
+                            }
+
+                            /*Codes_SRS_NODEJS_13_034: [ message_bus_publish shall destroy the MESSAGE_HANDLE. ]*/
+                            Message_Destroy(message);
+                        }
+
+                        free((void*)message_config.source);
                     }
 
-                    /*Codes_SRS_NODEJS_13_034: [ message_bus_publish shall destroy the MESSAGE_HANDLE. ]*/
-                    Message_Destroy(message);
+                    Map_Destroy(message_properties);
                 }
-
-                free((void*)message_config.source);
             }
-
-            Map_Destroy(message_properties);
         }
     }
 }
@@ -504,34 +582,21 @@ static v8::Local<v8::Object> create_message_bus(v8::Isolate* isolate, v8::Local<
     // this is an 'empty' object by default
     v8::Local<v8::Object> result;
 
-    auto message_bus_template = v8::ObjectTemplate::New(isolate);
+    auto message_bus_template = nodejs_module::NodeJSUtils::CreateObjectTemplateWithMethod("publish", message_bus_publish);
     if (message_bus_template.IsEmpty() == true)
     {
         LogError("Could not instantiate an object template for the message bus");
     }
     else
     {
-        auto publish_name = v8::String::NewFromUtf8(isolate, "publish");
-        if (publish_name.IsEmpty() == true)
-        {
-            LogError("Could not instantiate v8 string for string constant 'publish'");
-        }
-        else
-        {
-            auto publish_function = v8::FunctionTemplate::New(isolate, message_bus_publish);
-            if (publish_function.IsEmpty() == true)
-            {
-                LogError("Could not instantiate a function template for message_bus_publish");
-            }
-            else
-            {
-                // add the "publish" function to the object template
-                message_bus_template->Set(publish_name, publish_function);
+        auto mbt = message_bus_template.Get(isolate);
 
-                // create a new instance of the template
-                result = message_bus_template->NewInstance(context).ToLocalChecked();
-            }
-        }
+        // add a placeholder for an internal field where we will store the module identifier
+        mbt->SetInternalFieldCount(1);
+
+        // create a new instance of the template
+        result = mbt->NewInstance(context).ToLocalChecked();
+        message_bus_template.Reset();
     }
 
     return result;
@@ -550,7 +615,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
         ||
         info[0]->IsObject() == false
         ||
-        info[2]->IsNumber() == false
+        info[1]->IsNumber() == false
        )
     {
         LogError("register_module was called with invalid parameters");
@@ -603,61 +668,82 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                 auto module_id = info[1]->ToNumber()->Uint32Value();
                 NODEJS_MODULE_HANDLE_DATA& handle_data = nodejs_module::ModulesManager::Get()->GetModuleFromId(module_id);
 
-                // save the gateway object reference in the handle; this will be freed
-                // from NODEJS_Destroy
-                handle_data.module_object.Reset(isolate, gateway);
-
-                // invoke the 'create' method on 'gateway' passing the message bus
-                auto create_method_name = v8::String::NewFromUtf8(isolate, "create");
-                if (create_method_name.IsEmpty() == true)
+                // save the module id in the message bus object so we can retrieve this
+                // from the message_bus_publish function
+                auto module_id_value = v8::Uint32::NewFromUnsigned(isolate, module_id);
+                if (module_id_value.IsEmpty() == true)
                 {
-                    LogError("Could not instantiate a v8 string for the constant 'create'");
+                    LogError("Could not instantiate a v8 integer to store the module ID");
                     info.GetReturnValue().Set(false);
                 }
                 else
                 {
-                    // parse the configuration JSON
-                    auto json_str = v8::String::NewFromUtf8(isolate, handle_data.configuration_json.c_str());
-                    if (
-                        handle_data.configuration_json.empty() == false &&
-                        json_str.IsEmpty() == true
-                       )
+                    message_bus->SetInternalField(0, module_id_value);
+
+                    // save the gateway object reference in the handle; this will be freed
+                    // from NODEJS_Destroy
+                    handle_data.module_object.Reset(isolate, gateway);
+
+                    // invoke the 'create' method on 'gateway' passing the message bus
+                    auto create_method_name = v8::String::NewFromUtf8(isolate, "create");
+                    if (create_method_name.IsEmpty() == true)
                     {
-                        LogError("Could not instantiate a v8 string for configuration json");
+                        LogError("Could not instantiate a v8 string for the constant 'create'");
                         info.GetReturnValue().Set(false);
                     }
                     else
                     {
-                        v8::Local<v8::Value> config_json;
-                        if (handle_data.configuration_json.empty() == false)
+                        // parse the configuration JSON
+                        auto json_str = v8::String::NewFromUtf8(isolate, handle_data.configuration_json.c_str());
+                        if (
+                            handle_data.configuration_json.empty() == false &&
+                            json_str.IsEmpty() == true
+                           )
                         {
-                            config_json = v8::JSON::Parse(isolate, json_str).ToLocalChecked();
-                        }
-
-                        // we already verified that this exists and is a function
-                        auto create_method_value = gateway->Get(context, create_method_name).ToLocalChecked();
-                        auto create_method = create_method_value.As<v8::Function>();
-
-                        /*Codes_SRS_NODEJS_13_018: [ The GatewayModule.create method shall be invoked passing the MessageBus instance and a parsed instance of the configuration JSON string. ]*/
-                        v8::Local<v8::Value> argv[] = { message_bus, config_json };
-                        auto result = create_method->Call(context, gateway, 2, argv).ToLocalChecked();
-
-                        // we expect result to be a boolean
-                        if (result.IsEmpty() == true || result->IsBoolean() == false)
-                        {
-                            LogInfo("Warning: The gateway object's create method did not return a boolean");
+                            LogError("Could not instantiate a v8 string for configuration json");
                             info.GetReturnValue().Set(false);
                         }
                         else
                         {
-                            if (result->BooleanValue() == false)
+                            v8::Local<v8::Value> config_json;
+                            if (handle_data.configuration_json.empty() == false)
                             {
-                                LogError("Gateway's create method failed.");
+                                config_json = v8::JSON::Parse(isolate, json_str).ToLocalChecked();
+                            }
+
+                            // we already verified that this exists and is a function
+                            auto create_method_value = gateway->Get(context, create_method_name).ToLocalChecked();
+                            auto create_method = create_method_value.As<v8::Function>();
+
+                            /*Codes_SRS_NODEJS_13_018: [ The GatewayModule.create method shall be invoked passing the MessageBus instance and a parsed instance of the configuration JSON string. ]*/
+                            v8::Local<v8::Value> argv[] = { message_bus, config_json };
+                            auto maybe_result = create_method->Call(context, gateway, 2, argv);
+                            if (maybe_result.IsEmpty())
+                            {
+                                LogInfo("Warning: The gateway object's create method did not return any value.");
                                 info.GetReturnValue().Set(false);
                             }
                             else
                             {
-                                info.GetReturnValue().Set(true);
+                                // we expect result to be a boolean
+                                auto result = maybe_result.ToLocalChecked();
+                                if (result.IsEmpty() == true || result->IsBoolean() == false)
+                                {
+                                    LogInfo("Warning: The gateway object's create method did not return a boolean");
+                                    info.GetReturnValue().Set(false);
+                                }
+                                else
+                                {
+                                    if (result->BooleanValue() == false)
+                                    {
+                                        LogError("Gateway's create method failed.");
+                                        info.GetReturnValue().Set(false);
+                                    }
+                                    else
+                                    {
+                                        info.GetReturnValue().Set(true);
+                                    }
+                                }
                             }
                         }
                     }
@@ -681,99 +767,21 @@ static bool create_gateway_host(v8::Isolate* isolate, v8::Local<v8::Context> con
     }
     else
     {
-        // get the global object from the context
-        auto global = context->Global();
-        if (global.IsEmpty() == true)
+        auto gateway_host = nodejs_module::NodeJSUtils::CreateObjectWithMethod("registerModule", register_module);
+        if (gateway_host.IsEmpty() == true)
         {
-            LogError("v8 context has no global object");
+            LogError("Could not create an instance of the gateway host");
             result = false;
         }
         else
         {
-            auto gateway_host_template = v8::ObjectTemplate::New(isolate);
-            if (gateway_host_template.IsEmpty() == true)
-            {
-                LogError("Could not instantiate an object template for the GatewayModuleHost");
-                result = false;
-            }
-            else
-            {
-                auto register_module_name = v8::String::NewFromUtf8(isolate, "registerModule");
-                if (register_module_name.IsEmpty() == true)
-                {
-                    LogError("Could not instantiate v8 string for string constant 'registerModule'");
-                    result = false;
-                }
-                else
-                {
-                    auto register_module_function = v8::FunctionTemplate::New(isolate, register_module);
-                    if (register_module_function.IsEmpty() == true)
-                    {
-                        LogError("Could not instantiate a function template for register_module");
-                        result = false;
-                    }
-                    else
-                    {
-                        // add the "registerModule" function to the object template
-                        gateway_host_template->Set(register_module_name, register_module_function);
-
-                        // create a new instance of the template
-                        auto gateway_host = gateway_host_template->NewInstance(context).ToLocalChecked();
-                        if (gateway_host.IsEmpty() == true)
-                        {
-                            LogError("Could not create an instance of the gateway host template");
-                            result = false;
-                        }
-                        else
-                        {
-                            auto gateway_host_prop_name = v8::String::NewFromUtf8(isolate, "gatewayHost");
-                            if (gateway_host_prop_name.IsEmpty() == true)
-                            {
-                                LogError("Could not instantiate v8 string for string contant 'gatewayHost'");
-                                result = false;
-                            }
-                            else
-                            {
-                                // add the gatewayHost to the context global
-                                result = global->Set(gateway_host_prop_name, gateway_host);
-
-                                // save the creation status so we don't attempt this again
-                                // if this was successful
-                                gateway_host_created = result;
-                            }
-                        }
-                    }
-                }
-            }
+            result = nodejs_module::NodeJSUtils::AddObjectToGlobalContext("gatewayHost", gateway_host);
+            gateway_host.Reset();
         }
-    }
 
-    return result;
-}
-
-static v8::Local<v8::Value> run_script(
-    v8::Isolate* isolate,
-    v8::Local<v8::Context> context,
-    const char* script
-)
-{
-    v8::Local<v8::Value> result;
-    auto script_source = v8::String::NewFromUtf8(isolate, script);
-    if (script_source.IsEmpty() == true)
-    {
-        LogError("Could not instantiate v8 string for JS script source");
-    }
-    else
-    {
-        auto script = v8::Script::Compile(context, script_source).ToLocalChecked();
-        if (script.IsEmpty() == true)
-        {
-            LogError("Could not compile JS script");
-        }
-        else
-        {
-            result = script->Run(context).ToLocalChecked();
-        }
+        // save the creation status so we don't attempt this again
+        // if this was successful
+        gateway_host_created = result;
     }
 
     return result;
@@ -781,10 +789,12 @@ static v8::Local<v8::Value> run_script(
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
 {
-    v8::Isolate* isolate = handle_data->v8_isolate;
-    if (isolate == NULL)
+    // save the v8 isolate in the handle's data
+    v8::Isolate* isolate = handle_data->v8_isolate = v8::Isolate::GetCurrent();
+    if (isolate == nullptr)
     {
-        LogError("v8 isolate is NULL");
+        handle_data->module_state = NodeModuleState::error;
+        LogError("v8 isolate is nullptr");
     }
     else
     {
@@ -793,6 +803,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
         auto context = isolate->GetCurrentContext();
         if (context.IsEmpty() == true)
         {
+            handle_data->module_state = NodeModuleState::error;
             LogError("No active v8 context found.");
         }
         else
@@ -804,6 +815,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
             */
             if (create_gateway_host(isolate, context) == false)
             {
+                handle_data->module_state = NodeModuleState::error;
                 LogError("Could not create gateway host in v8 global context");
             }
             else
@@ -812,22 +824,36 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                 //  gatewayHost.registerModule(require('<<js_main_path>>'), <<module_id>>);
                 try
                 {
-                    std::stringstream script_str("gatewayHost.registerModule(require('");
-                    script_str << handle_data->main_path << "'), " << handle_data->module_id << ");";
+                    std::stringstream script_str;
+                    NODE_LOAD_SCRIPT(
+                        script_str,
+                        handle_data->main_path,
+                        handle_data->module_id
+                    );
 
                     /*SRS_NODEJS_13_012: [ The following JavaScript is then executed supplying the contents of NODEJS_MODULE_HANDLE_DATA::main_path for the placeholder variable js_main_path:
                         gatewayHost.registerModule(require(js_main_path));
                     */
-                    auto result = run_script(isolate, context, script_str.str().c_str());
+                    auto result = nodejs_module::NodeJSUtils::RunScript(isolate, context, script_str.str());
                     if (result.IsEmpty() == true)
                     {
-                        LogError("registerModule script returned NULL");
+#ifdef INTEGRATION_TEST
+                        handle_data->create_failed = true;
+                        handle_data->create_running = false;
+#endif
+                        handle_data->module_state = NodeModuleState::error;
+                        LogError("registerModule script returned nullptr");
                     }
                     else
                     {
                         // this must be boolean and must evaluate to true
                         if (result->IsBoolean() == false)
                         {
+#ifdef INTEGRATION_TEST
+                            handle_data->create_failed = true;
+                            handle_data->create_running = false;
+#endif
+                            handle_data->module_state = NodeModuleState::error;
                             LogError("Expected registerModule to return boolean but it did not.");
                         }
                         else
@@ -835,7 +861,20 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             auto bool_result = result->ToBoolean();
                             if (bool_result->BooleanValue() == false)
                             {
+#ifdef INTEGRATION_TEST
+                                handle_data->create_failed = true;
+                                handle_data->create_running = false;
+#endif
+                                handle_data->module_state = NodeModuleState::error;
                                 LogError("Expected registerModule to return 'true' but it returned 'false'");
+                            }
+                            else
+                            {
+                                handle_data->module_state = NodeModuleState::initialized;
+#ifdef INTEGRATION_TEST
+                                handle_data->create_failed = false;
+                                handle_data->create_running = false;
+#endif
                             }
                         }
                     }
@@ -878,101 +917,97 @@ static v8::Local<v8::Object> copy_properties_to_object(
     }
     else
     {
-        v8::Local<v8::Object> props;
-        size_t i = 0;
-        for (; i < count; i++)
+        v8::Local<v8::Object> props = v8::Object::New(isolate);
+        if (props.IsEmpty() == false)
         {
-            auto prop_key = v8::String::NewFromUtf8(isolate, keys[i]);
-            if (prop_key.IsEmpty() == true)
+            size_t i = 0;
+            for (; i < count; i++)
             {
-                LogError("Could not instantiate v8 string for property key '%s'", keys[i]);
-                break;
-            }
-            else
-            {
-                auto prop_value = v8::String::NewFromUtf8(isolate, values[i]);
-                if (prop_value.IsEmpty() == true)
+                auto prop_key = v8::String::NewFromUtf8(isolate, keys[i]);
+                if (prop_key.IsEmpty() == true)
                 {
-                    LogError("Could not instantiate v8 string for property value '%s'", values[i]);
+                    LogError("Could not instantiate v8 string for property key '%s'", keys[i]);
                     break;
                 }
                 else
                 {
-                    auto status = props->CreateDataProperty(context, prop_key, prop_value);
-                    if (status.FromMaybe(false) == false)
+                    auto prop_value = v8::String::NewFromUtf8(isolate, values[i]);
+                    if (prop_value.IsEmpty() == true)
                     {
-                        LogError("Could not create property '%s'", values[i]);
+                        LogError("Could not instantiate v8 string for property value '%s'", values[i]);
                         break;
+                    }
+                    else
+                    {
+                        auto status = props->CreateDataProperty(context, prop_key, prop_value);
+                        if (status.FromMaybe(false) == false)
+                        {
+                            LogError("Could not create property '%s'", values[i]);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        // if i != count then something went wrong
-        if (i == count)
-        {
-            result = props;
+            // if i != count then something went wrong
+            if (i == count)
+            {
+                result = props;
+            }
         }
     }
 
     return result;
 }
 
-struct RECEIVE_MESSAGE_CONTEXT
+static void on_run_receive_message(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
+    MODULE_HANDLE module,
+    MESSAGE_HANDLE message
+)
 {
-    MODULE_HANDLE module;
-    MESSAGE_HANDLE message;
-};
-
-static void on_run_receive_message(uv_idle_t* handle)
-{
-    RECEIVE_MESSAGE_CONTEXT *call_context = reinterpret_cast<RECEIVE_MESSAGE_CONTEXT*>(handle->data);
-    NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(call_context->module);
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (isolate == NULL)
+    NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(module);
+    if (handle_data->module_object.IsEmpty() == true)
     {
-        LogError("v8 isolate is NULL");
+        LogError("Module does not have a JS counterpart object - %s.", handle_data->main_path.c_str());
     }
     else
     {
-        v8::Isolate::Scope isolate_scope(isolate);
-        v8::HandleScope handle_scope(isolate);
-        auto context = isolate->GetCurrentContext();
-        if (context.IsEmpty() == true)
+        /*Codes_SRS_NODEJS_13_022: [ NodeJS_Receive shall construct an instance of the Message interface as defined below:
+            interface StringMap {
+                [key: string]: string;
+            }
+
+            interface Message {
+                properties: StringMap;
+                content: Uint8Array;
+            }
+        */
+
+        // convert the message properties into a JS object
+        auto js_props = copy_properties_to_object(
+            isolate,
+            context,
+            Message_GetProperties(message)
+        );
+
+        // convert the contents into a JS Uint8Array
+        v8::Local<v8::Uint8Array> js_contents;
+        auto content = Message_GetContent(message);
+        if (content != nullptr && content->buffer != nullptr && content->size > 0)
         {
-            LogError("No active v8 context found.");
+            js_contents = copy_contents_to_object(isolate, context, content);
+        }
+
+        // create a JS object with 'properties' and 'content'
+        v8::Local<v8::Object> js_message = v8::Object::New(isolate);
+        if (js_message.IsEmpty())
+        {
+            LogError("Could not create JS object for storing the message");
         }
         else
         {
-            /*Codes_SRS_NODEJS_13_022: [ NodeJS_Receive shall construct an instance of the Message interface as defined below:
-                interface StringMap {
-                    [key: string]: string;
-                }
-
-                interface Message {
-                    properties: StringMap;
-                    content: Uint8Array;
-                }
-            */
-
-            // convert the message properties into a JS object
-            auto js_props = copy_properties_to_object(
-                isolate,
-                context,
-                Message_GetProperties(call_context->message)
-            );
-
-            // convert the contents into a JS Uint8Array
-            v8::Local<v8::Uint8Array> js_contents;
-            auto content = Message_GetContent(call_context->message);
-            if (content != NULL && content->buffer != NULL && content->size > 0)
-            {
-                js_contents = copy_contents_to_object(isolate, context, content);
-            }
-
-            // create a JS object with 'properties' and 'content'
-            v8::Local<v8::Object> js_message;
             if (js_props.IsEmpty() == false)
             {
                 auto prop_key = v8::String::NewFromUtf8(isolate, "properties");
@@ -1033,138 +1068,136 @@ static void on_run_receive_message(uv_idle_t* handle)
         }
     }
 
-    free(reinterpret_cast<void*>(call_context));
-    uv_idle_stop(handle);
+    Message_Destroy(message);
 }
 
 void NODEJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 {
     /*Codes_SRS_NODEJS_13_020: [ NodeJS_Receive shall do nothing if module is NULL. ]*/
     /*Codes_SRS_NODEJS_13_021: [ NodeJS_Receive shall do nothing if message is NULL. ]*/
-    if (module == NULL || message == NULL)
+    if (module == nullptr || message == nullptr)
     {
-        LogError("module/message handle is NULL");
+        LogError("module/message handle is nullptr");
     }
     else
     {
-        uv_loop_t* default_loop = uv_default_loop();
-        if (default_loop == NULL)
+        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(module);
+        if (handle_data->module_state != NodeModuleState::initialized)
         {
-            LogError("uv_default_loop() failed");
+            LogError("Module has not been initialized correctly: %s", handle_data->main_path.c_str());
         }
         else
         {
-            uv_idle_t idler;
-            if (uv_idle_init(default_loop, &idler) != 0)
-            {
-                LogError("uv_idle_init failed");
-            }
-            else
-            {
-                RECEIVE_MESSAGE_CONTEXT* context = reinterpret_cast<RECEIVE_MESSAGE_CONTEXT*>(
-                    malloc(sizeof(RECEIVE_MESSAGE_CONTEXT))
-                );
-                if (context == NULL)
-                {
-                    LogError("malloc failed");
-                }
-                else
-                {
-                    // save the handle data so we can later use this from the callback
-                    context->module = module;
-                    context->message = message;
-                    reinterpret_cast<uv_handle_t*>(&idler)->data = reinterpret_cast<void*>(context);
+            // inc ref the message handle
+            message = Message_Clone(message);
 
-                    /*Codes_SRS_NODEJS_13_038: [ NodeJS_Receive shall schedule a callback to be invoked on Node JS's event loop. ]*/
-                    if (uv_idle_start(&idler, on_run_receive_message) != 0)
-                    {
-                        LogError("uv_idle_start failed");
-                        uv_idle_stop(&idler);
-                    }
-                }
+            // run on node's event thread
+            bool idle_status = nodejs_module::NodeJSUtils::SetIdle([module, message]() {
+                nodejs_module::NodeJSUtils::RunWithNodeContext([module, message](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+                    on_run_receive_message(isolate, context, module, message);
+                });
+            });
+            if (idle_status == false)
+            {
+                LogError("Could not schedule idle callback in libuv");
             }
         }
     }
 }
 
-static void on_quit_node(uv_idle_t* handle)
+static void on_quit_node(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
+    size_t module_id
+)
 {
-    NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(handle->data);
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (isolate == NULL)
+    auto modules_manager = nodejs_module::ModulesManager::Get();
+    if (modules_manager->HasModule(module_id) == true)
     {
-        LogError("v8 isolate is NULL");
-    }
-    else
-    {
-        v8::Isolate::Scope isolate_scope(isolate);
-        v8::HandleScope handle_scope(isolate);
-        auto context = isolate->GetCurrentContext();
-        if (context.IsEmpty() == true)
+        auto& handle_data = modules_manager->GetModuleFromId(module_id);
+        if (handle_data.module_state != NodeModuleState::initialized)
         {
-            LogError("No active v8 context found.");
+            LogError("Module has not been initialized correctly: %s", handle_data.main_path.c_str());
         }
         else
         {
-            // invoke 'destroy' on the module object
-            auto destroy_method_name = v8::String::NewFromUtf8(isolate, "destroy");
-            if (destroy_method_name.IsEmpty() == true)
+            if (handle_data.module_object.IsEmpty() == false)
             {
-                LogError("Could not instantiate a v8 string for the constant 'destroy'");
+                auto gateway = handle_data.module_object.Get(isolate);
+
+                // invoke 'destroy' on the module object
+                auto destroy_method_name = v8::String::NewFromUtf8(isolate, "destroy");
+                if (destroy_method_name.IsEmpty() == true)
+                {
+                    LogError("Could not instantiate a v8 string for the constant 'destroy'");
+                }
+                else
+                {
+                    // we already verified that this exists and is a function when the module
+                    // was registered
+                    auto destroy_method_value = gateway->Get(context, destroy_method_name).ToLocalChecked();
+                    auto destroy_method = destroy_method_value.As<v8::Function>();
+
+                    /*Codes_SRS_NODEJS_13_040: [ NodeJS_Destroy shall invoke the destroy method on module's JS implementation. ]*/
+                    destroy_method->Call(context, gateway, 0, nullptr);
+                }
             }
             else
             {
-                auto gateway = handle_data->module_object.Get(isolate);
-
-                // we already verified that this exists and is a function when the module
-                // was registered
-                auto destroy_method_value = gateway->Get(context, destroy_method_name).ToLocalChecked();
-                auto destroy_method = destroy_method_value.As<v8::Function>();
-
-                /*Codes_SRS_NODEJS_13_040: [ NodeJS_Destroy shall invoke the destroy method on module's JS implementation. ]*/
-                destroy_method->Call(context, gateway, 0, nullptr);
+                LogError("Module does not have a JS object that needs to be destroyed.");
             }
+        }
 
+        try
+        {
             /*Codes_SRS_NODEJS_13_025: [ NodeJS_Destroy shall free all resources. ]*/
-            nodejs_module::ModulesManager::Get()->RemoveModule(handle_data->module_id);
+            modules_manager->RemoveModule(handle_data.module_id);
+        }
+        catch (LOCK_RESULT err)
+        {
+            LogError("A lock API error occurred when removing the module from the modules manager - %d", err);
         }
     }
-
-    uv_idle_stop(handle);
 }
 
 static void NODEJS_Destroy(MODULE_HANDLE module)
 {
-    if (module == NULL)
+    if (module == nullptr)
     {
         /*Codes_SRS_NODEJS_13_024: [ NodeJS_Destroy shall do nothing if module is NULL. ]*/
-        LogError("module handle is NULL");
+        LogError("module handle is nullptr");
     }
     else
     {
-        uv_loop_t* default_loop = uv_default_loop();
-        if (default_loop == NULL)
+        auto module_id = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA *>(module)->module_id;
+
+        // run on node's event thread
+        bool idle_status = nodejs_module::NodeJSUtils::SetIdle([module_id]() {
+            nodejs_module::NodeJSUtils::RunWithNodeContext([module_id](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+                on_quit_node(isolate, context, module_id);
+            });
+        });
+        if (idle_status == false)
         {
-            LogError("uv_default_loop() failed");
+            LogError("Could not schedule idle callback in libuv");
         }
         else
         {
-            uv_idle_t idler;
-            if (uv_idle_init(default_loop, &idler) != 0)
+            // Spin for a bit waiting for libuv to call on_quit_node
+            time_t start_time = get_time(nullptr);
+            auto modules_manager = nodejs_module::ModulesManager::Get();
+            while (
+                    (get_time(nullptr) - start_time) < DESTROY_WAIT_TIME_IN_SECS
+                    &&
+                    modules_manager->HasModule(module_id) == true
+                  )
             {
-                LogError("uv_idle_init failed");
+                ThreadAPI_Sleep(250);
             }
-            else
-            {
-                reinterpret_cast<uv_handle_t*>(&idler)->data = reinterpret_cast<void*>(module);
 
-                /*Codes_SRS_NODEJS_13_039: [ NodeJS_Destroy shall schedule a callback to be invoked on Node JS's event loop. ]*/
-                if (uv_idle_start(&idler, on_quit_node) != 0)
-                {
-                    LogError("uv_idle_start failed");
-                    uv_idle_stop(&idler);
-                }
+            if (modules_manager->HasModule(module_id) == true)
+            {
+                LogError("Could not cleanly destroy the module");
             }
         }
     }

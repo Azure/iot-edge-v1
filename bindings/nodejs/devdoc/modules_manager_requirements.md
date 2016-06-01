@@ -101,6 +101,8 @@ static ModulesManager* ModulesManager::Get()
 
 **SRS_NODEJS_MODULES_MGR_13_004: [** This method shall return a non-`NULL` pointer to a `ModulesManager` instance when the object has been successfully insantiated. **]**
 
+**SRS_NODEJS_MODULES_MGR_13_016: [** This method shall release the lock on the static lock object before returning. **]**
+
 AddModule
 ---------
 ```c++

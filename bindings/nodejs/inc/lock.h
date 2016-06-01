@@ -18,56 +18,40 @@ namespace nodejs_module
         Lock()
         {
             m_lock = ::Lock_Init();
-            if (m_lock == NULL)
+            if (m_lock == nullptr)
             {
-                LogError("Lock_Init failed");
+                LogError("Lock_Init() failed");
+                throw LOCK_ERROR;
             }
         }
 
         ~Lock()
         {
-            if (m_lock != NULL)
+            if (m_lock != nullptr)
             {
                 ::Lock_Deinit(m_lock);
             }
         }
 
-        LOCK_RESULT Acquire() const
+        void Acquire() const
         {
             LOCK_RESULT result;
-            if (m_lock == NULL)
+            result = ::Lock(m_lock);
+            if (result != LOCK_OK)
             {
-                result = LOCK_ERROR;
+                LogError("Lock failed");
+                throw result;
             }
-            else
-            {
-                result = ::Lock(m_lock);
-                if (result != LOCK_OK)
-                {
-                    LogError("Lock failed");
-                }
-            }
-
-            return result;
         }
 
-        LOCK_RESULT Release() const
+        void Release() const
         {
-            LOCK_RESULT result;
-            if (m_lock == NULL)
+            LOCK_RESULT result = ::Unlock(m_lock);
+            if (result != LOCK_OK)
             {
-                result = LOCK_ERROR;
+                LogError("Unlock failed");
+                throw result;
             }
-            else
-            {
-                result = ::Unlock(m_lock);
-                if (result != LOCK_OK)
-                {
-                    LogError("Unlock failed");
-                }
-            }
-
-            return result;
         }
     };
 
@@ -76,25 +60,16 @@ namespace nodejs_module
     {
     private:
         const T& m_lockable;
-        LOCK_RESULT m_result;
 
     public:
         LockGuard(const T& lockable) : m_lockable{ lockable }
         {
-            m_result = m_lockable.Lock();
+            m_lockable.AcquireLock();
         }
 
         ~LockGuard()
         {
-            if (m_lockable.Unlock() != LOCK_OK)
-            {
-                LogError("Unlock failed");
-            }
-        }
-
-        LOCK_RESULT GetResult()
-        {
-            return m_result;
+            m_lockable.ReleaseLock();
         }
     };
 };
