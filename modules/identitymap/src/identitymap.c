@@ -427,19 +427,25 @@ static void IdentityMap_RepublishD2C(
 			if (Map_AddOrUpdate(newProperties, GW_DEVICENAME_PROPERTY, match->deviceId) != MAP_OK)
 			{
 				/*Codes_SRS_IDMAP_17_029: [If adding deviceName fails,IdentityMap_Receive shall deallocate all resources and return.]*/
-				LogError("Could not attach device name property to message");
+				LogError("Could not attach %s property to message", GW_DEVICENAME_PROPERTY);
 			}
 			/*Codes_SRS_IDMAP_17_030: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "deviceKey" and value of found deviceKey.]*/
 			else if (Map_AddOrUpdate(newProperties, GW_DEVICEKEY_PROPERTY, match->deviceKey) != MAP_OK)
 			{
 				/*Codes_SRS_IDMAP_17_031: [If adding deviceKey fails, IdentityMap_Receive shall deallocate all resources and return.]*/
-				LogError("Could not attach device key property to message");
+				LogError("Could not attach %s property to message", GW_DEVICEKEY_PROPERTY);
 			}
 			/*Codes_SRS_IDMAP_17_032: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "source" and value of "mapping".]*/
 			else if (Map_AddOrUpdate(newProperties, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE) != MAP_OK)
 			{
 				/*Codes_SRS_IDMAP_17_033: [If adding source fails, IdentityMap_Receive shall deallocate all resources and return.]*/
-				LogError("Could not attach source property to message");
+				LogError("Could not attach %s property to message", GW_SOURCE_PROPERTY);
+			}
+			/*Codes_SRS_IDMAP_17_053: [ IdentityMap_Receive shall call Map_Delete to remove the "macAddress" property. ]*/
+			else if (Map_Delete(newProperties, GW_MAC_ADDRESS_PROPERTY) != MAP_OK)
+			{
+				/*Codes_SRS_IDMAP_17_054: [ If deleting the MAC Address fails, IdentityMap_Receive shall deallocate all resources and return. ]*/
+				LogError("Could not remove %s property from message", GW_MAC_ADDRESS_PROPERTY);
 			}
 			else
 			{
@@ -480,13 +486,25 @@ static void IdentityMap_RepublishC2D(
 			if (Map_AddOrUpdate(newProperties, GW_MAC_ADDRESS_PROPERTY, match->macAddress) != MAP_OK)
 			{
 				/*Codes_SRS_IDMAP_17_052: [ If adding macAddress fails, IdentityMap_Receive shall deallocate all resources and return. ]*/
-				LogError("Could not attach MAC address property to message");
+				LogError("Could not attach %s property to message", GW_MAC_ADDRESS_PROPERTY);
 			}
 			/*Codes_SRS_IDMAP_17_032: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "source" and value of "mapping".]*/
 			else if (Map_AddOrUpdate(newProperties, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE) != MAP_OK)
 			{
 				/*Codes_SRS_IDMAP_17_033: [If adding source fails, IdentityMap_Receive shall deallocate all resources and return.]*/
-				LogError("Could not attach source property to message");
+				LogError("Could not attach %s property to message", GW_SOURCE_PROPERTY);
+			}
+			/*Codes_SRS_IDMAP_17_055: [ IdentityMap_Receive shall call Map_Delete to remove the "deviceName" property. ]*/
+			else if (Map_Delete(newProperties, GW_DEVICENAME_PROPERTY) != MAP_OK)
+			{
+				/*Codes_SRS_IDMAP_17_056: [ If deleting the device name fails, IdentityMap_Receive shall deallocate all resources and return. ]*/
+				LogError("Could not remove %s property from message", GW_DEVICENAME_PROPERTY);
+			}
+			/*Codes_SRS_IDMAP_17_057: [ IdentityMap_Receive shall call Map_Delete to remove the "deviceKey" property. ]*/
+			else if (Map_Delete(newProperties, GW_DEVICEKEY_PROPERTY) == MAP_INVALIDARG)
+			{
+				/*Codes_SRS_IDMAP_17_058: [ If deleting the device key does not return MAP_OK or MAP_KEYNOTFOUND, IdentityMap_Receive shall deallocate all resources and return. ]*/
+				LogError("Could not remove %s property from message", GW_DEVICEKEY_PROPERTY);
 			}
 			else
 			{
