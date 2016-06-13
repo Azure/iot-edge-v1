@@ -117,3 +117,26 @@ Module_GetAPIs
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 **SRS_DOTNET_04_021: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. **]**
+
+
+Module_DotNetHost_PublishMessage
+--------------------------------
+```c
+bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
+```
+
+**SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `bus` is NULL. **]**
+
+**SRS_DOTNET_04_029: [** `Module_DotNetHost_PublishMessage` shall return false if `sourceModule` is NULL.  **]**
+
+**SRS_DOTNET_04_023: [** `Module_DotNetHost_PublishMessage` shall return false if `source` is NULL, or size if lower than 0. **]**
+
+**SRS_DOTNET_04_024: [** `Module_DotNetHost_PublishMessage` shall create a message from `source` and size by invoking  `Message_CreateFromByteArray`. **]**
+
+**SRS_DOTNET_04_025: [** If `Message_CreateFromByteArray` fails, `Module_DotNetHost_PublishMessage` shall fail. **]**
+
+**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `MessageBus_Publish` passing bus, sourceModule, byte array and msgHandle. **]**
+
+**SRS_DOTNET_04_027: [** If `MessageBus_Publish` fail `Module_DotNetHost_PublishMessage` shall fail.  **]**
+
+**SRS_DOTNET_04_028: [** If `MessageBus_Publish` succeed `Module_DotNetHost_PublishMessage` shall succeed. **]**
