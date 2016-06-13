@@ -66,7 +66,7 @@ int helloWorldThread(void *param)
                         }
                         else
                         {
-                            (void)MessageBus_Publish(handleData->busHandle, helloWorldMessage);
+                            (void)MessageBus_Publish(handleData->busHandle, (MODULE_HANDLE)handleData, helloWorldMessage);
                             (void)Unlock(handleData->lockHandle);
                         }
                     }

@@ -70,7 +70,7 @@ DEFINE_ENUM(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
 extern MESSAGE_BUS_HANDLE MESSAGE_extern MESSAGE_BUS_HANDLE MessageBus_Create(void);
 extern void MessageBus_IncRef(MESSAGE_BUS_HANDLE bus);
 extern void MessageBus_DecRef(BUS_HANDLE bus);
-extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MESSAGE_HANDLE message);
+extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message);
 extern MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module, const MODULE_APIS* module_apis);
 extern MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module);
 extern void MessageBus_Destroy(MESSAGE_BUS_HANDLE bus);
@@ -157,6 +157,7 @@ static void module_publish_worker(void* user_data)
 ```C
 MESSAGE_BUS_RESULT MessageBus_Publish(
     MESSAGE_BUS_HANDLE bus,
+    MODULE_HANDLE source, 
     MESSAGE_HANDLE message
 );
 ```
@@ -166,6 +167,8 @@ MESSAGE_BUS_RESULT MessageBus_Publish(
 **SRS_MESSAGE_BUS_13_031: [** `MessageBus_Publish` shall acquire the lock `MESSAGE_BUS_HANDLE_DATA::modules_lock`. **]**
 
 **SRS_MESSAGE_BUS_13_032: [** `MessageBus_Publish` shall start a processing loop for every module in `MESSAGE_BUS_HANDLE_DATA::modules`.  **]**
+
+**SRS_MESSAGE_BUS_17_002: [** If `source` is not NULL, `MessageBus_Publish` shall not publish the message to the `MESSAGE_BUS_MODULEINFO::module` which matches `source`. **]**
 
 **SRS_MESSAGE_BUS_13_033: [** In the loop, the function shall first acquire the lock on `MESSAGE_BUS_MODULEINFO::mq_lock`. **]**
 

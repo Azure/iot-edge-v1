@@ -620,11 +620,11 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
 
         STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
             .IgnoreArgument(1);
+
+        whenShallCONSTBUFFER_Create_fail = 1;
+        STRICT_EXPECTED_CALL(CONSTBUFFER_Create(&fake, 1)); /* this is copying the buffer*/
         STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-
-		whenShallCONSTBUFFER_Create_fail = 1;
-		STRICT_EXPECTED_CALL(CONSTBUFFER_Create(&fake, 1)); /* this is copying the buffer*/
 
 
         ///act
@@ -809,10 +809,10 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
 
 		STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
-			.IgnoreArgument(1);
 
 		STRICT_EXPECTED_CALL(CONSTBUFFER_Clone(buffer)); /*this is copying the buffer*/
+		STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
 		///act
 		MESSAGE_HANDLE r = Message_CreateFromBuffer(&cfg);

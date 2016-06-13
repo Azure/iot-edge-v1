@@ -515,7 +515,7 @@ static void on_read_complete(
                                 | mac_address             | MAC address of the BLE device from which the data was read.   |
                                 | timestamp               | Timestamp indicating when the data was read.                  |
                             ]*/
-                            if (MessageBus_Publish(handle_data->bus, message) != MESSAGE_BUS_OK)
+                            if (MessageBus_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != MESSAGE_BUS_OK)
                             {
                                 LogError("MessageBus_Publish() failed");
                             }

@@ -1086,7 +1086,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
 {
     // publish a message on to the bus
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
-    auto result = MessageBus_Publish(input->bus, input->message);
+    auto result = MessageBus_Publish(input->bus, NULL, input->message);
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);
 
     // schedule module_publish_worker_calls_module_receive_Condition_Wait2 to be
@@ -1348,7 +1348,7 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 	auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
 	ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
 
-	result = MessageBus_Publish(bus, message);
+	result = MessageBus_Publish(bus, NULL, message);
 	ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);
 
     mocks.ResetAllCalls();
@@ -1661,7 +1661,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
-	auto result2 = MessageBus_Publish(bus, message);
+	auto result2 = MessageBus_Publish(bus, NULL, message);
     Message_Destroy(message);
     mocks.ResetAllCalls();
 
@@ -1860,7 +1860,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_with_null_bus)
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_Publish(NULL, (MESSAGE_HANDLE)0x1);
+    auto r1 = MessageBus_Publish(NULL, NULL, (MESSAGE_HANDLE)0x1);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
@@ -1876,7 +1876,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_with_null_message)
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_Publish((MESSAGE_BUS_HANDLE)0x1, NULL);
+    auto r1 = MessageBus_Publish((MESSAGE_BUS_HANDLE)0x1, NULL, NULL);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
@@ -1906,7 +1906,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_modules_lock_fails)
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_Publish(bus, message);
+    auto result = MessageBus_Publish(bus, NULL, message);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -1950,7 +1950,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_module_mq_lock_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, message);
+    result = MessageBus_Publish(bus, NULL, message);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -2004,7 +2004,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_push_back_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, message);
+    result = MessageBus_Publish(bus, NULL, message);
 
     ///assert
     ASSERT_ARE_EQUAL(int, result, MESSAGE_BUS_ERROR);
@@ -2058,7 +2058,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_condition_post_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, message);
+    result = MessageBus_Publish(bus, NULL, message);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -2118,7 +2118,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, message);
+    result = MessageBus_Publish(bus, NULL, message);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -2128,6 +2128,48 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
     Message_Destroy(message);
     MessageBus_RemoveModule(bus, fake_module);
     MessageBus_Destroy(bus);
+}
+
+//Tests_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, MessageBus_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]
+TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
+{
+	///arrange
+	CMessageBusMocks mocks;
+
+	auto bus = MessageBus_Create();
+
+	// create a message to send
+	unsigned char fake;
+	MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
+	auto message = Message_Create(&c);
+
+	auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+
+	mocks.ResetAllCalls();
+
+	// this is for MessageBus_Publish
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_get_next_item(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	///act
+	result = MessageBus_Publish(bus, fake_module, message);
+
+	///assert
+	ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Message_Destroy(message);
+	MessageBus_RemoveModule(bus, fake_module);
+	MessageBus_Destroy(bus);
 }
 
 END_TEST_SUITE(message_bus_unittests)
