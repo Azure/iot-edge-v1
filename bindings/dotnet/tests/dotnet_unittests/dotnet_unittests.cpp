@@ -1683,7 +1683,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///cleanup
 	}
 	
-	/* Test_SRS_DOTNET_04_003: [ DotNET_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
+	/* Tests_SRS_DOTNET_04_003: [ DotNET_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
 	TEST_FUNCTION(DotNET_Create_returns_NULL_when_dotnet_module_path_is_Null)
 	{
 		///arrage
