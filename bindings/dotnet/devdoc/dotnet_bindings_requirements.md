@@ -123,6 +123,8 @@ void DotNET_Destroy(MODULE_HANDLE module);
 ```
 **SRS_DOTNET_04_019: [** `DotNET_Destroy` shall do nothing if `module` is `NULL`. **]**
 
+**SRS_DOTNET_04_022: [** `DotNET_Destroy` shall call the `Destroy` C# method. **]**
+
 **SRS_DOTNET_04_020: [** `DotNET_Destroy` shall free all resources associated with the given module.. **]**
 
 Module_GetAPIs

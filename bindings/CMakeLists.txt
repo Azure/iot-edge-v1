@@ -3,6 +3,6 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
-if(${enable_dotnet_binding})
+if(WIN32)
     add_subdirectory(dotnet)
 endif()
