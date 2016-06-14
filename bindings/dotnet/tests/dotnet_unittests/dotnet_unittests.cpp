@@ -1436,7 +1436,7 @@ public:
 
 
 	MOCK_STATIC_METHOD_6(, HRESULT, InvokeMember_3, BSTR, name, enum BindingFlags, invokeAttr, struct _Binder *, Binder, VARIANT, Target, SAFEARRAY*, args_entry, VARIANT*, pRetVal)
-		MOCK_METHOD_END(HRESULT, S_OK);
+	MOCK_METHOD_END(HRESULT, S_OK);
 
 	//Safe Array mocks
 	MOCK_STATIC_METHOD_3(, SAFEARRAY *, myTest_SafeArrayCreateVector, VARTYPE, vt, LONG, lLbound, ULONG, cElements)
@@ -1769,7 +1769,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		bstr_t bstrCreateClientMethodName(L"Create");
 		variant_t emptyVariant(0);
-		whenShallnew_fail = currentnew_call + 971;
+		whenShallnew_fail = currentnew_call + 918;
 
 		mocks.ResetAllCalls();
 
@@ -1802,12 +1802,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -2304,135 +2298,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_GetType_MessageBusClass_fails)
-	{
-		///arrage
-		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
-		DOTNET_HOST_CONFIG dotNetConfig;
-		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-		dotNetConfig.dotnet_module_args = "module configuration";
-		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
-		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
-
-		mocks.ResetAllCalls();
-
-		STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, GetRuntime(DefaultCLRVersion, CLSID_CLRRunTime_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, IsLoadable(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, GetInterface(CLSID_CorRuntimeHost_UUID, ICorRuntimeHost_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, Start());
-
-		STRICT_EXPECTED_CALL(mocks, GetDefaultDomain(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, QueryInterface(AppDomainUUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrClientModuleAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrClientModuleClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-		.IgnoreArgument(2)
-	    .SetFailReturn((HRESULT)E_POINTER);
-
-		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
-
-		///assert
-		mocks.AssertActualAndExpectedCalls();
-		ASSERT_IS_NULL(result);
-
-		///cleanup
-	}
-
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_GetType_MessageClass_fails)
-	{
-		///arrage
-		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
-		DOTNET_HOST_CONFIG dotNetConfig;
-		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-		dotNetConfig.dotnet_module_args = "module configuration";
-		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
-		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
-		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
-
-		mocks.ResetAllCalls();
-
-		STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, GetRuntime(DefaultCLRVersion, CLSID_CLRRunTime_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, IsLoadable(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, GetInterface(CLSID_CorRuntimeHost_UUID, ICorRuntimeHost_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, Start());
-
-		STRICT_EXPECTED_CALL(mocks, GetDefaultDomain(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, QueryInterface(AppDomainUUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrClientModuleAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrClientModuleClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-				
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2)
-			.SetFailReturn((HRESULT)E_POINTER);
-
-
-		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
-
-		///assert
-		mocks.AssertActualAndExpectedCalls();
-		ASSERT_IS_NULL(result);
-
-		///cleanup
-	}
-
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayCreateVector_for_MessageBus_fails)
 	{
 		///arrage
@@ -2479,12 +2344,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1))
@@ -2548,12 +2407,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -2622,12 +2475,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -2700,12 +2547,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -2784,12 +2625,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
@@ -2866,12 +2701,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -2957,12 +2786,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -3052,12 +2875,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
@@ -3105,7 +2922,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	/* Tests_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
 	/* Tests_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
 	/* Tests_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
-	/* Tests_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type, AzureIoTGateway Message Class and Azure IoT Gateway Assembly and on DOTNET_HOST_HANDLE_DATA. ] */
+	/* Tests_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
 	/* Tests_SRS_DOTNET_04_013: [ A .NET Object conforming to the MessageBus interface defined shall be created: ] */
 	/* Tests_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the MessageBus object created and configuration->dotnet_module_args. ] */
 	TEST_FUNCTION(DotNET_Create_succeed)
@@ -3156,12 +2973,6 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageBusClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrAzureIoTGatewayMessageClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
@@ -3248,6 +3059,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3256,7 +3074,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((const unsigned char*)NULL);
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3270,6 +3088,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3282,7 +3107,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3297,6 +3122,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3312,7 +3144,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3327,6 +3159,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3346,7 +3185,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3360,6 +3199,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3381,7 +3227,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3395,6 +3241,13 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3422,7 +3275,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();

@@ -59,7 +59,7 @@ pointer to a `DOTNET_HOST_CONFIG` object.
 
 **SRS_DOTNET_04_009: [** `DotNET_Create` shall create an instance of .NET client Module and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
 
-**SRS_DOTNET_04_010: [** `DotNET_Create` shall save Client module Type, AzureIoTGateway Message Class and Azure IoT Gateway Assembly and on `DOTNET_HOST_HANDLE_DATA`. **]**
+**SRS_DOTNET_04_010: [** `DotNET_Create` shall save Client module Type and Azure IoT Gateway Assembly on `DOTNET_HOST_HANDLE_DATA`. **]**
 
 **SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created: **]**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
