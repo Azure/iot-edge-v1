@@ -40,17 +40,27 @@ pointer to a `DOTNET_HOST_CONFIG` object.
 
 
 **SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `bus` is `NULL`. **]**
+
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
+
 **SRS_DOTNET_04_003: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_path` is `NULL`. **]**
+
 **SRS_DOTNET_04_004: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_entry_class` is `NULL`. **]**
+
 **SRS_DOTNET_04_005: [** `DotNET_Create` shall return `NULL` if `configuration->dotnet_module_args` is `NULL`. **]**
+
 **SRS_DOTNET_04_006: [** `DotNET_Create` shall return `NULL` if an underlying API call fails. **]**
+
 **SRS_DOTNET_04_007: [** `DotNET_Create` shall return a non-`NULL` `MODULE_HANDLE` when successful. **]**
+
 **SRS_DOTNET_04_008: [** `DotNET_Create` shall allocate memory for an instance of the `DOTNET_HOST_HANDLE_DATA` structure and use that as the backing structure for the module handle. **]**
-**SRS_DOTNET_04_009: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_path` with a copy of `configuration->dotnet_module_path`. **]**
-**SRS_DOTNET_04_010: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_entry_class` from `configuration->dotnet_module_entry_class`. **]**
-**SRS_DOTNET_04_011: [** `DotNET_Create` shall construct and initialize the `STRING_HANDLE` member `DOTNET_HOST_CONFIG::dotnet_module_args` from `configuration->dotnet_module_args`. **]**
+
 **SRS_DOTNET_04_012: [** `DotNET_Create` shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
+
+**SRS_DOTNET_04_009: [** `DotNET_Create` shall create an instance of .NET client Module and save it on `DOTNET_HOST_HANDLE_DATA`. **]**
+
+**SRS_DOTNET_04_010: [** `DotNET_Create` shall save Client module Type and Azure IoT Gateway Assembly on `DOTNET_HOST_HANDLE_DATA`. **]**
+
 **SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created: **]**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
@@ -78,8 +88,11 @@ DotNET_Receive
 void DotNET_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
 ```
 **SRS_DOTNET_04_015: [** `DotNET_Receive` shall do nothing if `module` is `NULL`. **]**
+
 **SRS_DOTNET_04_016: [** `DotNET_Receive` shall do nothing if `message` is `NULL`. **]**
+
 **SRS_DOTNET_04_017: [** `DotNET_Receive` shall construct an instance of the `Message` interface as defined below: **]**
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
@@ -109,6 +122,9 @@ DotNET_Destroy
 void DotNET_Destroy(MODULE_HANDLE module);
 ```
 **SRS_DOTNET_04_019: [** `DotNET_Destroy` shall do nothing if `module` is `NULL`. **]**
+
+**SRS_DOTNET_04_022: [** `DotNET_Destroy` shall call the `Destroy` C# method. **]**
+
 **SRS_DOTNET_04_020: [** `DotNET_Destroy` shall free all resources associated with the given module.. **]**
 
 Module_GetAPIs
