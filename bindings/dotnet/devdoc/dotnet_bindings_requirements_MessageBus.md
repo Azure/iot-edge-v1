@@ -19,11 +19,14 @@ namespace Microsoft.Azure.IoT.Gateway
     {
         private long msgBusHandle;
 
+        private long moduleHandle
+
         /// <summary>
         ///     Constructor for MessageBus. This is used by the Native level, the .NET User will receive an object of this. 
         /// </summary>
         /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
-        public MessageBus(long msgBus);
+        /// <param name="sourceModuleHandle">Adress of the native moduleHandle, used internally.</param>
+        public MessageBus(long msgBus, long moduleHandle);
 
         /// <summary>
         ///     Publish a message into the gateway message bus. 
@@ -44,7 +47,9 @@ Creates a .NET Object of type Microsoft.Azure.IoT.Gateway.MessageBus
 
 **SRS_DOTNET_MESSAGEBUS_04_001: [** If msgBus is <= 0, MessageBus constructor shall throw a new ArgumentException **]**
 
-**SRS_DOTNET_MESSAGEBUS_04_002: [** If msgBus is greater than 0, MessageBus constructor shall save this value and succeed. **]**
+**SRS_DOTNET_MESSAGEBUS_04_007: [** If moduleHandle is <= 0, MessageBus constructor shall throw a new ArgumentException  **]**
+
+**SRS_DOTNET_MESSAGEBUS_04_002: [** If msgBus and moduleHandle is greater than 0, MessageBus constructor shall save this value and succeed. **]**
 
 
 Publish
@@ -59,6 +64,6 @@ Gets a byte array from a Message object and calls exported native function to pu
 
 **SRS_DOTNET_MESSAGEBUS_04_004: [** Publish shall not catch exception thrown by ToByteArray.  **]**
 
-**SRS_DOTNET_MESSAGEBUS_04_005: [** Publish shall call the native method `dotnetHost_PublishMessage` passing the msgBus value saved by it's constructor, the byte[] got from Message and the size of the byte array. **]**
+**SRS_DOTNET_MESSAGEBUS_04_005: [** Publish shall call the native method `Module_DotNetHost_PublishMessage` passing the msgBus and moduleHandle  value saved by it's constructor, the byte[] got from Message and the size of the byte array. **]**
 
 **SRS_DOTNET_MESSAGEBUS_04_006: [** If `Module_DotNetHost_PublishMessage` fails, Publish shall thrown an Application Exception with message saying that MessageBus Publish failed. **]**
