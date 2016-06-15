@@ -103,8 +103,8 @@ rem ----------------------------------------------------------------------------
 :usage
 echo build.cmd [options]
 echo options:
-echo  --config ^<value^>      [Debug] build configuration (e.g. Debug, Release)
-echo  --platform ^<value^>    [Win32] build platform (e.g. Win32, x64, ...)
-echo  --run-e2e-tests         run end-to-end tests
+echo  --config ^<value^>         [Debug] build configuration (e.g. Debug, Release)
+echo  --platform ^<value^>       [Win32] build platform (e.g. Win32, x64, ...)
+echo  --run-e2e-tests            run end-to-end tests
 goto :eof
 
