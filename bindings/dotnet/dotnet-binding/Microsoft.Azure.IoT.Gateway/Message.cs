@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.IoT.Gateway
 {
     /// <summary> Object that represents a message on the message bus. </summary>
-    public class Message
+    public class Message : IMessage
     {
         private byte[] Content { set; get; }
 

@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IGatewayModule.cs" />
+    <Compile Include="IMessage.cs" />
+    <Compile Include="InativeDotNetHostWrapper.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageBus.cs" />
     <Compile Include="nativeDotNetHostWrapper.cs" />

@@ -55,7 +55,7 @@ Creates a .NET Object of type Microsoft.Azure.IoT.Gateway.MessageBus
 Publish
 -------
 ```C#
-public void Publish(Message message);
+public void Publish(IMessage message);
 ```
 
 Gets a byte array from a Message object and calls exported native function to publish a message. 

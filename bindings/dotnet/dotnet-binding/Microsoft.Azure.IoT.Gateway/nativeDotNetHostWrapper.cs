@@ -9,9 +9,14 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.IoT.Gateway
 {
-    class nativeDotNetHostWrapper
+    class nativeDotNetHostWrapper : InativeDotNetHostWrapper
     {
         [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool Module_DotNetHost_PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
+        static extern bool Module_DotNetHost_PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
+
+        public bool PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, int size)
+        {
+            return Module_DotNetHost_PublishMessage(messageBus, sourceModule, source, size);
+        }
     }
 }
