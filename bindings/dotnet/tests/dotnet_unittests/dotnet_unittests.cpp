@@ -1462,9 +1462,13 @@ public:
 	MOCK_METHOD_END(HRESULT, S_OK);
 
 	//Message Mocks
-	MOCK_STATIC_METHOD_2(, const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size);	
+	MOCK_STATIC_METHOD_2(, const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size)	
 	     *size = 11;
 	MOCK_METHOD_END(const unsigned char*, (const unsigned char*)"AnyContent");
+
+	
+	MOCK_STATIC_METHOD_2(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
+	MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)0x42);
 
 	// memory
 	MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
@@ -1474,6 +1478,10 @@ public:
 	MOCK_STATIC_METHOD_1(, void, gballoc_free, void*, ptr)
 		BASEIMPLEMENTATION::gballoc_free(ptr);
 	MOCK_VOID_METHOD_END()
+
+	//MessageBus Mocks
+	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+	MOCK_METHOD_END(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK);
 };
 
 extern "C"
@@ -1522,6 +1530,11 @@ extern "C"
 		
 	//Message Mocks
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size);
+
+	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
+
+	//MessageBus Mocks
+	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 }
 
@@ -3622,6 +3635,128 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_bus_is_NULL_return_false)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage(NULL,(MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_sourceModule_is_NULL_return_false)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)NULL, (const unsigned char *)"AnyContent", 11);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_source_is_NULL_return_false)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, NULL, 11);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_size_is_lower_than_zero_return_false)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", -1);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	
+	/* Tests_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_Message_CreateFromByteArray_fail)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
+			.SetFailReturn((MESSAGE_HANDLE)NULL);
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_MessageBus_Publish_fail)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11));
+
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
+			.IgnoreArgument(3)
+			.SetFailReturn((MESSAGE_BUS_RESULT)MESSAGE_BUS_ERROR);
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+
+		///assert
+		ASSERT_IS_FALSE(result);
+
+		///cleanup
+	}
+
+	/* Tests_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from source and size by invoking Message_CreateFromByteArray. ] */
+	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, byte array and msgHandle. ] */
+	/* Tests_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_succeed)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11));
+
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		///act
+		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+
+		///assert
+		ASSERT_IS_TRUE(result);
 
 		///cleanup
 	}

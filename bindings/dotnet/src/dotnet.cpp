@@ -542,6 +542,39 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 	}
 }
 
+MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
+{
+	bool returnValue = false;
+	MESSAGE_HANDLE messageToPublish;
+
+	if (bus == NULL || sourceModule == NULL || source == NULL || size < 0)
+	{
+		/* Codes_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
+		/* Codes_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
+		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
+		LogError("invalid arg bus=%p, sourceModule=%p", bus);
+	}
+	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from source and size by invoking Message_CreateFromByteArray. ] */
+	else if((messageToPublish = Message_CreateFromByteArray(source, size)) == NULL)
+	{
+		/* Codes_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
+		LogError("Error trying to create message from Byte Array");
+	}
+	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, byte array and msgHandle. ] */
+	else if (MessageBus_Publish(bus, sourceModule, messageToPublish) != MESSAGE_BUS_OK)
+	{
+		/* Codes_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */
+		LogError("Error trying to publish message on MessageBus.");
+	}
+	else
+	{
+		/* Codes_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
+		returnValue = true;
+	}
+
+	return returnValue;
+}
+
 static const MODULE_APIS DOTNET_APIS_all =
 {
 	DotNET_Create,
