@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.IoT.Gateway
 {
     /// <summary> Object that represents a message on the message bus. </summary>
-    public class Message : IMessage
+    public class Message
     {
         private byte[] Content { set; get; }
 
@@ -20,7 +20,6 @@ namespace Microsoft.Azure.IoT.Gateway
 
         public Message()
         {
-            throw new NotImplementedException();
         }
 
         public Message(byte[] msgInByteArray)
@@ -38,7 +37,7 @@ namespace Microsoft.Azure.IoT.Gateway
             throw new NotImplementedException();
         }
 
-        public byte[] ToByteArray()
+        virtual public byte[] ToByteArray()
         {
             throw new NotImplementedException();
         }
