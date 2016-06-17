@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Microsoft.Azure.IoT.Gateway
 {
-    public interface InativeDotNetHostWrapper
+    public interface INativeDotNetHostWrapper
     {
-        bool PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
+        bool PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source);
     }
 }

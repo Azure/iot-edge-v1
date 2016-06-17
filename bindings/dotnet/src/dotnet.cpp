@@ -572,6 +572,11 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODU
 		returnValue = true;
 	}
 
+	if (messageToPublish)
+	{
+		Message_Destroy(messageToPublish);
+	}
+
 	return returnValue;
 }
 

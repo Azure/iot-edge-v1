@@ -16,7 +16,7 @@ namespace Microsoft.Azure.IoT.Gateway
 
         private long moduleHandle;
 
-        private InativeDotNetHostWrapper dotnetWrapper;
+        private INativeDotNetHostWrapper dotnetWrapper;
 
         /// <summary>
         ///   Constructor for MessageBus. This is used by Unit Tests, where we can mock Native Object calls.
@@ -24,15 +24,15 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
         /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
         /// <param name="myTestWrapper">Object of type INativeDotNetHostWrapper to simulate behavior of native wrappers.</param>
-        public MessageBus(long msgBus, long module, InativeDotNetHostWrapper myTestWrapper)
+        public MessageBus(long msgBus, long module, INativeDotNetHostWrapper nativeWrapper)
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_001: [ If msgBus is <= 0, MessageBus constructor shall throw a new ArgumentException ] */
-            if (msgBus < 0)
+            if (msgBus <= 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid Msg Bus.");
             }
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_007: [ If moduleHandle is <= 0, MessageBus constructor shall throw a new ArgumentException ] */
-            else if (module < 0)
+            else if (module <= 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid source Module Handle.");
             }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.IoT.Gateway
                 /* Codes_SRS_DOTNET_MESSAGEBUS_04_002: [ If msgBus and moduleHandle is greater than 0, MessageBus constructor shall save this value and succeed. ] */
                 this.msgBusHandle = msgBus;
                 this.moduleHandle = module;
-                this.dotnetWrapper = myTestWrapper;
+                this.dotnetWrapper = nativeWrapper;
             }
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
         /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
-        public MessageBus(long msgBus, long module) : this(msgBus, module, new nativeDotNetHostWrapper())
+        public MessageBus(long msgBus, long module) : this(msgBus, module, new NativeDotNetHostWrapper())
         {
 
         }
@@ -64,17 +64,17 @@ namespace Microsoft.Azure.IoT.Gateway
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_004: [ Publish shall not catch exception thrown by ToByteArray. ] */
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_003: [ Publish shall call the Message.ToByteArray() method to get the Message object translated to byte array. ] */
-            byte[] messageObjetct = message.ToByteArray();
+            byte[] messageObject = message.ToByteArray();
 
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_005: [ Publish shall call the native method Module_DotNetHost_PublishMessage passing the msgBus and moduleHandle value saved by it's constructor, the byte[] got from Message and the size of the byte array. ] */
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_006: [ If Module_DotNetHost_PublishMessage fails, Publish shall thrown an Application Exception with message saying that MessageBus Publish failed. ] */
             try
             {
-                this.dotnetWrapper.PublishMessage((IntPtr)this.msgBusHandle, (IntPtr)this.moduleHandle, messageObjetct, messageObjetct.Length);
+                this.dotnetWrapper.PublishMessage((IntPtr)this.msgBusHandle, (IntPtr)this.moduleHandle, messageObject);
             }
             catch(Exception e)
             {
-                throw new ApplicationException("Failed to Publish Message. Original Exception Message: " + e.Message);
+                throw new ApplicationException("Failed to Publish Message.", e);
             }
         }
 

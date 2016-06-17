@@ -111,10 +111,10 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             long msgBus = 0x42;
             long sourceModule = 0x42;
             Mock<IMessage> myMessageToPublish = new Mock<IMessage>();
-            Mock<InativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.InativeDotNetHostWrapper>();
+            Mock<INativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.INativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
-            myDotNetHostWrapperMock.Setup(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>(), It.IsAny<int>())).Throws(new Exception("Fake Exception."));
+            myDotNetHostWrapperMock.Setup(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>())).Throws(new Exception("Fake Exception."));
 
             ///act
             try
@@ -125,8 +125,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             {
                 //assert
                 myMessageToPublish.Verify(t => t.ToByteArray());
-                myDotNetHostWrapperMock.Verify(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>(), It.IsAny<int>()));
-                StringAssert.Contains(e.Message, "Fake Exception.");
+                myDotNetHostWrapperMock.Verify(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>()));
                 StringAssert.Contains(e.Message, "Failed to Publish Message.");
                 return;
             }
@@ -143,7 +142,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             long msgBus = 0x42;
             long sourceModule = 0x42;
             Mock<IMessage> myMessageToPublish = new Mock<IMessage>();
-            Mock<InativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.InativeDotNetHostWrapper>();
+            Mock<INativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.INativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
             ///act
@@ -151,7 +150,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
 
             //assert
             myMessageToPublish.Verify(t => t.ToByteArray());
-            myDotNetHostWrapperMock.Verify(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>(), It.IsAny<int>()));
+            myDotNetHostWrapperMock.Verify(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>()));
 
 
             ///cleanup
