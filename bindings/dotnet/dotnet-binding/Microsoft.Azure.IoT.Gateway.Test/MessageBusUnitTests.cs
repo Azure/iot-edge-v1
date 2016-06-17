@@ -81,7 +81,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             long msgBus = 0x42;
             long sourceModule = 0x42;
             var messageBusInstance = new MessageBus(msgBus, sourceModule);
-            Mock<IMessage> myMessageToPublish = new Mock<IMessage>();
+            Mock<Message> myMessageToPublish = new Mock<Message>();
 
             myMessageToPublish.Setup(t => t.ToByteArray()).Throws(new FormatException("Fake Exception."));
 
@@ -110,8 +110,8 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///arrage
             long msgBus = 0x42;
             long sourceModule = 0x42;
-            Mock<IMessage> myMessageToPublish = new Mock<IMessage>();
-            Mock<INativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.INativeDotNetHostWrapper>();
+            Mock<Message> myMessageToPublish = new Mock<Message>();
+            Mock<NativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.NativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
             myDotNetHostWrapperMock.Setup(t => t.PublishMessage((IntPtr)msgBus, (IntPtr)msgBus, It.IsAny<byte[]>())).Throws(new Exception("Fake Exception."));
@@ -141,8 +141,8 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///arrage
             long msgBus = 0x42;
             long sourceModule = 0x42;
-            Mock<IMessage> myMessageToPublish = new Mock<IMessage>();
-            Mock<INativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.INativeDotNetHostWrapper>();
+            Mock<Message> myMessageToPublish = new Mock<Message>();
+            Mock<NativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<NativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
             ///act

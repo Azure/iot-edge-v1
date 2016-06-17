@@ -16,15 +16,15 @@ namespace Microsoft.Azure.IoT.Gateway
 
         private long moduleHandle;
 
-        private INativeDotNetHostWrapper dotnetWrapper;
+        private NativeDotNetHostWrapper dotnetWrapper;
 
         /// <summary>
         ///   Constructor for MessageBus. This is used by Unit Tests, where we can mock Native Object calls.
         /// </summary>
         /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
         /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
-        /// <param name="myTestWrapper">Object of type INativeDotNetHostWrapper to simulate behavior of native wrappers.</param>
-        public MessageBus(long msgBus, long module, INativeDotNetHostWrapper nativeWrapper)
+        /// <param name="myTestWrapper">Object of type NativeDotNetHostWrapper.</param>
+        public MessageBus(long msgBus, long module, NativeDotNetHostWrapper nativeWrapper)
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_001: [ If msgBus is <= 0, MessageBus constructor shall throw a new ArgumentException ] */
             if (msgBus <= 0)
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="message">Object representing the message to be published into the bus.</param>
         /// <returns></returns>
-        public void Publish(IMessage message)
+        public void Publish(Message message)
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_004: [ Publish shall not catch exception thrown by ToByteArray. ] */
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_003: [ Publish shall call the Message.ToByteArray() method to get the Message object translated to byte array. ] */
