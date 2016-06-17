@@ -545,14 +545,14 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
 {
 	bool returnValue = false;
-	MESSAGE_HANDLE messageToPublish;
+	MESSAGE_HANDLE messageToPublish = NULL;
 
 	if (bus == NULL || sourceModule == NULL || source == NULL || size < 0)
 	{
 		/* Codes_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
 		/* Codes_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
 		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
-		LogError("invalid arg bus=%p, sourceModule=%p", bus);
+		LogError("invalid arg bus=%p, sourceModule=%p", bus, sourceModule);
 	}
 	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from source and size by invoking Message_CreateFromByteArray. ] */
 	else if((messageToPublish = Message_CreateFromByteArray(source, size)) == NULL)
@@ -572,7 +572,7 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODU
 		returnValue = true;
 	}
 
-	if (messageToPublish)
+	if (messageToPublish != NULL)
 	{
 		Message_Destroy(messageToPublish);
 	}

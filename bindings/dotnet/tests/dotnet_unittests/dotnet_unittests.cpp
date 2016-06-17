@@ -1470,6 +1470,9 @@ public:
 	MOCK_STATIC_METHOD_2(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
 	MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)0x42);
 
+	MOCK_STATIC_METHOD_1(, void, Message_Destroy, MESSAGE_HANDLE, message)
+	MOCK_VOID_METHOD_END()
+
 	// memory
 	MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
 		void* result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
@@ -1532,6 +1535,8 @@ extern "C"
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size);
 
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
+
+	DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
 
 	//MessageBus Mocks
 	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
@@ -3707,6 +3712,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		CDOTNETMocks mocks;
 
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
+			.IgnoreArgument(1)
 			.SetFailReturn((MESSAGE_HANDLE)NULL);
 
 		///act
@@ -3724,11 +3730,15 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 
-		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11));
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
+			.IgnoreArgument(1);
 
 		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
 			.SetFailReturn((MESSAGE_BUS_RESULT)MESSAGE_BUS_ERROR);
+
+		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
 		///act
 		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
@@ -3747,10 +3757,14 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///arrage
 		CDOTNETMocks mocks;
 
-		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11));
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
+			.IgnoreArgument(1);
 
 		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
 		///act
 		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
