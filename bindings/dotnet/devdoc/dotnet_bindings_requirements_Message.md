@@ -35,16 +35,16 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <summary>
         ///     Constructor for Message. This constructor receives a string as it's content and Properties.
         /// </summary>
-        /// <param name="content">String with the ByteArray with the Content and Properties of a message.</param>
+        /// <param name="content">content of the message represented as a string.</param>
         /// <param name="properties">Set of Properties that will be added to a message.</param>
         public Message(string content, Dictionary<string, string> properties);
 
         /// <summary>
         ///     Constructor for Message. This constructor receives a byte[] as it's content and Properties.
         /// </summary>
-        /// <param name="contentInByteArray">Content of the Message</param>
+        /// <param name="contentAsByteArray">Content of the Message</param>
         /// <param name="properties">Set of Properties that will be added to a message.</param>
-        public Message(byte[] contentInByteArray, Dictionary<string, string> properties);
+        public Message(byte[] contentAsByteArray, Dictionary<string, string> properties);
 
         public byte[] ToByteArray();
     }
@@ -61,13 +61,13 @@ public Message(byte[] contentInByteArray, Dictionary<string, string> properties)
 ```
 Creates a .NET Object of type Microsoft.Azure.IoT.Gateway.Message
 
-**SRS_DOTNET_MESSAGE_04_001: [** Message class shall have an empty constructor which will create a message with an empty `Content`and empry `Properties` **]**
+**SRS_DOTNET_MESSAGE_04_001: [** Message class shall have an empty constructor which will create a message with an empty `Content` and empty `Properties` **]**
 
-**SRS_DOTNET_MESSAGE_04_002: [** Message class shall have a constructor that receives a byte array which it's content format is described in [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) and it's `Content` and `Properties` are extracted and saved. **]**
+**SRS_DOTNET_MESSAGE_04_002: [** Message class shall have a constructor that receives a byte array with it's content format is described in [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) and it's `Content` and `Properties` are extracted and saved. **]**
 
-**SRS_DOTNET_MESSAGE_04_006: [** If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it will throw an `ArgumentException` **]**
+**SRS_DOTNET_MESSAGE_04_006: [** If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an `ArgumentException` **]**
 
-**SRS_DOTNET_MESSAGE_04_003: [** Message class shall have a constructor that receives a content as string and properties and store it. This string will be converted to byte array based on System.Text.Encoding.UTF8.GetBytes().  **]**
+**SRS_DOTNET_MESSAGE_04_003: [** Message class shall have a constructor that receives a content as string and properties and store it. This string shall be converted to byte array based on System.Text.Encoding.UTF8.GetBytes().  **]**
 
 **SRS_DOTNET_MESSAGE_04_004: [** Message class shall have a constructor that receives a content as byte[] and properties, storing them. **]**
 
@@ -80,3 +80,5 @@ public byte[] ToByteArray();
 
 //Description here. 
 **SRS_DOTNET_MESSAGE_04_005: [** Message Class shall have a ToByteArray method which will convert it's byte array `Content` and it's `Properties` to a byte[] which format is described at [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) **]**
+
+**SRS_DOTNET_MESSAGE_04_007: [** ToByteArray() shall throw if any of the utilities used to covert the message to byte array throw. **]**
