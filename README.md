@@ -1,3 +1,5 @@
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments
+
 # Beta Azure IoT Gateway SDK - Readme
 This repository contains the infrastructure and modules to create IoT gateway solutions. The SDK can be extended to create gateways tailored to any end to end scenario.
 
