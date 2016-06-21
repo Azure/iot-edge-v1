@@ -14,17 +14,12 @@ Types
 ```C#
 namespace Microsoft.Azure.IoT.Gateway
 {
-    private byte[] Content { set; get; }
-
-    private Dictionary<string, string> Properties { set; get; }
-
     /// <summary> Object that represents a message on the message bus. </summary>
     public class Message
     {
-        /// <summary>
-        ///    Default constructor for Message. This would be an Empty message. 
-        /// </summary>
-        public Message();
+        public byte[] Content { get; }
+
+        public Dictionary<string, string> Properties { get; }
 
         /// <summary>
         ///     Constructor for Message. This receives a byte array (defined at spec [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md)).
@@ -61,9 +56,9 @@ public Message(byte[] contentInByteArray, Dictionary<string, string> properties)
 ```
 Creates a .NET Object of type Microsoft.Azure.IoT.Gateway.Message
 
-**SRS_DOTNET_MESSAGE_04_001: [** Message class shall have an empty constructor which will create a message with an empty `Content` and empty `Properties` **]**
+**SRS_DOTNET_MESSAGE_04_008: [** If any parameter is null, constructor shall throw a `ArgumentNullException` **]**
 
-**SRS_DOTNET_MESSAGE_04_002: [** Message class shall have a constructor that receives a byte array with it's content format is described in [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) and it's `Content` and `Properties` are extracted and saved. **]**
+**SRS_DOTNET_MESSAGE_04_002: [** Message class shall have a constructor that receives a byte array with it's content format as described in [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) and it's `Content` and `Properties` are extracted and saved. **]**
 
 **SRS_DOTNET_MESSAGE_04_006: [** If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an `ArgumentException` **]**
 
@@ -78,7 +73,6 @@ ToByteArray
 public byte[] ToByteArray();
 ```
 
-//Description here. 
-**SRS_DOTNET_MESSAGE_04_005: [** Message Class shall have a ToByteArray method which will convert it's byte array `Content` and it's `Properties` to a byte[] which format is described at [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) **]**
+Serializes the message into a byte array according to format described at: [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md)
 
-**SRS_DOTNET_MESSAGE_04_007: [** ToByteArray() shall throw if any of the utilities used to covert the message to byte array throw. **]**
+**SRS_DOTNET_MESSAGE_04_005: [** Message Class shall have a ToByteArray method which will convert it's byte array `Content` and it's `Properties` to a byte[] which format is described at [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md) **]**
