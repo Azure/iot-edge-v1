@@ -18,7 +18,7 @@ namespace Microsoft.Azure.IoT.Gateway
 
         public Dictionary<string, string> Properties { get; }
 
-        private byte[] readNullTerminatedByte(MemoryStream bis)
+        private byte[] readNullTerminatedString(MemoryStream bis)
         {
             ArrayList byteArray = new ArrayList();
 
@@ -73,12 +73,6 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <param name="msgInByteArray">ByteArray with the Content and Properties of a message.</param>
         public Message(byte[] msgAsByteArray)
         {
-            //Requirement: 
-            //- 2 (0xA1 0x60) = fixed header
-            //- 4(0x00 0x00 0x00 0x0E) = arrray size[14 bytes in total]
-            //- 4(0x00 0x00 0x00 0x00) = 0 properties that follow
-            //- 4(0x00 0x00 0x00 0x00) = 0 bytes of message content
-
             if (msgAsByteArray == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
@@ -144,8 +138,8 @@ namespace Microsoft.Azure.IoT.Gateway
                         {
                             try
                             {
-                                byte[] key = readNullTerminatedByte(stream);
-                                byte[] value = readNullTerminatedByte(stream);
+                                byte[] key = readNullTerminatedString(stream);
+                                byte[] value = readNullTerminatedString(stream);
                                 this.Properties.Add(System.Text.Encoding.UTF8.GetString(key, 0, key.Length), System.Text.Encoding.UTF8.GetString(value, 0, value.Length));
                             }
                             catch(ArgumentException e)
@@ -264,10 +258,10 @@ namespace Microsoft.Azure.IoT.Gateway
         private int getPropertiesByteAmount()
         {
             int sizeOfPropertiesInBytes = 0;
-            foreach (KeyValuePair<string, string> propertiItem in this.Properties)
+            foreach (KeyValuePair<string, string> propertyItem in this.Properties)
             {
-                sizeOfPropertiesInBytes += propertiItem.Key.Length + 1;
-                sizeOfPropertiesInBytes += propertiItem.Value.Length + 1;
+                sizeOfPropertiesInBytes += propertyItem.Key.Length + 1;
+                sizeOfPropertiesInBytes += propertyItem.Value.Length + 1;
             }
 
             return sizeOfPropertiesInBytes;
@@ -303,13 +297,6 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         virtual public byte[] ToByteArray()
         {
-            //Now this is the point where I will serialize a message. 
-            //Requirement: 
-            //- 2 (0xA1 0x60) = fixed header
-            // -4(0x00 0x00 0x00 0x0E) = arrray size[14 bytes in total]
-            //- 4(0x00 0x00 0x00 0x00) = 0 properties that follow
-            //- 4(0x00 0x00 0x00 0x00) = 0 bytes of message content
-
             /* Codes_SRS_DOTNET_MESSAGE_04_005: [ Message Class shall have a ToByteArray method which will convert it's byte array Content and it's Properties to a byte[] which format is described at message_requirements.md ] */
             //1-Calculate the size of the array;
             int sizeOfArray = 2 + 4 + 4 + getPropertiesByteAmount() + 4 + this.Content.Length;
