@@ -10,14 +10,6 @@ namespace Microsoft.Azure.IoT.Gateway.Test
     [TestClass]
     public class MessageUnitTests
     {
-        byte[] notFail____minimalMessage =
-        {
-            0xA1, 0x60,             /*header*/
-            0x00, 0x00, 0x00, 14,   /*size of this array*/
-            0x00, 0x00, 0x00, 0x00, /*zero properties*/
-            0x00, 0x00, 0x00, 0x00  /*zero message content size*/
-        };
-
         /* Tests_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
         [TestMethod]
         public void Message_byteArrayConstructor_with_null_arg_throw()
