@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.IoT.Gateway;
 using Moq;
@@ -6,10 +9,197 @@ using System.Collections;
 
 namespace Microsoft.Azure.IoT.Gateway.Test
 {
-
     [TestClass]
     public class MessageUnitTests
     {
+        //Utility implementation
+        private byte[] buildMsgAsByteArray(int desiredNumberOfProperties, int desiredContentSize)
+        {
+            Random randomize = new Random();
+
+            //1-Calculate the size of the array;
+            int sizeOfArray = 2 + 4 + 4 + (13*desiredNumberOfProperties) + 4 + desiredContentSize;
+
+            //2-Create the byte array;
+            byte[] returnByteArray = new Byte[sizeOfArray];
+            int currentIndex = 0;
+
+            //3-Fill the first 2 bytes with 0xA1 and 0x60
+            returnByteArray[currentIndex++] = 0xA1;
+            returnByteArray[currentIndex++] = 0x60;
+
+            //4-Fill the 4 bytes with the array size;
+            byte[] sizeOfArrayByteArray = BitConverter.GetBytes(sizeOfArray);
+            Array.Reverse(sizeOfArrayByteArray); //Have to reverse because this is not MSB and needs to be.
+            returnByteArray[currentIndex++] = sizeOfArrayByteArray[0];
+            returnByteArray[currentIndex++] = sizeOfArrayByteArray[1];
+            returnByteArray[currentIndex++] = sizeOfArrayByteArray[2];
+            returnByteArray[currentIndex++] = sizeOfArrayByteArray[3];
+
+            //5-Fill the 4 bytes with the amount of properties;
+            byte[] numberOfPropertiesInByteArray = BitConverter.GetBytes(desiredNumberOfProperties);
+            Array.Reverse(numberOfPropertiesInByteArray); //Have to reverse because this is not MSB and needs to be. 
+            returnByteArray[currentIndex++] = numberOfPropertiesInByteArray[0];
+            returnByteArray[currentIndex++] = numberOfPropertiesInByteArray[1];
+            returnByteArray[currentIndex++] = numberOfPropertiesInByteArray[2];
+            returnByteArray[currentIndex++] = numberOfPropertiesInByteArray[3];
+
+
+            //6-Fill the bytes with content from key/value of properties (null terminated string separated);
+           
+            //Fill properties with random content.
+            for (int i = 0; i < desiredNumberOfProperties; i++)
+            {
+                //1st translate the number into string. 
+                string iString = (i+1).ToString();
+                char[] key = iString.ToCharArray();
+
+                switch(key.Length)
+                {
+                    case 1:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        break;
+                    case 2:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        break;
+                    case 3:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        break;
+                    case 4:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        break;
+                    case 5:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        break;
+                    case 6:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        returnByteArray[currentIndex++] = (byte)key[5];
+                        break;
+                    case 7:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        returnByteArray[currentIndex++] = (byte)key[5];
+                        returnByteArray[currentIndex++] = (byte)key[6];
+                        break;
+                    case 8:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        returnByteArray[currentIndex++] = (byte)key[5];
+                        returnByteArray[currentIndex++] = (byte)key[6];
+                        returnByteArray[currentIndex++] = (byte)key[7];
+                        break;
+                    case 9:
+                        returnByteArray[currentIndex++] = (byte)'0';
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        returnByteArray[currentIndex++] = (byte)key[5];
+                        returnByteArray[currentIndex++] = (byte)key[6];
+                        returnByteArray[currentIndex++] = (byte)key[7];
+                        returnByteArray[currentIndex++] = (byte)key[8];
+                        break;
+                    case 10: //This is for 2G size of message with parameter only
+                        returnByteArray[currentIndex++] = (byte)key[0];
+                        returnByteArray[currentIndex++] = (byte)key[1];
+                        returnByteArray[currentIndex++] = (byte)key[2];
+                        returnByteArray[currentIndex++] = (byte)key[3];
+                        returnByteArray[currentIndex++] = (byte)key[4];
+                        returnByteArray[currentIndex++] = (byte)key[5];
+                        returnByteArray[currentIndex++] = (byte)key[6];
+                        returnByteArray[currentIndex++] = (byte)key[7];
+                        returnByteArray[currentIndex++] = (byte)key[8];
+                        returnByteArray[currentIndex++] = (byte)key[9];
+                        break;
+                    default:
+                        throw new Exception("Maximum number of property reached");
+                }
+
+                returnByteArray[currentIndex++] = 0;
+                returnByteArray[currentIndex++] = (byte)randomize.Next(1, 254);
+                returnByteArray[currentIndex++] = 0;
+            }
+            //7-Fill the amount of bytes on the content in 4 bytes after the properties; 
+            byte[] contentSizeInByteArray = BitConverter.GetBytes(desiredContentSize);
+            Array.Reverse(contentSizeInByteArray); //Have to reverse because this is not MSB and needs to be. 
+            returnByteArray[currentIndex++] = contentSizeInByteArray[0];
+            returnByteArray[currentIndex++] = contentSizeInByteArray[1];
+            returnByteArray[currentIndex++] = contentSizeInByteArray[2];
+            returnByteArray[currentIndex++] = contentSizeInByteArray[3];
+
+            for (int i = 0; i < desiredContentSize; i++)
+            {
+                returnByteArray[currentIndex++] = (byte)randomize.Next(1, 254);
+            }
+
+            return returnByteArray;
+        }
+
         /* Tests_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
         [TestMethod]
         public void Message_byteArrayConstructor_with_null_arg_throw()
@@ -294,7 +484,67 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///cleanup
         }
 
-        
+        /* Tests_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format as described in message_requirements.md and it's Content and Properties are extracted and saved. ] */
+        [TestMethod]
+        public void Message_byteArrayConstructor_notFail__1000Properties_count_2bytes_Succeed()
+        {
+            ///arrage
+            byte[] msgToTest = buildMsgAsByteArray(1000, 2);
+
+            ///act
+            var messageInstance = new Message(msgToTest);
+
+            ///Assert
+            Assert.AreEqual(2, messageInstance.Content.GetLength(0));
+            Assert.AreEqual(1000, messageInstance.Properties.Count);
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format as described in message_requirements.md and it's Content and Properties are extracted and saved. ] */
+        [TestMethod]
+        public void Message_byteArrayConstructor_notFail__UnicodeKeyAndValueProperty_2bytes_Succeed()
+        {
+            ///arrage
+            byte[] notFail__UnicodeValueAndKeyProperty_2bytes =
+            {
+                0xA1, 0x60,             /*header*/
+                0x00, 0x00, 0x00, 36,   /*size of this array*/
+                0x00, 0x00, 0x00, 0x01, /*two properties*/
+                0xED, 0x95, 0x9C, 0xEA, 0xB5, 0xAD, 0xEC, 0x96, 0xB4, 0x00,
+                0xE6, 0x97, 0xA5, 0xE6, 0x9C, 0xAC, 0xE8, 0xAA, 0x9E, 0x00,
+                0x00, 0x00, 0x00, 0x02,  /*1 message content size*/
+                (byte)'3',(byte)'4'
+            };
+
+            ///act
+            var messageInstance = new Message(notFail__UnicodeValueAndKeyProperty_2bytes);
+
+            ///Assert
+            Assert.AreEqual(2, messageInstance.Content.GetLength(0));
+            Assert.AreEqual(1, messageInstance.Properties.Count);
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format as described in message_requirements.md and it's Content and Properties are extracted and saved. ] */
+        [TestMethod]
+        public void Message_byteArrayConstructor_notFail__1Properties_count_2MBbytes_Succeed()
+        {
+            ///arrage
+            byte[] msgToTest = buildMsgAsByteArray(1, 2000000);
+
+            ///act
+            var messageInstance = new Message(msgToTest);
+
+            ///Assert
+            Assert.AreEqual(2000000, messageInstance.Content.GetLength(0));
+            Assert.AreEqual(1, messageInstance.Properties.Count);
+
+            ///cleanup
+        }
+
+
         /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
         [TestMethod]
         public void Message_byteArrayConstructor_when_first_byte_is_not_0xA1_throws()
@@ -391,36 +641,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///cleanup
         }
 
-        
-        /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
-        [TestMethod]
-        public void Message_byteArrayConstructor_throws_when_numberOfProperties_is_int32_max()
-        {
-            ///arrage
-            byte[] fail_PropertyNumberIntMax =
-            {
-                0xA1, 0x60,             /*header*/
-                0x00, 0x00, 0x00, 14,   /*size of this array*/
-                0x7F, 0xFF, 0xFF, 0xFF, /*INT32_MAX properties*/
-                0x00, 0x00, 0x00, 0x00  /*zero message content size*/
-            };
-
-            ///act
-            try
-            {
-                var messageInstance = new Message(fail_PropertyNumberIntMax);
-            }
-            catch (ArgumentException e)
-            {
-                ///assert
-                StringAssert.Contains(e.Message, "Number of properties can't be more than MAXINT.");
-                return;
-            }
-            Assert.Fail("No exception was thrown.");
-
-            ///cleanup
-        }
-
+       
         /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
         [TestMethod]
         public void Message_byteArrayConstructor_throws_when_numberOfProperties_is_negative()
@@ -606,6 +827,34 @@ namespace Microsoft.Azure.IoT.Gateway.Test
 
         /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
         [TestMethod]
+        public void Message_byteArrayConstructor_throws_with_1_propertycount_but_no_property_present()
+        {
+            ///arrage
+            byte[] fail_propertyCount1ButNoProperty =
+            {
+                0xA1, 0x60,             /*header*/
+                0x00, 0x00, 0x00, 10,   /*size of this array*/
+                0x00, 0x00, 0x00, 0x01 /*one property*/
+            };
+
+            ///act
+            try
+            {
+                var messageInstance = new Message(fail_propertyCount1ButNoProperty);
+            }
+            catch (ArgumentException e)
+            {
+                ///assert
+                StringAssert.Contains(e.Message, "Invalid byte array size.");
+                return;
+            }
+            Assert.Fail("No exception was thrown.");
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+        [TestMethod]
         public void Message_byteArrayConstructor_throws_with_13_size_fails()
         {
             ///arrage
@@ -688,6 +937,64 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             {
                 ///assert
                 StringAssert.Contains(e.Message, "Could not read contentLength.");
+                return;
+            }
+            Assert.Fail("No exception was thrown.");
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+        [TestMethod]
+        public void Message_byteArrayConstructor_throws_when_numberOfProperties_is_int32_max()
+        {
+            ///arrage
+            byte[] fail_PropertyNumberIntMax =
+            {
+                0xA1, 0x60,             /*header*/
+                0x00, 0x00, 0x00, 14,   /*size of this array*/
+                0x7F, 0xFF, 0xFF, 0xFF, /*INT32_MAX properties*/
+                0x00, 0x00, 0x00, 0x00  /*zero message content size*/
+            };
+
+            ///act
+            try
+            {
+                var messageInstance = new Message(fail_PropertyNumberIntMax);
+            }
+            catch (ArgumentException e)
+            {
+                ///assert
+                StringAssert.Contains(e.Message, "Number of properties can't be more than MAXINT.");
+                return;
+            }
+            Assert.Fail("No exception was thrown.");
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+        [TestMethod]
+        public void Message_byteArrayConstructor_throws_when_msgSizeif_int32_max()
+        {
+            ///arrage
+            byte[] fail_PropertyNumberIntMax =
+            {
+                0xA1, 0x60,             /*header*/
+                0x7F, 0xFF, 0xFF, 0xFF,   /*size of this array is INT32_MAX*/
+                0x7F, 0xFF, 0xFF, 0xFF, /*INT32_MAX properties*/
+                0x00, 0x00, 0x00, 0x00  /*zero message content size*/
+            };
+
+            ///act
+            try
+            {
+                var messageInstance = new Message(fail_PropertyNumberIntMax);
+            }
+            catch (ArgumentException e)
+            {
+                ///assert
+                StringAssert.Contains(e.Message, "Size of MsgArray can't be more than MAXINT.");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -1205,6 +1512,61 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///cleanup
         }
 
+        /* Tests_SRS_DOTNET_MESSAGE_04_005: [ Message Class shall have a ToByteArray method which will convert it's byte array Content and it's Properties to a byte[] which format is described at message_requirements.md ] */
+        [TestMethod]
+        public void Message_MessageConstructor_with_null_arg_Throw()
+        {
+            ///arrage
+
+            ///act
+            try
+            {
+                var messageInstance = new Message((Message)null);
+            }
+            catch (ArgumentNullException e)
+            {
+                ///assert
+                StringAssert.Contains(e.Message, "message cannot be null");
+                return;
+            }
+            Assert.Fail("No exception was thrown.");
+
+
+            ///cleanup
+        }
+
+
+        [TestMethod]
+        public void Message_MessageConstructor_withValidMessage()
+        {
+            ///arrage
+
+            var inputByteArray = new byte[1];
+            inputByteArray[0] = (byte)'A';
+            var inputProperties = new System.Collections.Generic.Dictionary<string, string>();
+
+            inputProperties.Add("Prop1", "Value1");
+            inputProperties.Add("Prop2", "Value2");
+            Message secondMessage;
+
+            {
+                var messageInstance = new Message(inputByteArray, inputProperties);
+                ///act
+
+                secondMessage = new Message(messageInstance);
+            }
+
+
+
+
+            ///act
+            Assert.AreEqual(inputByteArray, secondMessage.Content);
+            Assert.AreEqual(inputByteArray[0], secondMessage.Content[0]);
+            Assert.AreEqual(2, secondMessage.Properties.Count);
+            Assert.AreEqual("Value1", secondMessage.Properties["Prop1"]);
+            Assert.AreEqual("Value2", secondMessage.Properties["Prop2"]);
+            ///cleanup
+        }
     }
 }
 
