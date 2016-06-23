@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.IoT.Gateway;
 using Moq;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.IoT.Gateway.Test
 {
@@ -81,7 +85,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             long msgBus = 0x42;
             long sourceModule = 0x42;
             var messageBusInstance = new MessageBus(msgBus, sourceModule);
-            Mock<Message> myMessageToPublish = new Mock<Message>();
+            Mock<Message> myMessageToPublish = new Mock<Message>(new byte[0], new Dictionary<string, string>());
 
             myMessageToPublish.Setup(t => t.ToByteArray()).Throws(new FormatException("Fake Exception."));
 
@@ -110,7 +114,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///arrage
             long msgBus = 0x42;
             long sourceModule = 0x42;
-            Mock<Message> myMessageToPublish = new Mock<Message>();
+            Mock<Message> myMessageToPublish = new Mock<Message>(new byte[0], new Dictionary<string, string>());
             Mock<NativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<Gateway.NativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
@@ -141,7 +145,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             ///arrage
             long msgBus = 0x42;
             long sourceModule = 0x42;
-            Mock<Message> myMessageToPublish = new Mock<Message>();
+            Mock<Message> myMessageToPublish = new Mock<Message>(new byte[0], new Dictionary<string, string>());
             Mock<NativeDotNetHostWrapper> myDotNetHostWrapperMock = new Mock<NativeDotNetHostWrapper>();
             var messageBusInstance = new MessageBus(msgBus, sourceModule, myDotNetHostWrapperMock.Object);
 
