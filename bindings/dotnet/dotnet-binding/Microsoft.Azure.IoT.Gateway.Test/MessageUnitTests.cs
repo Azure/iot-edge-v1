@@ -755,7 +755,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             catch (ArgumentException e)
             {
                 ///assert
-                StringAssert.Contains(e.Message, "Could not parse Properties(key or value)");
+                StringAssert.Contains(e.Message, "Could not parse Properties(key)");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -786,7 +786,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             catch (ArgumentException e)
             {
                 ///assert
-                StringAssert.Contains(e.Message, "Could not parse Properties(key or value)");
+                StringAssert.Contains(e.Message, "Could not parse Properties(value)");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -817,7 +817,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             catch (ArgumentException e)
             {
                 ///assert
-                StringAssert.Contains(e.Message, "Could not parse Properties(key or value)");
+                StringAssert.Contains(e.Message, "Could not parse Properties(value)");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -1114,6 +1114,27 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             Assert.AreEqual(2, messageInstance.Properties.Count);
             Assert.AreEqual("Value1", messageInstance.Properties["Prop1"]);
             Assert.AreEqual("Value2", messageInstance.Properties["Prop2"]);
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_003: [ Message class shall have a constructor that receives a content as string and properties and store it. This string shall be converted to byte array based on System.Text.Encoding.UTF8.GetBytes(). ] */
+        [TestMethod]
+        public void Message_StringAndPropertiesConstructor_UniCode_Properties_Succeed()
+        {
+            ///arrage
+            var inputProperties = new System.Collections.Generic.Dictionary<string, string>();
+
+            inputProperties.Add("辉煌的混蛋", "辉煌的混蛋");
+            inputProperties.Add("辉煌的混", "辉煌的混");
+
+            ///act
+            var messageInstance = new Message("辉煌的混蛋", inputProperties);
+
+            Assert.AreEqual("辉煌的混蛋", System.Text.Encoding.UTF8.GetString(messageInstance.Content));
+            Assert.AreEqual(2, messageInstance.Properties.Count);
+            Assert.AreEqual("辉煌的混蛋", messageInstance.Properties["辉煌的混蛋"]);
+            Assert.AreEqual("辉煌的混", messageInstance.Properties["辉煌的混"]);
 
             ///cleanup
         }
@@ -1480,6 +1501,30 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             Assert.AreEqual(64, byteArrayInstance.Length);
             Assert.IsTrue(StructuralComparisons.StructuralEqualityComparer.Equals(notFail__2Property_2bytes, byteArrayInstance));
 
+
+            ///cleanup
+        }
+
+        /* Tests_SRS_DOTNET_MESSAGE_04_005: [ Message Class shall have a ToByteArray method which will convert it's byte array Content and it's Properties to a byte[] which format is described at message_requirements.md ] */
+        [TestMethod]
+        public void Message_ToByteArray_with_ChineseProperties_2bytes_happy_path()
+        {
+            ///arrage
+            var inputProperties = new System.Collections.Generic.Dictionary<string, string>();
+
+            inputProperties.Add("辉煌的混蛋", "辉煌的混蛋");
+            inputProperties.Add("辉煌的混", "辉煌的混");
+            var messageInstance = new Message("辉煌的混蛋", inputProperties);
+
+            ///act
+            var byteArrayInstance = messageInstance.ToByteArray();
+
+            var messageToValidate = new Message(byteArrayInstance);
+
+            Assert.AreEqual("辉煌的混蛋", System.Text.Encoding.UTF8.GetString(messageToValidate.Content));
+            Assert.AreEqual(2, messageToValidate.Properties.Count);
+            Assert.AreEqual("辉煌的混蛋", messageToValidate.Properties["辉煌的混蛋"]);
+            Assert.AreEqual("辉煌的混", messageToValidate.Properties["辉煌的混"]);
 
             ///cleanup
         }

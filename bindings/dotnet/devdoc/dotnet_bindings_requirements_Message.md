@@ -41,6 +41,9 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <param name="properties">Set of Properties that will be added to a message.</param>
         public Message(byte[] contentAsByteArray, Dictionary<string, string> properties);
 
+        /// <summary>
+        ///    Converts the message into a byte array (defined at spec [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md)).
+        /// </summary>
         public byte[] ToByteArray();
     }
 }

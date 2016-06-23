@@ -18,33 +18,35 @@ namespace Microsoft.Azure.IoT.Gateway
 
         public Dictionary<string, string> Properties { get; }
 
-        private byte[] readNullTerminatedString(MemoryStream bis)
+        private bool readNullTerminatedString(MemoryStream bis, out byte[] output)
         {
-            ArrayList byteArray = new ArrayList();
+            List<byte> list = new List<byte>();
+            bool result = false;
+            output = null;
 
             byte b = (byte)bis.ReadByte();
 
-            if (b == 255)
+            if (b != 255)
             {
-                throw new ArgumentException("Reached and of stream and '\0' was not found.");
-            }
-
-            while (b != '\0')
-            {
-                byteArray.Add(b);
-                b = (byte)bis.ReadByte();
-
-                if (b == 255)
+                bool errorFound = false;
+                while (b != '\0')
                 {
-                    throw new ArgumentException("Reached and of stream and '\0' was not found.");
-                }
-            }
+                    list.Add(b);
+                    b = (byte)bis.ReadByte();
 
-            byte[] result = new byte[byteArray.Count];
-            for (int index = 0; index < result.Length; index++)
-            {
-                result[index] = (byte)byteArray[index];
-            }
+                    if (b == 255)
+                    {
+                        errorFound = true;
+                        break;
+                    }
+                }
+
+                if (!errorFound)
+                {
+                    output = list.ToArray();
+                    result = true;                        
+                }
+            };
 
             return result;
         }
@@ -139,19 +141,21 @@ namespace Microsoft.Azure.IoT.Gateway
                         //Here is where we are going to read the properties.
                         for (int count = 0; count < propCount; count++)
                         {
-                            try
-                            {
-                                byte[] key = readNullTerminatedString(stream);
-                                byte[] value = readNullTerminatedString(stream);
-                                this.Properties.Add(System.Text.Encoding.ASCII.GetString(key, 0, key.Length), System.Text.Encoding.ASCII.GetString(value, 0, value.Length));
-                            }
-                            catch(ArgumentException e)
+                            byte[] key;
+                            if(!readNullTerminatedString(stream, out key))
                             {
                                 /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
-                                throw new ArgumentException("Could not parse Properties(key or value)", e);
+                                throw new ArgumentException("Could not parse Properties(key)");
                             }
 
+                            byte[] value;
+                            if (!readNullTerminatedString(stream, out value))
+                            {
+                                /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+                                throw new ArgumentException("Could not parse Properties(value)");
+                            }
 
+                            this.Properties.Add(System.Text.Encoding.UTF8.GetString(key, 0, key.Length), System.Text.Encoding.UTF8.GetString(value, 0, value.Length));
                         }
                     }
 
@@ -271,8 +275,9 @@ namespace Microsoft.Azure.IoT.Gateway
             long sizeOfPropertiesInBytes = 0;
             foreach (KeyValuePair<string, string> propertyItem in this.Properties)
             {
-                sizeOfPropertiesInBytes += propertyItem.Key.Length + 1;
-                sizeOfPropertiesInBytes += propertyItem.Value.Length + 1;
+
+                sizeOfPropertiesInBytes += System.Text.Encoding.UTF8.GetByteCount(propertyItem.Key) + 1;
+                sizeOfPropertiesInBytes += System.Text.Encoding.UTF8.GetByteCount(propertyItem.Value) + 1;
             }
 
             return sizeOfPropertiesInBytes;
@@ -285,16 +290,20 @@ namespace Microsoft.Azure.IoT.Gateway
 
             foreach (KeyValuePair<string, string> propertiItem in this.Properties)
             {
-                for (int currentChar = 0; currentChar < propertiItem.Key.Length; currentChar++)
+                byte[] bytesOfKey = System.Text.Encoding.UTF8.GetBytes(propertiItem.Key);
+                
+                foreach(byte byteItem in bytesOfKey)
                 {
-                    dst[currentIndex++] = (byte)propertiItem.Key[currentChar];
+                    dst[currentIndex++] = byteItem;
                 }
 
                 dst[currentIndex++] = 0;
 
-                for (int currentChar = 0; currentChar < propertiItem.Value.Length; currentChar++)
+                byte[] bytesOfValue = System.Text.Encoding.UTF8.GetBytes(propertiItem.Value);
+
+                foreach (byte byteItem in bytesOfValue)
                 {
-                    dst[currentIndex++] = (byte)propertiItem.Value[currentChar];
+                    dst[currentIndex++] = byteItem;
                 }
 
                 dst[currentIndex++] = 0;
