@@ -18,33 +18,35 @@ namespace Microsoft.Azure.IoT.Gateway
 
         public Dictionary<string, string> Properties { get; }
 
-        private byte[] readNullTerminatedString(MemoryStream bis)
+        private bool readNullTerminatedString(MemoryStream bis, out byte[] output)
         {
-            ArrayList byteArray = new ArrayList();
+            List<byte> list = new List<byte>();
+            bool result = false;
+            output = null;
 
             byte b = (byte)bis.ReadByte();
 
-            if (b == 255)
+            if (b != 255)
             {
-                throw new ArgumentException("Reached and of stream and '\0' was not found.");
-            }
-
-            while (b != '\0')
-            {
-                byteArray.Add(b);
-                b = (byte)bis.ReadByte();
-
-                if (b == 255)
+                bool errorFound = false;
+                while (b != '\0')
                 {
-                    throw new ArgumentException("Reached and of stream and '\0' was not found.");
-                }
-            }
+                    list.Add(b);
+                    b = (byte)bis.ReadByte();
 
-            byte[] result = new byte[byteArray.Count];
-            for (int index = 0; index < result.Length; index++)
-            {
-                result[index] = (byte)byteArray[index];
-            }
+                    if (b == 255)
+                    {
+                        errorFound = true;
+                        break;
+                    }
+                }
+
+                if (!errorFound)
+                {
+                    output = list.ToArray();
+                    result = true;                        
+                }
+            };
 
             return result;
         }
@@ -53,9 +55,7 @@ namespace Microsoft.Azure.IoT.Gateway
         {
             byte[] byteArray = new byte[4];
 
-            int numberofBytes = input.Read(byteArray, 0, 4);
-
-            if(numberofBytes < 4)
+            if(input.Read(byteArray, 0, 4) < 4)
             {
                 throw new ArgumentException("Input doesn't have 4 bytes.");
             }
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.IoT.Gateway
             if (msgAsByteArray == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("msgAsByteArray cannot be null");                    
+                throw new ArgumentNullException("msgAsByteArray", "msgAsByteArray cannot be null");                    
             }
             /* Codes_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format as described in message_requirements.md and it's Content and Properties are extracted and saved. ] */
             else if (msgAsByteArray.Length >= 14)
@@ -99,9 +99,14 @@ namespace Microsoft.Azure.IoT.Gateway
                         /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
                         throw new ArgumentException("Could not read array size information.", e);
                     }
-                    
 
-                    if(msgAsByteArray.Length != arraySizeInInt)
+                    if (arraySizeInInt >= int.MaxValue)
+                    {
+                        /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+                        throw new ArgumentException("Size of MsgArray can't be more than MAXINT.");
+                    }
+
+                    if (msgAsByteArray.Length != arraySizeInInt)
                     {
                         /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
                         throw new ArgumentException("Array Size information doesn't match with array size.");
@@ -119,16 +124,16 @@ namespace Microsoft.Azure.IoT.Gateway
                         throw new ArgumentException("Could not read property count.", e);
                     }
 
-                    if (propCount >= int.MaxValue)
-                    {
-                        /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
-                        throw new ArgumentException("Number of properties can't be more than MAXINT.");
-                    }
-
                     if(propCount < 0)
                     {
                         /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
                         throw new ArgumentException("Number of properties can't be negative."); 
+                    }
+
+                    if (propCount >= int.MaxValue)
+                    {
+                        /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+                        throw new ArgumentException("Number of properties can't be more than MAXINT.");
                     }
 
                     if (propCount > 0)
@@ -136,19 +141,21 @@ namespace Microsoft.Azure.IoT.Gateway
                         //Here is where we are going to read the properties.
                         for (int count = 0; count < propCount; count++)
                         {
-                            try
-                            {
-                                byte[] key = readNullTerminatedString(stream);
-                                byte[] value = readNullTerminatedString(stream);
-                                this.Properties.Add(System.Text.Encoding.UTF8.GetString(key, 0, key.Length), System.Text.Encoding.UTF8.GetString(value, 0, value.Length));
-                            }
-                            catch(ArgumentException e)
+                            byte[] key;
+                            if(!readNullTerminatedString(stream, out key))
                             {
                                 /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
-                                throw new ArgumentException("Could not parse Properties(key or value)", e);
+                                throw new ArgumentException("Could not parse Properties(key)");
                             }
 
+                            byte[] value;
+                            if (!readNullTerminatedString(stream, out value))
+                            {
+                                /* Codes_SRS_DOTNET_MESSAGE_04_006: [ If byte array received as a parameter to the Message(byte[] msgInByteArray) constructor is not in a valid format, it shall throw an ArgumentException ] */
+                                throw new ArgumentException("Could not parse Properties(value)");
+                            }
 
+                            this.Properties.Add(System.Text.Encoding.UTF8.GetString(key, 0, key.Length), System.Text.Encoding.UTF8.GetString(value, 0, value.Length));
                         }
                     }
 
@@ -202,12 +209,12 @@ namespace Microsoft.Azure.IoT.Gateway
             if (contentAsByteArray == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("contentAsByteArray cannot be null");
+                throw new ArgumentNullException("contentAsByteArray", "contentAsByteArray cannot be null");
             }
             else if(properties == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("properties cannot be null");
+                throw new ArgumentNullException("properties", "properties cannot be null");
             }
             else
             {
@@ -228,12 +235,12 @@ namespace Microsoft.Azure.IoT.Gateway
             if (content == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("content cannot be null");
+                throw new ArgumentNullException("content", "content cannot be null");
             }
             else if (properties == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("properties cannot be null");
+                throw new ArgumentNullException("properties", "properties cannot be null");
             }
             else
             {
@@ -244,46 +251,59 @@ namespace Microsoft.Azure.IoT.Gateway
             
         }
 
+        /// <summary>
+        ///     Constructor for Message. This constructor receives another Message as a parameter.
+        /// </summary>
+        /// <param name="message">Message Instance.</param>
         public Message(Message message)
         {
             if(message == null)
             {
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
-                throw new ArgumentNullException("message cannot be null");
+                throw new ArgumentNullException("message","message cannot be null");
             }
-            throw new NotImplementedException();
+            else
+            {
+                this.Content = message.Content;
+                this.Properties = message.Properties;
+            }
         }
 
 
-        private int getPropertiesByteAmount()
+        private long getPropertiesByteAmount()
         {
-            int sizeOfPropertiesInBytes = 0;
+            long sizeOfPropertiesInBytes = 0;
             foreach (KeyValuePair<string, string> propertyItem in this.Properties)
             {
-                sizeOfPropertiesInBytes += propertyItem.Key.Length + 1;
-                sizeOfPropertiesInBytes += propertyItem.Value.Length + 1;
+
+                sizeOfPropertiesInBytes += System.Text.Encoding.UTF8.GetByteCount(propertyItem.Key) + 1;
+                sizeOfPropertiesInBytes += System.Text.Encoding.UTF8.GetByteCount(propertyItem.Value) + 1;
             }
 
             return sizeOfPropertiesInBytes;
         }
 
-        private int fillByteArrayWithPropertyInBytes(byte[] dst)
+        private long fillByteArrayWithPropertyInBytes(byte[] dst)
         {
             //The content needs to be filled from byte 11th. 
-            int currentIndex = 10;
+            long currentIndex = 10;
 
             foreach (KeyValuePair<string, string> propertiItem in this.Properties)
             {
-                for (int currentChar = 0; currentChar < propertiItem.Key.Length; currentChar++)
+                byte[] bytesOfKey = System.Text.Encoding.UTF8.GetBytes(propertiItem.Key);
+                
+                foreach(byte byteItem in bytesOfKey)
                 {
-                    dst[currentIndex++] = (byte)propertiItem.Key[currentChar];
+                    dst[currentIndex++] = byteItem;
                 }
 
                 dst[currentIndex++] = 0;
 
-                for (int currentChar = 0; currentChar < propertiItem.Value.Length; currentChar++)
+                byte[] bytesOfValue = System.Text.Encoding.UTF8.GetBytes(propertiItem.Value);
+
+                foreach (byte byteItem in bytesOfValue)
                 {
-                    dst[currentIndex++] = (byte)propertiItem.Value[currentChar];
+                    dst[currentIndex++] = byteItem;
                 }
 
                 dst[currentIndex++] = 0;
@@ -299,7 +319,7 @@ namespace Microsoft.Azure.IoT.Gateway
         {
             /* Codes_SRS_DOTNET_MESSAGE_04_005: [ Message Class shall have a ToByteArray method which will convert it's byte array Content and it's Properties to a byte[] which format is described at message_requirements.md ] */
             //1-Calculate the size of the array;
-            int sizeOfArray = 2 + 4 + 4 + getPropertiesByteAmount() + 4 + this.Content.Length;
+            long sizeOfArray = 2 + 4 + 4 + getPropertiesByteAmount() + 4 + this.Content.Length;
 
             //2-Create the byte array;
             byte[] returnByteArray = new Byte[sizeOfArray];
@@ -309,12 +329,12 @@ namespace Microsoft.Azure.IoT.Gateway
             returnByteArray[1] = 0x60;
 
             //4-Fill the 4 bytes with the array size;
-            byte[] sizeOfArrayByteArray = BitConverter.GetBytes(sizeOfArray);
+            byte[] sizeOfArrayByteArray = BitConverter.GetBytes(sizeOfArray); //This will get an 8 bytes, since sizeOfArray is a long. Ignoring the most significant bit.
             Array.Reverse(sizeOfArrayByteArray); //Have to reverse because this is not MSB and needs to be.
-            returnByteArray[2] = sizeOfArrayByteArray[0];
-            returnByteArray[3] = sizeOfArrayByteArray[1];
-            returnByteArray[4] = sizeOfArrayByteArray[2];
-            returnByteArray[5] = sizeOfArrayByteArray[3];
+            returnByteArray[2] = sizeOfArrayByteArray[4];
+            returnByteArray[3] = sizeOfArrayByteArray[5];
+            returnByteArray[4] = sizeOfArrayByteArray[6];
+            returnByteArray[5] = sizeOfArrayByteArray[7];
 
             //5-Fill the 4 bytes with the amount of properties;
             byte[] numberOfPropertiesInByteArray = BitConverter.GetBytes(this.Properties.Count);
@@ -325,7 +345,7 @@ namespace Microsoft.Azure.IoT.Gateway
             returnByteArray[9] = numberOfPropertiesInByteArray[3];
 
             //6-Fill the bytes with content from key/value of properties (null terminated string separated);
-            int msgContentShallStartFromHere = fillByteArrayWithPropertyInBytes(returnByteArray);
+            long msgContentShallStartFromHere = fillByteArrayWithPropertyInBytes(returnByteArray);
 
             //7-Fill the amount of bytes on the content in 4 bytes after the properties; 
             byte[] contentSizeInByteArray = BitConverter.GetBytes(this.Content.Length);
