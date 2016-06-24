@@ -39,7 +39,7 @@ namespace nodejs_module
             result = ::Lock(m_lock);
             if (result != LOCK_OK)
             {
-                LogError("Lock failed");
+                LogError("Lock() failed");
                 throw result;
             }
         }
@@ -49,7 +49,7 @@ namespace nodejs_module
             LOCK_RESULT result = ::Unlock(m_lock);
             if (result != LOCK_OK)
             {
-                LogError("Unlock failed");
+                LogError("Unlock() failed");
                 throw result;
             }
         }
@@ -71,6 +71,10 @@ namespace nodejs_module
         {
             m_lockable.ReleaseLock();
         }
+
+        LockGuard(const LockGuard&) = delete;
+        LockGuard(LockGuard&&) = delete;
+        LockGuard& operator=(const LockGuard&) = delete;
     };
 };
 

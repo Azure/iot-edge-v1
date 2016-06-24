@@ -34,11 +34,6 @@ if(${LINUX})
     )
 endif()
 
-if(WIN32)
-    set(node_libs
-    )
-endif()
-
 set(v8_libs
     ${v8_libs}
     v8_libbase

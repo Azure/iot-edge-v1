@@ -6,7 +6,10 @@ cmake_minimum_required(VERSION 2.8.11)
 
 add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
-add_subdirectory(nodejs_simple_sample)
+
+if(${enable_nodejs_binding})
+    add_subdirectory(nodejs_simple_sample)
+endif()
 
 if(LINUX)
     add_subdirectory(ble_gateway_hl)

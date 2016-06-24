@@ -1,9 +1,9 @@
 {
   "name": "nodejs_modules",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "iothub_writer.js",
-  "author": "Rajasekharan Vengalil",
+  "author": "Microsoft",
   "license": "MIT",
   "dependencies": {
     "azure-iot-device": "^1.0.6",

@@ -17,8 +17,6 @@
 #include "node.h"
 
 #include "testrunnerswitcher.h"
-#include "micromock.h"
-#include "micromockcharstararenullterminatedstrings.h"
 
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/threadapi.h"
@@ -31,9 +29,6 @@
 #include "nodejs.h"
 #include "nodejs_common.h"
 #include "nodejs_utils.h"
-
-static MICROMOCK_MUTEX_HANDLE g_testByTest;
-static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 static pfModule_Create  NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -129,6 +124,13 @@ public:
 public:
     TempFile()
     {
+        // Use of 'tmpnam' causes the GCC linker (yep, linker - NOT the compiler)
+        // to complain like so:
+        //      warning: the use of `tmpnam' is dangerous, better use `mkstemp'
+        // Couldn't find a way of disabling the warning as I believe the use of this
+        // function here to be acceptable in this context. In case of a rare race
+        // condition that can happen it's OK for the test to fail. It will pass in a
+        // subsequent run.
         auto temp_path = std::tmpnam(nullptr);
         if (temp_path == nullptr)
         {
@@ -197,8 +199,6 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
         TEST_INITIALIZE_MEMORY_DEBUG(g_dllByDll);
-        g_testByTest = MicroMockCreateMutex();
-        ASSERT_IS_NOT_NULL(g_testByTest);
 
         NODEJS_Create = Module_GetAPIS()->Module_Create;
         NODEJS_Destroy = Module_GetAPIS()->Module_Destroy;
@@ -212,7 +212,6 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
     {
-        MicroMockDestroyMutex(g_testByTest);
         TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
 
         MessageBus_RemoveModule(g_message_bus, g_mock_module_handle);
@@ -222,11 +221,6 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     {
-        if (!MicroMockAcquireMutex(g_testByTest))
-        {
-            ASSERT_FAIL("our mutex is ABANDONED. Failure in test framework");
-        }
-
         // reset our fake module
         g_mock_module.reset();
         g_notify_result_called = false;
@@ -234,10 +228,6 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
     TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     {
-        if (!MicroMockReleaseMutex(g_testByTest))
-        {
-            ASSERT_FAIL("failure in test framework at ReleaseMutex");
-        }
     }
 
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
@@ -351,10 +341,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state == NodeModuleState::initialized;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::initialized);
-        ASSERT_IS_TRUE(handle_data->create_failed == false);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -452,10 +441,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->create_failed == true);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -493,10 +481,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->create_failed == true);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -535,10 +522,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->create_failed == true);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -577,10 +563,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->create_failed == true);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -619,10 +604,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
         ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->create_failed == true);
 
         ///cleanup
         NODEJS_Destroy(result);
@@ -932,7 +916,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->create_running == false;
+            return handle_data->module_state != NodeModuleState::initializing;
         });
 
         NODEJS_Destroy(result);

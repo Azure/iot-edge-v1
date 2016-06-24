@@ -837,10 +837,6 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                     auto result = nodejs_module::NodeJSUtils::RunScript(isolate, context, script_str.str());
                     if (result.IsEmpty() == true)
                     {
-#ifdef INTEGRATION_TEST
-                        handle_data->create_failed = true;
-                        handle_data->create_running = false;
-#endif
                         handle_data->module_state = NodeModuleState::error;
                         LogError("registerModule script returned nullptr");
                     }
@@ -849,10 +845,6 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                         // this must be boolean and must evaluate to true
                         if (result->IsBoolean() == false)
                         {
-#ifdef INTEGRATION_TEST
-                            handle_data->create_failed = true;
-                            handle_data->create_running = false;
-#endif
                             handle_data->module_state = NodeModuleState::error;
                             LogError("Expected registerModule to return boolean but it did not.");
                         }
@@ -861,20 +853,12 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             auto bool_result = result->ToBoolean();
                             if (bool_result->BooleanValue() == false)
                             {
-#ifdef INTEGRATION_TEST
-                                handle_data->create_failed = true;
-                                handle_data->create_running = false;
-#endif
                                 handle_data->module_state = NodeModuleState::error;
                                 LogError("Expected registerModule to return 'true' but it returned 'false'");
                             }
                             else
                             {
                                 handle_data->module_state = NodeModuleState::initialized;
-#ifdef INTEGRATION_TEST
-                                handle_data->create_failed = false;
-                                handle_data->create_running = false;
-#endif
                             }
                         }
                     }

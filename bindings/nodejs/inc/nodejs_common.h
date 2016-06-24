@@ -31,10 +31,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         v8_isolate{ nullptr },
         module_state{ NodeModuleState::error }
     {
-#ifdef INTEGRATION_TEST
-        create_failed = false;
-        create_running = false;
-#endif
     }
 
     NODEJS_MODULE_HANDLE_DATA(
@@ -51,10 +47,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         v8_isolate{ nullptr },
         module_state{ NodeModuleState::error }
     {
-#ifdef INTEGRATION_TEST
-        create_failed = false;
-        create_running = false;
-#endif
     }
 
     NODEJS_MODULE_HANDLE_DATA(NODEJS_MODULE_HANDLE_DATA&& rhs)
@@ -72,11 +64,6 @@ struct NODEJS_MODULE_HANDLE_DATA
             module_object.Reset(v8_isolate, rhs.module_object);
             rhs.module_object.Reset();
         }
-
-#ifdef INTEGRATION_TEST
-        create_failed = rhs.create_failed;
-        create_running = rhs.create_running;
-#endif
     }
 
     NODEJS_MODULE_HANDLE_DATA(const NODEJS_MODULE_HANDLE_DATA& rhs)
@@ -93,11 +80,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         {
             module_object.Reset(v8_isolate, rhs.module_object);
         }
-
-#ifdef INTEGRATION_TEST
-        create_failed = rhs.create_failed;
-        create_running = rhs.create_running;
-#endif
     }
 
     NODEJS_MODULE_HANDLE_DATA(const NODEJS_MODULE_HANDLE_DATA& rhs, size_t module_id)
@@ -114,11 +96,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         {
             module_object.Reset(v8_isolate, rhs.module_object);
         }
-
-#ifdef INTEGRATION_TEST
-        create_failed = rhs.create_failed;
-        create_running = rhs.create_running;
-#endif
     }
 
     MESSAGE_BUS_HANDLE          bus;
@@ -129,12 +106,6 @@ struct NODEJS_MODULE_HANDLE_DATA
     size_t                      module_id;
     PFNMODULE_START             on_module_start;
     NodeModuleState             module_state;
-
-    // these fields are only used from integration tests
-#ifdef INTEGRATION_TEST
-    bool                        create_failed;
-    bool                        create_running;
-#endif
 };
 
 #endif /*NODEJS_COMMON_H*/

@@ -23,9 +23,6 @@ set(${theseTestsName}_h_files
     ../../inc/modules_manager.h
 )
 
-# enable integration testing code in the implementation
-add_definitions(-DINTEGRATION_TEST)
-
 build_test_artifacts(${theseTestsName} ON)
 
 target_include_directories(

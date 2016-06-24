@@ -201,9 +201,27 @@ int ModulesManager::NodeJSRunner()
 {
     // start up Node.js!
     int argc = 3;
-    const char *argv[] = { "node", "-e", NODE_STARTUP_SCRIPT };
 
-    return node::Start(argc, const_cast<char**>(argv));
+    // libuv on Linux expects the argv to be formatted in a particular
+    // way - i.e. all the argv values should be contiguous in memory;
+    // doing the following:
+    //
+    //      const char argv[] = { "node", "-e", NODE_STARTUP_SCRIPT };
+    //
+    // does seem to allocate the string literals in contiguous memory
+    // but there's apparently no guarantee that the compiler is obligated
+    // to do so and besides there might be "holes" in the buffer for
+    // memory alignment reasons which causes the libuv validation to fail
+    // (which appears to be a bug in libuv - see the 'assert' call in
+    // the function 'uv_setup_args' in 'proctitle.c')
+
+    const char argv[] = "node" "\0" "-e" "\0" NODE_STARTUP_SCRIPT "\0";
+    const char *p1 = &argv[0];
+    const char *p2 = &argv[sizeof("node")];
+    const char *p3 = p2 + sizeof("-e");
+    const char *pargv[] = { p1, p2, p3 };
+
+    return node::Start(argc, const_cast<char**>(pargv));
 }
 
 int ModulesManager::NodeJSRunnerInternal(void* user_data)
@@ -278,10 +296,6 @@ THREADAPI_RESULT ModulesManager::StartNode()
 bool ModulesManager::StartModule(size_t module_id)
 {
     bool result;
-
-#ifdef INTEGRATION_TEST
-    m_modules[module_id].create_running = true;
-#endif
 
     // we cannot proceed till node has been initialized completely so
     // postpone addition of the module till then

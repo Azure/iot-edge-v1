@@ -70,7 +70,7 @@ namespace nodejs_module
 
     private:
         template <typename T>
-        static void nodejs_module::NodeJSUtils::on_libuv_handler(T* handle);
+        static void on_libuv_handler(T* handle);
     };
 };
 
