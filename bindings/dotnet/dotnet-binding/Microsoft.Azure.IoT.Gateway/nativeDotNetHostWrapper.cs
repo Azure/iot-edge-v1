@@ -12,7 +12,7 @@ namespace Microsoft.Azure.IoT.Gateway
     public class NativeDotNetHostWrapper
     {
         [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
-        static extern bool Module_DotNetHost_PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
+        public static extern bool Module_DotNetHost_PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
 
         virtual public bool PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source)
         {

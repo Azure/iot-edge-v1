@@ -47,24 +47,13 @@ using namespace mscorlib;
 
 struct DOTNET_HOST_HANDLE_DATA
 {
-	DOTNET_HOST_HANDLE_DATA(const DOTNET_HOST_HANDLE_DATA& other) :
-		bus(other.bus),
-		vtClientModuleObject(other.vtClientModuleObject),
-		spMetaHost(other.spMetaHost),
-		spRuntimeInfo(other.spRuntimeInfo),
-		spCorRuntimeHost(other.spCorRuntimeHost),
-		spClientModuleType(other.spClientModuleType),
-		spAzureIoTGatewayAssembly(other.spAzureIoTGatewayAssembly)
-	{
-
-	};
-
 	DOTNET_HOST_HANDLE_DATA()
 	{
 
 	};
 
     MESSAGE_BUS_HANDLE          bus;
+
 	variant_t                   vtClientModuleObject;
 	CComPtr<ICLRMetaHost>       spMetaHost;
 	CComPtr<ICLRRuntimeInfo>    spRuntimeInfo;
@@ -76,7 +65,7 @@ private:
 	DOTNET_HOST_HANDLE_DATA& operator=(const DOTNET_HOST_HANDLE_DATA&);
 };
 
-bool buildMessageBusObject(long long  busHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayMessageBusObject)
+bool buildMessageBusObject(long long  busHandle, long long  moduleHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayMessageBusObject)
 {
 	SAFEARRAY *psaAzureIoTGatewayMessageBusConstructorArgs = NULL;
 	bool returnResult = false;
@@ -86,9 +75,10 @@ bool buildMessageBusObject(long long  busHandle, _AssemblyPtr spAzureIoTGatewayA
 		LONG index = 0;
 		HRESULT hr;
 		variant_t msgBus(busHandle);
+		variant_t module(moduleHandle);
 		bstr_t bstrAzureIoTGatewayMessageBusClassName(AZUREIOTGATEWAY_MESSAGEBUS_CLASSNAME);
 
-		psaAzureIoTGatewayMessageBusConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 1);
+		psaAzureIoTGatewayMessageBusConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2);
 		if (psaAzureIoTGatewayMessageBusConstructorArgs == NULL)
 		{
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
@@ -99,23 +89,32 @@ bool buildMessageBusObject(long long  busHandle, _AssemblyPtr spAzureIoTGatewayA
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
 		}
-		/* Codes_SRS_DOTNET_04_013: [ A .NET Object conforming to the MessageBus interface defined shall be created: ] */
-		else if (FAILED(hr = spAzureIoTGatewayAssembly->CreateInstance_3(
-			                        bstrAzureIoTGatewayMessageBusClassName, 
-			                        true, 
-			                        static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), 
-			                        NULL, 
-			                        psaAzureIoTGatewayMessageBusConstructorArgs, 
-			                        NULL, 
-			                        NULL, 
-			                        vtAzureIoTGatewayMessageBusObject)))
-		{
-			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-			LogError("Creating an instance of Message Bus failed with hr 0x%08lx\n", hr);
-		}
 		else
 		{
-			returnResult = true;
+			index = 1;
+			if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayMessageBusConstructorArgs, &index, &module)))
+			{
+				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+				LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
+			}
+			/* Codes_SRS_DOTNET_04_013: [ A .NET Object conforming to the MessageBus interface defined shall be created: ] */
+			else if (FAILED(hr = spAzureIoTGatewayAssembly->CreateInstance_3(
+				bstrAzureIoTGatewayMessageBusClassName,
+				true,
+				static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public),
+				NULL,
+				psaAzureIoTGatewayMessageBusConstructorArgs,
+				NULL,
+				NULL,
+				vtAzureIoTGatewayMessageBusObject)))
+			{
+				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+				LogError("Creating an instance of Message Bus failed with hr 0x%08lx\n", hr);
+			}
+			else
+			{
+				returnResult = true;
+			}
 		}
 	}
 	catch (const _com_error& e)
@@ -251,7 +250,6 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 
 static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
 {
-	DOTNET_HOST_HANDLE_DATA result;
 	DOTNET_HOST_HANDLE_DATA* out = NULL;
 
 	try
@@ -293,62 +291,76 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 				bstr_t bstrClientModuleClassName(dotNetConfig->dotnet_module_entry_class);
 				bstr_t bstrAzureIoTGatewayAssemblyName(AZUREIOTGATEWAYASSEMBLYNAME);
 				variant_t vtAzureIoTGatewayMessageBusObject;
+				try
+				{
+					/* Codes_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
+					out = new DOTNET_HOST_HANDLE_DATA();
+				}
+				catch (std::bad_alloc)
+				{
+					//Do not need to do anything, since we are returning NULL below.
+					LogError("Memory allocation failed for DOTNET_HOST_HANDLE_DATA.");
+				}
 
-				/* Codes_SRS_DOTNET_04_007: [ DotNET_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
-				result.bus = busHandle;
+				if (out != NULL)
+				{
+					/* Codes_SRS_DOTNET_04_007: [ DotNET_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
+					out->bus = busHandle;
 
-				/* Codes_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
-				/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
-				if (!createCLRInstancesGetInterfacesAndStarting(&result.spMetaHost, &result.spRuntimeInfo, &result.spCorRuntimeHost, &spDefaultAppDomain))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Error creating CLR Intance, Getting Interfaces and Starting it.");
-				}
-				else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrClientModuleAssemblyName, &spClientModuleAssembly)))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
-				}
-				/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
-				else if (FAILED(hr = spClientModuleAssembly->GetType_2(bstrClientModuleClassName, &result.spClientModuleType)))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Failed to get the Type interface w/hr 0x%08lx\n", hr);
-				}
-				else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrAzureIoTGatewayAssemblyName, &(result.spAzureIoTGatewayAssembly))))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
-				}
-				else if (!buildMessageBusObject((long long)result.bus, result.spAzureIoTGatewayAssembly, &vtAzureIoTGatewayMessageBusObject))
-				{
-					LogError("Failed to build Message Bus Object.");
-				}
-				/* Codes_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
-				/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
-				else if (FAILED(hr = spClientModuleAssembly->CreateInstance(bstrClientModuleClassName, &result.vtClientModuleObject)))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Creating an instance of Client Class failed with hr 0x%08lx\n", hr);
-				}
-				else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayMessageBusObject, result.spClientModuleType, &result.vtClientModuleObject))
-				{
-					/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-					LogError("Failed to invoke Create Method");
-				}
-				else
-				{
-					try
+					/* Codes_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					if (!createCLRInstancesGetInterfacesAndStarting(&out->spMetaHost, &out->spRuntimeInfo, &out->spCorRuntimeHost, &spDefaultAppDomain))
 					{
-						/* Codes_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
-						out = new DOTNET_HOST_HANDLE_DATA(result);
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Error creating CLR Intance, Getting Interfaces and Starting it.");
+						delete out; 
+						out = NULL;
 					}
-					catch (std::bad_alloc)
+					else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrClientModuleAssemblyName, &spClientModuleAssembly)))
 					{
-						//Do not need to do anything, since we are returning NULL below.
-						LogError("Memory allocation failed for DOTNET_HOST_HANDLE_DATA.");
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
+						delete out;
+						out = NULL;
 					}
-				}			
+					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					else if (FAILED(hr = spClientModuleAssembly->GetType_2(bstrClientModuleClassName, &out->spClientModuleType)))
+					{
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Failed to get the Type interface w/hr 0x%08lx\n", hr);
+						delete out;
+						out = NULL;
+					}
+					else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrAzureIoTGatewayAssemblyName, &(out->spAzureIoTGatewayAssembly))))
+					{
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
+						delete out;
+						out = NULL;
+					}
+					else if (!buildMessageBusObject((long long)out->bus, (long long)out, out->spAzureIoTGatewayAssembly, &vtAzureIoTGatewayMessageBusObject))
+					{
+						LogError("Failed to build Message Bus Object.");
+						delete out;
+						out = NULL;
+					}
+					/* Codes_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					else if (FAILED(hr = spClientModuleAssembly->CreateInstance(bstrClientModuleClassName, &out->vtClientModuleObject)))
+					{
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Creating an instance of Client Class failed with hr 0x%08lx\n", hr);
+						delete out;
+						out = NULL;
+					}
+					else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayMessageBusObject, out->spClientModuleType, &out->vtClientModuleObject))
+					{
+						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						LogError("Failed to invoke Create Method");
+						delete out;
+						out = NULL;
+					}
+				}
 			}
 		}
 	}

@@ -1787,71 +1787,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		bstr_t bstrCreateClientMethodName(L"Create");
 		variant_t emptyVariant(0);
-		whenShallnew_fail = currentnew_call + 918;
+		whenShallnew_fail = currentnew_call + 4;
 
 		mocks.ResetAllCalls();
-
-		STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, GetRuntime(DefaultCLRVersion, CLSID_CLRRunTime_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, IsLoadable(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, GetInterface(CLSID_CorRuntimeHost_UUID, ICorRuntimeHost_UUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(3);
-
-		STRICT_EXPECTED_CALL(mocks, Start());
-
-		STRICT_EXPECTED_CALL(mocks, GetDefaultDomain(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, QueryInterface(AppDomainUUID, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrClientModuleAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, GetType_2(bstrClientModuleClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-
-		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
-			.IgnoreArgument(5)
-			.IgnoreArgument(8);
-
-		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-			.IgnoreAllArguments();
-
-		STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrCreateClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-			.IgnoreArgument(4)
-			.IgnoreArgument(5)
-			.IgnoreArgument(6);
 
 		///act
 		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
@@ -2364,7 +2302,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1))
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2))
 			.SetFailReturn((SAFEARRAY*)NULL);
 
 		///act
@@ -2427,9 +2365,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2495,9 +2436,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2567,9 +2511,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2643,9 +2590,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2721,9 +2671,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2806,7 +2759,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 		
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
@@ -2893,9 +2846,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -2993,9 +2949,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Load_2(bstrAzureIoTGatewayAssemblyName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
-		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 1));
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayDestroy(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
