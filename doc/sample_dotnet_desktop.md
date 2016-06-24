@@ -8,9 +8,9 @@ This sample showcase how one might build modules for IoT Gateway in .NET.
 
 The sample contains:
 
-1. A printer module (C#) that interprets telemetry from sensor and prints it's content and properties into Console;
-2. A sensor module (C#) that publishes random data to the gateway;
-3. A logger module for producing message bus diagnostics;
+1. A printer module (C#) that interprets telemetry from sensor and prints it's content and properties into Console.
+2. A sensor module (C#) that publishes random data to the gateway.
+3. A logger module for producing message bus diagnostics.
 
 Other resources:
 *[getting started doc](getting_started.md)
@@ -20,8 +20,8 @@ Other resources:
 
 Prerequisites
 --------------
-1. Have your devbox setup (windows) [devbox setup](devbox_setup.md);
-2. Make sure you have .NET Framework installed. Our current version of the binding was tested and loads modules written in .NET version v4.0.30319;
+1. Have your devbox setup (windows) [devbox setup](devbox_setup.md).
+2. Make sure you have .NET Framework installed. Our current version of the binding was tested and loads modules written in .NET version v4.0.30319.
 
 How does the data flow through the Gateway
 ------------------------------------------
@@ -36,27 +36,27 @@ At this point, gateways containing .NET modules are only supported on Windows De
 [devbox setup](devbox_setup.md) guide has information on how you can build the SDK.
 To build .NET Modules you should build solution here (../bindings/dotnet/dotnet-binding/dotnet-binding.sln).
 Today the Solution has: 
-1. Microsoft.Azure.IoT.Gateway ==> DLL you shall reference on your module project;
-2. Microsoft.Azure.IoT.Gateway.Test ==> Unit tests for the implementation of Message and MessageBus Classes;
-3. PrinterModule ==> .NET(C#) Module that output to the console content received by Sensor Module;
-4. Sensor Module ==> .NET(C#) Module that publishes Simulated Sensor data to the gateway;
+1. Microsoft.Azure.IoT.Gateway ==> DLL you shall reference on your module project.
+2. Microsoft.Azure.IoT.Gateway.Test ==> Unit tests for the implementation of Message and MessageBus Classes.
+3. PrinterModule ==> .NET(C#) Module that output to the console content received by Sensor Module.
+4. Sensor Module ==> .NET(C#) Module that publishes Simulated Sensor data to the gateway.
 
 Building the solution you will have the following binaries: 
-1. Microsoft.Azure.IoT.Gateway.Test.dll
-2. SensorModule.dll
-3. PrinterModule.dll
+1. Microsoft.Azure.IoT.Gateway.Test.dll.
+2. SensorModule.dll.
+3. PrinterModule.dll.
 
 Copy these binaries to the same folder you run your gateway. 
 
 Running the sample
 ------------------
-1. Open azure_iot_gateway_sdk solution and configure project `dotnet_binding_sample` as a Startup Sample;
-2. Go to the Project Properties and change `Command Arguments` to point to dotnet_binding_sample.json;
+1. Open azure_iot_gateway_sdk solution and configure project `dotnet_binding_sample` as a Startup Sample.
+2. Go to the Project Properties and change `Command Arguments` to point to dotnet_binding_sample.json.
 3. Copy the following binaries to the folder: `build\samples\dotnet_binding_sample\Debug`:
-    * Microsoft.Azure.IoT.Gateway.dll(and pdb if you want to debug);
-    * PrinterModule.dll
-    * SensorModule.dll
-4. Change the configuration Debugger Type to Mixed (this way you will be able to set breakpoints on Managed code as well as Native Code);
+    * Microsoft.Azure.IoT.Gateway.dll(and pdb if you want to debug).
+    * PrinterModule.dll.
+    * SensorModule.dll.
+4. Change the configuration Debugger Type to Mixed (this way you will be able to set breakpoints on Managed code as well as Native Code).
 5. Run.
 
 
@@ -98,10 +98,10 @@ Json Configuration
 
 Creating your own module
 ------------------------
-1. Create a .NET project (DLL) (Class library);
-2. Add Reference to Microsoft.Azure.IoT.Gateway DLL;
-3. On your class you shall implement `IGatewayModule`;
-   See the Printer module as example: 
+1. Create a .NET project (DLL) (Class library).
+2. Add Reference to Microsoft.Azure.IoT.Gateway DLL.
+3. On your class you shall implement `IGatewayModule`.
+   See the Printer module as example:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
 using System;
 using System.Collections.Generic;
