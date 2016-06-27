@@ -72,7 +72,9 @@ goto args-loop
 rem -----------------------------------------------------------------------------
 rem -- build csharp language binding project.
 rem -----------------------------------------------------------------------------
-call nuget restore -config "%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\packages.config" "%build-root%\csharp\device\iothub_csharp_deviceclient.sln"
+call nuget restore "%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\Microsoft.Azure.IoT.Gateway.Test.csproj" -SolutionDirectory "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln"
+
+
 
 if %build-clean%==1 (
     call :clean-a-solution "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln" %build-config% %build-platform%
