@@ -72,6 +72,7 @@ goto args-loop
 rem -----------------------------------------------------------------------------
 rem -- build csharp language binding project.
 rem -----------------------------------------------------------------------------
+call nuget restore -config "%current-path%\NuGet.Config" "%build-root%\csharp\device\iothub_csharp_deviceclient.sln"
 
 if %build-clean%==1 (
     call :clean-a-solution "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln" %build-config% %build-platform%
@@ -79,6 +80,12 @@ if %build-clean%==1 (
 )
 call :build-a-solution "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
+
+rem ------------------
+rem -- run unit tests
+call  mstest /testcontainer:"%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll"
+if not !errorlevel!==0 exit /b !errorlevel!
+rem ------------------
 
 rem -----------------------------------------------------------------------------
 rem -- done
