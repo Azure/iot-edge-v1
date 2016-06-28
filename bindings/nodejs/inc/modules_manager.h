@@ -73,12 +73,19 @@ namespace nodejs_module
         void ReleaseLock() const;
 
         /**
+         * Cause Node's thread to exit.
+         */
+        void ExitNodeThread() const;
+        void JoinNodeThread() const;
+
+        /**
          * Add/remove modules.
          */
         NODEJS_MODULE_HANDLE_DATA* AddModule(const NODEJS_MODULE_HANDLE_DATA& handle_data);
         void RemoveModule(size_t module_id);
         bool HasModule(size_t module_id) const;
         NODEJS_MODULE_HANDLE_DATA& GetModuleFromId(size_t module_id);
+        bool IsNodeInitialized() const;
 
     private:
         THREADAPI_RESULT StartNode();

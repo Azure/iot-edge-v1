@@ -10,6 +10,7 @@ set(${theseTestsName}_cpp_files
     ${theseTestsName}.cpp
     ../../src/nodejs.cpp
     ../../src/nodejs_utils.cpp
+    ../../src/nodejs_idle.cpp
     ../../src/modules_manager.cpp
 )
 
@@ -19,6 +20,7 @@ set(${theseTestsName}_h_files
     ../../inc/lock.h
     ../../inc/nodejs_common.h
     ../../inc/nodejs_utils.h
+    ../../inc/nodejs_idle.h
     ../../inc/nodejs.h
     ../../inc/modules_manager.h
 )

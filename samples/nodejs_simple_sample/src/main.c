@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 
 #include "azure_c_shared_utility/iot_logging.h"
 
@@ -9,15 +8,8 @@
 static void print_usage();
 static bool validate_args(int argc, char* argv[]);
 
-static void signal_handler(int signal)
-{
-    printf("Got signal %d\n", signal);
-}
-
 int main(int argc, char*argv[])
 {
-    signal(SIGABRT, signal_handler);
-
     int result;
     if (validate_args(argc, argv) == false)
     {

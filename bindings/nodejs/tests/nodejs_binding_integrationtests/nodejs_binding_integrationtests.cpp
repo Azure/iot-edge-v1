@@ -17,6 +17,8 @@
 #include "node.h"
 
 #include "testrunnerswitcher.h"
+#include "micromock.h"
+#include "micromockcharstararenullterminatedstrings.h"
 
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/threadapi.h"
@@ -29,35 +31,52 @@
 #include "nodejs.h"
 #include "nodejs_common.h"
 #include "nodejs_utils.h"
+#include "nodejs_idle.h"
+#include "modules_manager.h"
+
+static MICROMOCK_MUTEX_HANDLE g_testByTest;
+static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 static pfModule_Create  NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
+using namespace nodejs_module;
+
 class MockModule
 {
-public:
+private:
     MESSAGE_BUS_HANDLE m_bus;
     bool m_received_message;
+    nodejs_module::Lock m_lock;
 
+public:
     MockModule() :
         m_bus{ nullptr },
         m_received_message{ false }
     {}
 
-public:
+    bool get_received_message()
+    {
+        LockGuard<MockModule> lock_guard{ *this };
+        return m_received_message;
+    }
+
     void reset()
     {
+        LockGuard<MockModule> lock_guard{ *this };
         m_received_message = false;
     }
 
     void create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
     {
+        LockGuard<MockModule> lock_guard{ *this };
         m_bus = busHandle;
     }
 
     void receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
     {
+        LockGuard<MockModule> lock_guard{ *this };
         m_received_message = true;
     }
 
@@ -65,8 +84,20 @@ public:
     {
     }
 
+    void AcquireLock() const
+    {
+        m_lock.AcquireLock();
+    }
+
+    void ReleaseLock() const
+    {
+        m_lock.ReleaseLock();
+    }
+
     void publish_mock_message()
     {
+        LockGuard<MockModule> lock_guard{ *this };
+
         MAP_HANDLE message_properties = Map_Create(NULL);
         Map_Add(message_properties, "p1", "v1");
         Map_Add(message_properties, "p2", "v2");
@@ -181,12 +212,67 @@ void wait_for_predicate(uint32_t timeout_in_secs, TCallback pred)
     }
 }
 
-bool g_notify_result_called = false;
-bool g_notify_result = false;
+class NotifyResult
+{
+private:
+    bool m_notify_result_called;
+    bool m_notify_result;
+    nodejs_module::Lock m_lock;
+
+public:
+    NotifyResult() :
+        m_notify_result{ false },
+        m_notify_result_called{ false }
+    {}
+
+    void AcquireLock() const
+    {
+        m_lock.AcquireLock();
+    }
+
+    void ReleaseLock() const
+    {
+        m_lock.ReleaseLock();
+    }
+
+    bool WasCalled()
+    {
+        LockGuard<NotifyResult> lock_guard{ *this };
+        return m_notify_result_called;
+    }
+
+    bool GetResult()
+    {
+        LockGuard<NotifyResult> lock_guard{ *this };
+        return m_notify_result;
+    }
+
+    void SetCalled(bool called)
+    {
+        LockGuard<NotifyResult> lock_guard{ *this };
+        m_notify_result_called = called;
+    }
+
+    void SetResult(bool result)
+    {
+        LockGuard<NotifyResult> lock_guard{ *this };
+        m_notify_result = result;
+    }
+
+    void Reset()
+    {
+        LockGuard<NotifyResult> lock_guard{ *this };
+        m_notify_result_called = false;
+        m_notify_result = false;
+    }
+};
+
+NotifyResult g_notify_result;
+
 static void notify_result(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    g_notify_result_called = true;
-    g_notify_result = info[0]->ToBoolean()->BooleanValue();
+    g_notify_result.SetCalled(true);
+    g_notify_result.SetResult(info[0]->ToBoolean()->BooleanValue());
 }
 
 static void publish_mock_message(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -199,6 +285,8 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
         TEST_INITIALIZE_MEMORY_DEBUG(g_dllByDll);
+        g_testByTest = MicroMockCreateMutex();
+        ASSERT_IS_NOT_NULL(g_testByTest);
 
         NODEJS_Create = Module_GetAPIS()->Module_Create;
         NODEJS_Destroy = Module_GetAPIS()->Module_Destroy;
@@ -212,7 +300,20 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
     {
+        MicroMockDestroyMutex(g_testByTest);
         TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
+
+        // garbage collect v8
+        NodeJSIdle::Get()->AddCallback([]() {
+            NodeJSUtils::RunWithNodeContext([](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+                while (isolate->IdleNotification(1000) == false);
+
+                // exit node thread cleanly
+                ModulesManager::Get()->ExitNodeThread();
+            });
+        });
+
+        ModulesManager::Get()->JoinNodeThread();
 
         MessageBus_RemoveModule(g_message_bus, g_mock_module_handle);
         MockModule_Destroy(g_mock_module_handle);
@@ -221,13 +322,22 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     {
+        if (!MicroMockAcquireMutex(g_testByTest))
+        {
+            ASSERT_FAIL("our mutex is ABANDONED. Failure in test framework");
+        }
+
         // reset our fake module
         g_mock_module.reset();
-        g_notify_result_called = false;
+        g_notify_result.Reset();
     }
 
     TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     {
+        if (!MicroMockReleaseMutex(g_testByTest))
+        {
+            ASSERT_FAIL("failure in test framework at ReleaseMutex");
+        }
     }
 
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
@@ -311,7 +421,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)
     {
         ///arrrange
-        const std::string NOOP_JS_MODULE = "module.exports = { "   \
+        const char* NOOP_JS_MODULE = "module.exports = { "   \
             "create: function(messageBus, configuration) { "       \
             "  console.log('create'); "                            \
             "  return true; "                                      \
@@ -341,9 +451,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state == NodeModuleState::initialized;
+            return handle_data->GetModuleState() == NodeModuleState::initialized;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::initialized);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -353,7 +463,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_publishes_message)
     {
         ///arrrange
-        const std::string PUBLISH_JS_MODULE = ""                                \
+        const char* PUBLISH_JS_MODULE = ""                                      \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
             "    messageBus: null,"                                             \
@@ -400,9 +510,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the receive method in
         // our fake module to be called
         wait_for_predicate(15, []() {
-            return g_mock_module.m_received_message;
+            return g_mock_module.get_received_message();
         });
-        ASSERT_IS_TRUE(g_mock_module.m_received_message == true);
+        ASSERT_IS_TRUE(g_mock_module.get_received_message() == true);
 
         ///cleanup
         MessageBus_RemoveModule(g_message_bus, result);
@@ -412,7 +522,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_create_throws)
     {
         ///arrrange
-        const std::string MODULE_CREATE_THROWS = ""              \
+        const char* MODULE_CREATE_THROWS = ""                    \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    create: function (messageBus, configuration) {" \
@@ -441,9 +551,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -453,7 +563,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_create_returns_nothing)
     {
         ///arrrange
-        const std::string MODULE_CREATE_RETURNS_NOTHING = ""     \
+        const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    create: function (messageBus, configuration) {" \
@@ -481,9 +591,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -493,7 +603,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_create_does_not_return_bool)
     {
         ///arrrange
-        const std::string MODULE_CREATE_RETURNS_NOTHING = ""     \
+        const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    create: function (messageBus, configuration) {" \
@@ -522,9 +632,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -534,7 +644,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_create_returns_false)
     {
         ///arrrange
-        const std::string MODULE_CREATE_RETURNS_NOTHING = ""     \
+        const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    create: function (messageBus, configuration) {" \
@@ -563,9 +673,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
         ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
 
         ///cleanup
@@ -575,7 +685,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_module_interface_invalid_fails)
     {
         ///arrrange
-        const std::string MODULE_INTERFACE_INVALID = ""          \
+        const char* MODULE_INTERFACE_INVALID = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    foo: function (messageBus, configuration) {"    \
@@ -604,9 +714,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
-        ASSERT_IS_TRUE(handle_data->module_state == NodeModuleState::error);
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
 
         ///cleanup
         NODEJS_Destroy(result);
@@ -615,7 +725,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_invalid_publish_fails)
     {
         ///arrrange
-        const std::string MODULE_INVALID_PUBLISH = ""                           \
+        const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
             "    messageBus: null,"                                             \
@@ -645,11 +755,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         // setup a function to be called from the JS test code
-        nodejs_module::NodeJSUtils::SetIdle([]() {
-            auto notify_result_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
                 "notify", notify_result
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_integrationTest1", notify_result_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest1", notify_result_obj);
         });
 
         ///act
@@ -661,10 +771,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the publish to happen
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return g_notify_result_called == true;
+            return g_notify_result.WasCalled() == true;
         });
-        ASSERT_IS_TRUE(g_notify_result_called == true);
-        ASSERT_IS_TRUE(g_notify_result == false);
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == false);
 
         ///cleanup
         NODEJS_Destroy(result);
@@ -673,7 +783,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_invalid_publish_fails2)
     {
         ///arrrange
-        const std::string MODULE_INVALID_PUBLISH = ""                           \
+        const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
             "    messageBus: null,"                                             \
@@ -709,11 +819,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         // setup a function to be called from the JS test code
-        nodejs_module::NodeJSUtils::SetIdle([]() {
-            auto notify_result_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
                 "notify", notify_result
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_integrationTest2", notify_result_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest2", notify_result_obj);
         });
 
         ///act
@@ -725,10 +835,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the publish to happen
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return g_notify_result_called == true;
+            return g_notify_result.WasCalled() == true;
         });
-        ASSERT_IS_TRUE(g_notify_result_called == true);
-        ASSERT_IS_TRUE(g_notify_result == false);
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == false);
 
         ///cleanup
         NODEJS_Destroy(result);
@@ -737,7 +847,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_invalid_publish_fails3)
     {
         ///arrrange
-        const std::string MODULE_INVALID_PUBLISH = ""                           \
+        const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
             "    messageBus: null,"                                             \
@@ -770,11 +880,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         // setup a function to be called from the JS test code
-        nodejs_module::NodeJSUtils::SetIdle([]() {
-            auto notify_result_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
                 "notify", notify_result
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_integrationTest3", notify_result_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest3", notify_result_obj);
         });
 
         ///act
@@ -786,10 +896,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the publish to happen
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return g_notify_result_called == true;
+            return g_notify_result.WasCalled() == true;
         });
-        ASSERT_IS_TRUE(g_notify_result_called == true);
-        ASSERT_IS_TRUE(g_notify_result == false);
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == false);
 
         ///cleanup
         NODEJS_Destroy(result);
@@ -798,7 +908,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_receive_is_called)
     {
         ///arrrange
-        const std::string MODULE_RECEIVE_IS_CALLED = ""             \
+        const char* MODULE_RECEIVE_IS_CALLED = ""                   \
             "'use strict';"                                         \
             "module.exports = {"                                    \
             "    messageBus: null,"                                 \
@@ -842,16 +952,16 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         // setup a function to be called from the JS test code
-        nodejs_module::NodeJSUtils::SetIdle([]() {
-            auto notify_result_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
                 "notify", notify_result
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_integrationTest4", notify_result_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest4", notify_result_obj);
 
-            auto publish_mock_msg_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+            auto publish_mock_msg_obj = NodeJSUtils::CreateObjectWithMethod(
                 "publish_mock_message", publish_mock_message
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_mock_module1", publish_mock_msg_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_mock_module1", publish_mock_msg_obj);
         });
 
         ///act
@@ -864,10 +974,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the publish to happen
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return g_notify_result_called == true;
+            return g_notify_result.WasCalled() == true;
         });
-        ASSERT_IS_TRUE(g_notify_result_called == true);
-        ASSERT_IS_TRUE(g_notify_result == true);
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
         MessageBus_RemoveModule(g_message_bus, result);
@@ -877,7 +987,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     TEST_FUNCTION(nodejs_destroy_is_called)
     {
         ///arrrange
-        const std::string MODULE_DESTROY_IS_CALLED = ""             \
+        const char* MODULE_DESTROY_IS_CALLED = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
             "    messageBus: null,"                              \
@@ -903,11 +1013,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         // setup a function to be called from the JS test code
-        nodejs_module::NodeJSUtils::SetIdle([]() {
-            auto notify_result_obj = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
                 "notify", notify_result
             );
-            nodejs_module::NodeJSUtils::AddObjectToGlobalContext("_integrationTest5", notify_result_obj);
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest5", notify_result_obj);
         });
 
         ///act
@@ -916,17 +1026,17 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
         wait_for_predicate(15, [handle_data]() {
-            return handle_data->module_state != NodeModuleState::initializing;
+            return handle_data->GetModuleState() != NodeModuleState::initializing;
         });
 
         NODEJS_Destroy(result);
 
         ///assert
         wait_for_predicate(15, [handle_data]() {
-            return g_notify_result_called == true;
+            return g_notify_result.WasCalled() == true;
         });
-        ASSERT_IS_TRUE(g_notify_result_called == true);
-        ASSERT_IS_TRUE(g_notify_result == true);
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
     }

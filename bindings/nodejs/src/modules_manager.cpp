@@ -17,16 +17,20 @@
 #include "nodejs_common.h"
 #include "nodejs_utils.h"
 #include "modules_manager.h"
+#include "nodejs_idle.h"
 
 using namespace nodejs_module;
 
-#define NODE_STARTUP_SCRIPT  ""             \
-"(function () {"                            \
-"    _gatewayInit.onNodeInitComplete();"    \
-"    function onTimer() {"                  \
-"        setTimeout(onTimer, 2147483648);"  \
-"    }"                                     \
-"    onTimer();"                            \
+#define NODE_STARTUP_SCRIPT  ""                  \
+"(function () {"                                 \
+"    _gatewayInit.onNodeInitComplete();"         \
+"    global._gatewayExit = false;"               \
+"    function onTimer() {"                       \
+"        if(global._gatewayExit === false) {"    \
+"            setTimeout(onTimer, 150);"          \
+"        }"                                      \
+"    }"                                          \
+"    onTimer();"                                 \
 "})();"
 
 ModulesManager::ModulesManager() :
@@ -69,10 +73,6 @@ ModulesManager* ModulesManager::Get()
                     /*Codes_SRS_NODEJS_MODULES_MGR_13_004: [ This method shall return a non-NULL pointer to a ModulesManager instance when the object has been successfully insantiated. ]*/
                     instance = new ModulesManager();
                 }
-                catch (LOCK_RESULT err)
-                {
-                    LogError("Could not initialize lock when creating ModulesManager - %d", err);
-                }
                 catch (std::bad_alloc& err)
                 {
                     /*Codes_SRS_NODEJS_MODULES_MGR_13_002: [ This method shall return NULL if an underlying API call fails. ]*/
@@ -102,22 +102,30 @@ ModulesManager* ModulesManager::Get()
 
 void ModulesManager::AcquireLock() const
 {
-    m_lock.Acquire();
+    m_lock.AcquireLock();
 }
 
 void ModulesManager::ReleaseLock() const
 {
-    m_lock.Release();
+    m_lock.ReleaseLock();
 }
 
 bool ModulesManager::HasModule(size_t module_id) const
 {
+    LockGuard<ModulesManager> lock_guard{ *this };
     return m_modules.find(module_id) != m_modules.end();
 }
 
 NODEJS_MODULE_HANDLE_DATA& ModulesManager::GetModuleFromId(size_t module_id)
 {
+    LockGuard<ModulesManager> lock_guard{ *this };
     return m_modules[module_id];
+}
+
+bool ModulesManager::IsNodeInitialized() const
+{
+    LockGuard<ModulesManager> lock_guard{ *this };
+    return m_node_initialized;
 }
 
 NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_DATA& handle_data)
@@ -197,6 +205,26 @@ void ModulesManager::RemoveModule(size_t module_id)
     // destructor of LockGuard releases the lock
 }
 
+void ModulesManager::ExitNodeThread() const
+{
+    NodeJSIdle::Get()->AddCallback([]() {
+        NodeJSUtils::RunWithNodeContext([](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+            NodeJSUtils::RunScript(isolate, context, "global._gatewayExit = true;");
+        });
+    });
+}
+
+void ModulesManager::JoinNodeThread() const
+{
+    THREAD_HANDLE thread;
+    {
+        LockGuard<ModulesManager> lock_guard{ *this };
+        thread = m_nodejs_thread;
+    }
+
+    ThreadAPI_Join(thread, nullptr);
+}
+
 int ModulesManager::NodeJSRunner()
 {
     // start up Node.js!
@@ -221,7 +249,15 @@ int ModulesManager::NodeJSRunner()
     const char *p3 = p2 + sizeof("-e");
     const char *pargv[] = { p1, p2, p3 };
 
-    return node::Start(argc, const_cast<char**>(pargv));
+    int result = node::Start(argc, const_cast<char**>(pargv), NodeJSIdle::OnIdle);
+
+    // reset object state to indicate that the node thread has now
+    // left the building
+    LockGuard<ModulesManager> lock_guard{ *this };
+    m_nodejs_thread = nullptr;
+    m_node_initialized = false;
+
+    return result;
 }
 
 int ModulesManager::NodeJSRunnerInternal(void* user_data)
@@ -248,7 +284,7 @@ THREADAPI_RESULT ModulesManager::StartNode()
 
     // setup a method in the global context that the startup script
     // will invoke to notify us of completion of initialization of Node
-    bool idle_status = nodejs_module::NodeJSUtils::SetIdle([]() {
+    NodeJSIdle::Get()->AddCallback([]() {
         auto notify_init = nodejs_module::NodeJSUtils::CreateObjectWithMethod(
             "onNodeInitComplete",
             ModulesManager::OnNodeInitComplete
@@ -269,25 +305,17 @@ THREADAPI_RESULT ModulesManager::StartNode()
         }
     });
 
-    if (idle_status == false)
+    // The caller of this method would have already acquired an
+    // object lock.
+    result = ThreadAPI_Create(
+        &m_nodejs_thread,
+        ModulesManager::NodeJSRunnerInternal,
+        reinterpret_cast<void*>(this)
+    );
+    if (result != THREADAPI_OK)
     {
-        LogError("Could not schedule idle callback in libuv");
-        result = THREADAPI_ERROR;
-    }
-    else
-    {
-        // The caller of this method would have already acquired an
-        // object lock.
-        result = ThreadAPI_Create(
-            &m_nodejs_thread,
-            ModulesManager::NodeJSRunnerInternal,
-            reinterpret_cast<void*>(this)
-        );
-        if (result != THREADAPI_OK)
-        {
-            LogError("ThreadAPI_Create failed");
-            m_nodejs_thread = nullptr;
-        }
+        LogError("ThreadAPI_Create failed");
+        m_nodejs_thread = nullptr;
     }
 
     return result;
@@ -314,13 +342,13 @@ bool ModulesManager::StartModule(size_t module_id)
     }
     else
     {
-        result = nodejs_module::NodeJSUtils::SetIdle([module_id, this]() {
+        NodeJSIdle::Get()->AddCallback([module_id, this]() {
             // it is possible that the module has been deleted by the time
             // we get here; so we check that the module exists before we
             // do anything
             if (HasModule(module_id) == true)
             {
-                auto& handle_data = m_modules[module_id];
+                auto& handle_data = GetModuleFromId(module_id);
 
                 /*Codes_SRS_NODEJS_MODULES_MGR_13_010: [ When the callback is invoked via libuv, it shall invoke the NODEJS_MODULE_HANDLE_DATA::on_module_start function. ]*/
                 handle_data.on_module_start(&handle_data);
@@ -330,6 +358,8 @@ bool ModulesManager::StartModule(size_t module_id)
                 LogError("Module has already been deleted");
             }
         });
+
+        result = true;
     }
 
     return result;

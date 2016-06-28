@@ -33,7 +33,7 @@ namespace nodejs_module
             }
         }
 
-        void Acquire() const
+        void AcquireLock() const
         {
             LOCK_RESULT result;
             result = ::Lock(m_lock);
@@ -44,7 +44,7 @@ namespace nodejs_module
             }
         }
 
-        void Release() const
+        void ReleaseLock() const
         {
             LOCK_RESULT result = ::Unlock(m_lock);
             if (result != LOCK_OK)
@@ -62,7 +62,7 @@ namespace nodejs_module
         const T& m_lockable;
 
     public:
-        LockGuard(const T& lockable) : m_lockable{ lockable }
+        explicit LockGuard(const T& lockable) : m_lockable{ lockable }
         {
             m_lockable.AcquireLock();
         }
@@ -75,6 +75,7 @@ namespace nodejs_module
         LockGuard(const LockGuard&) = delete;
         LockGuard(LockGuard&&) = delete;
         LockGuard& operator=(const LockGuard&) = delete;
+        LockGuard& operator=(LockGuard&&) = delete;
     };
 };
 

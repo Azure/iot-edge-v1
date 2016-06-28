@@ -36,4 +36,3 @@
    fun:g_type_add_interface_static
    ...
 }
-

@@ -96,7 +96,7 @@ mkdir %cmake-root%
 rem no error checking
 
 pushd %cmake-root%
-cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%" "%build-root%"
+cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%"
 if not %errorlevel%==0 exit /b %errorlevel%
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln

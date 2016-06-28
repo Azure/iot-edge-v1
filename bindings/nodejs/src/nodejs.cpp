@@ -39,6 +39,7 @@
 #include "nodejs_common.h"
 #include "nodejs.h"
 #include "nodejs_utils.h"
+#include "nodejs_idle.h"
 #include "modules_manager.h"
 
 #define DESTROY_WAIT_TIME_IN_SECS   (5)
@@ -65,7 +66,7 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
 {
     MODULE_HANDLE result;
     const NODEJS_MODULE_CONFIG* module_config = reinterpret_cast<const NODEJS_MODULE_CONFIG*>(configuration);
-    JSON_Value* json;
+    JSON_Value* json = nullptr;
 
     /*Codes_SRS_NODEJS_13_001: [ NodeJS_Create shall return NULL if bus is NULL. ]*/
     /*Codes_SRS_NODEJS_13_002: [ NodeJS_Create shall return NULL if configuration is NULL. ]*/
@@ -106,7 +107,7 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
                 }
                 else
                 {
-                    handle_data->module_state = NodeModuleState::initializing;
+                    handle_data->SetModuleState(NodeModuleState::initializing);
 
                     /*Codes_SRS_NODEJS_13_005: [ NodeJS_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
                     result = reinterpret_cast<MODULE_HANDLE>(handle_data);
@@ -118,6 +119,11 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
                 result = NULL;
             }
         }
+    }
+
+    if (json != nullptr)
+    {
+        json_value_free(json);
     }
 
     return result;
@@ -793,7 +799,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
     v8::Isolate* isolate = handle_data->v8_isolate = v8::Isolate::GetCurrent();
     if (isolate == nullptr)
     {
-        handle_data->module_state = NodeModuleState::error;
+        handle_data->SetModuleState(NodeModuleState::error);
         LogError("v8 isolate is nullptr");
     }
     else
@@ -803,7 +809,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
         auto context = isolate->GetCurrentContext();
         if (context.IsEmpty() == true)
         {
-            handle_data->module_state = NodeModuleState::error;
+            handle_data->SetModuleState(NodeModuleState::error);
             LogError("No active v8 context found.");
         }
         else
@@ -815,7 +821,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
             */
             if (create_gateway_host(isolate, context) == false)
             {
-                handle_data->module_state = NodeModuleState::error;
+                handle_data->SetModuleState(NodeModuleState::error);
                 LogError("Could not create gateway host in v8 global context");
             }
             else
@@ -837,7 +843,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                     auto result = nodejs_module::NodeJSUtils::RunScript(isolate, context, script_str.str());
                     if (result.IsEmpty() == true)
                     {
-                        handle_data->module_state = NodeModuleState::error;
+                        handle_data->SetModuleState(NodeModuleState::error);
                         LogError("registerModule script returned nullptr");
                     }
                     else
@@ -845,7 +851,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                         // this must be boolean and must evaluate to true
                         if (result->IsBoolean() == false)
                         {
-                            handle_data->module_state = NodeModuleState::error;
+                            handle_data->SetModuleState(NodeModuleState::error);
                             LogError("Expected registerModule to return boolean but it did not.");
                         }
                         else
@@ -853,12 +859,12 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             auto bool_result = result->ToBoolean();
                             if (bool_result->BooleanValue() == false)
                             {
-                                handle_data->module_state = NodeModuleState::error;
+                                handle_data->SetModuleState(NodeModuleState::error);
                                 LogError("Expected registerModule to return 'true' but it returned 'false'");
                             }
                             else
                             {
-                                handle_data->module_state = NodeModuleState::initialized;
+                                handle_data->SetModuleState(NodeModuleState::initialized);
                             }
                         }
                     }
@@ -941,6 +947,7 @@ static v8::Local<v8::Object> copy_properties_to_object(
         }
     }
 
+    ConstMap_Destroy(message_properties);
     return result;
 }
 
@@ -1066,7 +1073,7 @@ void NODEJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
     else
     {
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(module);
-        if (handle_data->module_state != NodeModuleState::initialized)
+        if (handle_data->GetModuleState() != NodeModuleState::initialized)
         {
             LogError("Module has not been initialized correctly: %s", handle_data->main_path.c_str());
         }
@@ -1076,15 +1083,11 @@ void NODEJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
             message = Message_Clone(message);
 
             // run on node's event thread
-            bool idle_status = nodejs_module::NodeJSUtils::SetIdle([module, message]() {
+            nodejs_module::NodeJSIdle::Get()->AddCallback([module, message]() {
                 nodejs_module::NodeJSUtils::RunWithNodeContext([module, message](v8::Isolate* isolate, v8::Local<v8::Context> context) {
                     on_run_receive_message(isolate, context, module, message);
                 });
             });
-            if (idle_status == false)
-            {
-                LogError("Could not schedule idle callback in libuv");
-            }
         }
     }
 }
@@ -1099,7 +1102,7 @@ static void on_quit_node(
     if (modules_manager->HasModule(module_id) == true)
     {
         auto& handle_data = modules_manager->GetModuleFromId(module_id);
-        if (handle_data.module_state != NodeModuleState::initialized)
+        if (handle_data.GetModuleState() != NodeModuleState::initialized)
         {
             LogError("Module has not been initialized correctly: %s", handle_data.main_path.c_str());
         }
@@ -1156,33 +1159,27 @@ static void NODEJS_Destroy(MODULE_HANDLE module)
         auto module_id = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA *>(module)->module_id;
 
         // run on node's event thread
-        bool idle_status = nodejs_module::NodeJSUtils::SetIdle([module_id]() {
+        nodejs_module::NodeJSIdle::Get()->AddCallback([module_id]() {
             nodejs_module::NodeJSUtils::RunWithNodeContext([module_id](v8::Isolate* isolate, v8::Local<v8::Context> context) {
                 on_quit_node(isolate, context, module_id);
             });
         });
-        if (idle_status == false)
-        {
-            LogError("Could not schedule idle callback in libuv");
-        }
-        else
-        {
-            // Spin for a bit waiting for libuv to call on_quit_node
-            time_t start_time = get_time(nullptr);
-            auto modules_manager = nodejs_module::ModulesManager::Get();
-            while (
-                    (get_time(nullptr) - start_time) < DESTROY_WAIT_TIME_IN_SECS
-                    &&
-                    modules_manager->HasModule(module_id) == true
-                  )
-            {
-                ThreadAPI_Sleep(250);
-            }
 
-            if (modules_manager->HasModule(module_id) == true)
-            {
-                LogError("Could not cleanly destroy the module");
-            }
+        // Spin for a bit waiting for libuv to call on_quit_node
+        time_t start_time = get_time(nullptr);
+        auto modules_manager = nodejs_module::ModulesManager::Get();
+        while (
+                (get_time(nullptr) - start_time) < DESTROY_WAIT_TIME_IN_SECS
+                &&
+                modules_manager->HasModule(module_id) == true
+              )
+        {
+            ThreadAPI_Sleep(250);
+        }
+
+        if (modules_manager->HasModule(module_id) == true)
+        {
+            LogError("Could not cleanly destroy the module");
         }
     }
 }

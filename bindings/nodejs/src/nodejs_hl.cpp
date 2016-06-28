@@ -78,6 +78,8 @@ static MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* config
                         /*Codes_SRS_NODEJS_HL_13_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
                         // return 'result' as-is
                     }
+
+                    free(args_str);
                 }
             }
 

@@ -9,6 +9,7 @@
 #include "v8.h"
 
 #include "message_bus.h"
+#include "lock.h"
 
 struct NODEJS_MODULE_HANDLE_DATA;
 
@@ -98,6 +99,28 @@ struct NODEJS_MODULE_HANDLE_DATA
         }
     }
 
+    void AcquireLock() const
+    {
+        object_lock.AcquireLock();
+    }
+
+    void ReleaseLock() const
+    {
+        object_lock.ReleaseLock();
+    }
+
+    NodeModuleState GetModuleState() const
+    {
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        return module_state;
+    }
+
+    void SetModuleState(NodeModuleState state)
+    {
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        module_state = state;
+    }
+
     MESSAGE_BUS_HANDLE          bus;
     std::string                 main_path;
     std::string                 configuration_json;
@@ -106,6 +129,7 @@ struct NODEJS_MODULE_HANDLE_DATA
     size_t                      module_id;
     PFNMODULE_START             on_module_start;
     NodeModuleState             module_state;
+    nodejs_module::Lock         object_lock;
 };
 
 #endif /*NODEJS_COMMON_H*/

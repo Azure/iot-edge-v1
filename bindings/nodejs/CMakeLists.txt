@@ -53,6 +53,7 @@ include_directories(./inc)
 # Node JS binding DLL/SO sources and headers
 set(nodejs_sources
     ./src/nodejs.cpp
+    ./src/nodejs_idle.cpp
     ./src/nodejs_utils.cpp
     ./src/modules_manager.cpp
 )
@@ -60,6 +61,7 @@ set(nodejs_headers
     ./inc/lock.h
     ./inc/nodejs_common.h
     ./inc/nodejs.h
+    ./inc/nodejs_idle.h
     ./inc/nodejs_utils.h
     ./inc/modules_manager.h
 )
