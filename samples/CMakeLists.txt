@@ -11,6 +11,6 @@ if(LINUX)
     add_subdirectory(ble_gateway_hl)
 endif()
 
-if(WIN32)
+if(${enable_dotnet_binding})
     add_subdirectory(dotnet_binding_sample)
 endif()
