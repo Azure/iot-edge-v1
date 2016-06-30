@@ -5,7 +5,7 @@ project(azure_iot_gateway_sdk)
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always build]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
-option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF) [if possible, they are always build]" OFF)
+option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
 
 #making a nice global variable to know if we are on linux or not.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
