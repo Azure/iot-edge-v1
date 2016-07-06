@@ -175,24 +175,15 @@ static int module_publish_worker(void * user_data)
                     }
                     else
                     {
-                        switch (module_info->module->module_type)
-                        {
-                        case NATIVE_C_TYPE:
-                            /*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
-                            module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
-                            break;
-
-#ifdef UWP_BINDING
-
-                        case MODERN_CPP_TYPE:
-                            /*Codes_SRS_MESSAGE_BUS_13_114: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
-                            module_info->module->module_instance->Module_Receive(module_info->module->module_instance, msg);
-                            break;
-
+#ifndef UWP_BINDING
+						/*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
+                        module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
+#else
+                        /*Codes_SRS_MESSAGE_BUS_13_114: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
+                        module_info->module->module_instance->Module_Receive(module_info->module->module_instance, msg);
 #endif // UWP_BINDING
-                        }
 
-                        /*Codes_SRS_MESSAGE_BUS_13_093: [The function shall destroy the message that was dequeued by calling Message_Destroy.]*/
+						/*Codes_SRS_MESSAGE_BUS_13_093: [The function shall destroy the message that was dequeued by calling Message_Destroy.]*/
                         Message_Destroy(msg);
 
                         /*Codes_SRS_MESSAGE_BUS_13_094: [The function shall re - acquire the lock on module_info->mq_lock.]*/
@@ -236,10 +227,10 @@ static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const
     }
     else
     {
-        module_info->module->module_type = module->module_type;
-        module_info->module->module_apis = module->module_apis;
+#ifndef UWP_BINDING
+		module_info->module->module_apis = module->module_apis;
         module_info->module->module_handle = module->module_handle;
-#ifdef UWP_BINDING
+#else
         module_info->module->module_instance = module->module_instance;
 #endif // UWP_BINDING
 
@@ -382,17 +373,16 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
         result = MESSAGE_BUS_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
-    /*Codes_SRS_MESSAGE_BUS_13_115: [If module is `NATIVE_C_TYPE` and the `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
-    else if (module->module_type == NATIVE_C_TYPE &&
-        module->module_apis == NULL || module->module_handle == NULL)
+#ifndef UWP_BINDING
+	/*Codes_SRS_MESSAGE_BUS_13_115: [If module is `NATIVE_C_TYPE` and the `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+    else if (module->module_apis == NULL || module->module_handle == NULL)
     {
         result = MESSAGE_BUS_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
-#ifdef UWP_BINDING
+#else
     /*Codes_SRS_MESSAGE_BUS_13_116: [If module is `MODERN_CPP_TYPE` and the `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
-    else if (module->module_type == MODERN_CPP_TYPE &&
-        module->module_instance == NULL)
+    else if (module->module_instance == NULL)
     {
         result = MESSAGE_BUS_INVALIDARG;
         LogError("invalid parameter (NULL).");
@@ -470,25 +460,11 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
 static bool find_module_predicate(LIST_ITEM_HANDLE list_item, const void* value)
 {
     MESSAGE_BUS_MODULEINFO* element = (MESSAGE_BUS_MODULEINFO*)list_item_get_value(list_item);
-    bool found = false;
-    switch (element->module->module_type)
-    {
-    case NATIVE_C_TYPE:
-
-        found = element->module->module_handle == ((MODULE*)value)->module_handle;
-        break;
-
-#ifdef UWP_BINDING
-
-    case MODERN_CPP_TYPE:
-
-        found = element->module->module_instance == ((MODULE*)value)->module_instance;
-        break;
-
+#ifndef UWP_BINDING
+	return element->module->module_handle == ((MODULE*)value)->module_handle;
+#else
+	return element->module->module_instance == ((MODULE*)value)->module_instance;
 #endif // UWP_BINDING
-    }
-
-    return found;
 }
 
 MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
@@ -624,7 +600,11 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
                 MESSAGE_BUS_MODULEINFO* module_info = (MESSAGE_BUS_MODULEINFO*)list_item_get_value(current_module);
 
                 /*Codes_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, MessageBus_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]*/
-                if (source == NULL  || module_info->module->module_handle != source)
+#ifndef UWP_BINDING
+				if (source == NULL  || module_info->module->module_handle != source)
+#else
+				if (source == NULL || module_info->module->module_instance != source)
+#endif // UWP_BINDING
                 {
                     /*Codes_SRS_MESSAGE_BUS_13_033: [In the loop, the function shall first acquire the lock on MESSAGE_BUS_MODULEINFO::mq_lock.]*/
                     if (Lock(module_info->mq_lock) != LOCK_OK)

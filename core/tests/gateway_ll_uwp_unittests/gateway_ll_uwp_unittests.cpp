@@ -338,7 +338,6 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	whenShallVECTOR_find_if_fail = 0;
 
 	IInternalGatewayModule *iigm = new DummyGatewayModule;
-	dummyModule.module_type = MODERN_CPP_TYPE;
 	dummyModule.module_instance = iigm;
 
 	dummyModules = BASEIMPLEMENTATION::VECTOR_create(sizeof(MODULE));
@@ -370,7 +369,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
-TEST_FUNCTION(Gateway_LL_CreateForModules_Creates_Handle_Success)
+TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -390,18 +389,18 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Creates_Handle_Success)
 		.IgnoreArgument(1);
 
 	//Act
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(dummyModules, bus);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
 
 	//Assert
 	ASSERT_IS_NOT_NULL(gateway);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
-	Gateway_LL_DestroyForModules(gateway);
+	Gateway_LL_UwpDestroy(gateway);
 }
 
 /*Tests_SRS_GATEWAY_LL_14_002: [This function shall return NULL upon any memory allocation failure.]*/
-TEST_FUNCTION(Gateway_LL_CreateForModules_Creates_Handle_Malloc_Failure)
+TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Malloc_Failure)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -412,7 +411,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Creates_Handle_Malloc_Failure)
 		.IgnoreArgument(1);
 
 	//Act
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(IGNORED_PTR_ARG, IGNORED_PTR_ARG);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(IGNORED_PTR_ARG, IGNORED_PTR_ARG);
 
 	//Assert
 	ASSERT_IS_NULL(gateway);
@@ -423,7 +422,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Creates_Handle_Malloc_Failure)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_040: [ This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. ]*/
-TEST_FUNCTION(Gateway_LL_CreateForModules_Null_MessageBus_Handle_Failure)
+TEST_FUNCTION(Gateway_LL_UwpCreate_Null_MessageBus_Handle_Failure)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -434,7 +433,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Null_MessageBus_Handle_Failure)
 	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(IGNORED_PTR_ARG, NULL);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(IGNORED_PTR_ARG, NULL);
 
 	//Assert
 	ASSERT_IS_NULL(gateway);
@@ -445,7 +444,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Null_MessageBus_Handle_Failure)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_041: [ This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. ]*/
-TEST_FUNCTION(Gateway_LL_CreateForModules_Null_Vector_Handle_Failure)
+TEST_FUNCTION(Gateway_LL_UwpCreate_Null_Vector_Handle_Failure)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -456,7 +455,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Null_Vector_Handle_Failure)
 	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(NULL, IGNORED_PTR_ARG);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(NULL, IGNORED_PTR_ARG);
 
 	//Assert
 	ASSERT_IS_NULL(gateway);
@@ -468,7 +467,7 @@ TEST_FUNCTION(Gateway_LL_CreateForModules_Null_Vector_Handle_Failure)
 
 
 /*Tests_SRS_GATEWAY_LL_14_005: [ If gw is NULL the function shall do nothing. ]*/
-TEST_FUNCTION(Gateway_LL_DestroyForModules_Does_Nothing_If_NULL)
+TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -476,7 +475,7 @@ TEST_FUNCTION(Gateway_LL_DestroyForModules_Does_Nothing_If_NULL)
 	GATEWAY_HANDLE gateway = NULL;
 
 	//Act
-	Gateway_LL_DestroyForModules(gateway);
+	Gateway_LL_UwpDestroy(gateway);
 
 	//Assert
 	mocks.AssertActualAndExpectedCalls();
@@ -486,13 +485,13 @@ TEST_FUNCTION(Gateway_LL_DestroyForModules_Does_Nothing_If_NULL)
 /*Tests_SRS_GATEWAY_LL_14_006: [ The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
 /*Tests_SRS_GATEWAY_LL_14_021: [ The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
 /*Tests_SRS_GATEWAY_LL_14_038: [ The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. ]*/
-TEST_FUNCTION(Gateway_LL_DestroyForModules_Removes_All_Modules_And_Destroys_Bus_Success)
+TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
 	MESSAGE_BUS_HANDLE bus = MessageBus_Create();
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(dummyModules, bus);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -510,20 +509,20 @@ TEST_FUNCTION(Gateway_LL_DestroyForModules_Removes_All_Modules_And_Destroys_Bus_
 		.IgnoreArgument(1);
 
 	//Act
-	Gateway_LL_DestroyForModules(gateway);
+	Gateway_LL_UwpDestroy(gateway);
 
 	//Assert
 	mocks.AssertActualAndExpectedCalls();
 }
 
 /*Tests_SRS_GATEWAY_LL_14_022: [ If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. ]*/
-TEST_FUNCTION(Gateway_LL_DestroyForModules_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
+TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
 	MESSAGE_BUS_HANDLE bus = MessageBus_Create();
-	GATEWAY_HANDLE gateway = Gateway_LL_CreateForModules(dummyModules, bus);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -542,7 +541,7 @@ TEST_FUNCTION(Gateway_LL_DestroyForModules_Continues_Unloading_If_MessageBus_Rem
 		.IgnoreArgument(1);
 
 	//Act
-	Gateway_LL_DestroyForModules(gateway);
+	Gateway_LL_UwpDestroy(gateway);
 
 	//Assert
 	mocks.AssertActualAndExpectedCalls();

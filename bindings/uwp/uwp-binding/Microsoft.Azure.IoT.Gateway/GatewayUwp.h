@@ -5,7 +5,7 @@
 #include "pch.h"
 
 
-#include "..\..\..\core\inc\gateway.h"
+#include "..\..\..\..\core\inc\gateway_ll.h"
 #include "IGatewayModule.h"
 
 namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
@@ -35,7 +35,7 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		Gateway(Windows::Foundation::Collections::IVector<Microsoft::Azure::IoT::Gateway::IGatewayModule^>^ modules);
 		virtual ~Gateway()
 		{
-			Gateway_LL_DestroyForModules(gateway_handle);
+			Gateway_LL_UwpDestroy(gateway_handle);
 			gateway_handle = nullptr;
 
 			VECTOR_destroy(modules_handle);

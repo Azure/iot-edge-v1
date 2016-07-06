@@ -48,7 +48,6 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules)
 		imod->Module_Create(messagebus_handle, nullptr);
 
 		MODULE module;
-		module.module_type = MODERN_CPP_TYPE;
 		module.module_instance = imod.get();
 
 		auto ret = VECTOR_push_back(modules_handle, &module, 1);
@@ -60,7 +59,7 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules)
 		gatewayModulesToDelete.push_back(std::move(imod));
 	}
 
-	gateway_handle = Gateway_LL_CreateForModules(modules_handle, messagebus_handle);
+	gateway_handle = Gateway_LL_UwpCreate(modules_handle, messagebus_handle);
 	if (gateway_handle == nullptr)
 	{
 		throw ref new Platform::FailureException("Failed to create Gateway.");

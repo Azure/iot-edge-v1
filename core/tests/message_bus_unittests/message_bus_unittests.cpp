@@ -145,7 +145,6 @@ static MODULE_APIS fake_module_apis =
 
 MODULE fake_module =
 {
-    NATIVE_C_TYPE,
     &fake_module_apis,
     fake_module_handle
 };
@@ -768,7 +767,6 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
 
     MODULE module =
     {
-        NATIVE_C_TYPE,
         NULL,
         fake_module_handle
     };

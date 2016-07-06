@@ -31,17 +31,6 @@ extern "C"
 {
 #endif
 
-	/** @brief	Enum describing type of module implementation. */
-    typedef enum MODULE_TYPE_TAG
-    {
-		/** @brief	Describes module implemenation utilizing function pointers. */
-        NATIVE_C_TYPE,
-#ifdef UWP_BINDING
-		/** @brief	Describes module implemenation utilizing C++ interface. */
-        MODERN_CPP_TYPE,
-#endif // UWP_BINDING
-    } MODULE_TYPE;
-
 #ifdef UWP_BINDING
 
 	/** @brief	Interface containing module-specific implementations. */
@@ -64,13 +53,12 @@ extern "C"
 	*/
     typedef struct MODULE_TAG
     {
-		/** @brief Enum description of #MODULE_TYPE. */
-        MODULE_TYPE module_type;
+#ifndef UWP_BINDING
 		/** @brief Struct containing function pointers */
         const MODULE_APIS* module_apis;
 		/** @brief HANDLE for module. */
         MODULE_HANDLE module_handle;
-#ifdef UWP_BINDING
+#else
 		/** @brief Interface implementation for module. */
         IInternalGatewayModule* module_instance;
 #endif // UWP_BINDING
