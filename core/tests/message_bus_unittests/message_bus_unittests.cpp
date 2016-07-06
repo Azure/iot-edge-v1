@@ -119,7 +119,7 @@ static bool shouldIntercept_Condition_Wait;
 static void* interceptArgs_for_Condition_Wait;
 static PFN_CONDITION_WAIT_INTERCEPT intercept_for_Condition_Wait;
 
-static MODULE_HANDLE fake_module = (MODULE_HANDLE)0x42;
+static MODULE_HANDLE fake_module_handle = (MODULE_HANDLE)0x42;
 static MODULE_HANDLE FakeModule_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
 {
     return (MODULE_HANDLE)malloc(1);
@@ -143,6 +143,12 @@ static MODULE_APIS fake_module_apis =
     FakeModule_Receive
 };
 
+MODULE fake_module =
+{
+    NATIVE_C_TYPE,
+    &fake_module_apis,
+    fake_module_handle
+};
 
 class RefCountObject
 {
@@ -469,7 +475,7 @@ public:
             {
                 result1 = NULL;
             }
-            else if ((void*)fake_module == (void*)match_context)
+            else if ((void*)&fake_module == (void*)match_context)
             {
                 result1 = (LIST_ITEM_HANDLE)fake_list[0];
             }
@@ -729,7 +735,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
     CMessageBusMocks mocks;
 
     ///act
-    auto result = MessageBus_AddModule(NULL, (MODULE_HANDLE)0x1, (const MODULE_APIS*)0x1);
+    auto result = MessageBus_AddModule(NULL, (MODULE*)0x1);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
@@ -745,7 +751,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module)
     CMessageBusMocks mocks;
 
     ///act
-    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, NULL, (const MODULE_APIS*)0x1);
+    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, NULL);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
@@ -760,8 +766,15 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
     ///arrange
     CMessageBusMocks mocks;
 
+    MODULE module =
+    {
+        NATIVE_C_TYPE,
+        NULL,
+        fake_module_handle
+    };
+    
     ///act
-    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, (MODULE_HANDLE)0x1, NULL);
+    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, &module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
@@ -784,7 +797,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_alloc_module_info_fails)
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -802,9 +815,11 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_VECTOR_create_fails)
     mocks.ResetAllCalls();
 
     // this is for the MessageBus_AddModule call
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     whenShallVECTOR_create_fail = currentVECTOR_create_call + 1;
@@ -812,7 +827,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_VECTOR_create_fails)
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -833,7 +848,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Lock_Init_fails)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -843,7 +860,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Lock_Init_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -864,7 +881,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Condition_Init_fails)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -873,11 +892,11 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Condition_Init_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    whenShallCond_Init_fail = 1;
+	whenShallCond_Init_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Condition_Init());
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -898,7 +917,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_list_add_fails)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -907,7 +928,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_list_add_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -919,7 +942,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_list_add_fails)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -940,7 +963,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_ThreadAPI_Create_fails)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -949,7 +974,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_ThreadAPI_Create_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -965,7 +992,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_ThreadAPI_Create_fails)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -986,7 +1013,9 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -996,14 +1025,16 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
     whenShallLock_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Condition_Init());
     STRICT_EXPECTED_CALL(mocks, Condition_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
@@ -1036,7 +1067,9 @@ TEST_FUNCTION(MessageBus_AddModule_succeeds)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
@@ -1050,14 +1083,14 @@ TEST_FUNCTION(MessageBus_AddModule_succeeds)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1180,7 +1213,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
     input.message = message;
-    call_status_for_FakeModule_Receive.module = fake_module;
+    call_status_for_FakeModule_Receive.module = fake_module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
     mocks.ResetAllCalls();
@@ -1211,7 +1244,9 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     // this is for the MessageBus_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
@@ -1255,7 +1290,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -1263,7 +1298,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1286,9 +1321,11 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
     mocks.ResetAllCalls();
 
     // this is for the MessageBus_AddModule call
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
@@ -1307,14 +1344,14 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
         .SetFailReturn(LOCK_ERROR);
 
     ///act
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1342,10 +1379,10 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
     auto message = Message_Create(&c);
 
     input.message = message;
-    call_status_for_FakeModule_Receive.module = fake_module;
+    call_status_for_FakeModule_Receive.module = fake_module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
         
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
 
     result = MessageBus_Publish(bus, NULL, message);
@@ -1438,7 +1475,7 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1450,7 +1487,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_with_null_bus)
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_RemoveModule(NULL, (MODULE_HANDLE)0x1);
+    auto r1 = MessageBus_RemoveModule(NULL, (const MODULE*)0x1);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
@@ -1481,7 +1518,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_Lock_fails)
     ///arrange
     CMessageBusMocks mocks;
     auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
     // this is for the MessageBus_RemoveModule call
@@ -1490,14 +1527,14 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_Lock_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_RemoveModule(bus, fake_module);
+    result = MessageBus_RemoveModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1507,7 +1544,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_list_find_fails)
     ///arrange
     CMessageBusMocks mocks;
     auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
     // this is for the MessageBus_RemoveModule call
@@ -1516,19 +1553,19 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_list_find_fails)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     whenShalllist_find_fail = 1;
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, fake_module))
+    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
     ///act
-    result = MessageBus_RemoveModule(bus, fake_module);
+    result = MessageBus_RemoveModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1540,7 +1577,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
         ///arrange
         CMessageBusMocks mocks;
         auto bus = MessageBus_Create();
-        auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+        auto result = MessageBus_AddModule(bus, &fake_module);
         mocks.ResetAllCalls();
 
         // this is for the MessageBus_RemoveModule call
@@ -1549,7 +1586,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
         STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, fake_module))
+        STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
         STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
@@ -1567,7 +1604,9 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1575,7 +1614,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
 
 
         ///act
-        result = MessageBus_RemoveModule(bus, fake_module);
+        result = MessageBus_RemoveModule(bus, &fake_module);
 
         ///assert
         ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -1602,7 +1641,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_succeeds)
     ///arrange
     CMessageBusMocks mocks;
     auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
     // this is for the MessageBus_RemoveModule call
@@ -1611,7 +1650,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_succeeds)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, fake_module))
+    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
@@ -1633,15 +1672,17 @@ TEST_FUNCTION(MessageBus_RemoveModule_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 
     ///act
-    result = MessageBus_RemoveModule(bus, fake_module);
+    result = MessageBus_RemoveModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -1657,7 +1698,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
     ///arrange
     CMessageBusMocks mocks;
     auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
@@ -1672,7 +1713,7 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, fake_module))
+    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
@@ -1697,15 +1738,17 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 
     ///act
-    result = MessageBus_RemoveModule(bus, fake_module);
+    result = MessageBus_RemoveModule(bus, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -1930,7 +1973,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_module_mq_lock_fails)
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1958,7 +2001,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_module_mq_lock_fails)
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -1975,7 +2018,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_push_back_fails)
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -2012,7 +2055,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_push_back_fails)
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -2029,7 +2072,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_condition_post_fails)
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -2066,7 +2109,7 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_condition_post_fails)
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -2090,7 +2133,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+    auto result = MessageBus_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -2126,7 +2169,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, fake_module);
+    MessageBus_RemoveModule(bus, &fake_module);
     MessageBus_Destroy(bus);
 }
 
@@ -2143,7 +2186,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 	MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
 	auto message = Message_Create(&c);
 
-	auto result = MessageBus_AddModule(bus, fake_module, &fake_module_apis);
+	auto result = MessageBus_AddModule(bus, &fake_module);
 
 	mocks.ResetAllCalls();
 
@@ -2160,7 +2203,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 		.IgnoreArgument(1);
 
 	///act
-	result = MessageBus_Publish(bus, fake_module, message);
+	result = MessageBus_Publish(bus, fake_module_handle, message);
 
 	///assert
 	ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
@@ -2168,7 +2211,7 @@ TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 
 	///cleanup
 	Message_Destroy(message);
-	MessageBus_RemoveModule(bus, fake_module);
+	MessageBus_RemoveModule(bus, &fake_module);
 	MessageBus_Destroy(bus);
 }
 

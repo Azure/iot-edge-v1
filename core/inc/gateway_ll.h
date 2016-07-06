@@ -59,7 +59,30 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 */
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 
-/** @brief		Destroys the gateway and disposes of all associated data. 
+#ifdef UWP_BINDING
+
+/** @brief		Creates a new gateway using the provided #MODULEs and #MESSAGE_BUS_HANDLE.
+*
+*	@param		modules   		#VECTOR_HANDLE structure containing
+*								specific modules.
+*
+*	@param		bus       		#MESSAGE_BUS_HANDLE structure containing
+*								specific message bus.
+*
+*	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
+*				gateway or @c NULL on failure.
+*/
+extern GATEWAY_HANDLE Gateway_LL_CreateForModules(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
+
+/** @brief		Destroys the gateway and disposes of all associated data.
+*
+*	@param		gw		#GATEWAY_HANDLE to be destroyed.
+*/
+extern void Gateway_LL_DestroyForModules(GATEWAY_HANDLE gw);
+
+#endif // UWP_BINDING
+
+/** @brief		Destroys the gateway and disposes of all associated data.
 *	
 *	@param		gw		#GATEWAY_HANDLE to be destroyed.
 */

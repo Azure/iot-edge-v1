@@ -9,6 +9,7 @@ add_subdirectory(module_loader_unittests)
 add_subdirectory(dynamic_library_unittests)
 add_subdirectory(message_bus_unittests)
 add_subdirectory(gateway_ll_unittests)
+add_subdirectory(gateway_ll_uwp_unittests)
 add_subdirectory(gateway_unittests)
 
 if(${run_e2e_tests})
