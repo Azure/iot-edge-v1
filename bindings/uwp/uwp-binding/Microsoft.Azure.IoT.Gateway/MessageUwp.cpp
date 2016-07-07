@@ -4,6 +4,9 @@
 #include "pch.h"
 #include "MessageUwp.h"
 
+#include <locale>
+#include <codecvt>
+
 using namespace Microsoft::Azure::IoT::Gateway;
 
 
@@ -27,18 +30,8 @@ Message::Message(Windows::Foundation::Collections::IVector<byte> ^msgInByteArray
 
 std::string wstrtostr(const std::wstring &wstr)
 {
-	// Convert a Unicode string to an ASCII string
-	std::vector<char> buffer(wstr.length() + 1);
-	WideCharToMultiByte(
-		CP_ACP,
-		0,
-		wstr.c_str(),
-		wstr.length(),
-		&buffer[0],
-		buffer.size(),
-		0,
-		0);
-	return (std::string)&buffer[0];
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> wstringToString;
+	return wstringToString.to_bytes(wstr);
 }
 
 Message::Message(Platform::String ^content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties)
