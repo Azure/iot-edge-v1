@@ -5,7 +5,7 @@
 #include "pch.h"
 
 
-#include "..\..\..\..\core\inc\gateway_ll.h"
+#include "gateway.h"
 #include "IGatewayModule.h"
 
 namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
