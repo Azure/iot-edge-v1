@@ -56,6 +56,29 @@ Message::Message(Platform::String ^content, Windows::Foundation::Collections::IM
 	_message_handle = Message_Create(&msg);
 }
 
+Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^ content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties)
+{
+	std::vector<byte> contentBytes(content->Size);
+	std::copy(begin(content), end(content), contentBytes.begin());
+
+	MESSAGE_CONFIG msg;
+	msg.source = contentBytes.data();
+	msg.size = contentBytes.size();
+	msg.sourceProperties = Map_Create(NULL);
+
+	for (auto iter = begin(properties); iter != end(properties); iter++)
+	{
+		std::wstring wkey = (*iter)->Key->Data();
+		std::wstring wvalue = (*iter)->Value->ToString()->Data();
+		std::string key = wstrtostr(wkey);
+		std::string value = wstrtostr(wvalue);
+		Map_Add(msg.sourceProperties, key.c_str(), value.c_str());
+	}
+
+	auto message_handle = Message_Create(&msg);
+	return ref new Message(message_handle);
+}
+
 Windows::Foundation::Collections::IVector<byte>^ Message::ToBytes()
 {
 	int arrayLength = 0;

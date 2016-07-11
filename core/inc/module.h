@@ -37,10 +37,6 @@ extern "C"
     class IInternalGatewayModule
     {
     public:
-		/** @brief Interface equivalent to #Module_Create function. */
-        virtual void Module_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration) = 0;
-		/** @brief Interface equivalent to #Module_Destroy function. */
-        virtual void Module_Destroy() = 0;
 		/** @brief Interface equivalent to #Module_Receive function. */
         virtual void Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle) = 0;
     };
@@ -53,14 +49,14 @@ extern "C"
 	*/
     typedef struct MODULE_TAG
     {
-#ifndef UWP_BINDING
-		/** @brief Struct containing function pointers */
-        const MODULE_APIS* module_apis;
-		/** @brief HANDLE for module. */
-        MODULE_HANDLE module_handle;
-#else
+#ifdef UWP_BINDING
 		/** @brief Interface implementation for module. */
-        IInternalGatewayModule* module_instance;
+		IInternalGatewayModule* module_instance;
+#else
+		/** @brief Struct containing function pointers */
+		const MODULE_APIS* module_apis;
+		/** @brief HANDLE for module. */
+		MODULE_HANDLE module_handle;
 #endif // UWP_BINDING
     }MODULE;
 

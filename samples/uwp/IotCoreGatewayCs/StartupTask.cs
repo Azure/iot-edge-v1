@@ -25,7 +25,9 @@ namespace IotCoreGatewayCs
             modules.Add(new SetOfCsModules.Module1());
             modules.Add(new SetOfCsModules.Module3());
 
-            gateway = new Microsoft.Azure.IoT.Gateway.Gateway(modules);
+            var properties = new Dictionary<string, string>();
+            properties.Add("ConfigProperty", "ConfigValue");
+            gateway = new Microsoft.Azure.IoT.Gateway.Gateway(modules, properties);
         }
     }
 }

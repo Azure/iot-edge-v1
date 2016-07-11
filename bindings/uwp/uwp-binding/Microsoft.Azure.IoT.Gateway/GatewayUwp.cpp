@@ -13,9 +13,10 @@ using namespace Microsoft::Azure::IoT::Gateway;
 
 ref class Message;
 
-void InternalGatewayModule::Module_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+MODULE_HANDLE InternalGatewayModule::Module_Create(MESSAGE_BUS_HANDLE busHandle, IMapView<Platform::String^, Platform::String^>^ properties)
 {
-	_moduleImpl->Create(ref new MessageBus(busHandle), L"");
+	_moduleImpl->Create(ref new MessageBus(busHandle, (MODULE_HANDLE)this), properties);
+	return (MODULE_HANDLE)this;
 }
 void InternalGatewayModule::Module_Destroy()
 {
@@ -27,7 +28,7 @@ void InternalGatewayModule::Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_H
 	_moduleImpl->Receive(msg);
 }
 
-Gateway::Gateway(IVector<IGatewayModule^>^ modules)
+Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, Platform::String^>^ properties)
 {
 	messagebus_handle = MessageBus_Create();
 	if (messagebus_handle == nullptr)
@@ -45,7 +46,7 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules)
  	for (auto mod : modules)
 	{
 		std::unique_ptr<InternalGatewayModule> imod(new InternalGatewayModule(mod));
-		imod->Module_Create(messagebus_handle, nullptr);
+		auto module_handle = imod->Module_Create(messagebus_handle, properties);
 
 		MODULE module;
 		module.module_instance = imod.get();
@@ -65,5 +66,14 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules)
 		throw ref new Platform::FailureException("Failed to create Gateway.");
 	}
 }
+
+Gateway::~Gateway()
+{
+	Gateway_LL_UwpDestroy(gateway_handle);
+	gateway_handle = nullptr;
+
+	VECTOR_destroy(modules_handle);
+}
+
 
 

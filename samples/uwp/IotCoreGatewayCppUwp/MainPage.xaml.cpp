@@ -43,5 +43,7 @@ void MainPage::DoStuff()
 	modules->Append(ref new SetOfCppModules::Module1());
 	modules->Append(ref new SetOfCppModules::Module3());
 
-	gateway = ref new Microsoft::Azure::IoT::Gateway::Gateway(modules);
+	auto properties = ref new Platform::Collections::Map<Platform::String^, Platform::String^>();
+	properties->Insert("ConfigProperty", "ConfigValue");
+	gateway = ref new Microsoft::Azure::IoT::Gateway::Gateway(modules, properties->GetView());
 }

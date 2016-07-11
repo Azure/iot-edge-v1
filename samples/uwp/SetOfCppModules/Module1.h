@@ -11,7 +11,7 @@ namespace SetOfCppModules
 		Module1();
 
 		// Inherited via IGatewayModule
-		virtual void Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Platform::String ^configuration);
+		virtual void Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration);
 		virtual void Destroy();
 		virtual void Receive(Microsoft::Azure::IoT::Gateway::Message ^received_message);
 	};

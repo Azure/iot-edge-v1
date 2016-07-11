@@ -21,11 +21,13 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		};
 
 	public:
-		// The copy constructor and the IVector<byte> constructor cause an overload warning ... making the copy
-		// constructor a static Create method to avoid this warning and the subsequent issue in Javascript.
+		// There are limitations to UWP and overloading ... these static CreateMessage
+		// methods are added to avoid this warning and the subsequent ambiguity issue 
+		// in Javascript.
 		static Message^ CreateMessage(Message^ message);
-		Message(Windows::Foundation::Collections::IVector<byte>^ msgInByteArray);
+		static Message^ CreateMessage(Windows::Foundation::Collections::IVector<byte>^ content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
 
+		Message(Windows::Foundation::Collections::IVector<byte>^ msgInByteArray);
 		Message(Platform::String ^content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
 
 		Windows::Foundation::Collections::IVector<byte>^ GetContent();

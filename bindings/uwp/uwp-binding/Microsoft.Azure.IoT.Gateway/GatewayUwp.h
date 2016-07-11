@@ -21,8 +21,9 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		{
 		}
 
-		void Module_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+		MODULE_HANDLE Module_Create(MESSAGE_BUS_HANDLE busHandle, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
 		void Module_Destroy();
+
 		void Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
 	private:
@@ -32,14 +33,9 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 	public ref class Gateway sealed
 	{
 	public:
-		Gateway(Windows::Foundation::Collections::IVector<Microsoft::Azure::IoT::Gateway::IGatewayModule^>^ modules);
-		virtual ~Gateway()
-		{
-			Gateway_LL_UwpDestroy(gateway_handle);
-			gateway_handle = nullptr;
-
-			VECTOR_destroy(modules_handle);
-		}
+		Gateway(Windows::Foundation::Collections::IVector<Microsoft::Azure::IoT::Gateway::IGatewayModule^>^ modules,
+			    Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
+		virtual ~Gateway();
 
 	private:
 		VECTOR_HANDLE modules_handle;

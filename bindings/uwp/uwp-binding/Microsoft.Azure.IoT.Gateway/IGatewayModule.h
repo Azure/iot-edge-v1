@@ -12,7 +12,7 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 
 	public interface class IGatewayModule
 	{
-		void Create(MessageBus^ bus, Platform::String ^configuration);
+		void Create(MessageBus^ bus, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration);
 		void Destroy();
 		void Receive(Message ^received_message);
 	};

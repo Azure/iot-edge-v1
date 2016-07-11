@@ -27,10 +27,10 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents the gateway. </summary>
         public sealed class Gateway
         {
-            public Gateway(IList<IGatewayModule> modules);
+            public Gateway(IList<IGatewayModule> modules, IReadOnlyDictionary<string, string> configuration);
         }        
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,7 +44,11 @@ The high level design of these objects and interfaces is documented below:
         /// <summary> Object that represents a message on the message bus. </summary>
         public sealed class Message
         {
+			// There are limitations to UWP and overloading ... these static CreateMessage
+			// methods are added to avoid this warning and the subsequent ambiguity issue 
+			// in Javascript.
             public static Message CreateMessage(Message message);
+			public static Message CreateMessage(IList<byte> content, IReadOnlyDictionary<string, string> properties);
             
             public Message(IList<byte> msgInByteArray);
             public Message(string content, IReadOnlyDictionary<string, string> properties);
@@ -83,7 +87,7 @@ The high level design of these objects and interfaces is documented below:
             /// <param name="bus">The bus onto which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
-            void Create(MessageBus bus, string configuration);
+            void Create(MessageBus bus, IReadOnlyDictionary<string, string> properties);
             
             /// <summary>
             ///     Disposes of the resources allocated by/for this module.

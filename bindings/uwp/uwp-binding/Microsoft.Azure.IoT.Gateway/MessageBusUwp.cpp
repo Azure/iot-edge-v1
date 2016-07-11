@@ -15,6 +15,6 @@ using namespace Microsoft::Azure::IoT::Gateway;
 void MessageBus::Publish(Message ^message)
 {
 	MESSAGE_HANDLE msg = message->MessageHandle;
-	MessageBus_Publish(message_bus_handle, nullptr, msg);
+	MessageBus_Publish(message_bus_handle, module_handle, msg);
 }
 

@@ -220,11 +220,11 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 			{
 				/*Codes_SRS_GATEWAY_LL_14_042: [The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. ]*/
 				MODULE module;
-#ifndef UWP_BINDING
+#ifdef UWP_BINDING
+				module.module_instance = NULL;
+#else
 				module.module_apis = module_apis;
 				module.module_handle = module_handle;
-#else
-				module.module_instance = NULL;
 #endif // UWP_BINDING
 
 				/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
@@ -288,11 +288,11 @@ static bool module_data_find(const void* element, const void* value)
 static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
 {
 	MODULE module;
-#ifndef UWP_BINDING
+#ifdef UWP_BINDING
+	module.module_instance = NULL;
+#else
 	module.module_apis = NULL;
 	module.module_handle = module_data->module;
-#else
-	module.module_instance = NULL;
 #endif // UWP_BINDING
 
 	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/

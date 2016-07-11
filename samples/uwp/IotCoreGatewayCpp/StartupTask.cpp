@@ -18,11 +18,14 @@ void StartupTask::Run(IBackgroundTaskInstance^ taskInstance)
 {
 	deferral = taskInstance->GetDeferral();
 
+
 	auto modules = ref new Vector<IGatewayModule^>();
 	modules->Append(ref new Module2());
 	modules->Append(ref new Module1());
 	modules->Append(ref new Module3());
 	
-	gateway = ref new Gateway(modules);
+	auto properties = ref new Platform::Collections::Map<Platform::String^, Platform::String^>();
+	properties->Insert("ConfigProperty", "ConfigValue");
+	gateway = ref new Gateway(modules, properties->GetView());
 }
 

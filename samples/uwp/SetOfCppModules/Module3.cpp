@@ -12,7 +12,7 @@ Module3::Module3()
 {
 }
 
-void SetOfCppModules::Module3::Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Platform::String ^configuration)
+void SetOfCppModules::Module3::Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration)
 {
 	std::wstring formattedText = L"SetOfCppModules::Module3::Create\r\n";
 	OutputDebugString(formattedText.c_str());

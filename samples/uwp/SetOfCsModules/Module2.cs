@@ -12,7 +12,7 @@ namespace SetOfCsModules
 {
     public sealed class Module2 : IGatewayModule
     {
-        public void Create(MessageBus bus, string configuration)
+        public void Create(MessageBus bus, IReadOnlyDictionary<string, string> configuration)
         {
             System.Diagnostics.Debug.WriteLine("SetOfCsModules.Module2.Create");
 
