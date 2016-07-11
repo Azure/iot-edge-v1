@@ -9,21 +9,23 @@ project(azure_iot_gateway_sdk)
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always build]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
+option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
+option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
 
 #making a nice global variable to know if we are on linux or not.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	set(LINUX TRUE)
-	find_program( MEMORYCHECK_COMMAND valgrind )
-	set( MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --suppressions=${CMAKE_CURRENT_LIST_DIR}/core/valgrind_suppressions.txt --error-exitcode=1" )
+  set(LINUX TRUE)
+  find_program( MEMORYCHECK_COMMAND valgrind )
+  set( MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --suppressions=${CMAKE_CURRENT_LIST_DIR}/core/valgrind_suppressions.txt --error-exitcode=1" )
 endif()
 
 include (CTest)
 
 #setting #defines
 if(WIN32)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_compile_options(/guard:cf)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:cf")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /guard:cf")
@@ -31,29 +33,28 @@ if(WIN32)
 endif()
 
 if(${LINUX})
-	set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
+  set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 endif()
 
 function(add_module_to_solution undecoratedModuleName)
-	set_target_properties(${undecoratedModuleName}
-        PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-    set_target_properties(${undecoratedModuleName}_static
-        PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-    set_target_properties(${undecoratedModuleName}_hl
-        PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-    set_target_properties(${undecoratedModuleName}_hl_static
-        PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+  set_target_properties(${undecoratedModuleName}
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+  set_target_properties(${undecoratedModuleName}_static
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+  set_target_properties(${undecoratedModuleName}_hl
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+  set_target_properties(${undecoratedModuleName}_hl_static
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
 endfunction()
-    
+
 function(add_binding_to_solution bindingLanguage)
     set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
 endfunction()
     
 function(add_sample_to_solution sampleName)
-    	set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
+  set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
 endfunction()
 
-               
 macro(compileAsC99)
   if (CMAKE_VERSION VERSION_LESS "3.1")
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -92,7 +93,7 @@ add_subdirectory(./deps/azure-iot-sdks/c)
 include_directories(${SHARED_UTIL_INC_FOLDER})
 
 function(linkSharedUtil whatIsBuilding)
-	target_link_libraries(${whatIsBuilding} aziotsharedutil)
+  target_link_libraries(${whatIsBuilding} aziotsharedutil)
 endfunction(linkSharedUtil)
 
 #this adds parson

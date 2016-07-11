@@ -100,7 +100,7 @@ static int simulated_device_worker(void * user_data)
 						}
 						else
 						{
-							if (MessageBus_Publish(module_data->bus, newMessage) != MESSAGE_BUS_OK)
+							if (MessageBus_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != MESSAGE_BUS_OK)
 							{
 								LogError("Failed to create new message");
 							}

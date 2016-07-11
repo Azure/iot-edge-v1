@@ -193,7 +193,7 @@ static int module_publish_worker(void * user_data)
                             break;
                         }
                     }
-                } 
+                }
             }
             else
             {
@@ -531,7 +531,7 @@ extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus)
     bus_decrement_ref(bus);
 }
 
-MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MESSAGE_HANDLE message)
+MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message)
 {
     MESSAGE_BUS_RESULT result;
     /*Codes_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
@@ -568,39 +568,43 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MESSAGE_HANDLE mes
 
                 MESSAGE_BUS_MODULEINFO* module_info = (MESSAGE_BUS_MODULEINFO*)list_item_get_value(current_module);
 
-                /*Codes_SRS_MESSAGE_BUS_13_033: [In the loop, the function shall first acquire the lock on MESSAGE_BUS_MODULEINFO::mq_lock.]*/
-                if (Lock(module_info->mq_lock) != LOCK_OK)
+                /*Codes_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, MessageBus_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]*/
+                if (source == NULL  || module_info->module != source)
                 {
-                    /*Codes_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
-                    LogError("Lock on module_info->mq_lock for module at item [%p] failed", current_module);
-                    result = MESSAGE_BUS_ERROR;
-                }
-                else
-                {
-                    /*Codes_SRS_MESSAGE_BUS_13_034: [The function shall then append message to MESSAGE_BUS_MODULEINFO::mq by calling Message_Clone and VECTOR_push_back.]*/
-                    MESSAGE_HANDLE msg = Message_Clone(message);
-                    if (VECTOR_push_back(module_info->mq, &msg, 1) != 0)
+                    /*Codes_SRS_MESSAGE_BUS_13_033: [In the loop, the function shall first acquire the lock on MESSAGE_BUS_MODULEINFO::mq_lock.]*/
+                    if (Lock(module_info->mq_lock) != LOCK_OK)
                     {
                         /*Codes_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
-                        LogError("VECTOR_push_back failed for module at  item [%p] failed", current_module);
-                        Message_Destroy(msg);
-                        Unlock(module_info->mq_lock);
+                        LogError("Lock on module_info->mq_lock for module at item [%p] failed", current_module);
                         result = MESSAGE_BUS_ERROR;
                     }
                     else
                     {
-                        /*Codes_SRS_MESSAGE_BUS_13_096: [The function shall then signal MESSAGE_BUS_MODULEINFO::mq_cond.]*/
-                        if (Condition_Post(module_info->mq_cond) != COND_OK)
+                        /*Codes_SRS_MESSAGE_BUS_13_034: [The function shall then append message to MESSAGE_BUS_MODULEINFO::mq by calling Message_Clone and VECTOR_push_back.]*/
+                        MESSAGE_HANDLE msg = Message_Clone(message);
+                        if (VECTOR_push_back(module_info->mq, &msg, 1) != 0)
                         {
                             /*Codes_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
-                            LogError("Condition_Post failed for module at  item [%p] failed", current_module);
+                            LogError("VECTOR_push_back failed for module at  item [%p] failed", current_module);
+                            Message_Destroy(msg);
+                            Unlock(module_info->mq_lock);
                             result = MESSAGE_BUS_ERROR;
                         }
-
-                        /*Codes_SRS_MESSAGE_BUS_13_035: [The function shall then release MESSAGE_BUS_MODULEINFO::mq_lock.]*/
-                        if(Unlock(module_info->mq_lock)!=LOCK_OK)
+                        else
                         {
-                            LogError("unable to unlock");
+                            /*Codes_SRS_MESSAGE_BUS_13_096: [The function shall then signal MESSAGE_BUS_MODULEINFO::mq_cond.]*/
+                            if (Condition_Post(module_info->mq_cond) != COND_OK)
+                            {
+                                /*Codes_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+                                LogError("Condition_Post failed for module at  item [%p] failed", current_module);
+                                result = MESSAGE_BUS_ERROR;
+                            }
+
+                            /*Codes_SRS_MESSAGE_BUS_13_035: [The function shall then release MESSAGE_BUS_MODULEINFO::mq_lock.]*/
+                            if (Unlock(module_info->mq_lock) != LOCK_OK)
+                            {
+                                LogError("unable to unlock");
+                            }
                         }
                     }
                 }

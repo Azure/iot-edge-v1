@@ -29,60 +29,60 @@ extern "C"
 {
 #endif
 
-	/** @brief		Creates a module using the specified configuration connecting
-	*				to the specified message bus.
-	*
-	*	@details	This function is to be implemented by the module creator.
-	*
-	*	@param		busHandle		The #MESSAGE_BUS_HANDLE onto which this module
-	*								will connect.
-	*	@param		configureation	A pointer to the user-defined configuration 
-	*								structure for this module.
-	*
-	*	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
-	*			failure.
-	*/
+    /** @brief		Creates a module using the specified configuration connecting
+    *				to the specified message bus.
+    *
+    *	@details	This function is to be implemented by the module creator.
+    *
+    *	@param		busHandle		The #MESSAGE_BUS_HANDLE onto which this module
+    *								will connect.
+    *	@param		configureation	A pointer to the user-defined configuration 
+    *								structure for this module.
+    *
+    *	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
+    *			failure.
+    */
     typedef MODULE_HANDLE(*pfModule_Create)(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
 
-	/** @brief		Disposes of the resources allocated by/for this module.
-	*
-	*	@details	This function is to be implemented by the module creator.
-	*
-	*	@param		moduleHandle	The #MODULE_HANDLE of the module to be destroyed.
-	*/
+    /** @brief		Disposes of the resources allocated by/for this module.
+    *
+    *	@details	This function is to be implemented by the module creator.
+    *
+    *	@param		moduleHandle	The #MODULE_HANDLE of the module to be destroyed.
+    */
     typedef void(*pfModule_Destroy)(MODULE_HANDLE moduleHandle);
 
-	/** @brief		The module's callback function that is called upon message 
-	*				receipt.
-	*
-	*	@details	This function is to be implemented by the module creator.
-	*
-	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
-	*								message.
-	*	@param		messageHandle	The #MESSAGE_HANDLE of the message being sent
-	*								to the module.
-	*/
-	typedef void(*pfModule_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+    /** @brief		The module's callback function that is called upon message 
+    *				receipt.
+    *
+    *	@details	This function is to be implemented by the module creator.
+    *
+    *	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
+    *								message.
+    *	@param		messageHandle	The #MESSAGE_HANDLE of the message being sent
+    *								to the module.
+    */
+    typedef void(*pfModule_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-	/** @brief	Structure returned by ::Module_GetAPIS containing the function
-	*			pointers of the module-specific implementations of the interface.
-	*/
+    /** @brief	Structure returned by ::Module_GetAPIS containing the function
+    *			pointers of the module-specific implementations of the interface.
+    */
     typedef struct MODULE_APIS_TAG
     {
-		/** @brief Function pointer to the #Module_Create function. */
+        /** @brief Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;
 
-		/** @brief Function pointer to the #Module_Destroy function. */
+        /** @brief Function pointer to the #Module_Destroy function. */
         pfModule_Destroy Module_Destroy;
 
-		/** @brief Function pointer to the #Module_Receive function. */
+        /** @brief Function pointer to the #Module_Receive function. */
         pfModule_Receive Module_Receive;
     }MODULE_APIS;
 
-	/** @brief	This is the only function exported by a module. Using the 
-	*			exported function, the caller learns the functions for the 
-	*			particular module.
-	*/
+    /** @brief	This is the only function exported by a module. Using the 
+    *			exported function, the caller learns the functions for the 
+    *			particular module.
+    */
     typedef const MODULE_APIS* (*pfModule_GetAPIS)(void);
 
     /** @brief Returns the module APIS name.*/

@@ -28,6 +28,13 @@ When this module publishes a message, each message will have the the following p
 >| deviceName   | The deviceName as registered with IoTHub                                     |
 >| deviceKey    | The key as registered with IoTHub                                            |
 
+Then the module will remove the following properties:
+
+>| PropertyName | Description                                                                  |
+>|--------------|------------------------------------------------------------------------------|
+>| macAddress   | The MAC address of a sensor, in canonical form                               |
+
+
 #### Device Id to MAC Address (Cloud to Device)
 
 The module identifies the messages that it needs to process by the following properties that must exist:
@@ -42,6 +49,11 @@ When this module publishes a message, each message will have the following propo
 >| source       | Source will be set to "mapping".                                             |
 >| macAddress   | The MAC address of a sensor, in canonical form                               |
       
+Then the module will remove the following properties:
+>| PropertyName | Description                                                                  |
+>|--------------|------------------------------------------------------------------------------|
+>| deviceName   | The deviceName as registered with IoTHub                                     |
+>| deviceKey    | The key as registered with IoTHub                                            |
 
 The MAC addresses are expected in canonical form. For the purposes of this module, 
 the canonical form is "XX:XX:XX:XX:XX:XX", a sequence of six two-digit hexadecimal 
@@ -149,36 +161,42 @@ message in pseudocode is as follows:
 07:         Add or replace "deviceName" with deviceId
 08:         Add or replace "deviceKey" with deviceKey
 09:         Add or replace "source".
-10: Else if message properties contain a "deviceName" key and does not contain "source"=="mapping" key,
-11:     Get deviceId from messages properties via the "deviceName" key
-12:     Search deviceToMacArray for deviceId
-13:     If found, there is a new message to publish
-14:         Get MAC address from deviceToMacArray
-15:         Create a new MAP from message properties.
-16:         Add or replace "macAddress" with MAC address.
-17:         Replace "source".
-18: If there is a new message to publish,
-19:         Clone original mesage content.
-20:         Create a new message from MAP and original message content.
-21:         Publish new message on busHandle
-22:         Destroy all resources created
+10:         Delete "macAddress"
+11: Else if message properties contain a "deviceName" key and does not contain "source"=="mapping" key,
+12:     Get deviceId from messages properties via the "deviceName" key
+13:     Search deviceToMacArray for deviceId
+14:     If found, there is a new message to publish
+15:         Get MAC address from deviceToMacArray
+16:         Create a new MAP from message properties.
+17:         Add or replace "macAddress" with MAC address.
+18:         Replace "source".
+19:         Delete "deviceName"
+20:         Delete "deviceKey" if it exists.
+21: If there is a new message to publish,
+22:         Clone original mesage content.
+23:         Create a new message from MAP and original message content.
+24:         Publish new message on busHandle
+25:         Destroy all resources created
 ```
 
 **SRS_IDMAP_17_020: [**If `moduleHandle` or `messageHandle` is `NULL`, then the function shall return.**]**
 #### MAC Address to device name (D2C)
 **SRS_IDMAP_17_021: [**If `messageHandle` properties does not contain "macAddress" property, then the message shall not be marked as a D2C message.**]**   
-**SRS_IDMAP_17_024: [**If `messageHandle` properties contains properties "deviceName" **and** "deviceKey", then the message shall not be marked as a D2C message.**]**
-**SRS_IDMAP_17_044: [** If messageHandle properties contains a "source" property that is set to "mapping", the message shall not be marked as a D2C message. **]**
-**SRS_IDMAP_17_040: [**If the `macAddress` of the message is not in canonical form, the message shall not be marked as a D2C message.**]**
-**SRS_IDMAP_17_025: [**If the `macAddress` of the message is not found in the `macToDeviceArray` list, the message shall not be marked as a D2C message.**]**
+**SRS_IDMAP_17_024: [**If `messageHandle` properties contains properties "deviceName" **and** "deviceKey", then the message shall not be marked as a D2C message.**]**   
+**SRS_IDMAP_17_044: [** If messageHandle properties contains a "source" property that is set to "mapping", the message shall not be marked as a D2C message. **]**   
+**SRS_IDMAP_17_040: [**If the `macAddress` of the message is not in canonical form, the message shall not be marked as a D2C message.**]**   
+**SRS_IDMAP_17_025: [**If the `macAddress` of the message is not found in the `macToDeviceArray` list, the message shall not be marked as a D2C message.**]**   
 On a message which passes all checks, the message shall be marked as a D2C message.
-**SRS_IDMAP_17_026: [**On a D2C message received, `IdentityMap_Receive` shall call `ConstMap_CloneWriteable` on the message properties.**]**
-**SRS_IDMAP_17_027: [**If `ConstMap_CloneWriteable` fails, `IdentityMap_Receive` shall deallocate any resources and return.**]**
+
+**SRS_IDMAP_17_026: [**On a D2C message received, `IdentityMap_Receive` shall call `ConstMap_CloneWriteable` on the message properties.**]**   
+**SRS_IDMAP_17_027: [**If `ConstMap_CloneWriteable` fails, `IdentityMap_Receive` shall deallocate any resources and return.**]**   
 Upon recognition of a D2C message, the following transformations will be done to create a message to send:
-**SRS_IDMAP_17_028: [**`IdentityMap_Receive` shall call `Map_AddOrUpdate` with key of "deviceName" and value of found `deviceId`.**]**
-**SRS_IDMAP_17_029: [**If adding `deviceName` fails,`IdentityMap_Receive` shall deallocate all resources and return.**]**  
-**SRS_IDMAP_17_030: [**`IdentityMap_Receive` shall call `Map_AddOrUpdate` with key of "deviceKey" and value of found `deviceKey`.**]**
-**SRS_IDMAP_17_031: [**If adding `deviceKey` fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**  
+**SRS_IDMAP_17_028: [**`IdentityMap_Receive` shall call `Map_AddOrUpdate` with key of "deviceName" and value of found `deviceId`.**]**   
+**SRS_IDMAP_17_029: [**If adding `deviceName` fails,`IdentityMap_Receive` shall deallocate all resources and return.**]**   
+**SRS_IDMAP_17_030: [**`IdentityMap_Receive` shall call `Map_AddOrUpdate` with key of "deviceKey" and value of found `deviceKey`.**]**   
+**SRS_IDMAP_17_031: [**If adding `deviceKey` fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**   
+**SRS_IDMAP_17_053: [** `IdentityMap_Receive` shall call `Map_Delete` to remove the "macAddress" property. **]**   
+**SRS_IDMAP_17_054: [** If deleting the MAC Address fails, `IdentityMap_Receive` shall deallocate all resources and return. **]**   
 
 #### Device Id to MAC Address (C2D)
 **SRS_IDMAP_17_045: [** If `messageHandle` properties does not contain "deviceName" property, then the message shall not be marked as a C2D message. **]**    
@@ -186,11 +204,18 @@ Upon recognition of a D2C message, the following transformations will be done to
 **SRS_IDMAP_17_047: [** If messageHandle property "source" is not equal to "IoTHubHttp", then the message shall not be marked as a C2D message. **]**   
 **SRS_IDMAP_17_048: [** If the `deviceName` of the message is not found in deviceToMacArray, then the message shall not be marked as a C2D message. **]**   
 On a message which passes all these checks, the message will be marked as a C2D message.
+
 **SRS_IDMAP_17_049: [** On a C2D message received, `IdentityMap_Receive` shall call `ConstMap_CloneWriteable` on the message properties. **]**   
 **SRS_IDMAP_17_050: [** If `ConstMap_CloneWriteable` fails, `IdentityMap_Receive` shall deallocate any resources and return. **]**   
 Upon recognition of a C2D message, the following transformations will be done to create a message to send:
+
 **SRS_IDMAP_17_051: [** `IdentityMap_Receive` shall call `Map_AddOrUpdate` with key of "macAddress" and value of found `macAddress`. **]**   
 **SRS_IDMAP_17_052: [** If adding `macAddress` fails, `IdentityMap_Receive` shall deallocate all resources and return. **]**   
+**SRS_IDMAP_17_055: [** `IdentityMap_Receive` shall call `Map_Delete` to remove the "deviceName" property. **]**   
+**SRS_IDMAP_17_056: [** If deleting the device name fails, `IdentityMap_Receive` shall deallocate all resources and return. **]**   
+**SRS_IDMAP_17_057: [** `IdentityMap_Receive` shall call `Map_Delete` to remove the "deviceKey" property. **]**      
+**SRS_IDMAP_17_058: [** If deleting the device key does not return `MAP_OK` or `MAP_KEYNOTFOUND`, `IdentityMap_Receive` shall deallocate all resources and return. **]**    
+NOTE: The device key is not required to be present, so `MAP_KEYNOTFOUND` is not considered a failure.   
 
 #### Message to send exists
 Upon recognition of a C2D or D2C message, then a new message shall be published.

@@ -127,5 +127,5 @@ add_module_to_solution(ble)
 add_subdirectory(tests)
 
 if(install_executables)
-	install(TARGETS ble LIBRARY DESTINATION lib) 
+    install(TARGETS ble LIBRARY DESTINATION lib) 
 endif()

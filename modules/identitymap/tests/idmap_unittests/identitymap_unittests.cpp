@@ -163,7 +163,7 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
 		((RefCountObject*)bus)->dec_ref();
 	MOCK_VOID_METHOD_END()
 
-	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MESSAGE_HANDLE, message)
+	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 		MESSAGE_BUS_RESULT busResult = currentMessageBusResult;
 	MOCK_METHOD_END(MESSAGE_BUS_RESULT, busResult)
 
@@ -286,6 +286,11 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
 			result7 = MAP_OK;
 		}
 	MOCK_METHOD_END(MAP_RESULT, result7)
+
+	// Map_Delete
+		MOCK_STATIC_METHOD_2(, MAP_RESULT, Map_Delete, MAP_HANDLE, handle, const char*, key)
+		MOCK_METHOD_END(MAP_RESULT, MAP_OK)
+
 
 	// Message
 	MOCK_STATIC_METHOD_1(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
@@ -433,7 +438,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, gballoc_free, void*, ptr
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CIdentitymapMocks, , MESSAGE_BUS_HANDLE, MessageBus_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, MessageBus_Destroy, MESSAGE_BUS_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_3(CIdentitymapMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Create, MAP_HANDLE, sourceMap);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
@@ -448,6 +453,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, CONSTBUFFER_Destroy, CON
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , MAP_HANDLE, Map_Clone, MAP_HANDLE, sourceMap);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, Map_Destroy, MAP_HANDLE, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_3(CIdentitymapMocks, , MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value);
+DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapMocks, , MAP_RESULT, Map_Delete, MAP_HANDLE, handle, const char*, key);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , MESSAGE_HANDLE, Message_CreateFromBuffer, const MESSAGE_BUFFER_CONFIG*, cfg);
@@ -2080,6 +2086,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY, "aNiceDevice")).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY, "aNiceKey")).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
+			.IgnoreArgument(1);
 		whenShallMessage_fail = 3;
 		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
 
@@ -2139,6 +2147,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY, "aNiceKey"))
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
 		whenShallMessage_fail = 4;
@@ -2205,6 +2215,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
 			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
+			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromBuffer(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -2212,8 +2224,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		currentMessageBusResult = MESSAGE_BUS_ERROR;
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(bus, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(bus, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
 
 		///Act
@@ -2229,10 +2241,92 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 	}
 
+	//Tests_SRS_IDMAP_17_054: [ If deleting the MAC Address fails, IdentityMap_Receive shall deallocate all resources and return. ]
+	TEST_FUNCTION(IdentityMap_Receive_D2C_macaddress_delete_fails)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_APIS* theAPIS = Module_GetAPIS();
+
+		unsigned char fake;
+		MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)&fake;
+		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
+
+		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
+		IDENTITY_MAP_CONFIG c2 = { "02:02:02:02:02:02", "Sensor2", "theKeyFor2" };
+		IDENTITY_MAP_CONFIG c3 = { "03:03:03:03:03:03", "Sensor3", "theKeyFor3" };
+		IDENTITY_MAP_CONFIG c4 = { "04:04:04:04:04:04", "Sensor4", "theKeyFor4" };
+		IDENTITY_MAP_CONFIG c5 = { "05:05:05:05:05:05", "Sensor5", "theKeyFor5" };
+		IDENTITY_MAP_CONFIG c6 = { "06:06:06:06:06:06", "Sensor6", "theKeyFor6" };
+		IDENTITY_MAP_CONFIG c7 = { "07:07:07:07:07:07", "Sensor7", "theKeyFor7" };
+		IDENTITY_MAP_CONFIG c8 = { "08:08:08:08:08:08",	"Sensor8", "theKeyFor8" };
+		IDENTITY_MAP_CONFIG c9 = { "09:09:09:09:09:09", "Sensor9",  "theKeyFor9" };
+		VECTOR_push_back(v, &c1, 1);
+		VECTOR_push_back(v, &c2, 1);
+		VECTOR_push_back(v, &c3, 1);
+		VECTOR_push_back(v, &c4, 1);
+		VECTOR_push_back(v, &c5, 1);
+		VECTOR_push_back(v, &c6, 1);
+		VECTOR_push_back(v, &c7, 1);
+		VECTOR_push_back(v, &c8, 1);
+		VECTOR_push_back(v, &c9, 1);
+		auto n = theAPIS->Module_Create(bus, v);
+
+		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
+		auto m = Message_Create(&cfg);
+
+		macAddressProperties = "07:07:07:07:07:07";
+		sourceProperties = GW_SOURCE_BLE_TELEMETRY;
+
+		mocks.ResetAllCalls();
+
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY, "Sensor7"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY, "theKeyFor7"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
+			.IgnoreArgument(1)
+			.SetFailReturn((MAP_RESULT)MAP_KEYNOTFOUND);
+
+
+		///Act
+		theAPIS->Module_Receive(n, m);
+
+		///Assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///Ablution
+		Message_Destroy(m);
+		VECTOR_destroy(v);
+		theAPIS->Module_Destroy(n);
+
+	}
+
 	/*Tests_SRS_IDMAP_17_026: [On a message which passes all checks, IdentityMap_Receive shall call ConstMap_CloneWriteable on the message properties.]*/
 	/*Tests_SRS_IDMAP_17_028: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "deviceName" and value of found deviceId.]*/
 	/*Tests_SRS_IDMAP_17_032: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "source" and value of "mapping".]*/
 	/*Tests_SRS_IDMAP_17_030: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "deviceKey" and value of found deviceKey.]*/
+	/*Tests_SRS_IDMAP_17_053: [ IdentityMap_Receive shall call Map_Delete to remove the "macAddress" property. ]*/
 	/*Tests_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.]*/
 	/*Tests_SRS_IDMAP_17_036: [IdentityMap_Receive shall create a new message by calling Message_Create with new map and cloned content.]*/
 	/*Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call MessageBus_Publish with busHandle and new message.]*/
@@ -2299,14 +2393,16 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
 			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
+			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromBuffer(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
 
 		///Act
@@ -2324,6 +2420,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 	//Tests_SRS_IDMAP_17_049: [ On a C2D message received, IdentityMap_Receive shall call ConstMap_CloneWriteable on the message properties. ]
 	//Tests_SRS_IDMAP_17_051: [ IdentityMap_Receive shall call Map_AddOrUpdate with key of "macAddress" and value of found macAddress. ]
+	//Tests_SRS_IDMAP_17_055: [ IdentityMap_Receive shall call Map_Delete to remove the "deviceName" property. ]
+	//Tests_SRS_IDMAP_17_057: [ IdentityMap_Receive shall call Map_Delete to remove the "deviceKey" property. ]
 	//Tests_SRS_IDMAP_17_032: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "source" and value of "mapping".]
 	//Tests_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.]
 	//Tests_SRS_IDMAP_17_036: [IdentityMap_Receive shall create a new message by calling Message_CreateFromBuffer with new map and cloned content.]
@@ -2384,15 +2482,254 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
 			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY))
+			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromBuffer(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, IGNORED_PTR_ARG))
-			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
 
+
+		///Act
+		theAPIS->Module_Receive(n, m);
+
+		///Assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///Ablution
+		Message_Destroy(m);
+		VECTOR_destroy(v);
+		theAPIS->Module_Destroy(n);
+
+	}
+
+	//Tests_SRS_IDMAP_17_057: [ IdentityMap_Receive shall call Map_Delete to remove the "deviceKey" property. ]
+	TEST_FUNCTION(IdentityMap_Receive_C2D_no_key_key_delete)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_APIS* theAPIS = Module_GetAPIS();
+
+		unsigned char fake;
+		MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)&fake;
+		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
+
+		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
+		IDENTITY_MAP_CONFIG c2 = { "02:02:02:02:02:02", "Sensor2", "theKeyFor2" };
+		IDENTITY_MAP_CONFIG c3 = { "03:03:03:03:03:03", "Sensor3", "theKeyFor3" };
+		IDENTITY_MAP_CONFIG c4 = { "04:04:04:04:04:04", "Sensor4", "theKeyFor4" };
+		IDENTITY_MAP_CONFIG c5 = { "05:05:05:05:05:05", "Sensor5", "theKeyFor5" };
+		IDENTITY_MAP_CONFIG c6 = { "06:06:06:06:06:06", "Sensor6", "theKeyFor6" };
+		IDENTITY_MAP_CONFIG c7 = { "07:07:07:07:07:07", "Sensor7", "theKeyFor7" };
+		IDENTITY_MAP_CONFIG c8 = { "08:08:08:08:08:08",	"Sensor8", "theKeyFor8" };
+		IDENTITY_MAP_CONFIG c9 = { "09:09:09:09:09:09", "Sensor9",  "theKeyFor9" };
+		VECTOR_push_back(v, &c1, 1);
+		VECTOR_push_back(v, &c2, 1);
+		VECTOR_push_back(v, &c3, 1);
+		VECTOR_push_back(v, &c4, 1);
+		VECTOR_push_back(v, &c5, 1);
+		VECTOR_push_back(v, &c6, 1);
+		VECTOR_push_back(v, &c7, 1);
+		VECTOR_push_back(v, &c8, 1);
+		VECTOR_push_back(v, &c9, 1);
+		auto n = theAPIS->Module_Create(bus, v);
+
+		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
+		auto m = Message_Create(&cfg);
+
+		deviceNameProperties = "Sensor7";
+		sourceProperties = GW_IOTHUB_MODULE;
+
+		mocks.ResetAllCalls();
+
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY, "07:07:07:07:07:07"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY))
+			.IgnoreArgument(1)
+			.SetFailReturn((MAP_RESULT)MAP_KEYNOTFOUND);
+		STRICT_EXPECTED_CALL(mocks, Message_GetContentHandle(m));
+		STRICT_EXPECTED_CALL(mocks, Message_CreateFromBuffer(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+			.IgnoreAllArguments();
+		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)&fake, n, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+
+		///Act
+		theAPIS->Module_Receive(n, m);
+
+		///Assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///Ablution
+		Message_Destroy(m);
+		VECTOR_destroy(v);
+		theAPIS->Module_Destroy(n);
+
+	}
+
+	//Tests_SRS_IDMAP_17_058: [ If deleting the device key does not return MAP_OK or MAP_KEYNOTFOUND, IdentityMap_Receive shall deallocate all resources and return. ]
+	TEST_FUNCTION(IdentityMap_Receive_C2D_key_delete_fails)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_APIS* theAPIS = Module_GetAPIS();
+
+		unsigned char fake;
+		MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)&fake;
+		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
+
+		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
+		IDENTITY_MAP_CONFIG c2 = { "02:02:02:02:02:02", "Sensor2", "theKeyFor2" };
+		IDENTITY_MAP_CONFIG c3 = { "03:03:03:03:03:03", "Sensor3", "theKeyFor3" };
+		IDENTITY_MAP_CONFIG c4 = { "04:04:04:04:04:04", "Sensor4", "theKeyFor4" };
+		IDENTITY_MAP_CONFIG c5 = { "05:05:05:05:05:05", "Sensor5", "theKeyFor5" };
+		IDENTITY_MAP_CONFIG c6 = { "06:06:06:06:06:06", "Sensor6", "theKeyFor6" };
+		IDENTITY_MAP_CONFIG c7 = { "07:07:07:07:07:07", "Sensor7", "theKeyFor7" };
+		IDENTITY_MAP_CONFIG c8 = { "08:08:08:08:08:08",	"Sensor8", "theKeyFor8" };
+		IDENTITY_MAP_CONFIG c9 = { "09:09:09:09:09:09", "Sensor9",  "theKeyFor9" };
+		VECTOR_push_back(v, &c1, 1);
+		VECTOR_push_back(v, &c2, 1);
+		VECTOR_push_back(v, &c3, 1);
+		VECTOR_push_back(v, &c4, 1);
+		VECTOR_push_back(v, &c5, 1);
+		VECTOR_push_back(v, &c6, 1);
+		VECTOR_push_back(v, &c7, 1);
+		VECTOR_push_back(v, &c8, 1);
+		VECTOR_push_back(v, &c9, 1);
+		auto n = theAPIS->Module_Create(bus, v);
+
+		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
+		auto m = Message_Create(&cfg);
+
+		deviceNameProperties = "Sensor7";
+		sourceProperties = GW_IOTHUB_MODULE;
+
+		mocks.ResetAllCalls();
+
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY, "07:07:07:07:07:07"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICEKEY_PROPERTY))
+			.IgnoreArgument(1)
+			.SetFailReturn((MAP_RESULT)MAP_INVALIDARG);
+
+		///Act
+		theAPIS->Module_Receive(n, m);
+
+		///Assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///Ablution
+		Message_Destroy(m);
+		VECTOR_destroy(v);
+		theAPIS->Module_Destroy(n);
+
+	}
+
+	//Tests_SRS_IDMAP_17_056: [ If deleting the device name fails, IdentityMap_Receive shall deallocate all resources and return. ]
+	TEST_FUNCTION(IdentityMap_Receive_C2D_devicename_delete_fails)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_APIS* theAPIS = Module_GetAPIS();
+
+		unsigned char fake;
+		MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)&fake;
+		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
+
+		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
+		IDENTITY_MAP_CONFIG c2 = { "02:02:02:02:02:02", "Sensor2", "theKeyFor2" };
+		IDENTITY_MAP_CONFIG c3 = { "03:03:03:03:03:03", "Sensor3", "theKeyFor3" };
+		IDENTITY_MAP_CONFIG c4 = { "04:04:04:04:04:04", "Sensor4", "theKeyFor4" };
+		IDENTITY_MAP_CONFIG c5 = { "05:05:05:05:05:05", "Sensor5", "theKeyFor5" };
+		IDENTITY_MAP_CONFIG c6 = { "06:06:06:06:06:06", "Sensor6", "theKeyFor6" };
+		IDENTITY_MAP_CONFIG c7 = { "07:07:07:07:07:07", "Sensor7", "theKeyFor7" };
+		IDENTITY_MAP_CONFIG c8 = { "08:08:08:08:08:08",	"Sensor8", "theKeyFor8" };
+		IDENTITY_MAP_CONFIG c9 = { "09:09:09:09:09:09", "Sensor9",  "theKeyFor9" };
+		VECTOR_push_back(v, &c1, 1);
+		VECTOR_push_back(v, &c2, 1);
+		VECTOR_push_back(v, &c3, 1);
+		VECTOR_push_back(v, &c4, 1);
+		VECTOR_push_back(v, &c5, 1);
+		VECTOR_push_back(v, &c6, 1);
+		VECTOR_push_back(v, &c7, 1);
+		VECTOR_push_back(v, &c8, 1);
+		VECTOR_push_back(v, &c9, 1);
+		auto n = theAPIS->Module_Create(bus, v);
+
+		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
+		auto m = Message_Create(&cfg);
+
+		deviceNameProperties = "Sensor7";
+		sourceProperties = GW_IOTHUB_MODULE;
+
+		mocks.ResetAllCalls();
+
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(m));
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Create(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY, "07:07:07:07:07:07"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Delete(IGNORED_PTR_ARG, GW_DEVICENAME_PROPERTY))
+			.IgnoreArgument(1)
+			.SetFailReturn((MAP_RESULT)MAP_INVALIDARG);
 
 		///Act
 		theAPIS->Module_Receive(n, m);

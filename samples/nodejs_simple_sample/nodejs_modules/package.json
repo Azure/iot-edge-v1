@@ -1,0 +1,12 @@
+{
+  "name": "nodejs_modules",
+  "version": "0.0.1",
+  "description": "",
+  "main": "iothub_writer.js",
+  "author": "Microsoft",
+  "license": "MIT",
+  "dependencies": {
+    "azure-iot-device": "^1.0.6",
+    "azure-iot-device-amqp": "^1.0.6"
+  }
+}

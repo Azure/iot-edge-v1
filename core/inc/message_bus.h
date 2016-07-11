@@ -72,12 +72,15 @@ extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus);
 *
 *	@param		bus		The #MESSAGE_BUS_HANDLE onto which the message will be
 *						published.
+*	@param		source	The #MODULE_HANDLE from which the message will be
+*						published. The bus will not publish the message to this
+*                       module. (optional, may be NULL)
 *	@param		message	The #MESSAGE_HANDLE representing the message to be
 *						published.
 *
 *	@return		A #MESSAGE_BUS_RESULT describing the result of the function.
 */
-extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MESSAGE_HANDLE message);
+extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message);
 
 /** @brief		Adds a module onto the message bus.
 *
