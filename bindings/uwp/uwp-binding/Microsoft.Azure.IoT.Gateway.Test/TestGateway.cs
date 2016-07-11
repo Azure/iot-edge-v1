@@ -20,6 +20,17 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             Assert.IsTrue(true);
         }
 
+        [TestMethod]
+        public void TestInvalidArguments()
+        {
+            var props = new Dictionary<string, string>();
+            var modules = new List<IGatewayModule>();
+
+            try { new Gateway(null, props); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+            try { new Gateway(modules, null); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+
+        }
+
         private class TestModule : IGatewayModule
         {
             public IReadOnlyDictionary<string, string> config;
