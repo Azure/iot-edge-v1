@@ -74,6 +74,3 @@ Gateway::~Gateway()
 
 	VECTOR_destroy(modules_handle);
 }
-
-
-

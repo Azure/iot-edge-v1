@@ -34,6 +34,12 @@ std::string wstrtostr(const std::wstring &wstr)
 	return wstringToString.to_bytes(wstr);
 }
 
+std::wstring strtowstr(const std::string &str)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> stringToWstring;
+	return stringToWstring.from_bytes(str.data());
+}
+
 Message::Message(Platform::String ^content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties)
 {
 	std::wstring wcntnt = content->Data();
@@ -68,10 +74,8 @@ Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^
 
 	for (auto iter = begin(properties); iter != end(properties); iter++)
 	{
-		std::wstring wkey = (*iter)->Key->Data();
-		std::wstring wvalue = (*iter)->Value->ToString()->Data();
-		std::string key = wstrtostr(wkey);
-		std::string value = wstrtostr(wvalue);
+		std::string key = wstrtostr((*iter)->Key->Data());
+		std::string value = wstrtostr((*iter)->Value->ToString()->Data());
 		Map_Add(msg.sourceProperties, key.c_str(), value.c_str());
 	}
 
@@ -113,13 +117,10 @@ Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>
 	{
 		for (size_t i = 0; i < nProperties; i++)
 		{
-			std::string key_string(reinterpret_cast<const char*>(keys[i]));
-			std::wstring key_wstring(key_string.begin(), key_string.end());
+			std::wstring key = strtowstr(keys[i]);
+			std::wstring value = strtowstr(values[i]);
 
-			std::string value_string(reinterpret_cast<const char*>(values[i]));
-			std::wstring value_wstring(value_string.begin(), value_string.end());
-
-			properties->Insert(ref new Platform::String(key_wstring.c_str()), ref new Platform::String(value_wstring.c_str()));
+			properties->Insert(ref new Platform::String(key.c_str()), ref new Platform::String(value.c_str()));
 		}
 	}
 
