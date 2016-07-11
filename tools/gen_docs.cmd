@@ -24,6 +24,13 @@ echo Generating C API docs
 call gen_cdocs.cmd
 
 rem -----------------------------------------------------------------------------
+rem -- Generate Dotnet API docs
+rem -----------------------------------------------------------------------------
+echo Generating Dotnet API docs
+cd %build-root%\tools\docs\dotnet
+call gen_dotnetdocs.cmd
+
+rem -----------------------------------------------------------------------------
 rem -- done
 rem -----------------------------------------------------------------------------
 goto :eof

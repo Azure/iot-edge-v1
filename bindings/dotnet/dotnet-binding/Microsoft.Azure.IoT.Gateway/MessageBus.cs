@@ -23,7 +23,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
         /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
-        /// <param name="myTestWrapper">Object of type NativeDotNetHostWrapper.</param>
+        /// <param name="nativeWrapper">Object of type NativeDotNetHostWrapper.</param>
         public MessageBus(long msgBus, long module, NativeDotNetHostWrapper nativeWrapper)
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_001: [ If msgBus is <= 0, MessageBus constructor shall throw a new ArgumentException ] */
