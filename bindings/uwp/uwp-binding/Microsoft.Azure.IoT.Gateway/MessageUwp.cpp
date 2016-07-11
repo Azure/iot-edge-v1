@@ -12,20 +12,39 @@ using namespace Microsoft::Azure::IoT::Gateway;
 
 Message::Message(MESSAGE_HANDLE message_handle)
 {
+	if (message_handle == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("message_handle must be non-null.");
+	}
+
 	_message_handle = message_handle;
 }
 
 Message^ Message::CreateMessage(Message^ message)
 {
+	if (message == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("message must be non-null.");
+	}
+
 	return ref new Message(message->_message_handle);
 }
 
 Message::Message(Windows::Foundation::Collections::IVector<byte> ^msgInByteArray)
 {
+	if (msgInByteArray == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("msgInByteArray must be non-null.");
+	}
+
 	std::vector<byte> bytes(msgInByteArray->Size);
 	std::copy(begin(msgInByteArray), end(msgInByteArray), bytes.begin());
 
 	_message_handle = Message_CreateFromByteArray(bytes.data(), bytes.size());
+	if (_message_handle == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to create message.");
+	}
 }
 
 std::string wstrtostr(const std::wstring &wstr)
@@ -42,8 +61,17 @@ std::wstring strtowstr(const std::string &str)
 
 Message::Message(Platform::String ^content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties)
 {
-	std::wstring wcntnt = content->Data();
-	std::string cntnt = wstrtostr(wcntnt);
+	if (properties == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("properties must be non-null.");
+	}
+
+	// There is no distinction between an empty Platform::String and a NULL.
+	std::string cntnt = "";
+	if (content != nullptr)
+	{
+		cntnt = wstrtostr(content->Data());
+	}
 
 	MESSAGE_CONFIG msg;
 	msg.source = (unsigned char*)cntnt.c_str();
@@ -52,18 +80,29 @@ Message::Message(Platform::String ^content, Windows::Foundation::Collections::IM
 	
 	for (auto iter = begin(properties); iter != end(properties); iter++)
 	{
-		std::wstring wkey = (*iter)->Key->Data();
-		std::wstring wvalue = (*iter)->Value->ToString()->Data();
-		std::string key = wstrtostr(wkey);
-		std::string value = wstrtostr(wvalue);
+		std::string key = wstrtostr((*iter)->Key->Data());
+		std::string value = wstrtostr((*iter)->Value->ToString()->Data());
 		Map_Add(msg.sourceProperties, key.c_str(), value.c_str());
 	}
 	
 	_message_handle = Message_Create(&msg);
+	if (_message_handle == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to create message.");
+	}
 }
 
 Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^ content, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties)
 {
+	if (content == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("content must be non-null.");
+	}
+	if (properties == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("properties must be non-null.");
+	}
+
 	std::vector<byte> contentBytes(content->Size);
 	std::copy(begin(content), end(content), contentBytes.begin());
 
@@ -71,6 +110,10 @@ Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^
 	msg.source = contentBytes.data();
 	msg.size = contentBytes.size();
 	msg.sourceProperties = Map_Create(NULL);
+	if (msg.sourceProperties == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to create message's properties.");
+	}
 
 	for (auto iter = begin(properties); iter != end(properties); iter++)
 	{
@@ -80,6 +123,10 @@ Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^
 	}
 
 	auto message_handle = Message_Create(&msg);
+	if (message_handle == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to create message.");
+	}
 	return ref new Message(message_handle);
 }
 
@@ -87,6 +134,10 @@ Windows::Foundation::Collections::IVector<byte>^ Message::ToBytes()
 {
 	int arrayLength = 0;
 	auto byteArray = Message_ToByteArray(this->_message_handle, &arrayLength);
+	if (byteArray == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to create byte array for message.");
+	}
 
 	Windows::Foundation::Collections::IVector<byte>^ messageBytes =
 		ref new Platform::Collections::Vector<byte>(byteArray, arrayLength);
@@ -96,6 +147,10 @@ Windows::Foundation::Collections::IVector<byte>^ Message::ToBytes()
 Windows::Foundation::Collections::IVector<byte>^ Message::GetContent()
 {
 	auto content_buffer = Message_GetContent(_message_handle);
+	if (content_buffer == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to get message content.");
+	}
 
 	Windows::Foundation::Collections::IVector<byte>^ content = 
 		ref new Platform::Collections::Vector<byte>(content_buffer->buffer, content_buffer->size);
@@ -112,6 +167,10 @@ Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>
 	size_t nProperties;
 
 	auto constmap_handle = Message_GetProperties(_message_handle);
+	if (constmap_handle == nullptr)
+	{
+		throw ref new Platform::FailureException("Failed to get message properties.");
+	}
 
 	if (ConstMap_GetInternals(constmap_handle, &keys, &values, &nProperties) == CONSTMAP_OK)
 	{
@@ -122,6 +181,10 @@ Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>
 
 			properties->Insert(ref new Platform::String(key.c_str()), ref new Platform::String(value.c_str()));
 		}
+	}
+	else
+	{
+		throw ref new Platform::FailureException("Failed to get message property key/value pairs.");
 	}
 
 	return properties->GetView();

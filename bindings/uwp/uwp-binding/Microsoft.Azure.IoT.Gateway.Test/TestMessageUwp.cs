@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using System.Collections.Generic;
-using Microsoft.Azure.IoT.Gateway;
 using System.Text;
 
 namespace Microsoft.Azure.IoT.Gateway.Test
@@ -55,14 +54,14 @@ namespace Microsoft.Azure.IoT.Gateway.Test
 
             // Test Content
             Assert.AreEqual(notFail__2Property_2bytes[index++], msgContent.Count);
-            for (int i=0; i<msgContent.Count; i++)
+            for (int i = 0; i < msgContent.Count; i++)
             {
                 Assert.AreEqual((byte)notFail__2Property_2bytes[index++], (byte)msgContent[i]);
             }
 
             var roundTripBytes = msg.ToBytes();
             Assert.AreEqual(notFail__2Property_2bytes.Length, roundTripBytes.Count);
-            for (int i=0; i<roundTripBytes.Count; i++)
+            for (int i = 0; i < roundTripBytes.Count; i++)
             {
                 Assert.AreEqual(notFail__2Property_2bytes[i], roundTripBytes[i]);
             }
@@ -70,7 +69,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
         }
 
         private void ValidateMessage(
-            IList<byte> expectedContent, IReadOnlyDictionary<string, string> expectedProps, 
+            IList<byte> expectedContent, IReadOnlyDictionary<string, string> expectedProps,
             IList<byte> actualContent, IReadOnlyDictionary<string, string> actualProps)
         {
             Assert.AreEqual(expectedContent.Count, actualContent.Count);
@@ -151,7 +150,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
         public void TestMessageByteArrayConstructors()
         {
             var content = new List<byte>();
-            for (int i=1; i<100; i++) { content.Add((byte)i); }
+            for (int i = 1; i < 100; i++) { content.Add((byte)i); }
             var props = new Dictionary<string, string>();
             props.Add("blah", "gah");
             props.Add("clam", "chowder");
@@ -197,6 +196,22 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             var msg2Props = msg2.GetProperties();
 
             ValidateMessage(msg1Content, msg1Props, msg2Content, msg2Props);
+        }
+
+        [TestMethod]
+        public void TestInvalidArguments()
+        {
+            var content = String.Empty;
+            var props = new Dictionary<string, string>();
+            var bytes = new List<byte>();
+
+            try { new Message(null); Assert.IsTrue(false); } catch(ArgumentException e) { Assert.IsTrue(true); }
+            try { new Message(null, props); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+            try { new Message(content, null); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+            try { Message.CreateMessage(null); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+            try { Message.CreateMessage(null, props); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+            try { Message.CreateMessage(bytes, null); Assert.IsTrue(false); } catch (ArgumentException e) { Assert.IsTrue(true); }
+
         }
     }
 }

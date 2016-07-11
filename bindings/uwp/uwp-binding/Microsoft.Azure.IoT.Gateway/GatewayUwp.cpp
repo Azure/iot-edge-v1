@@ -30,6 +30,15 @@ void InternalGatewayModule::Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_H
 
 Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, Platform::String^>^ properties)
 {
+	if (modules == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("modules must be non-null.");
+	}
+	if (properties == nullptr)
+	{
+		throw ref new Platform::InvalidArgumentException("properties must be non-null.");
+	}
+
 	messagebus_handle = MessageBus_Create();
 	if (messagebus_handle == nullptr)
 	{
