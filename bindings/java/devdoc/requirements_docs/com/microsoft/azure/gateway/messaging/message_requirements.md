@@ -16,8 +16,7 @@ public final class Message implements Serializable{
 
     private String content;
 
-    public Message(String content, Map<String, String> properties);
-    public Message(String content);
+    public Message(byte[] content, Map<String, String> properties);
     public Message(byte[] serializedMessage);
     public Map<String, String> getProperties();
     public String getContent();
@@ -27,7 +26,7 @@ public final class Message implements Serializable{
 
 ##  Message
 ```java
-public Message(byte[] serializedMessage | String content[, Map<String, String> properties]);
+public Message(byte[] serializedMessage | byte[] content, Map<String, String> properties);
 ```
 **SRS_JAVA_MESSAGE_14_001: [** The constructor shall create a Message object by deserializing the byte array. **]**
 

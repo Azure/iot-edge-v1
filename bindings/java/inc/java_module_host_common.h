@@ -11,7 +11,7 @@
 #define MODULE_DESTROY_DESCRIPTOR "()V"
 #define MODULE_RECEIVE_DESCRIPTOR "([B)V"
 #define MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR "(J)V"
-#define MODULE_CONSTRUCTOR_DESCRIPTOR "(Lcom/microsoft/azure/gateway/core/MessageBus;Ljava/lang/String;)V"
+#define MODULE_CONSTRUCTOR_DESCRIPTOR "(JLcom/microsoft/azure/gateway/core/MessageBus;Ljava/lang/String;)V"
 #define DEBUG_PORT_DEFAULT 9876
 
 #endif /*JAVA_MODULE_HOST_COMMON_H*/

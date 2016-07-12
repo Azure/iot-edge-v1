@@ -18,11 +18,12 @@ public class Sensor extends GatewayModule {
      * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
+     * @param address       The address of the native module pointer
      * @param bus           The {@link MessageBus} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public Sensor(MessageBus bus, String configuration) {
-        super(bus, configuration);
+    public Sensor(long address, MessageBus bus, String configuration) {
+        super(address, bus, configuration);
         this.threadStop = false;
 
         new Thread(() -> {
@@ -35,10 +36,10 @@ public class Sensor extends GatewayModule {
                     Double sensorReading = Math.random() * 50;
 
                     //Construct message
-                    Message m = new Message(sensorReading.toString(), map);
+                    Message m = new Message(sensorReading.toString().getBytes(), map);
 
                     //Publish message
-                    bus.publishMessage(m);
+                    this.publish(m);
 
                     //Sleep
                     Thread.sleep(500);

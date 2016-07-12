@@ -16,6 +16,9 @@ public abstract class GatewayModule implements IGatewayModule{
     public abstract void receive(Message message);
     public abstract void destroy();
 
+    /** The address of the native module pointer */
+    private long _addr;
+
     /** The {@link MessageBus} to which this module belongs */
     private MessageBus bus;
 
@@ -26,26 +29,34 @@ public abstract class GatewayModule implements IGatewayModule{
      * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
+     * The {@code address} parameter must be passed to the super constructor but can be ignored by the module-implementor when writing a module implementation.
+     *
+     * @param address The address of the native module pointer.
      * @param bus The {@link MessageBus} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public GatewayModule(MessageBus bus, String configuration){
+    public GatewayModule(long address, MessageBus bus, String configuration){
         /*Codes_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or bus is null the constructor shall throw an IllegalArgumentException. ]*/
-        if(bus == null){
+        if(address == 0 || bus == null){
             throw new IllegalArgumentException("Address is invalid or MessageBus is null.");
         }
 
         /*Codes_SRS_JAVA_GATEWAY_MODULE_14_001: [ The constructor shall save address, bus, and configuration into class variables. ]*/
-        this.create(bus, configuration);
+        this.create(address, bus, configuration);
     }
 
-    public void create(MessageBus bus, String configuration){
+    public void create(long moduleAddr, MessageBus bus, String configuration){
+        this._addr = moduleAddr;
         this.bus = bus;
         this.configuration = configuration;
     }
 
     public void receive(byte[] serializedMessage){
         this.receive(new Message(serializedMessage));
+    }
+
+    public int publish(Message message) throws IOException {
+        return this.bus.publishMessage(message, this._addr);
     }
 
     //Public getter methods

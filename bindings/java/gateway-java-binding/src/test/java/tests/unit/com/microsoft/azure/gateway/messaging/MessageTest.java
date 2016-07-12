@@ -37,6 +37,17 @@ public class MessageTest {
                     0x00, 0x00, 0x00, 0x02,  /*2 message content size*/
                     '3', '4'
             };
+
+    public byte[] validMessagePropertySwap =
+            {
+                    (byte) 0xA1, 0x60,       /*header*/
+                    0x00, 0x00, 0x00, 64,   /*size of this array*/
+                    0x00, 0x00, 0x00, 0x02, /*two properties*/
+                    'A', 'z','u','r','e',' ','I','o','T',' ','G','a','t','e','w','a','y',' ','i','s','\0','a','w','e','s','o','m','e','\0',
+                    'B','l','e','e','d','i','n','g','E','d','g','e','\0','r','o','c','k','s','\0',
+                    0x00, 0x00, 0x00, 0x02,  /*2 message content size*/
+                    '3', '4'
+            };
     
     /*Tests_SRS_JAVA_MESSAGE_14_003: [ The constructor shall save the message content and properties map. ]*/
     @Test
@@ -241,7 +252,7 @@ public class MessageTest {
 
         byte[] actualByteArray = m.toByteArray();
 
-        assertTrue(Arrays.equals(validMessage, actualByteArray));
+        assertTrue(Arrays.equals(validMessage, actualByteArray) || Arrays.equals(validMessagePropertySwap, actualByteArray));
     }
 
     /*Tests_SRS_JAVA_MESSAGE_14_005: [ The function shall return throw an IOException if the Message could not be serialized. ]*/

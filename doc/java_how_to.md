@@ -6,6 +6,7 @@
 
 <a name="createproject">
 ## Create Your Project
+
 As mentioned in the Dev Box Setup guide, we recommend you create your modules as a Maven project. Doing this will make it easy to manage all dependencies and package your jar for easy inclusion in your gateway.
 
 Creating a Java module is easy:
@@ -21,11 +22,14 @@ Creating a Java module is easy:
      * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
+     * The {@code address} parameter must be passed to the super constructor but can be ignored by the module-implementor when writing a module implementation.
+     * 
+     * @param address       The address of the native module pointer
      * @param bus           The {@link MessageBus} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public YourModule(MessageBus bus, String configuration) {
-        super(bus, configuration);
+    public YourModule(long address, MessageBus bus, String configuration) {
+        super(address, bus, configuration);
     }
 
     @Override
@@ -42,7 +46,7 @@ Creating a Java module is easy:
   
 - **Publish messages**
 
-  Each module has it's own MessageBus object. Calling the ```int publish(Message message)``` method will publish any message onto the gateway.
+  Each module has its own ```MessageBus``` object. Calling the ```Module```s ```int publish(Message message)``` method will publish any message onto this ```MessageBus```.
   
 - **JSON Configuration**
   
@@ -54,7 +58,7 @@ Creating a Java module is easy:
       "module path": "<<path/to/java_module_host_hl.[so|dll]>>",
       "args": {
         "class_path": "<<Complete java class path containing all .jar and .class files necessary>>",
-        "library_path": "<<path/to/dir/containing/java_module_host_hl.[so|dll]>>",
+        "library_path": "<<path/to/dir/containing/java_module_host.[so|dll]>>",
         "class_name": "<<Name of your module class>>",
         "args": <<User-defined JSON configuration for your Java module>>,
         "jvm_options": {
@@ -75,10 +79,24 @@ Creating a Java module is easy:
   
   **Note:** The "jvm_options" section is not necessary. If ommitted, a default configuration will be used. If included and multiple Java modules
   will be loaded, all configurations MUST be the same. If multiple "jvm_options" configurations are not the same, creation will fail.
+  The default configuration is:
+
+  ```json
+  {
+      "jvm_options": {
+          "version": 4,
+          "debug": false,
+          "debug_port": 9876,
+          "verbose": false,
+          "additional_options": null
+        }
+  }
+  ```
   
   **Note:** Since the JVM is only loaded once, the full classpath must be set and be the same across all module in a configuration. Similar to the
   "jvm_options" section, if the classpath differs across configuration, creation will fail.
-  
+
+
 <a name="sampleguide">
 ## Java Module Sample Gateway
 

@@ -557,4 +557,20 @@ TEST_FUNCTION(JavaModuleHostHL_Destroy_LL_function_call_test)
 	//Cleanup
 }
 
+/*Tests_SRS_JAVA_MODULE_HOST_HL_14_001: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
+{
+	//Arrange
+
+	//Act
+
+	const MODULE_APIS* apis = Module_GetAPIS();
+
+	//Assert
+	ASSERT_IS_NOT_NULL(apis);
+	ASSERT_IS_NOT_NULL(apis->Module_Create);
+	ASSERT_IS_NOT_NULL(apis->Module_Destroy);
+	ASSERT_IS_NOT_NULL(apis->Module_Receive);
+}
+
 END_TEST_SUITE(JavaModuleHost_HL_UnitTests)

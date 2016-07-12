@@ -82,11 +82,12 @@ public interface IGatewayModule {
      * Gateway creates the Module. The constructor
      * should save both the {@code moduleAddr} and {@code bus} parameters.
      *
+     * @param moduleAddr The address of the native module pointer
      * @param bus The {@link MessageBus} to which this Module belongs
      * @param configuration The configuration for this module represented as a JSON
      * string
      */
-    void create(MessageBus bus, String configuration);
+    void create(long moduleAddr, MessageBus bus, String configuration);
 
     /**
      * The destroy method is called on a {@link GatewayModule} before it is about 
@@ -135,8 +136,9 @@ gateway, it:
 -   Constructs a `MessageBus` Java object using the `MESSAGE_BUS_HANDLE`.
 
 -   Finds the module’s class with the name specified by the `args.class_name`,
-    invokes the constructor passing in the `MessageBus` object and the JSON args
-    string for that module, and creates the Java module.
+    invokes the constructor passing in the native `MODULE_HANDLE` address,
+    the `MessageBus` object and the JSON args string for that module, and 
+    creates the Java module.
 
 -   Gets a global reference to the newly created `GatewayModule` object to be
     saved by the `JAVA_MODULE_HOST_HANDLE`.
@@ -168,7 +170,7 @@ Communication **FROM** the Java module
 In order to communicate **from** the Java module to the native gateway process,
 the `MessageBus` class must be used. The `MessageBus` class provides a method to
 publish messages onto the native Message Bus and loads a dynamic library that
-implements expected functions for publishing onto the native Message Bus. So,
-the above diagram should look a bit more like this:
+implements the functions for publishing onto the native message bus. So,the 
+above diagram should look a bit more like this:
 
 ![](HLD2.png)

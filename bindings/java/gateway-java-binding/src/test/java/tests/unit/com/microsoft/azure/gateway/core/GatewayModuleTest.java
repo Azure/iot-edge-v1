@@ -7,6 +7,7 @@ package tests.unit.com.microsoft.azure.gateway.core;
 import com.microsoft.azure.gateway.core.GatewayModule;
 import com.microsoft.azure.gateway.core.MessageBus;
 import com.microsoft.azure.gateway.messaging.Message;
+import mockit.Deencapsulation;
 import mockit.Mocked;
 import org.junit.Test;
 
@@ -17,27 +18,37 @@ public class GatewayModuleTest {
     @Mocked(stubOutClassInitialization = true)
     protected MessageBus mockBus;
 
-    /*Codes_SRS_JAVA_GATEWAY_MODULE_14_001: [ The constructor shall save address, bus, and configuration into class variables. ]*/
+    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_001: [ The constructor shall save address, bus, and configuration into class variables. ]*/
     @Test
     public void constructorSavesAllDataSuccess(){
         long address = 0x12345678;
         String configuration = "\"test-configuration\"";
 
-        GatewayModule module = new TestModule(mockBus, configuration);
+        GatewayModule module = new TestModule(address, mockBus, configuration);
 
         MessageBus expectedBus = module.getMessageBus();
+        long expectedAddress = Deencapsulation.getField(module, "_addr");
         String expectedConfiguration = module.getConfiguration();
 
         assertEquals(mockBus, expectedBus);
+        assertEquals(address, expectedAddress);
         assertEquals(configuration, expectedConfiguration);
     }
 
-    /*Codes_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or bus is null the constructor shall throw an IllegalArgumentException. ]*/
+    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or bus is null the constructor shall throw an IllegalArgumentException. ]*/
     @Test(expected = IllegalArgumentException.class)
     public void constructorThrowsExceptionForNullMessageBus(){
         long address = 0x12345678;
 
-        GatewayModule module = new TestModule(null, null);
+        GatewayModule module = new TestModule(address, null, null);
+    }
+
+    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or bus is null the constructor shall throw an IllegalArgumentException. ]*/
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorThrowsExceptionForNullMessageAddr(){
+        long address = 0;
+
+        GatewayModule module = new TestModule(0, mockBus, null);
     }
 
     public class TestModule extends GatewayModule{
@@ -46,11 +57,12 @@ public class GatewayModuleTest {
          * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
          * constructor before any module-specific constructor code.
          *
+         * @param address       The address of the native module pointer
          * @param bus           The {@link MessageBus} to which this module belongs
          * @param configuration The module-specific configuration
          */
-        public TestModule(MessageBus bus, String configuration) {
-            super(bus, configuration);
+        public TestModule(long address, MessageBus bus, String configuration) {
+            super(address, bus, configuration);
         }
 
         @Override

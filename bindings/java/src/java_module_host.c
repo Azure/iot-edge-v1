@@ -64,6 +64,11 @@ typedef signed char jbyte;
 #define JNIFunc(jptr, call, ...) (*(jptr))->call(jptr, ##__VA_ARGS__)
 #endif
 
+/* We currently have a dependency on Java 1.6, in case the user doesn't have Java 1.8 this will define the symbol so this will be able to compile.*/
+#ifndef JNI_VERSION_1_8
+#define JNI_VERSION_1_8 0x00010008
+#endif
+
 typedef struct JAVA_MODULE_HANDLE_DATA_TAG
 {
 	JavaVM* jvm;
@@ -232,7 +237,7 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 												}
 												else
 												{
-													jobject jModule_object = NewObjectInternal(result->env, jModule_class, jModule_constructor, 2, jMessageBus_object, jModule_configuration);
+													jobject jModule_object = NewObjectInternal(result->env, jModule_class, jModule_constructor, 3, (jlong)result, jMessageBus_object, jModule_configuration);
 													exception = JNIFunc(result->env, ExceptionOccurred);
 													if (jModule_object == NULL || exception)
 													{
@@ -354,7 +359,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 		}
 		else
 		{
-			/*SRS_JAVA_MODULE_HOST_14_042: [This function shall attach the JVM to the current thread.]*/
+			/*Codes_SRS_JAVA_MODULE_HOST_14_042: [This function shall attach the JVM to the current thread.]*/
 			jint jni_result = JNIFunc(moduleHandle->jvm, AttachCurrentThread, (void**)(&(moduleHandle->env)), NULL);
 
 			if (jni_result == JNI_OK)
@@ -425,14 +430,14 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 }
 
-JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv* env, jobject jMessageBus, jlong bus_address, jbyteArray serialized_message)
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv* env, jobject jMessageBus, jlong bus_address, jlong module_address, jbyteArray serialized_message)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_14_048: [This function shall return a non - zero value if any underlying function call fails.]*/
 	MESSAGE_BUS_RESULT result = MESSAGE_BUS_ERROR;
 
 	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)bus_address;
+	MODULE_HANDLE module = (MODULE_HANDLE)module_address;
 
-	/*Codes_SRS_JAVA_MODULE_HOST_14_025: [This function shall use convert the jbyteArray message into an unsigned char array.]*/
 	size_t length = JNIFunc(env, GetArrayLength, serialized_message);
 	if (length == 0)
 	{
@@ -447,6 +452,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishM
 		}
 		else
 		{
+			/*Codes_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
 			JNIFunc(env, GetByteArrayRegion, serialized_message, 0, length, arr);
 			jthrowable exception = JNIFunc(env, ExceptionOccurred);
 			if (exception)
@@ -467,7 +473,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishM
 				else
 				{
 					/*Codes_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the MESSAGE_BUS_HANDLE addressed by addr and return the value of this function call.]*/
-					result = MessageBus_Publish(bus, message);
+					result = MessageBus_Publish(bus, module, message);
 
 					//Cleanup
 					Message_Destroy(message);

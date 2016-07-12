@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_microsoft_azure_gateway_core_MessageBus
  * Method:    publishMessage
- * Signature: (J[B)I
+ * Signature: (JJ[B)I
  */
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage
-  (JNIEnv *, jobject, jlong, jbyteArray);
+  (JNIEnv *, jobject, jlong, jlong, jbyteArray);
 
 #ifdef __cplusplus
 }

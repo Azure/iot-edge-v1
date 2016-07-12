@@ -164,7 +164,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv *env, jobject MessageBus, jlong addr, jbyteArray message);
 ```
 
-**SRS_JAVA_MODULE_HOST_14_025: [** This function shall use convert the `jbyteArray message` into an `unsigned char` array. **]**
+**SRS_JAVA_MODULE_HOST_14_025: [** This function shall convert the `jbyteArray message` into an `unsigned char` array. **]**
 
 **SRS_JAVA_MODULE_HOST_14_026: [** This function shall use the serialized message in a call to `Message_Create`. **]**
 

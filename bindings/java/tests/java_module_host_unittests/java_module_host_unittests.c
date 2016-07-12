@@ -115,7 +115,7 @@ void my_Message_Destroy(MESSAGE_HANDLE message)
 }
 
 //MessageBus mocks
-MOCKABLE_FUNCTION(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MESSAGE_HANDLE, message);
+MOCKABLE_FUNCTION(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 //JEnv function mocks
 MOCKABLE_FUNCTION(JNICALL, jclass, FindClass, JNIEnv*, env, const char*, name);
@@ -511,6 +511,8 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	//JVM Hooks
 	REGISTER_GLOBAL_MOCK_HOOK(JNI_CreateJavaVM, mock_JNI_CreateJavaVM);
 	REGISTER_GLOBAL_MOCK_HOOK(JNI_GetCreatedJavaVMs, mock_JNI_GetCreatedJavaVMs);
+
+	REGISTER_UMOCK_ALIAS_TYPE(MODULE_HANDLE, void*);
 
 	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_HANDLE, void*);
 
@@ -2214,8 +2216,9 @@ TEST_FUNCTION(JavaModuleHost_Destroy_CallVoidMethod_fails)
 //Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage tests
 //=============================================================================
 
-//JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv* env, jobject jMessageBus, jlong bus_address, jbyteArray serialized_message);
-
+/*Tests_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_026: [This function shall use the serialized message in a call to Message_Create.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the MESSAGE_BUS_HANDLE addressed by addr and return the value of this function call.]*/
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_success)
 {
 	//Arrange
@@ -2241,8 +2244,8 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 	STRICT_EXPECTED_CALL(Message_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, module, IGNORED_PTR_ARG))
+		.IgnoreArgument(3);
 
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -2252,7 +2255,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 
 	//Act
 
-	jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, serialized_message);
+	jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, (jlong)module, serialized_message);
 
 	//Assert
 	ASSERT_ARE_EQUAL(int32_t, JNI_OK, result);
@@ -2295,8 +2298,8 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 		.IgnoreAllArguments()
 		.SetFailReturn(NULL);
 
-	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, IGNORED_PTR_ARG))
-		.IgnoreArgument(2)
+	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, module, IGNORED_PTR_ARG))
+		.IgnoreArgument(3)
 		.SetFailReturn(MESSAGE_BUS_ERROR);
 
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
@@ -2318,7 +2321,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 			umock_c_negative_tests_reset();
 			umock_c_negative_tests_fail_call(i);
 
-			jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, serialized_message);
+			jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, (jlong)module, serialized_message);
 
 			//Assert
 			ASSERT_ARE_NOT_EQUAL(int32_t, JNI_OK, result);
@@ -2330,6 +2333,22 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 
 	//Cleanup
 	JavaModuleHost_Destroy(module);
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_028: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
+{
+	//Arrange
+
+	//Act
+
+	const MODULE_APIS* apis = Module_GetAPIS();
+
+	//Assert
+	ASSERT_IS_NOT_NULL(apis);
+	ASSERT_IS_NOT_NULL(apis->Module_Create);
+	ASSERT_IS_NOT_NULL(apis->Module_Destroy);
+	ASSERT_IS_NOT_NULL(apis->Module_Receive);
 }
 
 END_TEST_SUITE(JavaModuleHost_UnitTests);

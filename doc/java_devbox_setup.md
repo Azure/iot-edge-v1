@@ -4,7 +4,7 @@ This document describes how to prepare your development environment to use the *
 
 - [Java JDK SE](#installjava)
 - [Maven 3](#installmaven)
-- [Azure IoT device SDK for Java](#installgw)
+- [Azure IoT Gateway SDK for Java](#installgw)
 	- [Build from source](#installgwsource)
 	- [Include using Maven](#installgwmaven)
 - [Application Samples](#samplecode)
@@ -118,7 +118,7 @@ When you're ready to build your own module in Java, include this JAR file in you
 
 <a name="installgwmaven">
 ### Get the Java bindings for the Azure IoT Gateway SDK from Maven (as a dependency)
-_This is the recommended method of including the Azure IoT Device SDK in your project, however this method will only work if your project is a Maven project_
+_This is the recommended method of including the Azure IoT Gateway SDK in your project, however this method will only work if your project is a Maven project_
 
 _For a guide on creating a maven project, see here: https://maven.apache.org/guides/getting-started/ _
 

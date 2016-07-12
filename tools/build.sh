@@ -59,9 +59,10 @@ process_args ()
 
 process_args $*
 
-if [[ $enable_java_binding == ON]]
+if [[ $enable_java_binding == ON ]]
 then
-    sh ./build_java.sh
+    "$build_root"/tools/build_java.sh
+    [ $? -eq 0 ] || exit $?
 fi
 
 cmake_root="$build_root"/build

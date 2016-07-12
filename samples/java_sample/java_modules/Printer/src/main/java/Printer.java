@@ -12,11 +12,12 @@ public class Printer extends GatewayModule {
      * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
+     * @param address       The address of the native module pointer
      * @param bus           The {@link MessageBus} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public Printer(MessageBus bus, String configuration) {
-        super(bus, configuration);
+    public Printer(long address, MessageBus bus, String configuration) {
+        super(address, bus, configuration);
     }
 
     @Override

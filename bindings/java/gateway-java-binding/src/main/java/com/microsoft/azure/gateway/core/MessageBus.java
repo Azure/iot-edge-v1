@@ -21,10 +21,11 @@ public class MessageBus {
      * function to publish the provided {@link Message} onto the MessageBus.
      *
      * @param busAddr The address of the pointer to the native MessageBus.
+     * @param moduleAddr The address of the pointer to the native Module.
      * @param message The serialized {@link Message} to be published.
      * @return 0 on success, non-zero otherwise.
      */
-    private native int publishMessage(long busAddr, byte[] message);
+    private native int publishMessage(long busAddr, long moduleAddr, byte[] message);
 
     private long _busAddr;
 
@@ -32,8 +33,8 @@ public class MessageBus {
         this._busAddr = addr;
     }
 
-    public int publishMessage(Message message) throws IOException {
-        return this.publishMessage(this._busAddr, message.toByteArray());
+    public int publishMessage(Message message, long moduleAddr) throws IOException {
+        return this.publishMessage(this._busAddr, moduleAddr, message.toByteArray());
     }
 
     public long getAddress(){
