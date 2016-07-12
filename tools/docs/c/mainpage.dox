@@ -13,6 +13,7 @@
  * - BLE module (Linux only) supporting reading, writing and polling based on GATT characteristics
  * - IoTHub module supporting multiplexing device connections to Azure IoTHub.
  * - Is written in ANSI C (C99) to maximize code portability.
+ * - Bindings for Java, C#, and Node.js modules.
  *
  * \section tested_platforms_sec Tested platforms
  *
@@ -20,6 +21,7 @@
  *
  * - Ubuntu 14 (14.04)
  * - Ubuntu 15 (15.10)
+ * - Ubuntu 16 (16.04)
  * - Yocto Linux 3.0 on Intel Edison
  * - Windows 10
  *
