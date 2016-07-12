@@ -5,7 +5,7 @@
 @echo off
 
 set build-root=%~dp0..\..
-cd %build-root%\tools\docs
+cd %build-root%\tools\docs\c
 
 rem ---------------------------------------------------------------------------
 rem -- Check directory

@@ -4,6 +4,8 @@
 @setlocal EnableExtensions EnableDelayedExpansion
 @echo off
 
+cd %build-root%\tools\docs\dotnet
+
 rem ---------------------------------------------------------------------------
 rem -- Check directory
 rem ---------------------------------------------------------------------------

@@ -58,7 +58,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = ../../doc/api_reference/c/
+OUTPUT_DIRECTORY       = ../../../doc/api_reference/c/
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
@@ -772,11 +772,11 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = mainpage.dox \
-                         ../../core/inc/gateway.h \
-			 ../../core/inc/gateway_ll.h \
-			 ../../core/inc/message.h \
-			 ../../core/inc/message_bus.h \
-			 ../../core/inc/module.h \
+                         ../../../core/inc/gateway.h \
+			 ../../../core/inc/gateway_ll.h \
+			 ../../../core/inc/message.h \
+			 ../../../core/inc/message_bus.h \
+			 ../../../core/inc/module.h \
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -2032,7 +2032,7 @@ SEARCH_INCLUDES        = YES
 # preprocessor.
 # This tag requires that the tag SEARCH_INCLUDES is set to YES.
 
-INCLUDE_PATH           = ../../deps/azure-c-shared-utility/inc
+INCLUDE_PATH           = ../../../deps/azure-c-shared-utility/inc
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the
