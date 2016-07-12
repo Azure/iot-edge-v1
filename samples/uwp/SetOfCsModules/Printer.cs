@@ -10,26 +10,16 @@ using Microsoft.Azure.IoT.Gateway;
 
 namespace SetOfCsModules
 {
-    public sealed class Module1 : IGatewayModule
+    public sealed class Printer : IGatewayModule
     {
         public void Create(MessageBus bus, IReadOnlyDictionary<string, string> configuration)
         {
-            System.Diagnostics.Debug.WriteLine("SetOfCsModules.Module1.Create");
-
-            new Task(() => {
-                for (int i = 0; i < 3; i++)
-                {
-                    new System.Threading.ManualResetEvent(false).WaitOne(1000);
-                    var props = new Dictionary<string, string>();
-                    props.Add("SetOfCsModules.Module1", i.ToString());
-                    bus.Publish(new Microsoft.Azure.IoT.Gateway.Message("SetOfCsModules.Module1 says hello!!!", props));
-                }
-            }).Start();
+            System.Diagnostics.Debug.WriteLine("SetOfCsModules.Printer.Create");
         }
 
         public void Destroy()
         {
-            System.Diagnostics.Debug.WriteLine("SetOfCsModules.Module1.Destroy");
+            System.Diagnostics.Debug.WriteLine("SetOfCsModules.Printer.Destroy");
         }
 
         public void Receive(Message received_message)
@@ -56,8 +46,8 @@ namespace SetOfCsModules
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("SetOfCsModules.Module1.Receive: Content=" + content.ToString() + "\r\n");
-            sb.Append("SetOfCsModules.Module1.Receive: Properties={" + propsString.ToString() + "}\r\n");
+            sb.Append("SetOfCsModules.Printer.Receive: Content=" + content.ToString() + "\r\n");
+            sb.Append("SetOfCsModules.Printer.Receive: Properties={" + propsString.ToString() + "}\r\n");
             System.Diagnostics.Debug.Write(sb.ToString());
         }
     }

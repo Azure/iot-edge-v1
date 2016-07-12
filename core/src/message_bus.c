@@ -177,7 +177,7 @@ static int module_publish_worker(void * user_data)
                     {
 #ifdef UWP_BINDING
 						/*Codes_SRS_MESSAGE_BUS_13_114: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
-						module_info->module->module_instance->Module_Receive(module_info->module->module_instance, msg);
+						module_info->module->module_instance->Module_Receive(msg);
 #else
 						/*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
 						module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);

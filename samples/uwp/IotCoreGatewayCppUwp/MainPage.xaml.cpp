@@ -36,12 +36,10 @@ void MainPage::DoStuff()
 {
 	auto modules =
 		ref new Platform::Collections::Vector<Microsoft::Azure::IoT::Gateway::IGatewayModule^>();
-	modules->Append(ref new SetOfCsModules::Module2());
-	modules->Append(ref new SetOfCsModules::Module1());
-	modules->Append(ref new SetOfCsModules::Module3());
-	modules->Append(ref new SetOfCppModules::Module2());
-	modules->Append(ref new SetOfCppModules::Module1());
-	modules->Append(ref new SetOfCppModules::Module3());
+	modules->Append(ref new SetOfCsModules::Sensor());
+	modules->Append(ref new SetOfCsModules::Printer());
+	modules->Append(ref new SetOfCppModules::Sensor());
+	modules->Append(ref new SetOfCppModules::Printer());
 
 	auto properties = ref new Platform::Collections::Map<Platform::String^, Platform::String^>();
 	properties->Insert("ConfigProperty", "ConfigValue");

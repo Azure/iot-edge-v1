@@ -21,9 +21,8 @@ namespace IotCoreGatewayCs
             deferral = taskInstance.GetDeferral();
 
             var modules = new List<Microsoft.Azure.IoT.Gateway.IGatewayModule>();
-            modules.Add(new SetOfCsModules.Module2());
-            modules.Add(new SetOfCsModules.Module1());
-            modules.Add(new SetOfCsModules.Module3());
+            modules.Add(new SetOfCsModules.Printer());
+            modules.Add(new SetOfCsModules.Sensor());
 
             var properties = new Dictionary<string, string>();
             properties.Add("ConfigProperty", "ConfigValue");

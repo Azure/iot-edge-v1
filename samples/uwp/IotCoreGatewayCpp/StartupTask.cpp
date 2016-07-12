@@ -20,9 +20,8 @@ void StartupTask::Run(IBackgroundTaskInstance^ taskInstance)
 
 
 	auto modules = ref new Vector<IGatewayModule^>();
-	modules->Append(ref new Module2());
-	modules->Append(ref new Module1());
-	modules->Append(ref new Module3());
+	modules->Append(ref new Sensor());
+	modules->Append(ref new Printer());
 	
 	auto properties = ref new Platform::Collections::Map<Platform::String^, Platform::String^>();
 	properties->Insert("ConfigProperty", "ConfigValue");

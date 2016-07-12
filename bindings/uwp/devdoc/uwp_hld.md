@@ -7,6 +7,12 @@ Overview
 This document describes the high level design of the UWP Azure IoT Gateway SDK. 
 
 
+Design
+------
+![](overall-design.png)
+![](high-level-design.png)
+
+
 UWP Wrappers and objects
 -------------------------
 
@@ -104,3 +110,10 @@ The high level design of these objects and interfaces is documented below:
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+
+Flow Diagram
+------------
+
+Following is the flow diagram of a lifecycle of the .NET module: 
+![](flow-chart.png)

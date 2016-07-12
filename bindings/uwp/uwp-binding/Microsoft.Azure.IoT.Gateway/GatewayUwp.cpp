@@ -22,7 +22,7 @@ void InternalGatewayModule::Module_Destroy()
 {
 	_moduleImpl->Destroy();
 }
-void InternalGatewayModule::Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+void InternalGatewayModule::Module_Receive(MESSAGE_HANDLE messageHandle)
 {
 	auto msg = ref new Microsoft::Azure::IoT::Gateway::Message(messageHandle);
 	_moduleImpl->Receive(msg);

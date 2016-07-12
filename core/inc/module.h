@@ -38,7 +38,7 @@ extern "C"
     {
     public:
 		/** @brief Interface equivalent to #Module_Receive function. */
-        virtual void Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle) = 0;
+        virtual void Module_Receive(MESSAGE_HANDLE messageHandle) = 0;
     };
 
 #endif // UWP_BINDING
