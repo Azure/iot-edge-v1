@@ -89,9 +89,8 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Module2.cs" />
-    <Compile Include="Module3.cs" />
-    <Compile Include="Module1.cs" />
+    <Compile Include="Printer.cs" />
+    <Compile Include="Sensor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

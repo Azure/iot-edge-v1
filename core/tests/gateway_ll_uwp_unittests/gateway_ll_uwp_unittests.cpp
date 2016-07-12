@@ -71,9 +71,7 @@ static size_t whenShallVECTOR_find_if_fail;
 class DummyGatewayModule : public IInternalGatewayModule
 {
 public:
-	void Module_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration) {}
-	void Module_Destroy() {}
-	void Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle) {}
+    void Module_Receive(MESSAGE_HANDLE messageHandle) {}
 };
 static MODULE dummyModule;
 static VECTOR_HANDLE dummyModules;
