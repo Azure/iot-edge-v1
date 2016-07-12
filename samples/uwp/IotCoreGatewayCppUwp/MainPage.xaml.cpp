@@ -28,11 +28,11 @@ MainPage::MainPage()
 {
 	InitializeComponent();
 
-	DoStuff();
+	CreateGateway();
 }
 
 
-void MainPage::DoStuff()
+void MainPage::CreateGateway()
 {
 	auto modules =
 		ref new Platform::Collections::Vector<Microsoft::Azure::IoT::Gateway::IGatewayModule^>();
