@@ -74,7 +74,7 @@ namespace Microsoft.Azure.IoT.Gateway
         }
 
         /// <summary>
-        ///     Constructor for Message. This receives a byte array (defined at spec [message_requirements.md]).
+        ///     Constructor for Message. This receives a byte array. Format defined at <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md">message_requirements.md</a>.
         /// </summary>
         /// <param name="msgAsByteArray">ByteArray with the Content and Properties of a message.</param>
         public Message(byte[] msgAsByteArray)
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.IoT.Gateway
                 /* Codes_SRS_DOTNET_MESSAGE_04_008: [ If any parameter is null, constructor shall throw a ArgumentNullException ] */
                 throw new ArgumentNullException("msgAsByteArray", "msgAsByteArray cannot be null");                    
             }
-            /* Codes_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format as described in message_requirements.md and it's Content and Properties are extracted and saved. ] */
+            /* Codes_SRS_DOTNET_MESSAGE_04_002: [ Message class shall have a constructor that receives a byte array with it's content format defined at <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md">message_requirements.md and it's Content and Properties are extracted and saved. ] */
             else if (msgAsByteArray.Length >= 14)
             {
                 MemoryStream stream = new MemoryStream(msgAsByteArray);
