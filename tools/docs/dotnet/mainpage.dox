@@ -1,0 +1,18 @@
+/*! \mainpage Microsoft Azure IoT Gateway SDK
+ *
+ * \section intro_sec Introduction
+ *
+ * This document describes the .NET binding mechanism used by Azure IoT Gateway SDK. 
+ *
+ * \section features_sec Features
+ *
+ * - Provides an Interface to be implemented by .NET Modules;
+ * - Wrapps Native Calls to Publish a message;
+ * - Instantiate a .NET CLR for Native to Managed Calls;
+ *
+ * \section tested_platforms_sec Tested platforms
+ *
+ * The following platforms have been tested against this library:
+ * - Windows 10
+ *
+ */

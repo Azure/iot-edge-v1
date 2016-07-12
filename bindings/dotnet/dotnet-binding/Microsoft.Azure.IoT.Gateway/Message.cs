@@ -14,8 +14,14 @@ namespace Microsoft.Azure.IoT.Gateway
     /// <summary> Object that represents a message on the message bus. </summary>
     public class Message
     {
+        /// <summary>
+        ///   Message Content.
+        /// </summary>
         public byte[] Content { get; }
 
+        /// <summary>
+        ///    Message Properties.
+        /// </summary>
         public Dictionary<string, string> Properties { get; }
 
         private bool readNullTerminatedString(MemoryStream bis, out byte[] output)
@@ -68,9 +74,9 @@ namespace Microsoft.Azure.IoT.Gateway
         }
 
         /// <summary>
-        ///     Constructor for Message. This receives a byte array (defined at spec [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md)).
+        ///     Constructor for Message. This receives a byte array. Format defined at <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md">message_requirements.md</a>.
         /// </summary>
-        /// <param name="msgInByteArray">ByteArray with the Content and Properties of a message.</param>
+        /// <param name="msgAsByteArray">ByteArray with the Content and Properties of a message.</param>
         public Message(byte[] msgAsByteArray)
         {
             if (msgAsByteArray == null)
@@ -313,7 +319,7 @@ namespace Microsoft.Azure.IoT.Gateway
         }
 
         /// <summary>
-        ///    Converts the message into a byte array (defined at spec [message_requirements.md](../C:\repos\azure-iot-gateway-sdk\core\devdoc\message_requirements.md)).
+        ///    Converts the message into a byte array (Format defined at <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md">message_requirements.md</a>).
         /// </summary>
         virtual public byte[] ToByteArray()
         {
