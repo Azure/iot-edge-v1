@@ -5,7 +5,11 @@
 #define JAVA_MODULE_HOST_H
 
 #include <stdbool.h>
+#ifdef _WIN32
 #include <cstdbool>
+#endif
+#include "azure_c_shared_utility/vector.h"
+#include "java_module_host_manager.h"
 #include "module.h"
 
 #ifdef __cplusplus
@@ -15,19 +19,20 @@ extern "C"
 
 typedef struct JVM_OPTIONS_TAG
 {
-    int version;
-    bool debug;
-    int debug_port;
-    bool verbose;
-    void* additional_options;
+	const char* class_path;
+	const char* library_path;
+	int version;
+	bool debug;
+	int debug_port;
+	bool verbose;
+	VECTOR_HANDLE additional_options;
 } JVM_OPTIONS;
 
 typedef struct JAVA_MODULE_HOST_CONFIG_TAG
 {
-    const char* class_path;
-    const char* class_name;
-    const char* configuration_json;
-    JVM_OPTIONS* options;
+	const char* class_name;
+	const char* configuration_json;
+	JVM_OPTIONS* options;
 } JAVA_MODULE_HOST_CONFIG;
 
 MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(void);

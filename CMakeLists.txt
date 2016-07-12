@@ -1,12 +1,14 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#this is CMakeLists.txt for root
 cmake_minimum_required(VERSION 2.8.11)
 project(azure_iot_gateway_sdk)
 
 #the following variables are project-wide and can be used with cmake-gui
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always build]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
+option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
@@ -103,6 +105,6 @@ include_directories(${GW_INC})
 
 add_subdirectory(modules)
 
-add_subdirectory(bindings)
-
 add_subdirectory(samples)
+
+add_subdirectory(bindings)

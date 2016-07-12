@@ -187,6 +187,10 @@ c/common/tools/macro_utils_h_generator/macro_utils_h_generator.exe
 **/java/**/*.iml
 **/java/**/*dependency-reduced-pom.xml
 tools/jenkins-cli.jar
+*.class
+*.jar
+**/target/
+*.iml
 
 # Node.js
 **/.settings/
@@ -199,7 +203,7 @@ typings/**
 
 # ignore cmake build folder
 .cmake/**
-build/**
+*build/**
 build_nodejs/**
 
 # ignore Atom Editor files

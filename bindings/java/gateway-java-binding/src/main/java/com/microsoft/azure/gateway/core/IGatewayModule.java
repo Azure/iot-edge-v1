@@ -8,7 +8,7 @@ public interface IGatewayModule {
 
     /**
      * The create method is called by the subclass constructor when the native Gateway creates the Module. The constructor
-     * should save both the {@code moduleAddr} and {@code bus} parameters.
+     * should save the {@code bus} parameter.
      *
      * @param moduleAddr The address of the native module pointer
      * @param bus The {@link MessageBus} to which this Module belongs
