@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#This is the CMakeLists.txt for gateway_ll_unittests
+#This is the CMakeLists.txt for gateway_ll_uwp_unittests
 cmake_minimum_required(VERSION 2.8.11)
 
 add_definitions(-DUWP_BINDING)

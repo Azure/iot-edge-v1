@@ -727,7 +727,7 @@ TEST_FUNCTION(MessageBus_Create_fails_when_Lock_Init_fails)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_038: [If bus or module or module_apis is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
 {
     ///arrange
@@ -743,7 +743,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_038: [If bus or module or module_apis is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module)
 {
     ///arrange
@@ -759,7 +759,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_038: [If bus or module or module_apis is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
 {
     ///arrange
@@ -769,6 +769,28 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
     {
         NULL,
         fake_module_handle
+    };
+    
+    ///act
+    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, &module);
+
+    ///assert
+    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+}
+
+//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_handle)
+{
+    ///arrange
+    CMessageBusMocks mocks;
+
+    MODULE module =
+    {
+        &fake_module_apis,
+        NULL
     };
     
     ///act
@@ -1044,7 +1066,6 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
 
 
 
-//Tests_SRS_MESSAGE_BUS_13_097 : [The function shall assign module_apis to MESSAGE_BUS_MODULEINFO::module_apis.]
 //Tests_SRS_MESSAGE_BUS_13_107 : [The function shall assign the module handle to MESSAGE_BUS_MODULEINFO::module.]
 //Tests_SRS_MESSAGE_BUS_13_098 : [The function shall initialize MESSAGE_BUS_MODULEINFO::mq with a valid vector handle.]
 //Tests_SRS_MESSAGE_BUS_13_099 : [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_lock with a valid lock handle.]

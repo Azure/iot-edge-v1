@@ -366,7 +366,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	BASEIMPLEMENTATION::VECTOR_destroy(dummyModules);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
+/*Tests_SRS_GATEWAY_LL_99_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
+/*Tests_SRS_GATEWAY_LL_99_005: [The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus.]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 {
 	//Arrange
@@ -397,7 +398,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 	Gateway_LL_UwpDestroy(gateway);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_002: [This function shall return NULL upon any memory allocation failure.]*/
+/*Tests_SRS_GATEWAY_LL_99_002: [This function shall return NULL upon any memory allocation failure.]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Malloc_Failure)
 {
 	//Arrange
@@ -419,7 +420,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Malloc_Failure)
 	//Nothing to cleanup
 }
 
-/*Tests_SRS_GATEWAY_LL_14_040: [ This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. ]*/
+/*Tests_SRS_GATEWAY_LL_99_003: [ This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. ]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Null_MessageBus_Handle_Failure)
 {
 	//Arrange
@@ -441,7 +442,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Null_MessageBus_Handle_Failure)
 	//Nothing to cleanup
 }
 
-/*Tests_SRS_GATEWAY_LL_14_041: [ This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. ]*/
+/*Tests_SRS_GATEWAY_LL_99_004: [ This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. ]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Null_Vector_Handle_Failure)
 {
 	//Arrange
@@ -464,7 +465,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Null_Vector_Handle_Failure)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_14_005: [ If gw is NULL the function shall do nothing. ]*/
+/*Tests_SRS_GATEWAY_LL_99_006: [ If gw is NULL the function shall do nothing. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 {
 	//Arrange
@@ -480,9 +481,9 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_14_006: [ The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
-/*Tests_SRS_GATEWAY_LL_14_021: [ The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
-/*Tests_SRS_GATEWAY_LL_14_038: [ The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. ]*/
+/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
+/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
+/*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success)
 {
 	//Arrange
@@ -513,7 +514,7 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success
 	mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_LL_14_022: [ If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. ]*/
+/*Tests_SRS_GATEWAY_LL_99_008: [ If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
 {
 	//Arrange

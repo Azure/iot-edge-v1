@@ -970,7 +970,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 /*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
 /*Tests_SRS_GATEWAY_LL_14_019: [ The function shall return the newly created MODULE_HANDLE only if each API call returns successfully. ]*/
 /*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
-/*Tests_SRS_GATEWAY_LL_14_042: [ The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. ]*/
+/*Tests_SRS_GATEWAY_LL_99_011: [ The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 {
 	//Arrange

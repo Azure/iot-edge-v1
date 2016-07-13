@@ -218,7 +218,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 			}
 			else
 			{
-				/*Codes_SRS_GATEWAY_LL_14_042: [The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. ]*/
+				/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
 				MODULE module;
 #ifdef UWP_BINDING
 				module.module_instance = NULL;
@@ -315,14 +315,14 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 
 GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus)
 {
-	/*Codes_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
+	/*Codes_SRS_GATEWAY_LL_99_001: [This function shall create a `GATEWAY_HANDLE` representing the newly created gateway.]*/
 	GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
 	if (gateway != NULL)
 	{
 		gateway->bus = bus;
 		if (gateway->bus == NULL)
 		{
-			/*Codes_SRS_GATEWAY_LL_14_040: [This function shall return NULL if a NULL MESSAGE_BUS_HANDLE is received.]*/
+			/*Codes_SRS_GATEWAY_LL_99_003: [This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received.]*/
 			free(gateway);
 			gateway = NULL;
 			LogError("Gateway_LL_UwpCreate(): bus must be non-NULL.");
@@ -332,7 +332,7 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 			gateway->modules = modules;
 			if (gateway->modules == NULL)
 			{
-				/*Codes_SRS_GATEWAY_LL_14_041: [This function shall return NULL if a NULL VECTOR_HANDLE is received.]*/
+				/*Codes_SRS_GATEWAY_LL_99_004: [This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received.]*/
 				free(gateway);
 				gateway = NULL;
 				LogError("Gateway_LL_UwpCreate(): modules must be non-NULL.");
@@ -353,14 +353,14 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 					}
 					else
 					{
-						/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
 						MessageBus_IncRef(gateway->bus);
 					}
 				}
 			}
 		}
 	}
-	/*Codes_SRS_GATEWAY_LL_14_002: [This function shall return NULL upon any memory allocation failure.]*/
+	/*Codes_SRS_GATEWAY_LL_99_002: [This function shall return `NULL` upon any memory allocation failure.]*/
 	else
 	{
 		LogError("Gateway_LL_Create(): malloc failed.");
@@ -371,7 +371,7 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 
 void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 {
-	/*Codes_SRS_GATEWAY_LL_14_005: [If gw is NULL the function shall do nothing.]*/
+	/*Codes_SRS_GATEWAY_LL_99_006: [If gw is NULL the function shall do nothing.]*/
 	if (gw != NULL)
 	{
 		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
@@ -383,17 +383,17 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 			MODULE* module = (MODULE*)VECTOR_element(gateway_handle->modules, index);
 
 			//By design, there will be no NULL module_data pointers in the vector
-			/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-			/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 			if (MessageBus_RemoveModule(gateway_handle->bus, module) != MESSAGE_BUS_OK)
 			{
 				LogError("Failed to remove module [%p] from the message bus. This module will remain linked to the message bus but will be removed from the gateway.", module);
 			}
-			/*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_009: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
 			MessageBus_DecRef(gateway_handle->bus);
 		}
 
-		/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
+		/*Codes_SRS_GATEWAY_LL_99_010: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
 		MessageBus_Destroy(gateway_handle->bus);
 
 		free(gateway_handle);

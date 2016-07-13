@@ -152,7 +152,7 @@ static void module_publish_worker(void* user_data)
 
 **SRS_MESSAGE_BUS_13_095: [** When the function exits the outer loop predicated on `module_info->quit_worker` being `0` it shall unlock `module_info->mq_lock` before exiting from the function. **]**
 
-**SRS_MESSAGE_BUS_13_114: [** The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. **]**
+**SRS_MESSAGE_BUS_99_012: [** The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. **]**
 
 ## MessageBus_Publish
 
@@ -190,9 +190,7 @@ MESSAGE_BUS_RESULT MessageBus_Publish(
 MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
 ```
 
-**SRS_MESSAGE_BUS_13_038: [** If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
-
-**SRS_MESSAGE_BUS_13_097: [** The function shall assign `module_apis` to `MESSAGE_BUS_MODULEINFO::module_apis`. **]**
+**SRS_MESSAGE_BUS_99_013: [** If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
 
 **SRS_MESSAGE_BUS_13_107: [** The function shall assign the `module` handle to `MESSAGE_BUS_MODULEINFO::module`. **]**
 
@@ -214,9 +212,10 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
 
 **SRS_MESSAGE_BUS_13_047: [** This function shall return `MESSAGE_BUS_ERROR` if an underlying API call to the platform causes an error or `MESSAGE_BUS_OK` otherwise. **]**
 
-**SRS_MESSAGE_BUS_13_115: [** If module is `NATIVE_C_TYPE` and the `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
-
-**SRS_MESSAGE_BUS_13_116: [** If module is `MODERN_CPP_TYPE` and the `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
+**SRS_MESSAGE_BUS_99_014: [** If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
+//////TODO: unittest
+**SRS_MESSAGE_BUS_99_015: [** If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
+//////TODO: unittest
 
 ## MessageBus_RemoveModule
 

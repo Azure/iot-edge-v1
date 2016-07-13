@@ -176,14 +176,14 @@ static int module_publish_worker(void * user_data)
                     else
                     {
 #ifdef UWP_BINDING
-						/*Codes_SRS_MESSAGE_BUS_13_114: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
-						module_info->module->module_instance->Module_Receive(msg);
+                        /*Codes_SRS_MESSAGE_BUS_99_012: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
+                        module_info->module->module_instance->Module_Receive(msg);
 #else
-						/*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
-						module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
+                        /*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
+                        module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
 #endif // UWP_BINDING
 
-						/*Codes_SRS_MESSAGE_BUS_13_093: [The function shall destroy the message that was dequeued by calling Message_Destroy.]*/
+                        /*Codes_SRS_MESSAGE_BUS_13_093: [The function shall destroy the message that was dequeued by calling Message_Destroy.]*/
                         Message_Destroy(msg);
 
                         /*Codes_SRS_MESSAGE_BUS_13_094: [The function shall re - acquire the lock on module_info->mq_lock.]*/
@@ -367,21 +367,21 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
 {
     MESSAGE_BUS_RESULT result;
 
-    /*Codes_SRS_MESSAGE_BUS_13_038: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
+    /*Codes_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
     if (bus == NULL || module == NULL)
     {
         result = MESSAGE_BUS_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
 #ifdef UWP_BINDING
-	/*Codes_SRS_MESSAGE_BUS_13_116: [If module is `MODERN_CPP_TYPE` and the `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	/*Codes_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
 	else if (module->module_instance == NULL)
 	{
 		result = MESSAGE_BUS_INVALIDARG;
 		LogError("invalid parameter (NULL).");
 	}
 #else
-	/*Codes_SRS_MESSAGE_BUS_13_115: [If module is `NATIVE_C_TYPE` and the `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	/*Codes_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
 	else if (module->module_apis == NULL || module->module_handle == NULL)
 	{
 		result = MESSAGE_BUS_INVALIDARG;

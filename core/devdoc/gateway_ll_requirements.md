@@ -110,13 +110,15 @@ extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_
 ```
 Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` struct and the message bus described by the `MESSAGE_BUS_HANDLE` to configure the modules on the message bus.
 
-**SRS_GATEWAY_LL_14_001: [** This function shall create a `GATEWAY_HANDLE` representing the newly created gateway. **]**
+**SRS_GATEWAY_LL_99_001: [** This function shall create a `GATEWAY_HANDLE` representing the newly created gateway. **]**
 
-**SRS_GATEWAY_LL_14_002: [** This function shall return `NULL` upon any memory allocation failure. **]**
+**SRS_GATEWAY_LL_99_002: [** This function shall return `NULL` upon any memory allocation failure. **]**
 
-**SRS_GATEWAY_LL_14_040: [** This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. **]**
+**SRS_GATEWAY_LL_99_003: [** This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. **]**
 
-**SRS_GATEWAY_LL_14_041: [** This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. **]**
+**SRS_GATEWAY_LL_99_004: [** This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. **]**
+
+**SRS_GATEWAY_LL_99_005: [** The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. **]**
 
 ##Gateway_Destroy
 ```
@@ -135,17 +137,17 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 ```
 extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
 ```
-Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
+Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
-**SRS_GATEWAY_LL_14_005: [** If `gw` is `NULL` the function shall do nothing. **]**
+**SRS_GATEWAY_LL_99_006: [** If `gw` is `NULL` the function shall do nothing. **]**
 
-**SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_007: [** The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. **]**
 
-**SRS_GATEWAY_LL_14_021: [** The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_008: [** If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. **]**
 
-**SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_009: [** The function shall decrement the MESSAGE_BUS_HANDLE reference count. **]**
 
-**SRS_GATEWAY_LL_14_038: [** The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. **]**
+**SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
 
 ##Gateway_AddModule
 ```
@@ -179,7 +181,7 @@ Gateway_LL_AddModule adds a module to the gateway message bus using the provided
 
 **SRS_GATEWAY_LL_14_019: [** The function shall return the newly created `MODULE_HANDLE` only if each API call returns successfully. **]**
 
-**SRS_GATEWAY_LL_14_042: [** The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. **]**
+**SRS_GATEWAY_LL_99_009: [** The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. **]**
 
 ##Gateway_RemoveModule
 ```
