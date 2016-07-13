@@ -254,6 +254,11 @@
       <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\internal\event_system.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAsWinRT>false</CompileAsWinRT>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\gateway_ll.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>

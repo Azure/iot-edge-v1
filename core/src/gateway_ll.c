@@ -13,6 +13,7 @@
 #include "gateway_ll.h"
 #include "message_bus.h"
 #include "module_loader.h"
+#include "internal/event_system.h"
 
 typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
@@ -20,6 +21,9 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	/** @brief The message bus contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
+
+	/** @brief Handle for callback event system coupled with this Gateway */
+	EVENTSYSTEM_HANDLE event_system;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
@@ -32,14 +36,18 @@ typedef struct MODULE_DATA_TAG {
 
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_path, const void* module_configuration);
 static void gateway_removemodule_internal(GATEWAY_HANDLE gw, MODULE_DATA* module);
+static void gateway_destroy_internal(GATEWAY_HANDLE gw);
 static bool module_data_find(const void* element, const void* value);
 
 GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 {
 	/*Codes_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
 	GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
+
 	if (gateway != NULL) 
 	{
+		/* For freeing up NULL ptrs in case of create failure */
+		memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
 		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message bus. ]*/
 		gateway->bus = MessageBus_Create();
 		if (gateway->bus == NULL) 
@@ -85,17 +93,28 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						if (module == NULL)
 						{
 							LogError("Gateway_LL_Create(): Unable to add module '%s'. The gateway will be destroyed.", entry->module_name);
-							while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
-							{
-								MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
-								//By design, there will be no NULL module_data pointers in the vector
-								gateway_removemodule_internal(gateway, module_data);
-							}
-							VECTOR_destroy(gateway->modules);
-							MessageBus_Destroy(gateway->bus);
-							free(gateway);
+							gateway_destroy_internal(gateway);
 							gateway = NULL;
 						}
+					}
+				}
+				if (gateway != NULL)
+				{
+					/* TODO: Seperate the gateway init from gateway start-up so that plugins have the chance
+					 * register themselves */
+					/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
+					gateway->event_system = EventSystem_Init();
+					/*Codes_SRS_GATEWAY_LL_26_002: [ If Gateway Events module fails to be initialized the gateway module shall be destroyed with no events reported. ] */
+					if (gateway->event_system == NULL)
+					{
+						LogError("Gateway_LL_Create(): Unable to initialize callback system");
+						gateway_destroy_internal(gateway);
+						gateway = NULL;
+					}
+					else
+					{
+						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
+						EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_CREATED);
 					}
 				}
 			}
@@ -112,31 +131,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 
 void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 {
-	/*Codes_SRS_GATEWAY_LL_14_005: [If gw is NULL the function shall do nothing.]*/
-	if (gw != NULL)
-	{
-		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
-
-		/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
-		while (gateway_handle->modules != NULL && VECTOR_size(gateway_handle->modules) > 0)
-		{
-			MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
-			//By design, there will be no NULL module_data pointers in the vector
-			/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-			gateway_removemodule_internal(gateway_handle, module_data);
-		}
-
-		VECTOR_destroy(gateway_handle->modules);
-
-		/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
-		MessageBus_Destroy(gateway_handle->bus);
-
-		free(gateway_handle);
-	}
-	else
-	{
-		LogError("Gateway_LL_Destroy(): The GATEWAY_HANDLE is null.");
-	}
+	gateway_destroy_internal(gw);
 }
 
 MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry)
@@ -183,6 +178,19 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 	else
 	{
 		LogError("Gateway_LL_RemoveModule(): Failed to remove module because the GATEWA_HANDLE is NULL.");
+	}
+}
+
+void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+{
+	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
+	if (gw == NULL)
+	{
+		LogError("invalid gateway when registering callback");
+	}
+	else
+	{
+		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
 	}
 }
 
@@ -285,6 +293,42 @@ static bool module_data_find(const void* element, const void* value)
 	return ((MODULE_DATA*)element)->module == value;
 }
 
+static void gateway_destroy_internal(GATEWAY_HANDLE gw)
+{
+	/*Codes_SRS_GATEWAY_LL_14_005: [If gw is NULL the function shall do nothing.]*/
+	if (gw != NULL)
+	{
+		/* event_system might be NULL here if destroying during failed creation, event system API should cleanly handle that */
+		/* Codes_SRS_GATEWAY_LL_26_003: [ If the Gateway Events module is initialized, this function shall report GATEWAY_DESTROYED event. ] */
+		EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_DESTROYED);
+		/* Codes_SRS_GATEWAY_LL_26_004: [ This function shall destroy the attached Gateway Events callback system. ] */
+		EventSystem_Destroy(gw->event_system);
+		gw->event_system = NULL;
+
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+
+		/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
+		while (gateway_handle->modules != NULL && VECTOR_size(gateway_handle->modules) > 0)
+		{
+			MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
+			//By design, there will be no NULL module_data pointers in the vector
+			/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+			gateway_removemodule_internal(gateway_handle, module_data);
+		}
+
+		VECTOR_destroy(gateway_handle->modules);
+
+		/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
+		MessageBus_Destroy(gateway_handle->bus);
+
+		free(gateway_handle);
+	}
+	else
+	{
+		LogError("Gateway_LL_Destroy(): The GATEWAY_HANDLE is null.");
+	}
+}
+
 static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
 {
 	MODULE module;
@@ -319,6 +363,8 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 	GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
 	if (gateway != NULL)
 	{
+		/* For now event system in UWP is not supported */
+		gateway->event_system = NULL;
 		gateway->bus = bus;
 		if (gateway->bus == NULL)
 		{

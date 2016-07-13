@@ -49,6 +49,21 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 	VECTOR_HANDLE gateway_properties_entries;
 } GATEWAY_PROPERTIES;
 
+/** @brief  Enum representing different gateway events that have support for callbacks. */
+typedef enum GATEWAY_EVENT_TAG
+{
+	GATEWAY_CREATED = 0,
+	GATEWAY_DESTROYED,
+	/* @brief  Not an actual event, used to keep track of count of different events */
+	GATEWAY_EVENTS_COUNT
+} GATEWAY_EVENT;
+
+/** @brief  Placeholder for possible event context in the future. Right now NULL will be passed. */
+typedef void* GATEWAY_EVENT_CTX;
+
+/** @brief	Function pointer that can be registered and will be called for gateway events */
+typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
 *
 *	@param		properties		#GATEWAY_PROPERTIES structure containing 
@@ -83,6 +98,14 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPE
 *	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+
+/** @brief  Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
+*
+*   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
+*   @param  event_type Enum stating on which event should the callback be called
+*   @param  callback   Pointer to a function that will be called when the event happens
+*/
+extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
 
 #ifdef UWP_BINDING
 
