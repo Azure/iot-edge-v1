@@ -181,7 +181,7 @@ Gateway_LL_AddModule adds a module to the gateway message bus using the provided
 
 **SRS_GATEWAY_LL_14_019: [** The function shall return the newly created `MODULE_HANDLE` only if each API call returns successfully. **]**
 
-**SRS_GATEWAY_LL_99_009: [** The function shall assign `module_apis` to `MODULE_C_STYLE::module_apis`. **]**
+**SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
 
 ##Gateway_RemoveModule
 ```
