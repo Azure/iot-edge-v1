@@ -213,9 +213,9 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
 **SRS_MESSAGE_BUS_13_047: [** This function shall return `MESSAGE_BUS_ERROR` if an underlying API call to the platform causes an error or `MESSAGE_BUS_OK` otherwise. **]**
 
 **SRS_MESSAGE_BUS_99_014: [** If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
-//////TODO: unittest
+
 **SRS_MESSAGE_BUS_99_015: [** If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
-//////TODO: unittest
+
 
 ## MessageBus_RemoveModule
 
