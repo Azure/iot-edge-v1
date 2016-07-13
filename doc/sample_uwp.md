@@ -27,28 +27,34 @@ You can find the diagram for Receiving a message and publishing a message on thi
 
 Building the sample
 -------------------
-At this point, creating a UWP gateway containing UWP modules is supported on all UWP platforms (Windows Desktop, Windows Phone, Windows 10 IoT Core). 
-To build the UWP Gateway and UWP Modules you should build the solution here (../samples/uwp/UwpSample.sln).
-Today the Solution has: 
+At this point, creating a UWP gateway containing UWP modules is supported on all UWP platforms (Windows Desktop, 
+Windows Phone, Windows 10 IoT Core). 
 
-1. Microsoft.Azure.IoT.Gateway ==> UWP DLL you shall reference from your application and module projects.
-2. IotCoreGatewayCpp ==> UWP(C++) Background Application (most useful on Windows 10 Iot Core) gateway project.
-3. IotCoreGatewayCs ==> UWP(C#) Background Application (most useful on Windows 10 Iot Core) gateway project
-4. IotCoreGatewayCppUwp ==> UWP(C++) App (can be run on all UWP platforms) gateway project.
+To build the UWP Sample Gateway and UWP Modules open the solution here: `../samples/uwp/UwpSample.sln`.  You can
+build the solution by selecting **Build > Build Solution**.
+
+Today the sample contains these projects: 
+
+1. Microsoft.Azure.IoT.Gateway ==> UWP DLL containing the required Gateway and Module components.
+2. IotCoreGatewayCppUwp ==> UWP(C++) App (can be run on all UWP platforms) gateway project.
+3. IotCoreGatewayCpp ==> UWP(C++) Background Application (most useful on Windows 10 Iot Core) gateway project.
+4. IotCoreGatewayCs ==> UWP(C#) Background Application (most useful on Windows 10 Iot Core) gateway project
 5. SetOfCppModules ==> UWP(C++) DLL containing Sensor and Printer modules.
 6. SetOfCsModules ==> UWP(C#) DLL containing Sensor and Printer modules.
 
-Building the solution you will have the following binaries: 
+Building the solution will create the following binaries: 
 
 1. Microsoft.Azure.IoT.Gateway.dll.
-2. IotCoreGatewayCpp.dll.
-3. IotCoreGatewayCs.dll.
-4. IotCoreGatewayCppUwp.exe.
+2. IotCoreGatewayCppUwp.exe.
+3. IotCoreGatewayCpp.dll.
+4. IotCoreGatewayCs.dll.
 5. SetOfCppModules.dll.
 6. SetOfCsModules.winmd.
 
-To deploy these binaries and run your gateway, these files will need to be packagesd in an APPX file or
-deployed with Visual Studio (via F5). 
+To deploy these binaries and run your gateway, you can use Visual Studio's F5 (also invoked by selecting **Debug > Start Debugging**).  
+
+Alternatively, these files can be packaged in an APPX file (this file can be uploaded to the Microsoft Store 
+or App side-loading).  You can find information on creating an APPX file [here](https://msdn.microsoft.com/en-us/library/hh454036.aspx).
 
 Running the sample
 ------------------
