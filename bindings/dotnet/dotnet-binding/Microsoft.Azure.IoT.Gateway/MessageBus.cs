@@ -18,12 +18,7 @@ namespace Microsoft.Azure.IoT.Gateway
 
         private NativeDotNetHostWrapper dotnetWrapper;
 
-        /// <summary>
-        ///   Constructor for MessageBus. This is used by Unit Tests, where we can mock Native Object calls.
-        /// </summary>
-        /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
-        /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
-        /// <param name="myTestWrapper">Object of type NativeDotNetHostWrapper.</param>
+#if !DOXYGEN_SHOULD_SKIP_THIS
         public MessageBus(long msgBus, long module, NativeDotNetHostWrapper nativeWrapper)
         {
             /* Codes_SRS_DOTNET_MESSAGEBUS_04_001: [ If msgBus is <= 0, MessageBus constructor shall throw a new ArgumentException ] */
@@ -45,15 +40,12 @@ namespace Microsoft.Azure.IoT.Gateway
             }
         }
 
-        /// <summary>
-        ///     Constructor for MessageBus. This is used by the Native level, the .NET User will receive an object of this. 
-        /// </summary>
-        /// <param name="msgBus">Adress of the native created msgBus, used internally.</param>
-        /// <param name="module">Adress of the module to which Module Bus got created. This will be used by Message when published.</param>
         public MessageBus(long msgBus, long module) : this(msgBus, module, new NativeDotNetHostWrapper())
         {
 
         }
+
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
         /// <summary>
         ///     Publish a message into the gateway message bus. 

@@ -4,13 +4,12 @@
 @setlocal EnableExtensions EnableDelayedExpansion
 @echo off
 
-set build-root=%~dp0..\..
-cd %build-root%\tools\docs\c
+cd %build-root%\tools\docs\dotnet
 
 rem ---------------------------------------------------------------------------
 rem -- Check directory
 rem ---------------------------------------------------------------------------
-set docs_dir=%build-root%\doc\api_reference\c
+set docs_dir=%build-root%\doc\api_reference\dotnet
 if exist %docs_dir% rd /s /q %docs_dir%
 if %errorlevel% neq 0 exit /b %errorlevel%
 mkdir %docs_dir%

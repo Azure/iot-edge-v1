@@ -23,7 +23,6 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <summary>
         ///     Disposes of the resources allocated by/for this module.
         /// </summary>
-        /// <param name="moduleHandle">The #MODULE_HANDLE of the module to be destroyed.</param>
         /// <returns></returns>
         void Destroy();
 
