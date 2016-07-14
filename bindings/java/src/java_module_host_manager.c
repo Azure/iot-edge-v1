@@ -74,10 +74,10 @@ JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create(JAVA_MODULE_HOST_CO
 	}
 	else
 	{
-		/*SRS_JAVA_MODULE_HOST_MANAGER_14_030: [The function shall check against the singleton JAVA_MODULE_HOST_MANAGER_HANDLE instances JAVA_MODULE_HOST_CONFIG structure for equality in each field.]*/
+		/*Codes_SRS_JAVA_MODULE_HOST_MANAGER_14_030: [The function shall check against the singleton JAVA_MODULE_HOST_MANAGER_HANDLE instances JAVA_MODULE_HOST_CONFIG structure for equality in each field.]*/
 		if (config_options_compare(instance->config, config) != 0)
 		{
-			/*SRS_JAVA_MODULE_HOST_MANAGER_14_031: [The function shall return NULL if the JAVA_MODULE_HOST_CONFIG structures do not match.]*/
+			/*Codes_SRS_JAVA_MODULE_HOST_MANAGER_14_031: [The function shall return NULL if the JAVA_MODULE_HOST_CONFIG structures do not match.]*/
 			LogError("JAVA_MODULE_HOST_CONFIG does not match the JAVA_MODULE_HOST_CONFIG known by this manager.");
 			result = NULL;
 		}
