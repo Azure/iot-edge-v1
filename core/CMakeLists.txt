@@ -71,7 +71,7 @@ add_library(gateway
     ${gateway_h_sources}
 )
 
-target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library})
-
+target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library} )
+link_broker(gateway)
 #this adds the tests to the build process
 add_subdirectory(tests)

@@ -32,7 +32,6 @@ add_executable(hello_world_sample ${hello_world_headers} ${modules_path_file} ${
 
 add_dependencies(hello_world_sample logger_hl)
 
-
 target_link_libraries(hello_world_sample gateway)
 linkSharedUtil(hello_world_sample)
 

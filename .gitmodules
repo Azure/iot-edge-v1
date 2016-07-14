@@ -7,3 +7,6 @@
 [submodule "deps/parson"]
 	path = deps/parson
 	url = https://github.com/kgabis/parson
+[submodule "deps/nanomsg"]
+	path = deps/nanomsg
+	url = https://github.com/nanomsg/nanomsg.git

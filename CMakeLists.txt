@@ -55,6 +55,7 @@ function(add_sample_to_solution sampleName)
   set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
 endfunction()
 
+
 macro(compileAsC99)
   if (CMAKE_VERSION VERSION_LESS "3.1")
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -98,6 +99,26 @@ endfunction(linkSharedUtil)
 
 #this adds parson
 include_directories(./deps/parson)
+
+#this adds nanomsg
+option(NN_ENABLE_DOC "" OFF )
+option(NN_STATIC_LIB "" ON )
+option(NN_TESTS "" OFF )
+option(NN_ENABLE_NANOCAT "" OFF)
+set(ENV{CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_BINARY_DIR} )
+add_subdirectory(./deps/nanomsg)
+include_directories(./deps/nanomsg/src)
+# This should be set with the NN_STATIC_LIB options
+add_definitions (-DNN_STATIC_LIB)
+
+set(NANOMSG_TARGETS dist )
+foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
+  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "Nanomsg_Projects")
+endforeach(nanomsgTarget)
+
+function(link_broker whatIsBuilding)
+  target_link_libraries(${whatIsBuilding} nanomsg )
+endfunction(link_broker)
 
 add_subdirectory(./core)
 
