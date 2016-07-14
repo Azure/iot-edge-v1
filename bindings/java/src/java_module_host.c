@@ -123,7 +123,7 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 				result->moduleName = (char*)config->class_name;
 
 				/*Codes_SRS_JAVA_MODULE_HOST_14_037: [This function shall get a singleton instance of a JavaModuleHostManager. ]*/
-				result->manager = JavaModuleHostManager_Create();
+				result->manager = JavaModuleHostManager_Create(config);
 				if (result->manager == NULL)
 				{
 					LogError("Failed to create a JAVA_MODULE_HOST_MANAGER_HANDLE.");

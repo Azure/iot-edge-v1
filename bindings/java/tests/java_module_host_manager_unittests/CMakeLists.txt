@@ -13,6 +13,9 @@ set(${theseTestsName}_test_files
 
 set(${theseTestsName}_c_files
     ../../src/java_module_host_manager.c
+    ../real_vector.c
+	../real_string.c
+    ../real_crt_abstractions.c
 )
 
 set(${theseTestsName}_h_files

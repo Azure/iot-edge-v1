@@ -9,7 +9,6 @@
 #include <cstdbool>
 #endif
 #include "azure_c_shared_utility/vector.h"
-#include "java_module_host_manager.h"
 #include "module.h"
 
 #ifdef __cplusplus

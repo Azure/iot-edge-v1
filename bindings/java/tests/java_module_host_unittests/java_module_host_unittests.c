@@ -364,9 +364,13 @@ void my_gballoc_free(void* ptr)
 }
 
 //Java Module Host Manager Mocks
-JAVA_MODULE_HOST_MANAGER_HANDLE my_JavaModuleHostManager_Create(void)
+JAVA_MODULE_HOST_MANAGER_HANDLE my_JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config)
 {
-	if (global_manager == NULL)
+	if (config == NULL)
+	{
+		global_manager = NULL;
+	}
+	else if (global_manager == NULL)
 	{
 		global_manager = (JAVA_MODULE_HOST_MANAGER_HANDLE)malloc(0x42);
 		module_manager_count = 0;
@@ -689,7 +693,7 @@ TEST_FUNCTION(JavaModuleHost_Create_API_failure_tests)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create());
+	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
 
 	STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
 	STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
@@ -926,7 +930,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create());
+	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
 
 	STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
 	STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
@@ -1078,7 +1082,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_additio
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create());
+	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
 
 	STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
 	STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
@@ -1255,7 +1259,7 @@ TEST_FUNCTION(JavaModuleHost_Create_allocates_structure_success)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create());
+	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config));
 
 	STRICT_EXPECTED_CALL(JNI_GetDefaultJavaVMInitArgs(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
@@ -1330,7 +1334,7 @@ TEST_FUNCTION(JavaModuleHost_Create_gets_previously_created_JVM_success)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create());
+	STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config));
 
 	STRICT_EXPECTED_CALL(JNI_GetDefaultJavaVMInitArgs(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);

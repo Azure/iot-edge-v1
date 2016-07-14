@@ -26,7 +26,7 @@ DEFINE_ENUM(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT_VAL
 
 typedef struct JAVA_MODULE_HOST_MANAGER_DATA_TAG* JAVA_MODULE_HOST_MANAGER_HANDLE;
 
-extern JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create();
+extern JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config);
 
 extern void JavaModuleHostManager_Destroy(JAVA_MODULE_HOST_MANAGER_HANDLE handle);
 
@@ -43,11 +43,15 @@ extern size_t JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
 #endif /*JAVA_MODULE_HOST_MANAGER_H*/
 ```
 
-##JavaModuleHostManager_Create()
+##JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config)
 ```c
-extern JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create();
+extern JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config);
 ```
 JavaModuleHostManager_Create creates a new singleton instance of a `JAVA_MODULE_HOST_MANAGER_HANDLE` structure.
+
+**SRS_JAVA_MODULE_HOST_MANAGER_14_030: [** The function shall check against the singleton `JAVA_MODULE_HOST_MANAGER_HANDLE` instance's `JAVA_MODULE_HOST_CONFIG` structure for equality in each field. **]**
+
+**SRS_JAVA_MODULE_HOST_MANAGER_14_031: [** The function shall return `NULL` if the `JAVA_MODULE_HOST_CONFIG` structures do not match. **]**
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_001: [** The function shall return the global `JAVA_MODULE_HOST_MANAGER_HANDLE` instance if it is not `NULL`. **]**
 
@@ -60,6 +64,10 @@ JavaModuleHostManager_Create creates a new singleton instance of a `JAVA_MODULE_
 **SRS_JAVA_MODULE_HOST_MANAGER_14_005: [** The function shall return `NULL` if lock initialization fails. **]**
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_006: [** The function shall set the `module_count` member variable to 0. **]**
+
+**SRS_JAVA_MODULE_HOST_MANAGER_14_028: [** The function shall do a deep copy of the `config` parameter and keep a pointer to the copied `JAVA_MODULE_HOST_CONFIG`. **]**
+
+**SRS_JAVA_MODULE_HOST_MANAGER_14_029: [** If the deep copy fails, the function shall return `NULL`. **]**
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_007: [** The function shall shall set the global `JAVA_MODULE_HOST_MANAGER_HANDLE` instance. **]**
 
@@ -78,6 +86,8 @@ JavaModuleHostManager_Destroy will destroy the `JAVA_MODULE_HOST_MANAGER_HANDLE`
 **SRS_JAVA_MODULE_HOST_MANAGER_14_011: [** The function shall deinitialize `handle->lock`. **]**
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_012: [** The function shall do nothing if lock deinitialization fails. **]**
+
+**SRS_JAVA_MODULE_HOST_MANAGER_14_032: [** The function shall destroy the `JAVA_MODULE_HOST_CONFIG` structure. **]**
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_013: [** The function shall free the `handle` parameter. **]**
 

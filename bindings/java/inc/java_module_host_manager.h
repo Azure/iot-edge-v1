@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under MIT license. See LICENSE file in the project root for full license information.
 
-/**	@file java_module_host_manager.h
+/**	@file		java_module_host_manager.h
  *	@brief		A library to safely manage the number of Java module hosts on
  *				the gateway.
  *	@details	This library uses the @c LOCK API to safely manage the number of
@@ -13,6 +13,7 @@
 #define JAVA_MODULE_HOST_MANAGER_H
 
 #include "azure_c_shared_utility/umock_c_prod.h"
+#include "java_module_host.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,7 +39,7 @@ DEFINE_ENUM(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT_VAL
  * @return	A valid @c JAVA_MODULE_HOST_MANAGER_HANDLE when successful or @c 
  *			NULL otherwise.
  */
-MOCKABLE_FUNCTION(, JAVA_MODULE_HOST_MANAGER_HANDLE, JavaModuleHostManager_Create);
+MOCKABLE_FUNCTION(, JAVA_MODULE_HOST_MANAGER_HANDLE, JavaModuleHostManager_Create, JAVA_MODULE_HOST_CONFIG*, config);
 
 /**
  * @brief	This API destroys the @c JAVA_MODULE_HOST_MANAGER_HANDLE if the 
