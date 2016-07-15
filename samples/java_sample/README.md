@@ -1,1 +1,1 @@
-The directions to run this sample can be found at [doc/sample_hello_world.md](../../doc/sample_hello_world.md).
+The directions to run this sample can be found at [doc/java_how_to.md](../../doc/java_how_to.md).

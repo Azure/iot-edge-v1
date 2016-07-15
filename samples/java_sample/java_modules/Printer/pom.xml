@@ -7,13 +7,13 @@
 
     <groupId>com.microsoft.azure.gateway</groupId>
     <artifactId>sample-printer-module</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure.gateway</groupId>
             <artifactId>gateway-java-binding</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
     </dependencies>
 
