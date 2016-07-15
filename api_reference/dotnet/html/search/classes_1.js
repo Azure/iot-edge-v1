@@ -1,0 +1,5 @@
+var searchData=
+[
+  ['message',['Message',['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message.html',1,'Microsoft::Azure::IoT::Gateway']]],
+  ['messagebus',['MessageBus',['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message_bus.html',1,'Microsoft::Azure::IoT::Gateway']]]
+];

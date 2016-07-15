@@ -1,0 +1,4 @@
+var searchData=
+[
+  ['message',['Message',['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message.html#a4b0095a6c463338a917b6f293bf58d99',1,'Microsoft.Azure.IoT.Gateway.Message.Message(byte[] msgAsByteArray)'],['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message.html#a5affd83fca790d0e3f5b9750ad8c2517',1,'Microsoft.Azure.IoT.Gateway.Message.Message(byte[] contentAsByteArray, Dictionary&lt; string, string &gt; properties)'],['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message.html#ad26f53cb98748fa39c451955252d0845',1,'Microsoft.Azure.IoT.Gateway.Message.Message(string content, Dictionary&lt; string, string &gt; properties)'],['../class_microsoft_1_1_azure_1_1_io_t_1_1_gateway_1_1_message.html#af3a1d3230986f27be17bbcf5de295c41',1,'Microsoft.Azure.IoT.Gateway.Message.Message(Message message)']]]
+];

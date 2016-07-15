@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.0-beta.1</span>
+   &#160;<span id="projectnumber">1.0.0-beta.2</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -135,6 +135,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a50b95bfa82eb800244c6d6ab69393082"><td class="memItemLeft" align="right" valign="top"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a50b95bfa82eb800244c6d6ab69393082">Message_Create</a> (const <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47">MESSAGE_CONFIG</a> *cfg)</td></tr>
 <tr class="memdesc:a50b95bfa82eb800244c6d6ab69393082"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure with the reference count initialized to 1.  <a href="#a50b95bfa82eb800244c6d6ab69393082">More...</a><br /></td></tr>
 <tr class="separator:a50b95bfa82eb800244c6d6ab69393082"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59655001821b305d857e6b730893a7eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a59655001821b305d857e6b730893a7eb">Message_CreateFromByteArray</a> (const unsigned char *source, int32_t size)</td></tr>
+<tr class="memdesc:a59655001821b305d857e6b730893a7eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a byte array containing the serialized form of a message.  <a href="#a59655001821b305d857e6b730893a7eb">More...</a><br /></td></tr>
+<tr class="separator:a59655001821b305d857e6b730893a7eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac32d38e4b5cf9de8da3331e58374f767"><td class="memItemLeft" align="right" valign="top">const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#ac32d38e4b5cf9de8da3331e58374f767">Message_ToByteArray</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> messageHandle, int32_t *size)</td></tr>
+<tr class="memdesc:ac32d38e4b5cf9de8da3331e58374f767"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a byte array representation of a MESSAGE_HANDLE.  <a href="#ac32d38e4b5cf9de8da3331e58374f767">More...</a><br /></td></tr>
+<tr class="separator:ac32d38e4b5cf9de8da3331e58374f767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90e4b3bcde9a14de285217b237ad610e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a90e4b3bcde9a14de285217b237ad610e">Message_CreateFromBuffer</a> (const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *cfg)</td></tr>
 <tr class="memdesc:a90e4b3bcde9a14de285217b237ad610e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>.  <a href="#a90e4b3bcde9a14de285217b237ad610e">More...</a><br /></td></tr>
 <tr class="separator:a90e4b3bcde9a14de285217b237ad610e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,7 +235,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>. </p>
-<p>This function will create its own <code>CONSTBUFFER</code> and <code>ConstMap</code> with copies of the <code>source</code> and <code>sourceProperties</code> contained within the <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure parameter. It is the responsibility of the Message to dispose of these resources.</p>
+<p>This function will create a new message its own <code>CONSTBUFFER</code> and <code>ConstMap</code> with copies of the <code>source</code> and <code>sourceProperties</code> contained within the <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure parameter. The message will be created with the reference count initialized to 1. It is the responsibility of the Message to dispose of these resources.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cfg</td><td>Pointer to a <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3" title="Struct defining the Message buffer configuration. ">MESSAGE_BUFFER_CONFIG</a> structure.</td></tr>
@@ -237,6 +243,43 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> for the newly created message, or <code>NULL</code> upon failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a59655001821b305d857e6b730893a7eb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> Message_CreateFromByteArray </td>
+          <td>(</td>
+          <td class="paramtype">const unsigned char *&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a new reference counted message from a byte array containing the serialized form of a message. </p>
+<p>The newly created message shall have all the properties of the original message and the same content.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">source</td><td>Pointer to a byte array. </td></tr>
+    <tr><td class="paramname">size</td><td>size in bytes of the array</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> for the newly created message, or NULL upon failure. </dd></dl>
 
 </div>
 </div>
@@ -279,7 +322,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Gets the content of a message. </p>
-<p>The returned <code>CONSTMAP_HANDLE</code> need not be freed by the caller.</p>
+<p>The returned <code>CONSTBUFFER</code> need not be freed by the caller.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> from which the content will be fetched.</td></tr>
@@ -339,6 +382,43 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A non-NULL <code>CONSTMAP_HANDLE</code> representing the properties of the message, or <code>NULL</code> upon failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac32d38e4b5cf9de8da3331e58374f767"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned char* Message_ToByteArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname"><em>messageHandle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t *&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a byte array representation of a MESSAGE_HANDLE. </p>
+<p>The byte array created can be used with function <a class="el" href="message_8h.html#a59655001821b305d857e6b730893a7eb" title="Creates a new reference counted message from a byte array containing the serialized form of a message...">Message_CreateFromByteArray</a> to reproduce the message. The returned byte array needs to be deallocated by free function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">messageHandle</td><td>A <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a>. This parameter cannot be NULL. </td></tr>
+    <tr><td class="paramname">size</td><td>pointer to a int32_t that will receive the size of the byte array</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL const unsigned char* is returned when creating the serialized form succeeds. *size is updated to the size of the array A NULL value is returned when the array cannot be created. </dd></dl>
 
 </div>
 </div>
