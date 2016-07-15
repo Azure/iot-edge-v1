@@ -16,9 +16,12 @@ public final class Message {
     private byte[] content;
 
     /**
+     * Constructor for a {@link Message} with {@code content} {@link byte[]} and {@link Map} {@code properties}.
      *
-     * @param content The message content as a string.
-     * @param properties The string to string map of peroperties for this message.
+     * Both {@code content} and {@code properties} may be null.
+     *
+     * @param content The message content as a string. Null creates an empty content {@link byte[]}
+     * @param properties The string to string map of peroperties for this message. Null creates an empty {@link Map}
      */
     public Message(byte[] content, Map<String, String> properties){
         /*Codes_SRS_JAVA_MESSAGE_14_003: [ The constructor shall save the message content and properties map. ]*/
@@ -27,8 +30,13 @@ public final class Message {
     }
 
     /**
+     * Construcor for a {@link Message} created from a fully and properly serialized message {@link byte[]}.
+     *
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
      *
      * @param serializedMessage The fully serialized message.
+     *
+     * @throws IllegalArgumentException If the {@link byte[]} cannot be de-serialized.
      */
     public Message(byte[] serializedMessage){
         try {
@@ -41,9 +49,12 @@ public final class Message {
     }
 
     /**
+     * Serializes the {@link Message} to a {@link byte[]}.
      *
-     * @return
-     * @throws IOException
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
+     *
+     * @return The serialized {@link byte[]}.
+     * @throws IOException If this {@link Message} cannot be serialized.
      */
     public byte[] toByteArray() throws IOException {
         /*Codes_SRS_JAVA_MESSAGE_14_004: [ The function shall serialize the Message content and properties according to the specification in message.h ]*/

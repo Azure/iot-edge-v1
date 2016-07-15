@@ -16,6 +16,10 @@ call :checkExists git
 if not %errorlevel%==0 exit /b %errorlevel%
 call :checkExists doxygen
 if not %errorlevel%==0 exit /b %errorlevel%
+call :checkExists mvn
+if not %errorlevel%==0 exit /b %errorlevel%
+call :checkExists javadoc
+if not %errorlevel%==0 exit /b %errorlevel%
 
 rem -----------------------------------------------------------------------------
 rem -- Generate C API docs
@@ -24,10 +28,16 @@ echo Generating C API docs
 call gen_cdocs.cmd
 
 rem -----------------------------------------------------------------------------
-rem -- Generate Dotnet API docs
+rem -- Generate .NET API docs
 rem -----------------------------------------------------------------------------
-echo Generating Dotnet API docs
+echo Generating .NET API docs
 call gen_dotnetdocs.cmd
+
+rem -----------------------------------------------------------------------------
+rem -- Generate Java API docs
+rem -----------------------------------------------------------------------------
+echo Generating Java API docs
+call gen_javadocs.cmd
 
 rem -----------------------------------------------------------------------------
 rem -- done

@@ -7,11 +7,11 @@ package com.microsoft.azure.gateway.core;
 public interface IGatewayModule {
 
     /**
-     * The create method is called by the subclass constructor when the native Gateway creates the Module. The constructor
+     * The create method is called by the subclass constructor when the native Gateway creates the module. The constructor
      * should save the {@code bus} parameter.
      *
      * @param moduleAddr The address of the native module pointer
-     * @param bus The {@link MessageBus} to which this Module belongs
+     * @param bus The {@link MessageBus} to which this module belongs
      * @param configuration The configuration for this module represented as a JSON string
      */
     void create(long moduleAddr, MessageBus bus, String configuration);

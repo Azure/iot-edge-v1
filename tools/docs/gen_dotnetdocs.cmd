@@ -9,6 +9,7 @@ cd %build-root%\tools\docs\dotnet
 rem ---------------------------------------------------------------------------
 rem -- Check directory
 rem ---------------------------------------------------------------------------
+echo Generating .NET binding API docs...
 set docs_dir=%build-root%\doc\api_reference\dotnet
 if exist %docs_dir% rd /s /q %docs_dir%
 if %errorlevel% neq 0 exit /b %errorlevel%

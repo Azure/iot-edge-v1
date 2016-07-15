@@ -9,7 +9,7 @@ import com.microsoft.azure.gateway.messaging.Message;
 import java.io.IOException;
 
 /**
- * The Abstract Module class to be extended by the module-creator when creating any modules.
+ * The Abstract {@link GatewayModule} class to be extended by the module-creator when creating any modules.
  */
 public abstract class GatewayModule implements IGatewayModule{
 
@@ -55,6 +55,13 @@ public abstract class GatewayModule implements IGatewayModule{
         this.receive(new Message(serializedMessage));
     }
 
+    /**
+     * Publishes the {@link Message} onto to the {@link MessageBus}.
+     *
+     * @param message The {@link Message} to be published
+     * @return 0 on success, non-zero otherwise. See <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_bus_requirements.md" target="_top">Message Bus Documentation</a>.
+     * @throws IOException If the {@link Message} cannot be serialized.
+     */
     public int publish(Message message) throws IOException {
         return this.bus.publishMessage(message, this._addr);
     }
@@ -65,6 +72,10 @@ public abstract class GatewayModule implements IGatewayModule{
         return bus;
     }
 
+    /**
+     * Gets the JSON configuration string for this {@link GatewayModule}
+     * @return The JSON configuration for this {@link GatewayModule}
+     */
     final public String getConfiguration(){
         return configuration;
     }

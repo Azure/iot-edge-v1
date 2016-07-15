@@ -18,10 +18,12 @@ public class MessageBus {
     //Private Native Methods
     /**
      * Native MessageBus_Publish function. When this method is called, it will call into the native MessageBus_Publish
-     * function to publish the provided {@link Message} onto the MessageBus.
+     * function to publish the provided {@link Message} onto the native MessageBus.
+     *
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_bus_requirements.md" target="_top">Message Bus Documentation</a>
      *
      * @param busAddr The address of the pointer to the native MessageBus.
-     * @param moduleAddr The address of the pointer to the native Module.
+     * @param moduleAddr The address of the pointer to the native module.
      * @param message The serialized {@link Message} to be published.
      * @return 0 on success, non-zero otherwise.
      */
@@ -33,6 +35,16 @@ public class MessageBus {
         this._busAddr = addr;
     }
 
+    /**
+     * Publishes the {@link Message} onto to the {@link MessageBus}.
+     *
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_bus_requirements.md" target="_top">Message Bus Documentation</a>
+     *
+     * @param moduleAddr The address of the pointer to the native module.
+     * @param message The serialized {@link Message} to be published.
+     * @return 0 on success, non-zero otherwise.
+     * @throws IOException If the {@link Message} cannot be serialized.
+     */
     public int publishMessage(Message message, long moduleAddr) throws IOException {
         return this.publishMessage(this._busAddr, moduleAddr, message.toByteArray());
     }
