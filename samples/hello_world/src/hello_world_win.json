@@ -4,7 +4,7 @@
         {
             "module name" : "logger_hl",
             "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
-            "args" : {"filename":"d:\\log.txt"}
+            "args" : {"filename":"f:\\log.txt"}
         },
         {
             "module name" : "hello_world",

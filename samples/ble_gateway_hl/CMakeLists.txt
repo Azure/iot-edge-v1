@@ -37,6 +37,8 @@ target_link_libraries(ble_gateway_hl ${LIBS})
 add_dependencies(ble_gateway_hl ble_hl ble_printer identity_map_hl logger_hl iothubhttp_hl)
 
 linkSharedUtil(ble_gateway_hl)
+install_broker(ble_gateway_hl ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
 
 add_sample_to_solution(ble_gateway_hl)
 

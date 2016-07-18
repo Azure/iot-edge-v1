@@ -112,6 +112,7 @@ extern MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const 
 */
 extern void MessageBus_Destroy(MESSAGE_BUS_HANDLE bus);
 
+
 // This variable is used only for unit testing purposes.
 extern size_t BUS_offsetof_quit_worker;
 

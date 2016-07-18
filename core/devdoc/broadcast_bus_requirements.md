@@ -9,7 +9,6 @@ The message bus (or just the "bus") is central to the gateway. The bus plays the
 * [Message Bus High Level Design](bus_hld.md)
 * `module.h` - [Module API requirements](module.md)
 * [Message API requirements](message_requirements.md)
-* [nanomsg](http://nanomsg.org/)
 
 ## Tracking Modules
 
@@ -37,17 +36,22 @@ typedef struct MESSAGE_BUS_MODULEINFO_TAG
     /**
      * Handle to the queue of messages to be delivered to this module.
      */
-    int                     receive_socket;
+    VECTOR_HANDLE           mq;
     
     /**
-     * Lock used to synchronize access to nn_recv call.
+     * Lock used to synchronize access to the 'mq' field.
      */
-    LOCK_HANDLE             socket_lock;
+    LOCK_HANDLE             mq_lock;
     
     /**
-     * Message publish worker will keep running until this signal is sent.
+     * A condition variable that is signaled when there are new messages.
      */
-    STRING_HANDLE           quit_message_guid;
+    COND_HANDLE             mq_cond;
+    
+    /**
+     * Message publish worker will keep running while this is false.
+     */
+    sig_atomic_t            quit_worker;
 }MESSAGE_BUS_MODULEINFO;
 ```
 
@@ -96,16 +100,6 @@ typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
      * Lock used to synchronize access to the 'modules' field.
      */
     LOCK_HANDLE             modules_lock;
-
-    /**
-     * Socket to publish messages to bus.
-     */
-    int                     publish_socket;
-
-    /**
-     * URL of message bus binding.
-     */
-    STRING_HANDLE           url;
 }MESSAGE_BUS_HANDLE_DATA;
 ```
 
@@ -114,14 +108,6 @@ typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 **SRS_MESSAGE_BUS_13_007: [** `MessageBus_Create` shall initialize `BUS_HANDLE_DATA::modules` with a valid `VECTOR_HANDLE`. **]**
 
 **SRS_MESSAGE_BUS_13_023: [** `MessageBus_Create` shall initialize `BUS_HANDLE_DATA::modules_lock` with a valid `LOCK_HANDLE`. **]**
-
-**SRS_MESSAGE_BUS_17_001: [** `MessageBus_Create` shall initialize a socket for publishing messages. **]**
- 
-**SRS_MESSAGE_BUS_17_002: [**  `MessageBus_Create` shall create a unique id. **]**
-
-**SRS_MESSAGE_BUS_17_003: [** `MessageBus_Create` shall initialize a url consisting of "inproc://" + unique id. **]**
-
-**SRS_MESSAGE_BUS_17_004: [** `MessageBus_Create` shall bind the socket to the `MESSAGE_BUS_HANDLE_DATA::url`. **]**
 
 ## MessageBus_IncRef
 
@@ -142,29 +128,29 @@ static void module_publish_worker(void* user_data)
 
 **SRS_MESSAGE_BUS_13_026: [** This function shall assign `user_data` to a local variable called `module_info` of type `MESSAGE_BUS_MODULEINFO*`. **]**
 
-**SRS_MESSAGE_BUS_13_089: [** This function shall acquire the lock on `module_info->socket_lock`. **]**
+**SRS_MESSAGE_BUS_13_089: [** This function shall acquire the lock on `module_info->mq_lock`. **]**
 
 **SRS_MESSAGE_BUS_02_004: [** If acquiring the lock fails, then module_publish_worker shall return. **]**
 
-**SRS_MESSAGE_BUS_13_068: [** This function shall run a loop that keeps running until `module_info->quit_message_guid` is sent to the thread. **]**
+**SRS_MESSAGE_BUS_13_068: [** This function shall run a loop that keeps running while `module_info->quit_worker` is equal to `0`. **]**
 
-**SRS_MESSAGE_BUS_13_091: [** The function shall unlock `module_info->socket_lock`. **]**
+**SRS_MESSAGE_BUS_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`. **]**
 
-**SRS_MESSAGE_BUS_17_016: [** If releasing the lock fails, then module_publish_worker shall return. **]**
+**SRS_MESSAGE_BUS_13_071: [** For every iteration of the loop the function will first wait on `module_info->mq_cond` using `module_info->mq_lock` as the corresponding mutex to be used by the condition variable. **]**
 
-**SRS_MESSAGE_BUS_17_005: [** For every iteration of the loop, the function shall wait on the `receive_socket` for messages. **]**
+**SRS_MESSAGE_BUS_13_090: [** When `module_info->mq_cond` has been signaled this function shall kick off another loop predicated on `module_info->quit_worker` being equal to `0` and `module_info->mq` not being empty. This thread has the lock on `module_info->mq_lock` at this point. **]**
 
-**SRS_MESSAGE_BUS_17_006: [** An error on receiving a message shall terminate the loop. **]**
+**SRS_MESSAGE_BUS_13_069: [** The function shall dequeue a message from the module's message queue. **]**
 
-**SRS_MESSAGE_BUS_17_017: [** The function shall deserialize the message received. **]**
-
-**SRS_MESSAGE_BUS_17_018: [** If the deserialization is not successful, the message loop shall continue. **]**
+**SRS_MESSAGE_BUS_13_091: [** The function shall unlock `module_info->mq_lock`. **]**
 
 **SRS_MESSAGE_BUS_13_092: [** The function shall deliver the message to the module's callback function via `module_info->module_apis`. **]**
 
 **SRS_MESSAGE_BUS_13_093: [** The function shall destroy the message that was dequeued by calling `Message_Destroy`. **]**
 
-**SRS_MESSAGE_BUS_17_019: [** The function shall free the buffer received on the `receive_socket`. **]**
+**SRS_MESSAGE_BUS_13_094: [** The function shall re-acquire the lock on `module_info->mq_lock`. **]**
+
+**SRS_MESSAGE_BUS_13_095: [** When the function exits the outer loop predicated on `module_info->quit_worker` being `0` it shall unlock `module_info->mq_lock` before exiting from the function. **]**
 
 **SRS_MESSAGE_BUS_99_012: [** The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. **]**
 
@@ -180,21 +166,21 @@ MESSAGE_BUS_RESULT MessageBus_Publish(
 
 **SRS_MESSAGE_BUS_13_030: [** If `bus` or `message` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`. **]**
 
-**SRS_MESSAGE_BUS_17_022: [** `MessageBus_Publish` shall Lock the modules lock. **]**
+**SRS_MESSAGE_BUS_13_031: [** `MessageBus_Publish` shall acquire the lock `MESSAGE_BUS_HANDLE_DATA::modules_lock`. **]**
 
-**SRS_MESSAGE_BUS_17_007: [** `MessageBus_Publish` shall clone the `message`. **]**
+**SRS_MESSAGE_BUS_13_032: [** `MessageBus_Publish` shall start a processing loop for every module in `MESSAGE_BUS_HANDLE_DATA::modules`.  **]**
 
-**SRS_MESSAGE_BUS_17_008: [** `MessageBus_Publish` shall serialize the `message`. **]**
+**SRS_MESSAGE_BUS_17_002: [** If `source` is not NULL, `MessageBus_Publish` shall not publish the message to the `MESSAGE_BUS_MODULEINFO::module` which matches `source`. **]**
 
-**SRS_MESSAGE_BUS_17_009: [** `MessageBus_Publish` shall allocate a nanomsg buffer and copy the serialized message into it. **]**
+**SRS_MESSAGE_BUS_13_033: [** In the loop, the function shall first acquire the lock on `MESSAGE_BUS_MODULEINFO::mq_lock`. **]**
 
-**SRS_MESSAGE_BUS_17_010: [** `MessageBus_Publish` shall send a message on the `publish_socket`. **]**
+**SRS_MESSAGE_BUS_13_034: [** The function shall then append `message` to `MESSAGE_BUS_MODULEINFO::mq` by calling `Message_Clone` and `VECTOR_push_back`. **]**
 
-**SRS_MESSAGE_BUS_17_011: [** `MessageBus_Publish` shall free the serialized `message` data. **]**
+**SRS_MESSAGE_BUS_13_035: [** The function shall then release `MESSAGE_BUS_MODULEINFO::mq_lock`. **]**
 
-**SRS_MESSAGE_BUS_17_012: [** `MessageBus_Publish` shall free the `message`. **]**
+**SRS_MESSAGE_BUS_13_096: [** The function shall then signal `MESSAGE_BUS_MODULEINFO::mq_cond`. **]**
 
-**SRS_MESSAGE_BUS_17_023: [** `MessageBus_Publish` shall Unlock the modules lock. **]**
+**SRS_MESSAGE_BUS_13_040: [** `MessageBus_Publish` shall release the lock `MESSAGE_BUS_HANDLE_DATA::modules_lock` after the loop. **]**
 
 **SRS_MESSAGE_BUS_13_037: [** This function shall return `MESSAGE_BUS_ERROR` if an underlying API call to the platform causes an error or `MESSAGE_BUS_OK` otherwise. **]**
 
@@ -208,13 +194,13 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
 
 **SRS_MESSAGE_BUS_13_107: [** The function shall assign the `module` handle to `MESSAGE_BUS_MODULEINFO::module`. **]**
 
-**SRS_MESSAGE_BUS_17_013: [** The function shall create a nanomsg socket for reception. **]**
+**SRS_MESSAGE_BUS_13_098: [** The function shall initialize `MESSAGE_BUS_MODULEINFO::mq` with a valid vector handle. **]**
 
-**SRS_MESSAGE_BUS_17_014: [** The function shall bind the socket to the the `MESSAGE_BUS_HANDLE_DATA::url`. **]**
+**SRS_MESSAGE_BUS_13_099: [** The function shall initialize `MESSAGE_BUS_MODULEINFO::mq_lock` with a valid lock handle. **]**
 
-**SRS_MESSAGE_BUS_13_099: [** The function shall initialize `MESSAGE_BUS_MODULEINFO::socket_lock` with a valid lock handle. **]**
+**SRS_MESSAGE_BUS_13_100: [** The function shall initialize `MESSAGE_BUS_MODULEINFO::mq_cond` with a valid condition handle. **]**
 
-**SRS_MESSAGE_BUS_17_020: [** The function shall create a unique ID used as a quit signal. **]**
+**SRS_MESSAGE_BUS_13_101: [** The function shall assign `0` to `MESSAGE_BUS_MODULEINFO::quit_worker`. **]**
 
 **SRS_MESSAGE_BUS_13_102: [** The function shall create a new thread for the module by calling `ThreadAPI_Create` using `module_publish_worker` as the thread callback and using the newly allocated `MESSAGE_BUS_MODULEINFO` object as the thread context. **]**
 
@@ -249,15 +235,19 @@ MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE*
 
 **SRS_MESSAGE_BUS_13_054: [** This function shall release the lock on `MESSAGE_BUS_HANDLE_DATA::modules_lock`. **]**
 
-**SRS_MESSAGE_BUS_17_021: [** This function shall send a quit signal to the worker thread by sending `MESSAGE_BUS_MODULEINFO::quit_message_guid` to the publish_socket. **]**
+**SRS_MESSAGE_BUS_02_001: [** MessageBus_RemoveModule shall lock `MESSAGE_BUS_MODULEINFO::mq_lock`. **]** 
 
-**SRS_MESSAGE_BUS_02_001: [** MessageBus_RemoveModule shall lock `MESSAGE_BUS_MODULEINFO::socket_lock`. **]** 
+**SRS_MESSAGE_BUS_02_002: [** If locking fails, then terminating the thread shall not be attempted (signalling the condition and joining the thread). **]**
 
-**SRS_MESSAGE_BUS_17_015: [** This function shall close the `MESSAGE_BUS_MODULEINFO::receive_socket`. **]** 
+**SRS_MESSAGE_BUS_13_103: [** The function shall assign `1` to `MESSAGE_BUS_MODULEINFO::quit_worker`. **]**
 
-**SRS_MESSAGE_BUS_02_003: [** After closing the socket, MessageBus_RemoveModule shall unlock `MESSAGE_BUS_MODULEINFO::info_lock`. **]**
+**SRS_MESSAGE_BUS_17_001: [**The function shall signal `MESSAGE_BUS_MODULEINFO::mq_cond` to release module from waiting.**]**
+
+**SRS_MESSAGE_BUS_02_003: [** After signaling the condition, MessageBus_RemoveModule shall unlock `MESSAGE_BUS_MODULEINFO::mq_lock`. **]**
 
 **SRS_MESSAGE_BUS_13_104: [** The function shall wait for the module's thread to exit by joining `MESSAGE_BUS_MODULEINFO::thread` via `ThreadAPI_Join`. **]**
+
+**SRS_MESSAGE_BUS_13_056: [** If `MESSAGE_BUS_MODULEINFO::mq` is not empty then this function shall call `Message_Destroy` on every message still left in the collection. **]**
 
 **SRS_MESSAGE_BUS_13_057: [** The function shall free all members of the `MESSAGE_BUS_MODULEINFO` object. **]**
 

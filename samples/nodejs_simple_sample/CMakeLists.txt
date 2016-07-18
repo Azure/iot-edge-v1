@@ -22,5 +22,7 @@ target_link_libraries(nodejs_simple_sample ${LIBS})
 add_dependencies(nodejs_simple_sample nodejs_binding_hl logger_hl)
 
 linkSharedUtil(nodejs_simple_sample)
+install_broker(nodejs_simple_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
 
 add_sample_to_solution(nodejs_simple_sample)

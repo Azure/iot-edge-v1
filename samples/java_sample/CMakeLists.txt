@@ -32,5 +32,7 @@ add_executable(java_sample ${java_sample_headers} ${modules_path_file} ${java_sa
 
 target_link_libraries(java_sample gateway)
 linkSharedUtil(java_sample)
+install_broker(java_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
 
 add_sample_to_solution(java_sample)
