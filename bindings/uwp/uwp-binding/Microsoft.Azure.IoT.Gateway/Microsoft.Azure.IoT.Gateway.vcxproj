@@ -126,7 +126,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +143,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,7 +160,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -177,7 +177,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -194,7 +194,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -211,7 +211,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;D:\git\azure-iot-gateway-sdk\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
