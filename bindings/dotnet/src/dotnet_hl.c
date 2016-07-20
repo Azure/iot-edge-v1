@@ -9,7 +9,7 @@
 #include "azure_c_shared_utility/gballoc.h"
 
 #include "module.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include <stdio.h>
 #include "dotnet.h"
 #include "dotnet_hl.h"

@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include "module.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "java_module_host.h"
 #include "java_module_host_hl.h"
 #include "parson.h"
