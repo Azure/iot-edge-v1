@@ -12,7 +12,7 @@
 #include "uv.h"
 #include "v8.h"
 
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 
 #include "lock.h"
 
