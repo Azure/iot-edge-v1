@@ -18,7 +18,7 @@
 #include "identitymap.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/constbuffer.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 
 typedef struct IDENTITY_MAP_DATA_TAG

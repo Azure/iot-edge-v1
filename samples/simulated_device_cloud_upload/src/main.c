@@ -5,7 +5,7 @@
 
 #include "simulated_device_cloud_upload_config_service.h"
 #include "gateway.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 
 

@@ -6,7 +6,7 @@
 #include "simulated_device.h"
 #include "simulated_device_hl.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/crt_abstractions.h"
 #include "message.h"
 #include "messageproperties.h"
