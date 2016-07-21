@@ -1,4 +1,7 @@
-@setlocal
+@REM Copyright (c) Microsoft. All rights reserved.
+@REM Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+@setlocal EnableDelayedExpansion
 @echo off
 
 set current-path=%~dp0
@@ -12,7 +15,7 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 
 REM check that we have java handy
 call :checkExists java
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 REM find current branch
 for /f "usebackq tokens=*" %%i in (`git symbolic-ref -q HEAD`) do set "current_branch_ref=%%i"
@@ -52,9 +55,9 @@ rem -- helper subroutines
 rem -----------------------------------------------------------------------------
 :checkExists
 where %~1 >nul 2>nul
-if not %errorlevel%==0 (
+if not !ERRORLEVEL!==0 (
     echo "%~1" not found. Please make sure that "%~1" is installed and available in the path.
-    exit /b %errorlevel%
+    exit /b !ERRORLEVEL!
 )
 goto :eof
 

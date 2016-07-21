@@ -13,7 +13,7 @@ rem ---------------------------------------------------------------------------
 echo Generating C API docs...
 set docs_dir=%build-root%\doc\api_reference\c
 if exist %docs_dir% rd /s /q %docs_dir%
-if %errorlevel% neq 0 exit /b %errorlevel%
+if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
 mkdir %docs_dir%
 
 rem ---------------------------------------------------------------------------

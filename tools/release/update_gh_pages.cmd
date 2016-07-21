@@ -17,14 +17,14 @@ for /f "delims=" %%i in ('git rev-parse --abbrev-ref HEAD') do set current_git_b
 if "%current_git_branch%" neq "develop" (
 	echo Switching git branch to 'develop'
 	git checkout develop
-	if %errorlevel% neq 0 exit /b %errorlevel%
+	if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
 )
 
 rem ---------------------------------------------------------------------------
 rem -- Checking out gh-pages branch to temporary location
 rem ---------------------------------------------------------------------------
 if exist %gh_pages_dir% rd /s /q %gh_pages_dir%
-if %errorlevel% neq 0 exit /b %errorlevel%
+if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
 mkdir %gh_pages_dir%
 cd %temp%
 git clone -b gh-pages https://github.com/Azure/azure-iot-gateway-sdk %gh_pages_dir%

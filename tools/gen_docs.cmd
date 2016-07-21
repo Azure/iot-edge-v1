@@ -13,13 +13,13 @@ rem -- that the following programs work:
 rem --     doxygen
 rem -----------------------------------------------------------------------------
 call :checkExists git
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists doxygen
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists mvn
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists javadoc
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
 rem -- Generate C API docs
@@ -49,9 +49,9 @@ rem -- helper subroutines
 rem -----------------------------------------------------------------------------
 :checkExists
 where %~1 >nul 2>nul
-if not %errorlevel%==0 (
+if not !ERRORLEVEL!==0 (
     echo "%~1" not found. Please make sure that "%~1" is installed and available in the path.
-    exit /b %errorlevel%
+    exit /b !ERRORLEVEL!
 )
 goto :eof
 
