@@ -14,7 +14,7 @@
 #include "bluez_characteristic.h"
 
 #include "azure_c_shared_utility/gballoc.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 
 #include "gio_async_seq.h"
 #include "ble_gatt_io.h"
