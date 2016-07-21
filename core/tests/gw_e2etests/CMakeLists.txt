@@ -56,6 +56,7 @@ else()
 			gateway
 			aziotsharedutil
 			uuid
+			iothub_service_client
 		)
 		target_link_libraries(${theseTestsName}_exe pthread)
 		linkUAMQP(${theseTestsName}_exe)	
