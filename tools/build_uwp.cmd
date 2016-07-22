@@ -36,6 +36,7 @@ rem // default build options
 set build-clean=0
 set build-config=Release
 set build-platform=x86
+set run-unit-tests=1
 
 :args-loop
 if "%1" equ "" goto args-done
@@ -43,6 +44,7 @@ if "%1" equ "-c" goto arg-build-clean
 if "%1" equ "--clean" goto arg-build-clean
 if "%1" equ "--config" goto arg-build-config
 if "%1" equ "--platform" goto arg-build-platform
+if "%1" equ "--skip-unittests" goto arg-skip-unittests
 call :usage && exit /b 1
 
 :arg-build-clean
@@ -59,6 +61,10 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
+goto args-continue
+
+:arg-skip-unittests
+set run-unit-tests=0
 goto args-continue
 
 :args-continue
@@ -83,6 +89,7 @@ if %build-clean%==1 (
 call :build-a-solution "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.Test.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
 
+if not %run-unit-tests%==1 goto :eof
 rem ------------------
 rem -- run unit tests
 
@@ -125,6 +132,7 @@ goto :eof
 echo build.cmd [options]
 echo options:
 echo  -c, --clean           delete artifacts from previous build before building
+echo  --skip-unittests      skip running unit tests after build
 echo  --config ^<value^>      [Debug] build configuration (e.g. Debug, Release)
 echo  --platform ^<value^>    [Win32] build platform (e.g. Win32, x64, ...)
 goto :eof
