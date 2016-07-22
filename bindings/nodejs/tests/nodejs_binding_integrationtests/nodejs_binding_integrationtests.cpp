@@ -141,6 +141,12 @@ MODULE_APIS g_fake_module_apis = {
     MockModule_Receive
 };
 
+MODULE g_module =
+{
+    NULL,
+    NULL
+};
+
 class TempFile
 {
 public:
@@ -295,7 +301,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         g_message_bus = MessageBus_Create();
 
         g_mock_module_handle = MockModule_Create(g_message_bus, nullptr);
-        MessageBus_AddModule(g_message_bus, g_mock_module_handle, &g_fake_module_apis);
+        
+        g_module.module_handle = g_mock_module_handle;
+        g_module.module_apis = &g_fake_module_apis;
+        MessageBus_AddModule(g_message_bus, &g_module);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -315,7 +324,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ModulesManager::Get()->JoinNodeThread();
 
-        MessageBus_RemoveModule(g_message_bus, g_mock_module_handle);
+        MessageBus_RemoveModule(g_message_bus, g_module);
         MockModule_Destroy(g_mock_module_handle);
         MessageBus_Destroy(g_message_bus);
     }
@@ -502,7 +511,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ///act
         auto result = NODEJS_Create(g_message_bus, &config);
-        MessageBus_AddModule(g_message_bus, result, Module_GetAPIS());
+        MODULE module = {
+            Module_GetAPIS(),
+            result
+        };
+        MessageBus_AddModule(g_message_bus, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -515,7 +528,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_mock_module.get_received_message() == true);
 
         ///cleanup
-        MessageBus_RemoveModule(g_message_bus, result);
+        MessageBus_RemoveModule(g_message_bus, &module);
         NODEJS_Destroy(result);
     }
 
@@ -966,7 +979,11 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ///act
         auto result = NODEJS_Create(g_message_bus, &config);
-        MessageBus_AddModule(g_message_bus, result, Module_GetAPIS());
+        MODULE module = {
+            Module_GetAPIS(),
+            result
+        };
+        MessageBus_AddModule(g_message_bus, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -980,7 +997,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
-        MessageBus_RemoveModule(g_message_bus, result);
+        MessageBus_RemoveModule(g_message_bus, &module);
         NODEJS_Destroy(result);
     }
 
