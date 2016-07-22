@@ -110,7 +110,7 @@ BEGIN_TEST_SUITE(gw_e2etests)
 		g_testByTest = MicroMockCreateMutex();
 		ASSERT_IS_NOT_NULL(g_testByTest);
 		platform_init();
-		g_iothubAcctInfo = IoTHubAccount_Init(true, "gw_e2e_tests");
+		g_iothubAcctInfo = IoTHubAccount_Init(true);
 		ASSERT_IS_NOT_NULL(g_iothubAcctInfo);
     }
 

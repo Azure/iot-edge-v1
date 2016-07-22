@@ -15,7 +15,7 @@
 #include "ble_hl.h"
 #include "ble_utils.h"
 
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/strings.h"

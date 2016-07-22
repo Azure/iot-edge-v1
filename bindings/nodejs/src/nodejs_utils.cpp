@@ -1,6 +1,6 @@
 #include <string>
 #include "v8.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "nodejs_utils.h"
 
 using namespace nodejs_module;

@@ -26,7 +26,7 @@
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/agenttime.h"
 #include "parson.h"

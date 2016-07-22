@@ -7,7 +7,7 @@
 #endif
 #include "azure_c_shared_utility/gballoc.h"
 
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 
 /*because it is linked statically, this include will bring in some uniquely (by convention) named functions*/

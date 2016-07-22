@@ -108,7 +108,7 @@ linkSharedUtil(ble)
 # build ble as a static library
 add_library(ble_static ${ble_static_sources} ${ble_static_headers})
 target_compile_definitions(ble_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(ble_static ${LIBS})
+target_link_libraries(ble_static ${LIBS} iothub_service_client)
 linkSharedUtil(ble_static)
 
 # build ble HL as a dynamic library
@@ -119,7 +119,7 @@ linkSharedUtil(ble_hl)
 # build ble HL as a static library
 add_library(ble_hl_static ${ble_hl_static_sources} ${ble_hl_static_headers})
 target_compile_definitions(ble_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(ble_hl_static ble_static ${LIBS})
+target_link_libraries(ble_hl_static ble_static ${LIBS} iothub_service_client)
 linkSharedUtil(ble_hl_static)
 
 add_module_to_solution(ble)

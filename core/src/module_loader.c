@@ -7,7 +7,7 @@
 #include "azure_c_shared_utility/gballoc.h"
 #include <string.h>
 
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 
 #include "module_loader.h"
 #include "dynamic_library.h"

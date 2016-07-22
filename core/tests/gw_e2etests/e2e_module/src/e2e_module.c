@@ -10,7 +10,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "message.h"
 #include "messageproperties.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/crt_abstractions.h"
 
 #include "module.h"

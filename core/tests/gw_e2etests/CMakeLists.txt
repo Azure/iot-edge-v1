@@ -23,9 +23,12 @@ set(${theseTestsName}_c_files
 
 include_directories(../../../samples/protocol_encapsulation/inc ${IOTHUB_CLIENT_INC_FOLDER} e2e_module/inc/)
 include_directories(../../../deps/azure-iot-sdks/c/testtools/iothub_test/inc)
+include_directories(../../../deps/azure-c-shared-utility/inc/azure_c_shared_utility)
 include_directories(../../../modules/common)
 include_directories(../../../modules/iothubhttp/inc)
 include_directories(../../../modules/identitymap/inc)
+include_directories(${IOTHUB_TEST_INC_FOLDER})
+include_directories(${IOTHUB_SERVICE_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 
 build_test_artifacts(${theseTestsName} ON)
@@ -53,6 +56,7 @@ else()
 			gateway
 			aziotsharedutil
 			uuid
+			iothub_service_client
 		)
 		target_link_libraries(${theseTestsName}_exe pthread)
 		linkUAMQP(${theseTestsName}_exe)	

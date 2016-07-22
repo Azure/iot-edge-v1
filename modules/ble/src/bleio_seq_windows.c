@@ -8,7 +8,7 @@
 #endif
 
 #include "azure_c_shared_utility/gballoc.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/vector.h"

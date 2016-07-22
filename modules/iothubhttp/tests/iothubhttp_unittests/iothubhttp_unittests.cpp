@@ -819,7 +819,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         STRICT_EXPECTED_CALL(mocks, STRING_construct("theAwesomeSuffix.com"))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 
         ///act
@@ -849,7 +849,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -885,7 +885,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -922,7 +922,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments()
 			.SetFailReturn((TRANSPORT_HANDLE)NULL);
 

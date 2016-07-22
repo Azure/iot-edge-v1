@@ -54,7 +54,7 @@ typedef signed char jbyte;
 #include "message_bus_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "java_module_host_manager.h"
 

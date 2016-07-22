@@ -10,7 +10,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/base64.h"
 
 #ifdef UNDER_TEST

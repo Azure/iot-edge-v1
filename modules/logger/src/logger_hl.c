@@ -11,7 +11,7 @@
 #include "logger.h"
 
 #include "logger_hl.h"
-#include "azure_c_shared_utility/iot_logging.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 
 static MODULE_HANDLE Logger_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
