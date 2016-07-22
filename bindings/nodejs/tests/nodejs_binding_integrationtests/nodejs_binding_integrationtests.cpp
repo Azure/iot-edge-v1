@@ -324,7 +324,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ModulesManager::Get()->JoinNodeThread();
 
-        MessageBus_RemoveModule(g_message_bus, g_module);
+        MessageBus_RemoveModule(g_message_bus, &g_module);
         MockModule_Destroy(g_mock_module_handle);
         MessageBus_Destroy(g_message_bus);
     }
