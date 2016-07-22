@@ -37,9 +37,9 @@ The SDK abstracts away  operating system dependencies via an abstraction layer i
 
 ###Messages
 
-Thinking about modules passing each other messages is a convenient way of conceptualizing how a gateway functions, but it does not accurately reflect what's happening under the hood. Modules actually use a message bus to communicate with each other. They publish messages to the bus and then let the bus broadcast the message to all modules connected to the message bus.
+Thinking about modules passing each other messages is a convenient way of conceptualizing how a gateway functions, but it does not accurately reflect what's happening under the hood. Modules actually use a a broker to communicate with each other. They publish messages to the broker (bus, pubsub or any other messaging pattern) and then let the bus route the message to the modules connected to it.
 
-A module publishes a message to the message bus via the `MessageBus_Publish` function. The message bus delivers messages to a module by invoking a callback on the module and passing that function the message that is being delivered. A message consists of a set of key/value properties and content passed as a block of memory.
+A module publishes a message to the broker via the `Broker_Publish` function. The broker delivers messages to a module by invoking a callback on the module and passing that function the message that is being delivered. A message consists of a set of key/value properties and content passed as a block of memory.
 
 ![](./media/messages_1.png)
  
