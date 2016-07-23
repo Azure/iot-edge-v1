@@ -361,7 +361,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	currentMessageBus_Create_call = 0;
 	whenShallMessageBus_Create_fail = 0;
 
-	free(dummyModule.module_instance);
+	delete dummyModule.module_instance;
 
 	BASEIMPLEMENTATION::VECTOR_destroy(dummyModules);
 }
