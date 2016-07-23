@@ -402,6 +402,7 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
             {
                 /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
                 LogError("start_module failed");
+                free(module_info->module);
                 free(module_info);
                 result = MESSAGE_BUS_ERROR;
             }

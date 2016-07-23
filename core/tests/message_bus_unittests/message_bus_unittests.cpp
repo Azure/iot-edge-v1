@@ -845,6 +845,8 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_VECTOR_create_fails)
     whenShallVECTOR_create_fail = currentVECTOR_create_call + 1;
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
     ///act
     auto result = MessageBus_AddModule(bus, &fake_module);
@@ -878,6 +880,8 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Lock_Init_fails)
         .IgnoreArgument(1);
     whenShallLock_Init_fail = currentLock_Init_call + 1;
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
     ///act
     auto result = MessageBus_AddModule(bus, &fake_module);
@@ -914,6 +918,8 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Condition_Init_fails)
         .IgnoreArgument(1);
 	whenShallCond_Init_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Condition_Init());
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
     ///act
     auto result = MessageBus_AddModule(bus, &fake_module);
