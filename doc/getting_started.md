@@ -37,19 +37,19 @@ The SDK abstracts away  operating system dependencies via an abstraction layer i
 
 ###Messages
 
-Thinking about modules passing each other messages is a convenient way of conceptualizing how a gateway functions, but it does not accurately reflect what's happening under the hood. Modules actually use a a broker to communicate with each other. They publish messages to the broker (bus, pubsub or any other messaging pattern) and then let the bus route the message to the modules connected to it.
+Thinking about modules passing each other messages is a convenient way of conceptualizing how a gateway functions, but it does not accurately reflect what's happening under the hood. Modules actually use a broker to communicate with each other. They publish messages to the broker (bus, pubsub or any other messaging pattern) and then let the broker route the message to the modules connected to it.
 
 A module publishes a message to the broker via the `Broker_Publish` function. The broker delivers messages to a module by invoking a callback on the module and passing that function the message that is being delivered. A message consists of a set of key/value properties and content passed as a block of memory.
 
 ![](./media/messages_1.png)
- 
-At this time, the responsibility of filtering messages falls on each module since the message bus uses a broadcast mechanism (i.e. the message bus delivers each message to all the modules that are connected to the message bus). A module should only act upon a message if the message is intended for it. This message filtering is what effectively creates a message pipeline. This filtering can typically be performed by inspecting the properties on the message that a module receives to determine whether it is of interest to the module or not.
+
+Today we have 2 ways of filtering the message. First is by passing a set of routing to the broker, so the broker knows the output and input of each module. The Second is by the module filtering its properties. A module should only act upon a message if the message is intended for it. This message filtering is what effectively creates a message pipeline.
 
 This is enough background to actually start discussing the Hello World sample.
 
 ##Hello World sample architecture
 
-Before diving into the details of filtering messages based on properties, first think of the Hello World sample simply in terms of modules. The sample is made up of a pipeline of two modules:
+Before diving into the details of filtering messages based on properties or routing, first think of the Hello World sample simply in terms of modules. The sample is made up of a pipeline of two modules:
 -	A "hello world" module
 -	A logger module
 
@@ -59,11 +59,11 @@ The "hello world" module creates a message every 5 seconds and passes it to the 
 
 ##Detailed architecture
 
-Based on the gateway architecture, we know that the "hello world" module is not directly passing messages to the logger module every 5 seconds. Instead, it is actually publishing a message to the message bus every 5 seconds.
+Based on the gateway architecture, we know that the "hello world" module is not directly passing messages to the logger module every 5 seconds. Instead, it is actually publishing a message to the broker every 5 seconds.
 
-The logger module is then receiving the message from the message bus and inspecting it to determine if it should act upon it before writing the contents of the message to a file.
+The logger module is then receiving the message from the broker and acting upon it, writing the contents of the message to a file.
 
-The logger module only consumes messages (by logger them to a file) and never publishes new messages on the bus.
+The logger module only consumes messages (by logger them to a file) and never publishes new messages to the broker.
  
  ![](./media/detailed_architecture.png)
  
@@ -136,6 +136,13 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
             "module path" : "./modules/hello_world/libhello_world_hl.so",
 			"args" : null
         }
+    ],
+    "routes": 
+    [
+        {
+            "output": "hello_world",
+            "input": "logger"
+        }
     ]
 }
 ```
@@ -172,6 +179,13 @@ This is an example of a JSON settings file for Windows. that will write to `log.
             "module name" : "hello_world",
              "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
 			"args" : null
+        }
+    ],
+    "routes": 
+    [
+        {
+            "output": "hello_world",
+            "input": "logger"
         }
     ]
 }
@@ -219,9 +233,9 @@ Below is an example of typical output that is written to the log file when the H
 
 ###Gateway creation
 
-The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the message bus), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_Create_From_JSON` function which allows developers to bootstrap a gateway from a JSON file.
+The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_Create_From_JSON` function which allows developers to bootstrap a gateway from a JSON file.
 
-`Gateway_Create_FromJSON` deals with creating internal infrastructure (e.g. the message bus), loading modules, and setting everything up to function correctly. All the developer needs to do is provide this function with the path to a JSON file specifying what modules they want loaded. 
+`Gateway_Create_FromJSON` deals with creating internal infrastructure (e.g. the broker), loading modules, and setting everything up to function correctly. All the developer needs to do is provide this function with the path to a JSON file specifying what modules they want loaded and routes to guide the broker to send messages to the correct module. 
 
 The code for the Hello World sample's gateway process is contained in [`samples/hello_world/main.c`](../samples/hello_world/src/main.c) A slightly abbreviated version of that code is copied below. This very short program just creates a gateway and then waits for the ENTER key to be pressed before it tears down the gateway. 
 
@@ -249,7 +263,13 @@ The JSON file specifying the modules to be loaded is quite simple. It contains a
 - `module path` – the path to the library containing the module. For Linux this will be a .so while on Windows this will be a .dll file
 - `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
 
-Copied below is the code from one of the JSON files (hello_world_lin.json)[(../samples/hello_world/src/hello_world_lin.json) used to configure the Hello World sample. There are a couple things to note:
+The JSON file also contain the routes that is going to be passed to the broker.
+- `output` - a module name from the list of modules described on the `modules` that will produce data to the next `input` tag on JSON File 
+- `input` - a module name from the list of modules described on the `modules` JSON that will consume messages described on the previous `output` 
+
+On the sample copied below you can see that every message procuded by module `hello_world` will be consumed by module `logger`.
+
+The JSON below is the code from one of the JSON files (hello_world_lin.json)[(../samples/hello_world/src/hello_world_lin.json) used to configure the Hello World sample. There are a couple things to note:
 
 - This is the Linux version of the file 
 - Whether a module takes an argument or not is completely dependent on the module's design. The logger module does take an argument which is the path to the file to be used for output. On the other hand, the "hello world" module does not take any arguments.
@@ -268,7 +288,15 @@ Copied below is the code from one of the JSON files (hello_world_lin.json)[(../s
             "module path" : "./modules/hello_world/libhello_world_hl.so",
 			"args" : null
         }
+    ],
+    "routes": 
+    [
+        {
+            "output": "hello_world",
+            "input": "logger"
+        }
     ]
+}
 }
 ```
 
@@ -309,8 +337,8 @@ int helloWorldThread(void *param)
         }
         else
         {
-            // publish the message to the bus
-            (void)MessageBus_Publish(handleData->busHandle, helloWorldMessage);
+            // publish the message to the broker
+            (void)Broker_Publish(handleData->brokerHandle, helloWorldMessage);
             (void)Unlock(handleData->lockHandle);
         }
 
@@ -325,7 +353,7 @@ int helloWorldThread(void *param)
 
 ###"hello world" module message processing
 
-The "hello world" module does not ever have to process any messages since it is not interested in any of the messages that are published to the message bus. This makes implementation of the "hello world" module's message receive callback a no-op function.
+The "hello world" module does not ever have to process any messages since it is not interested in any of the messages that are published. This makes implementation of the "hello world" module's message receive callback a no-op function.
 
 ```c
 static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
@@ -336,9 +364,9 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 
 ###Logger module message publishing
 
-The logger module receives messages from the message bus and writes them to a file. It never has to publish messages to the message bus. Therefore, the code of the logger module never calls 'MessageBus_Publish'.
+The logger module receives messages from the broker and writes them to a file. It never has to publish messages to the broker. Therefore, the code of the logger module never calls 'Broker_Publish'.
 
-`Logger_Receive`, located in [`logger.c`](../modules/logger/src/logger.c), is the logger module's callback invoked by the message bus when it wants to deliver a message to the logger module. An amended version has been reproduced below. Comments call out parts of message processing have been provided. Again, error checks have been omitted for the sake of brevity.
+`Logger_Receive`, located in [`logger.c`](../modules/logger/src/logger.c), is the logger module's callback invoked by the broker when it wants to deliver a message to the logger module. An amended version has been reproduced below. Comments call out parts of message processing have been provided. Again, error checks have been omitted for the sake of brevity.
 ```c
 static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
