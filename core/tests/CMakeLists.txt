@@ -11,6 +11,11 @@ add_subdirectory(message_bus_unittests)
 add_subdirectory(gateway_ll_unittests)
 add_subdirectory(gateway_unittests)
 
+if(WIN32)
+add_subdirectory(message_bus_uwp_unittests)
+add_subdirectory(gateway_ll_uwp_unittests)
+endif()
+
 if(${run_e2e_tests})
     add_subdirectory(gw_e2etests)
 endif()

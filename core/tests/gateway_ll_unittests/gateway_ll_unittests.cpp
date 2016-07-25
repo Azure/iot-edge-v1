@@ -134,7 +134,7 @@ public:
 		}
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, MODULE_HANDLE, module, const MODULE_APIS*, module_apis)
+	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module)
 		currentMessageBus_AddModule_call++;
 		MESSAGE_BUS_RESULT result1  = MESSAGE_BUS_ERROR;
 		if (handle != NULL && module != NULL)
@@ -147,7 +147,7 @@ public:
 		}
 	MOCK_METHOD_END(MESSAGE_BUS_RESULT, result1);
 
-	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, MODULE_HANDLE, module)
+	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module)
 		currentMessageBus_RemoveModule_call++;
 		MESSAGE_BUS_RESULT result1 = MESSAGE_BUS_ERROR;
 		if (handle != NULL && module != NULL && currentMessageBus_module_count > 0 && whenShallMessageBus_RemoveModule_fail != currentMessageBus_RemoveModule_call)
@@ -256,8 +256,8 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void, mock_Module_Receive, MODUL
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , MESSAGE_BUS_HANDLE, MessageBus_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, MessageBus_Destroy, MESSAGE_BUS_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, MODULE_HANDLE, module, const MODULE_APIS*, module_apis);
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, MODULE_HANDLE, module);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, MessageBus_IncRef, MESSAGE_BUS_HANDLE, bus);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, MessageBus_DecRef, MESSAGE_BUS_HANDLE, bus);
 
@@ -497,7 +497,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
@@ -514,7 +514,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
@@ -603,7 +603,7 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
@@ -621,7 +621,7 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
 	whenShallMessageBus_AddModule_fail = 2;
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
@@ -699,7 +699,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
@@ -716,7 +716,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyAPIs))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
@@ -970,6 +970,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 /*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
 /*Tests_SRS_GATEWAY_LL_14_019: [ The function shall return the newly created MODULE_HANDLE only if each API call returns successfully. ]*/
 /*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+/*Tests_SRS_GATEWAY_LL_99_011: [ The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 {
 	//Arrange
@@ -985,10 +986,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.IgnoreArgument(2)
-		.IgnoreArgument(3);
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
@@ -1054,10 +1054,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, properties))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.IgnoreArgument(2)
-		.IgnoreArgument(3);
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
@@ -1131,10 +1130,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	whenShallMessageBus_AddModule_fail = 1;
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.IgnoreArgument(2)
-		.IgnoreArgument(3);
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
@@ -1167,10 +1165,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.IgnoreArgument(2)
-		.IgnoreArgument(3);
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	whenShallVECTOR_push_back_fail = 1;
@@ -1257,7 +1254,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, handle))
+	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, MessageBus_DecRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1313,14 +1310,16 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
 	CGatewayLLMocks mocks;
 	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
 	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+
 	mocks.ResetAllCalls();
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	whenShallMessageBus_RemoveModule_fail = 1;
-	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, handle))
-		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, MessageBus_DecRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))

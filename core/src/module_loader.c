@@ -34,7 +34,7 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName)
   else
   {
       /* Codes_SRS_MODULE_LOADER_17_005: [ModuleLoader_Load shall allocate memory for the structure MODULE_LIBRARY_HANDLE.] */
-      result = malloc(sizeof(MODULE_LIBRARY_HANDLE_DATA));
+      result = (MODULE_LIBRARY_HANDLE_DATA*)malloc(sizeof(MODULE_LIBRARY_HANDLE_DATA));
       if (result == NULL)
       {
           /*Codes_SRS_MODULE_LOADER_17_014: [If memory allocation is not successful, the load shall fail, and it shall return NULL.]*/

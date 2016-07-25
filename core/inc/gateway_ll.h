@@ -59,30 +59,53 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 */
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 
-/** @brief		Destroys the gateway and disposes of all associated data. 
-*	
+/** @brief		Destroys the gateway and disposes of all associated data.
+*
 *	@param		gw		#GATEWAY_HANDLE to be destroyed.
 */
 extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 
 /** @brief		Creates a new module based on the GATEWAY_PROPERTIES_ENTRY*.
-*	
+*
 *	@param		gw		Pointer to a #GATEWAY_HANDLE to add the Module onto.
-*	@param		entry	Pointer to a #GATEWAY_PROPERTIES_ENTRY structure 
+*	@param		entry	Pointer to a #GATEWAY_PROPERTIES_ENTRY structure
 *						describing the module.
 *
-*	@return		A non-NULL #MODULE_HANDLE to the newly created and added 
+*	@return		A non-NULL #MODULE_HANDLE to the newly created and added
 *				Module, or @c NULL on failure.
 */
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
 
 /** @brief		Removes the provided module from the gateway.
 *
-*	@param		gw		Pointer to a #GATEWAY_HANDLE from which to remove the 
+*	@param		gw		Pointer to a #GATEWAY_HANDLE from which to remove the
 *						Module.
 *	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+
+#ifdef UWP_BINDING
+
+/** @brief		Creates a new gateway using the provided #MODULEs and #MESSAGE_BUS_HANDLE.
+*
+*	@param		modules   		#VECTOR_HANDLE structure containing
+*								specific modules.
+*
+*	@param		bus       		#MESSAGE_BUS_HANDLE structure containing
+*								specific message bus.
+*
+*	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
+*				gateway or @c NULL on failure.
+*/
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
+
+/** @brief		Destroys the gateway and disposes of all associated data.
+*
+*	@param		gw		#GATEWAY_HANDLE to be destroyed.
+*/
+extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
+
+#endif // UWP_BINDING
 
 #ifdef __cplusplus
 }

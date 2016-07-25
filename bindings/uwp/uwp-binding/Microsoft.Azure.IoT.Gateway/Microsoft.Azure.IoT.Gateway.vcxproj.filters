@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>40c3ef13-2145-451d-b3fc-a9e7ed3d7e83</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="core/src">
+      <UniqueIdentifier>{7de138ce-8e97-47f7-95b4-fe933408689f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core/adapters">
+      <UniqueIdentifier>{7c555c80-5072-424d-9033-18f103bde199}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deps/azure-c-shared-utility/adapters">
+      <UniqueIdentifier>{d1d76e44-2b88-4dd6-aec8-8c5552fa0bf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deps/azure-c-shared-utility/src">
+      <UniqueIdentifier>{0b627f25-0708-487f-983c-e337b8111d46}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="MessageUwp.cpp" />
+    <ClCompile Include="MessageBusUwp.cpp" />
+    <ClCompile Include="GatewayUwp.cpp" />
+    <ClCompile Include="WIndowsShims.cpp" />
+    <ClCompile Include="..\..\..\..\core\adapters\dynamic_library_windows.c">
+      <Filter>core/adapters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\buffer.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\condition_win32.c">
+      <Filter>deps/azure-c-shared-utility/adapters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constbuffer.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constmap.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\crt_abstractions.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\gateway_ll.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\list.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\lock_win32.c">
+      <Filter>deps/azure-c-shared-utility/adapters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\map.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\message.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\message_bus.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\strings.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\threadapi_win32.c">
+      <Filter>deps/azure-c-shared-utility/adapters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\vector.c">
+      <Filter>deps/azure-c-shared-utility/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\module_loader.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="MessageUwp.h" />
+    <ClInclude Include="MessageBusUwp.h" />
+    <ClInclude Include="GatewayUwp.h" />
+    <ClInclude Include="IGatewayModule.h" />
+  </ItemGroup>
+</Project>

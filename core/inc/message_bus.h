@@ -90,23 +90,21 @@ extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HAND
 *
 *	@param		bus				The #MESSAGE_BUS_HANDLE onto which the module will be 
 *								added.
-*	@param		module			The #MODULE_HANDLE for the module that will be added 
+*	@param		module			The #MODULE for the module that will be added 
 *								to this message bus.
-*	@param		module_apis		The #MODULE_APIS containing the corresponding functions
-*								for the module that will be added.
 *
 *	@return		A #MESSAGE_BUS_RESULT describing the result of the function.
 */
-extern MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module, const MODULE_APIS* module_apis);
+extern MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* module);
 
 /** @brief	Removes a module from the message bus.
 *
 *	@param	bus		The #MESSAGE_BUS_HANDLE from which the module will be removed.
-*	@param	module	The #MODULE_HANDLE of the module to be removed.
+*	@param	module	The #MODULE of the module to be removed.
 *
 *	@return	A #MESSAGE_BUS_RESULT describing the result of the function.
 */
-extern MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module);
+extern MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE* module);
 
 /** @brief Disposes of resources allocated by a message bus.
 *

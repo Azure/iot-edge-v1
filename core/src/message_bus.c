@@ -26,7 +26,7 @@
 /*The message bus implementation shall use the following definition as the backing structure for the message bus handle*/
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 {
-    LIST_HANDLE				modules;
+    LIST_HANDLE                modules;
     LOCK_HANDLE             modules_lock;
 }MESSAGE_BUS_HANDLE_DATA;
 
@@ -37,12 +37,7 @@ typedef struct MESSAGE_BUS_MODULEINFO_TAG
     /**
     * Handle to the module that's connected to the bus.
     */
-    MODULE_HANDLE             module;
-
-    /**
-    * The function dispatch table for this module.
-    */
-    const MODULE_APIS*        module_apis;
+    MODULE*             module;
 
     /**
     * Handle to the thread on which this module's message processing loop is
@@ -180,8 +175,13 @@ static int module_publish_worker(void * user_data)
                     }
                     else
                     {
+#ifdef UWP_BINDING
+                        /*Codes_SRS_MESSAGE_BUS_99_012: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
+                        module_info->module->module_instance->Module_Receive(msg);
+#else
                         /*Codes_SRS_MESSAGE_BUS_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
-                        module_info->module_apis->Module_Receive(module_info->module, msg);
+                        module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
+#endif // UWP_BINDING
 
                         /*Codes_SRS_MESSAGE_BUS_13_093: [The function shall destroy the message that was dequeued by calling Message_Destroy.]*/
                         Message_Destroy(msg);
@@ -193,7 +193,7 @@ static int module_publish_worker(void * user_data)
                             break;
                         }
                     }
-                }
+                } 
             }
             else
             {
@@ -214,49 +214,60 @@ static int module_publish_worker(void * user_data)
     return 0;
 }
 
-static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, MODULE_HANDLE module, const MODULE_APIS* module_apis)
+static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const MODULE* module)
 {
     MESSAGE_BUS_RESULT result;
 
     /*Codes_SRS_MESSAGE_BUS_13_107: The function shall assign the `module` handle to `MESSAGE_BUS_MODULEINFO::module`.*/
-    module_info->module = module;
-
-    /*Codes_SRS_MESSAGE_BUS_13_097: [The function shall assign module_apis to MESSAGE_BUS_MODULEINFO::module_apis.]*/
-    module_info->module_apis = module_apis;
-
-    /*Codes_SRS_MESSAGE_BUS_13_098: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq with a valid vector handle.]*/
-    module_info->mq = VECTOR_create(sizeof(MESSAGE_HANDLE));
-    if (module_info->mq == NULL)
+    module_info->module = (MODULE*)malloc(sizeof(MODULE));
+    if (module_info->module == NULL)
     {
-        LogError("VECTOR_create failed");
+        LogError("Allocate module failed");
         result = MESSAGE_BUS_ERROR;
     }
     else
     {
-        /*Codes_SRS_MESSAGE_BUS_13_099: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_lock with a valid lock handle.]*/
-        module_info->mq_lock = Lock_Init();
-        if (module_info->mq_lock == NULL)
+#ifdef UWP_BINDING
+		module_info->module->module_instance = module->module_instance;
+#else
+		module_info->module->module_apis = module->module_apis;
+		module_info->module->module_handle = module->module_handle;
+#endif // UWP_BINDING
+
+        /*Codes_SRS_MESSAGE_BUS_13_098: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq with a valid vector handle.]*/
+        module_info->mq = VECTOR_create(sizeof(MESSAGE_HANDLE));
+        if (module_info->mq == NULL)
         {
-            LogError("Lock_Init failed");
-            VECTOR_destroy(module_info->mq);
+            LogError("VECTOR_create failed");
             result = MESSAGE_BUS_ERROR;
         }
         else
         {
-            /*Codes_SRS_MESSAGE_BUS_13_100: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_cond with a valid condition handle.]*/
-            module_info->mq_cond = Condition_Init();
-            if (module_info->mq_cond == NULL)
+            /*Codes_SRS_MESSAGE_BUS_13_099: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_lock with a valid lock handle.]*/
+            module_info->mq_lock = Lock_Init();
+            if (module_info->mq_lock == NULL)
             {
-                LogError("Condition_Init failed");
-                Lock_Deinit(module_info->mq_lock);
+                LogError("Lock_Init failed");
                 VECTOR_destroy(module_info->mq);
                 result = MESSAGE_BUS_ERROR;
             }
             else
             {
-                /*Codes_SRS_MESSAGE_BUS_13_101: [The function shall assign 0 to MESSAGE_BUS_MODULEINFO::quit_worker.]*/
-                module_info->quit_worker = 0;
-                result = MESSAGE_BUS_OK;
+                /*Codes_SRS_MESSAGE_BUS_13_100: [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_cond with a valid condition handle.]*/
+                module_info->mq_cond = Condition_Init();
+                if (module_info->mq_cond == NULL)
+                {
+                    LogError("Condition_Init failed");
+                    Lock_Deinit(module_info->mq_lock);
+                    VECTOR_destroy(module_info->mq);
+                    result = MESSAGE_BUS_ERROR;
+                }
+                else
+                {
+                    /*Codes_SRS_MESSAGE_BUS_13_101: [The function shall assign 0 to MESSAGE_BUS_MODULEINFO::quit_worker.]*/
+                    module_info->quit_worker = 0;
+                    result = MESSAGE_BUS_OK;
+                }
             }
         }
     }
@@ -270,6 +281,7 @@ static void deinit_module(MESSAGE_BUS_MODULEINFO* module_info)
     VECTOR_destroy(module_info->mq);
     Condition_Deinit(module_info->mq_cond);
     Lock_Deinit(module_info->mq_lock);
+    free(module_info->module);
 }
 
 static MESSAGE_BUS_RESULT start_module(MESSAGE_BUS_MODULEINFO* module_info)
@@ -351,16 +363,31 @@ static int stop_module(MESSAGE_BUS_MODULEINFO* module_info)
     return result;
 }
 
-MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module, const MODULE_APIS* module_apis)
+MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
 {
     MESSAGE_BUS_RESULT result;
 
-    /*Codes_SRS_MESSAGE_BUS_13_038: [If `bus` or `module` or `module_apis` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
-    if (bus == NULL || module == NULL || module_apis == NULL)
+    /*Codes_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
+    if (bus == NULL || module == NULL)
     {
         result = MESSAGE_BUS_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
+#ifdef UWP_BINDING
+	/*Codes_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	else if (module->module_instance == NULL)
+	{
+		result = MESSAGE_BUS_INVALIDARG;
+		LogError("invalid parameter (NULL).");
+	}
+#else
+	/*Codes_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	else if (module->module_apis == NULL || module->module_handle == NULL)
+	{
+		result = MESSAGE_BUS_INVALIDARG;
+		LogError("invalid parameter (NULL).");
+	}
+#endif // UWP_BINDING
     else
     {
         MESSAGE_BUS_MODULEINFO* module_info = (MESSAGE_BUS_MODULEINFO*)malloc(sizeof(MESSAGE_BUS_MODULEINFO));
@@ -371,10 +398,11 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE mo
         }
         else
         {
-            if (init_module(module_info, module, module_apis) != MESSAGE_BUS_OK)
+            if (init_module(module_info, module) != MESSAGE_BUS_OK)
             {
                 /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
                 LogError("start_module failed");
+                free(module_info->module);
                 free(module_info);
                 result = MESSAGE_BUS_ERROR;
             }
@@ -433,10 +461,14 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE mo
 static bool find_module_predicate(LIST_ITEM_HANDLE list_item, const void* value)
 {
     MESSAGE_BUS_MODULEINFO* element = (MESSAGE_BUS_MODULEINFO*)list_item_get_value(list_item);
-    return (element->module == value);
+#ifdef UWP_BINDING
+	return element->module->module_instance == ((MODULE*)value)->module_instance;
+#else
+	return element->module->module_handle == ((MODULE*)value)->module_handle;
+#endif // UWP_BINDING
 }
 
-MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE module)
+MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
 {
     /*Codes_SRS_MESSAGE_BUS_13_048: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
     MESSAGE_BUS_RESULT result;
@@ -569,7 +601,11 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
                 MESSAGE_BUS_MODULEINFO* module_info = (MESSAGE_BUS_MODULEINFO*)list_item_get_value(current_module);
 
                 /*Codes_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, MessageBus_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]*/
-                if (source == NULL  || module_info->module != source)
+#ifdef UWP_BINDING
+				if (source == NULL || module_info->module->module_instance != source)
+#else
+				if (source == NULL || module_info->module->module_handle != source)
+#endif // UWP_BINDING
                 {
                     /*Codes_SRS_MESSAGE_BUS_13_033: [In the loop, the function shall first acquire the lock on MESSAGE_BUS_MODULEINFO::mq_lock.]*/
                     if (Lock(module_info->mq_lock) != LOCK_OK)
