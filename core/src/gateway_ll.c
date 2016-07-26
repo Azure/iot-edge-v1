@@ -20,6 +20,8 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	/** @brief The message bus contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
+
+	VECTOR_HANDLE routes;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
@@ -30,8 +32,14 @@ typedef struct MODULE_DATA_TAG {
 	MODULE_HANDLE module;
 } MODULE_DATA;
 
+typedef struct ROUTE_DATA_TAG {
+	const char* module_output;
+	const char* module_input;
+} ROUTE_DATA;
+
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_path, const void* module_configuration);
 static void gateway_removemodule_internal(GATEWAY_HANDLE gw, MODULE_DATA* module);
+//static GATEWAY_RESULT gateway_addroute_internal(GATEWAY_HANDLE gw, const char* output_module_name, const char* input_module_name);
 static bool module_data_find(const void* element, const void* value);
 
 GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
@@ -97,6 +105,36 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 							gateway = NULL;
 						}
 					}
+
+					//gateway->routes = VECTOR_create(sizeof(ROUTE_DATA));
+					//if (gateway->routes == NULL)
+					//{
+					//	while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
+					//	{
+					//		MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
+					//		//By design, there will be no NULL module_data pointers in the vector
+					//		gateway_removemodule_internal(gateway, module_data);
+					//	}
+					//	VECTOR_destroy(gateway->modules);
+
+					//	MessageBus_Destroy(gateway->bus);
+					//	free(gateway);
+					//	gateway = NULL;
+					//	LogError("Gateway_LL_Create(): VECTOR_create for routes failed.");
+					//}
+					//else
+					//{
+					//	if (properties->gateway_links != NULL)
+					//	{
+					//		size_t entries_count = VECTOR_size(properties->gateway_links);
+					//		if (entries_count > 0)
+					//		{
+					//			//For each routing entry we shall validate is the module exists. This is the first validation. 
+					//			//In the future we will have more validation/action, on the broker code. 
+
+					//		}
+					//	}
+					//}
 				}
 			}
 		}

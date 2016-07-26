@@ -11,5 +11,12 @@
             "module path" : "./modules/hello_world/libhello_world_hl.so",
             "args" : null
         }
+    ],
+    "links": 
+    [
+        {
+            "source": "hello_world",
+            "sink": "logger"
+        }
     ]
 }

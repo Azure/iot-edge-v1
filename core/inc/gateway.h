@@ -39,6 +39,13 @@ extern "C"
 	*							"module path" : "F:\\bar.dll",
 	*							"args" : ...
 	*						}
+	*					],
+	*					"links":
+    *					[
+	*						{
+	*							"source": "foo",
+	*							"sink": "bar"
+	*						}
 	*					]
 	*				}
 	*

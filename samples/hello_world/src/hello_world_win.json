@@ -4,12 +4,19 @@
         {
             "module name" : "logger_hl",
             "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
-            "args" : {"filename":"d:\\log.txt"}
+            "args" : {"filename":"c:\\temp\\log.txt"}
         },
         {
             "module name" : "hello_world",
             "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
             "args" : null
+        }
+    ],
+    "links": 
+    [
+        {
+            "source": "hello_world",
+            "sink": "logger"
         }
     ]
 }

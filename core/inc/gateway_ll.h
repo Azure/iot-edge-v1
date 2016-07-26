@@ -23,6 +23,17 @@ extern "C"
 {
 #endif
 
+
+
+#define GATEWAY_ADD_LINK_RESULT_VALUES \
+    GATEWAY_ADD_LINK_SUCCESS, \
+    GATEWAY_ADD_LINK_ERROR, \
+    GATEWAY_ADD_LINK_INVALID_ARG
+
+/** @brief	Enumeration describing the result of ::Gateway_LL_AddLink.
+*/
+DEFINE_ENUM(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
+
 /** @brief Struct representing a particular gateway. */
 typedef struct GATEWAY_HANDLE_DATA_TAG* GATEWAY_HANDLE;
 
@@ -39,6 +50,16 @@ typedef struct GATEWAY_PROPERTIES_ENTRY_TAG
 	const void* module_configuration;
 } GATEWAY_PROPERTIES_ENTRY;
 
+/** @brief Struct representing a single link for a gateway. */
+typedef struct GATEWAY_ROUTING_ENTRY_TAG
+{
+	/** @brief The name of the module which is going to send messages. */
+	const char* module_source;
+
+	/** @brief The name opf the module which is going to receive messages. */
+	const char* module_sink;
+} GATEWAY_LINK_ENTRY;
+
 /** @brief	Struct representing the properties that should be used when 
 			creating a module; each entry of the @c VECTOR_HANDLE being a 
 *			#GATEWAY_PROPERTIES_ENTRY. 
@@ -47,6 +68,9 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 {
 	/** @brief Vector of #GATEWAY_PROPERTIES_ENTRY objects. */
 	VECTOR_HANDLE gateway_properties_entries;
+
+	/** @brief Vector of #GATEWAY_PROPERTIES_ENTRY objects. */
+	VECTOR_HANDLE gateway_links;
 } GATEWAY_PROPERTIES;
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
@@ -75,6 +99,8 @@ extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 *				Module, or @c NULL on failure.
 */
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
+
+extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryRoute);
 
 /** @brief		Removes the provided module from the gateway.
 *

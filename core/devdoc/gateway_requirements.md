@@ -25,6 +25,13 @@ Third party C JSON library: https://github.com/kgabis/parson
             "args" : ...
         },
         ...
+    ],
+    "links": 
+    [
+        {
+            "source": "foo",
+            "sink": "bar"
+        }
     ]
 }
 ```
@@ -68,6 +75,10 @@ Gateway_Create_From_JSON creates a new gateway using information contained withi
 **SRS_GATEWAY_14_005: [** The function shall set the value of `const void* module_properties` in the `GATEWAY_PROPERTIES` instance to a char\* representing the serialized *args* value for the particular module. **]**
 
 **SRS_GATEWAY_14_006: [** The function shall return NULL if the `JSON_Value` contains incomplete information. **]**
+
+**SRS_GATEWAY_04_001: [** The function shall create a Vector to Store all links to this gateway. **]**
+
+**SRS_GATEWAY_04_002: [** The function shall add all modules source and sink to `GATEWAY_PROPERTIES` inside `gateway_links`. **]**
 
 **SRS_GATEWAY_14_007: [** The function shall use the `GATEWAY_PROPERTIES` instance to create and return a `GATEWAY_HANDLE` using the lower level API. **]**
 
