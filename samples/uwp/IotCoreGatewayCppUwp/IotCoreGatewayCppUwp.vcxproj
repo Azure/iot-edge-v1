@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1ce0c438-32b2-4bd4-b235-b77a1aa2e36f}</ProjectGuid>
+    <ProjectGuid>{34378584-4422-4F12-88B0-C70C11435343}</ProjectGuid>
     <RootNamespace>IotCoreGatewayCppUwp</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
