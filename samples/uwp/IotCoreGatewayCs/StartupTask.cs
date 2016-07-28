@@ -23,6 +23,8 @@ namespace IotCoreGatewayCs
             var modules = new List<Microsoft.Azure.IoT.Gateway.IGatewayModule>();
             modules.Add(new SetOfCsModules.Printer());
             modules.Add(new SetOfCsModules.Sensor());
+            modules.Add(new SetOfCppModules.Printer());
+            modules.Add(new SetOfCppModules.Sensor());
 
             var properties = new Dictionary<string, string>();
             properties.Add("ConfigProperty", "ConfigValue");
