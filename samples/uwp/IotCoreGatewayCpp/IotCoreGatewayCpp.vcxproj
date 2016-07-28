@@ -245,6 +245,7 @@
   <!-- Workaround for bug in MSBuild regarding Native Background Applications referencing Managed Conponents -->
   <PropertyGroup>
     <CopyNuGetImplementations>true</CopyNuGetImplementations>
+    <NuGetRuntimeIdentifier>win10-$(PlatformTarget.ToLower())</NuGetRuntimeIdentifier>
   </PropertyGroup>
   <Target Name="_LocalResolvePrimaryProjectWinmdFiles" BeforeTargets="BeforeGenerateAppxManifest" AfterTargets="_ResolvePrimaryProjectWinmdFiles" Condition="'$(OutputType)' != 'exe' and '$(AppxPackage)' == 'true' AND '$(ContainsStartupTask)' == 'true'">
     <ItemGroup>
