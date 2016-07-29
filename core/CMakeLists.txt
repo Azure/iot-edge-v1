@@ -48,6 +48,7 @@ endfunction(includeHttp)
 set(gateway_c_sources
     ./src/message.c
     ./src/module_loader.c
+    ./src/internal/event_system.c
     ./src/gateway_ll.c
     ./src/gateway.c
     ${dynamic_library_c_file}
@@ -58,6 +59,7 @@ set(gateway_h_sources
     ./inc/message.h
     ./inc/message_bus.h
     ./inc/module.h
+    ./inc/internal/event_system.h
     ./inc/gateway_ll.h
     ./inc/gateway.h
     ./inc/module_loader.h

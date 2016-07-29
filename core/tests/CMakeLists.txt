@@ -10,6 +10,7 @@ add_subdirectory(dynamic_library_unittests)
 add_subdirectory(message_bus_unittests)
 add_subdirectory(message_bus_nn_unittests)
 add_subdirectory(gateway_ll_unittests)
+add_subdirectory(event_system_unittests)
 add_subdirectory(gateway_unittests)
 
 if(WIN32)

@@ -5,7 +5,7 @@ This is the API to create and manage a gateway. Contained within a gateway is a 
 
 ## References
 
-##Gateway Handle Implementation
+## Gateway Handle Implementation
 
 This section details the internal structure defined in the gateway implementation used to track a gateway and the information it contains.
 
@@ -17,68 +17,6 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
     /** @brief The message bus contained within this Gateway */
     MESSAGE_BUS_HANDLE bus;    
 } GATEWAY_HANDLE;
-```
-
-## Exposed API
-```
-#ifndef GATEWAY_LL_H
-#define GATEWAY_LL_H
-
-#include "macro_utils.h"
-#include "module.h"
-#include "azure_c_shared_utility/vector.h"
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct GATEWAY_HANDLE_DATA_TAG* GATEWAY_HANDLE;
-
-/** @brief This struct represents a single entry of the GATEWAY_PROPERTIES. */
-typedef struct GATEWAY_PROPERTIES_ENTRY_TAG
-{
-    /** @brief The (possibly NULL) name of the module */
-    const char* module_name;
-    
-    /** @brief The path to the .dll or .so of the module */
-    const char* module_path;
-    
-    /** @brief The user-defined properties object for the module */
-    const void* module_properties;
-} GATEWAY_PROPERTIES_ENTRY;
-
-/** @brief This struct represents the properties that should be used when creating a module. */
-typedef struct GATEWAY_PROPERTIES_DATA_TAG
-{
-    /** @brief Vector of GATEWAY_PROPERTIES_ENTRY objects. */
-    VECTOR_HANDLE gateway_properties_entries;
-} GATEWAY_PROPERTIES;
-
-/** @breif Creates a new gateway using the provided GATEWAY_PROPERTIES and returns a GATEWAY_HANDLE for the newly created gateway */
-extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
-
-/** @breif Creates a new gateway using the provided VECTOR_HANDLE of MODULE instances, MESSAGE_BUS_HANDLE, and returns a GATEWAY_HANDLE for the newly created gateway */
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
-
-/** @brief Destroys gw and all associated data. */
-extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
-
-/** @brief Destroys gw and all associated data. */
-extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
-
-/** @brief Creates a new module based on the GATEWAY_PROPERTIES_ENTRY* and returns a MODULE_HANDLE if successful, NULL otherwise. */
-extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
-
-/** @brief Removes the provided module from the gateway */
-extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // GATEWAY_LL_H
-
 ```
 
 ##Gateway_Create
@@ -104,6 +42,10 @@ Gateway_LL_Create creates a new gateway using information about modules in the `
 **SRS_GATEWAY_LL_14_009: [** The function shall use each `GATEWAY_PROPERTIES_ENTRY` use each of `GATEWAY_PROPERTIES`'s `gateway_properties_entries` to create and add a `MODULE_HANDLE` to the `GATEWAY_HANDLE` message bus. **]**
 
 **SRS_GATEWAY_LL_14_036: [** If any `MODULE_HANDLE` is unable to be created from a `GATEWAY_PROPERTIES_ENTRY` the `GATEWAY_HANDLE` will be destroyed. **]**
+
+**SRS_GATEWAY_LL_26_001: [** This function shall initialize attached Event System and report `GATEWAY_CREATED` event. **]**
+
+**SRS_GATEWAY_LL_26_002: [** If Event System module fails to be initialized the gateway module shall be destroyed and NULL returned with no events reported. **]**
 
 ```
 extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
@@ -133,6 +75,10 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 **SRS_GATEWAY_LL_14_037: [** If `GATEWAY_HANDLE_DATA`'s message bus cannot unlink module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+
+**SRS_GATEWAY_LL_26_003: [** If the Event System module is initialized, this function shall report `GATEWAY_DESTROYED` event. **]**
+
+**SRS_GATEWAY_LL_26_004: [** This function shall destroy the attached Event System.  **]**
 
 ```
 extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
@@ -204,3 +150,13 @@ Gateway_RemoveModule will remove the specified `module` from the message bus.
 **SRS_GATEWAY_LL_14_025: [** The function shall unload `MODULE_DATA`'s `library_handle`. **]**
 
 **SRS_GATEWAY_LL_14_026: [** The function shall remove that `MODULE_DATA` from `GATEWAY_HANDLE_DATA`'s `modules`. **]**
+
+## Gateway_AddEventCallback
+```
+extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+```
+Gateway_AddEventCallback registers callback function to listen to some kind of `GATEWAY_EVENT`.
+When the event happens the callback will be put in a queue and executed in a seperate callback thread in First-In-First-Out order of registration for that event
+Also see `event_system_requirements.md` file for further requirements.
+
+**SRS_GATEWAY_LL_26_006: [** This function shall log a failure and do nothing else when `gw` parameter is NULL. **]**

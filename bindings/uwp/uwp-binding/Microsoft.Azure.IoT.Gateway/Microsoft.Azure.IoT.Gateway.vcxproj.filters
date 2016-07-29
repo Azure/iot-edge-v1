@@ -72,6 +72,12 @@
     <ClCompile Include="..\..\..\..\core\src\module_loader.c">
       <Filter>core/src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\message_bus_broadcast.c" >
+      <Filter>core/src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\core\src\internal\event_system.c">
+      <Filter>core/src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
