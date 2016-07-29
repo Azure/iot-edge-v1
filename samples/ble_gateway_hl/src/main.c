@@ -62,7 +62,7 @@ int main(int argc, char*argv[])
         }
         else
         {
-            LogError("Failed to initialize the platform.");a
+            LogError("Failed to initialize the platform.");
             result = 1;
         }
     }
