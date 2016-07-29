@@ -10,6 +10,7 @@ option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) 
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
+option(default_broker "set gateway to use the default message broker with routing enabled (default is ON, off will use simple broadcast message bus)" ON)
 
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
@@ -102,14 +103,20 @@ include_directories(./deps/parson)
 
 #this adds nanomsg
 option(NN_ENABLE_DOC "" OFF )
-option(NN_STATIC_LIB "" ON )
+if (WIN32)
+  option(NN_STATIC_LIB "" OFF )
+else()
+  option(NN_STATIC_LIB "" ON )
+  # This should be set with the NN_STATIC_LIB options
+  add_definitions (-DNN_STATIC_LIB)
+endif()
+
 option(NN_TESTS "" OFF )
 option(NN_ENABLE_NANOCAT "" OFF)
 set(ENV{CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_BINARY_DIR} )
+set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll )
 add_subdirectory(./deps/nanomsg)
 include_directories(./deps/nanomsg/src)
-# This should be set with the NN_STATIC_LIB options
-add_definitions (-DNN_STATIC_LIB)
 
 set(NANOMSG_TARGETS dist )
 foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
@@ -117,8 +124,19 @@ foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
 endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)
-  target_link_libraries(${whatIsBuilding} nanomsg )
+  if (${default_broker})
+    target_link_libraries(${whatIsBuilding} nanomsg )
+  endif()
 endfunction(link_broker)
+
+function(install_broker whatIsBuilding whatIsBuildingLocation)
+  if(WIN32 AND ${default_broker})
+  add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${nanomsg_target_dll}
+          ${whatIsBuildingLocation})
+  endif()
+endfunction(install_broker)
 
 add_subdirectory(./core)
 

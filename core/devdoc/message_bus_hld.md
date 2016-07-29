@@ -23,6 +23,8 @@ An instance of the message bus is represented in code via an opaque `MESSAGE_BUS
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 {
     VECTOR_HANDLE           modules;
+    int                     publish_socket;
+    STRING_HANDLE           url;
     LOCK_HANDLE             modules_lock;
 }MESSAGE_BUS_HANDLE_DATA;
 ```
@@ -31,8 +33,10 @@ Here's a description of the members of `MESSAGE_BUS_HANDLE_DATA`.
 
 >| Field       | Description                                                                  |
 >|-------------|------------------------------------------------------------------------------|
->| modules       | Vector of modules where each element is an instance of `MODULE_INFO`.      |
->| modules_lock  | A mutex used to synchronize access to the `modules` field.                 |
+>| modules        | Vector of modules where each element is an instance of `MODULE_INFO`. |
+>| publish_socket | The socket to publish messages to the broadcast bus.                       |
+>| url            | A URL to uniquely describe the broadcast bus.        |
+>| modules_lock   | A mutex used to synchronize access to the `modules` field.                 |
 
 ### The Module Info
     
@@ -44,87 +48,95 @@ typedef struct MODULE_INFO_TAG
     MODULE_HANDLE           module;
     MODULE_APIS             module_apis;
     THREAD_HANDLE           thread;
-    VECTOR_HANDLE           mq;
-    COND_HANDLE             mq_cond;
-    LOCK_HANDLE             mq_lock;
-    sig_atomic_t            quit_worker;
+    int                     receive_socket;
+    LOCK_HANDLE				socket_lock;
+    STRING_HANDLE			quit_message_guid;
 }MODULE_INFO;
 ```
 
 A description of the fields in the `MODULE_INFO` structure follows:
 
 >| Field       | Description                                                          |
->|-------------|----------------------------------------------------------------------|
->| module        | Reference to the module.                                           |
->| module_apis   | The function dispatch table for this module.                       |
->| thread      | Handle to the thread on which this module's message loop is running. |
->| mq          | A queue of messages that are due for delivery to this module.        |
->| mq_cond     | A condition variable that is signaled when there are new messages.   |
->| mq_lock     | A mutex used to synchronize access to the `mq` field.                |
->| quit_worker | Message publish worker will keep running while this is `0`.          |
+>|-----------------------|----------------------------------------------------------------------|
+>| module                | Reference to the module.                                             |
+>| module_apis           | The function dispatch table for this module.                         |
+>| thread                | Handle to the thread on which this module's message loop is running. |
+>| receive\_socket       | The delivery socket for this module.        |
+>| socket\_lock          | A mutex used to synchronize access to the nanomsg read function.  |
+>| quit\_message\_guid   | A unique ID sent to the worker thread to close it.          |
 
 ### Adding A Module To The Message Bus
 
-Whenever a new module is added to the message bus a new thread is created and launched whose responsibility it is to process messages that are delivered for that module by invoking the module's message callback function. The worker thread will wait on the condition variable `mq_cond` and continuously deliver messages to the module whenever `mq_cond` is signalled. If `quit_worker` is equal to `1` then the worker thread will quit and return.
+Whenever a new module is added to the message bus a new thread is created and launched whose responsibility it is to process messages that are delivered for that module by invoking the module's message callback function. The worker thread will wait on receive_socket and deliver messages to the module. If `quit_worker` is equal to `1` then the worker thread will quit and return.
 
 ### Publishing A Message
 
-Publishing a message to the bus essentially involves two discrete phases:
+Using a messaging system like nanomsg strongly encourages the message bus to pass messages as serialized data, rather than passing messages as pointers or handles.
 
-1. Queue the message to each module's message queue (the `mq` field in the module's `MODULE_INFO` structure).
-2. Signal the `mq_cond` condition variable to cause the worker thread associated with the module to wake up and process the message in the queue. 
+Nanomsg sockets are considered thread-safe, which means we can avoid locking during a publish unless we need access to critical module data.
 
-Here are the sequence of steps the publish function performs:
+**Message publishing pseudo code**
 
-**Code Segment 1**
-```C
-01: MESSAGE_BUS_HANDLE_DATA message_bus_data = message_bus_handle
-02: Lock message_bus_data.modules_lock
+```c
+01: MESSAGE_HANDLE msg = Message_Clone(message)
+02: unsigned char* serial_message = Message_ToByteArray( msg, &size)
+03: void* nn_msg = nn_allocmsg(size, 0)
+04: memcpy(nn_msg, serial_message, size)
+05: int nbytes = nn_send(bus_data->publish_socket, nn_msg, NN_MSG, 0)
+06: free(serial_message)
+07: Message_Destroy(msg)
 ```
 
-> **NOTE**: Acquiring a lock on the entire `modules` vector is a tad too coarse grained; we could consider enhancing this in the future to use a linked list and use more fine grained locking strategies - for e.g. a sliding window lock where we lock access only to the current, previous and next modules for each module in the list.
-> 
-> Another alternative might be to consider using lock-free collections using atomic operations. This must however be adopted only if we have:
-> 
-> - a performance problem due to excessive lock contention, and
-> - a way of measuring performance post switching to a lock-free alternative so that we have a reliable mechanism for ascertaining that the alternative made things better.
-
-```C
-03: for each module in message_bus_data.modules
-04: {
-05:     Lock module.mq_lock
-06:     MESSAGE_HANDLE msg = Clone input_msg (increment ref count)
-07:     Append msg to module.mq
-08:     Unlock module.mq_lock
-09:     Signal module.mq_cond
-10: }
-11: Unlock message_bus_data.modules_lock
-```
+The call to nn_alloc creates a buffer managed by nanomsg.  THis allows for zero copy message passing as well as memory management inside nanomsg. This buffer will be destroyed after a successful call.
 
 ### Module Publish Worker
 
-The `module_publish_worker` function is passed in a pointer to the relevant `MODULE_INFO` object as it's thread context parameter. The function's job is to basically wait on the `mq_cond` condition variable and process messages in `module.mq` when the condition is signalled. Here's the pseudo-code implementation of what it does:
+The `module_publish_worker` function is passed in a pointer to the relevant `MODULE_INFO` object as it's thread context parameter. The function's job is to basically wait on the receive socket and process messages when received. Here's the pseudo-code implementation of what it does:
 
 **Code Segment 2**
-```C
+```c
+
 01: MODULE_INFO module_info = context
-02: while(module_info.quit_worker == 0)
+02: while(should_continue)
 03: {
-04:     Lock module_info.mq_lock
-05:     Wait on module_info.mq_cond, module.mq_lock
-06:     while(
-07:             module_info.quit_worker == 0 &&
-08:             module_info.mq is not empty
-09:          )
-10:     {
-11:         MESSAGE_HANDLE msg = Dequeue module_info.mq
-12:         Unlock module_info.mq_lock
-13:         Deliver msg to module_info.module
-14:         Destroy msg (decrement ref count)
-15:         Lock module_info.mq_lock
-16:     }
-17: }
-18: Unlock module_info.mq_lock
+04:     Lock module_info.socket_lock
+05:     Wait on nn_recv(module_info.receive_socket, &buf, NN_MSG, 0)
+06:     Unlock module_info.socket_lock
+07:     if (nbytes > 0)
+08:     {
+09:         if (nbytes == MESSAGE_BUS_GUID_SIZE && (message == module_info->quit_message_guid )
+10:         { 
+11:             should_continue = false
+12:         }
+13:         else
+14:         {
+15:             MESSAGE_HANDLE msg = Message_CreateFromByteArray(buf, nbytes)
+16:             Deliver msg to module_info.module
+17:             Destroy msg
+18:         }
+19:         nn_freemsg(buf)
+20:     }
+21:     else
+22:     {
+23:         should_continue = false;
+24:     }
+25: }
 ```
 
-In other words, this function keeps delivering messages to the module while the module's message queue is not empty. Note that new messages can potentially be concurrently en-queued to the module's message queue while line **14** is being executed.
+Why do we need the `socket_lock`?  Helgrind and drd found a race condition between `nn_recv` and `nn_close` on the internal socket data. The socket lock prevents this race condition.
+
+### Closing the Module Publish Worker
+
+When the MessageBus adds a module, it creates the `quit_message_guid` as a unique ID to send to the worker thread to signal the thread should close.  This guid is not serialized as a message object.
+
+The following is pseudo-code for stopping the Module Publish Worker thread:
+
+```c
+01: nn_send(receive_socket, module_info->quit_message_guid, MESSAGE_BUS_GUID_SIZE, 0)
+02: Lock module_info.socket_lock
+03: nn_close(module_info->receive_socket)
+04: Unlock module_info.socket_lock
+05: ThreadAPI_Join(module_info->thread, &thread_result)
+```
+
+If for any reason the send fails, closing the socket will guarantee the next read will fail, and the thread will terminate.

@@ -36,6 +36,7 @@ target_include_directories(
 )
 target_link_libraries(${theseTestsName}_exe ${LIBS})
 target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
+install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 if(WIN32)
     target_include_directories(
