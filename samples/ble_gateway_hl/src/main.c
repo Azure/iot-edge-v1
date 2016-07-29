@@ -10,6 +10,7 @@
 #include <glib.h>
 
 #include "azure_c_shared_utility/xlogging.h"
+#include "azure_c_shared_utility/platform.h"
 
 #include "gateway.h"
 
@@ -37,23 +38,32 @@ int main(int argc, char*argv[])
     }
     else
     {
-        char *json_path = argv[1];
-        GATEWAY_HANDLE gateway = Gateway_Create_From_JSON(json_path);
-        if(gateway == NULL)
+        if(platform_init() == 0)
         {
-            LogError("An error ocurred while creating the gateway.");
-            result = 1;
+            char *json_path = argv[1];
+            GATEWAY_HANDLE gateway = Gateway_Create_From_JSON(json_path);
+            if(gateway == NULL)
+            {
+                LogError("An error ocurred while creating the gateway.");
+                result = 1;
+            }
+            else
+            {
+                result = 0;
+                printf("Gateway is running.\r\n");
+                        
+                // run the glib loop
+                g_main_loop_run(loop);
+
+                printf("Gateway is quitting\r\n");
+                Gateway_LL_Destroy(gateway);
+            }
+            platform_deinit();
         }
         else
         {
-            result = 0;
-            printf("Gateway is running.\r\n");
-                    
-            // run the glib loop
-            g_main_loop_run(loop);
-
-            printf("Gateway is quitting\r\n");
-            Gateway_LL_Destroy(gateway);
+            LogError("Failed to initialize the platform.");a
+            result = 1;
         }
     }
     
