@@ -13,6 +13,7 @@
 
 #include "gateway_ll.h"
 #include "message_bus.h"
+#include "internal/event_system.h"
 #include "module_loader.h"
 
 #define DUMMY_LIBRARY_PATH "x.dll"
@@ -174,6 +175,21 @@ public:
 		BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
 	MOCK_VOID_METHOD_END();
 
+	MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
+	MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
+
+	MOCK_STATIC_METHOD_3(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback)
+		// no-op
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_3(, void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type)
+		// no-op
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle)
+		BASEIMPLEMENTATION::gballoc_free(handle);
+	MOCK_VOID_METHOD_END();
+
 	MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
 		currentVECTOR_create_call++;
 		VECTOR_HANDLE vector = NULL;
@@ -265,6 +281,11 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoa
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
+DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback);
+DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle);
+
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, VECTOR_destroy, VECTOR_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements);
@@ -283,6 +304,30 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 
 static GATEWAY_PROPERTIES* dummyProps;
+
+static int sampleCallbackFuncCallCount;
+
+static void expectEventSystemInit(CGatewayLLMocks &mocks)
+{
+	STRICT_EXPECTED_CALL(mocks, EventSystem_Init());
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_CREATED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+}
+
+static void expectEventSystemDestroy(CGatewayLLMocks &mocks)
+{
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_DESTROYED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+}
+
+static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+{
+	sampleCallbackFuncCallCount++;
+}
 
 BEGIN_TEST_SUITE(gateway_ll_unittests)
 
@@ -345,6 +390,8 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	dummyProps = (GATEWAY_PROPERTIES*)malloc(sizeof(GATEWAY_PROPERTIES));
 	dummyProps->gateway_properties_entries = BASEIMPLEMENTATION::VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY));
 	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry, 1);
+
+	sampleCallbackFuncCallCount = 0;
 }
 
 TEST_FUNCTION_CLEANUP(TestMethodCleanup)
@@ -377,6 +424,7 @@ TEST_FUNCTION(Gateway_LL_Create_Creates_Handle_Success)
 	STRICT_EXPECTED_CALL(mocks, MessageBus_Create());
 	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
+	expectEventSystemInit(mocks);
 
 	//Act
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(NULL);
@@ -533,7 +581,8 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	//Removing previous module
+	//Removing previous module in Gateway_LL_Destroy()
+	expectEventSystemDestroy(mocks);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -629,7 +678,8 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	//Removing previous module
+	//Removing previous module in Gateway_LL_Destroy()
+	expectEventSystemDestroy(mocks);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -725,6 +775,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
+	expectEventSystemInit(mocks);
+
 	//Act
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 
@@ -771,6 +823,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_
 	mocks.ResetAllCalls();
 
 	//Expectations
+	expectEventSystemDestroy(mocks);
+
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -846,6 +900,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	mocks.ResetAllCalls();
 
 	//Gateway_LL_Destroy Expectations
+	expectEventSystemDestroy(mocks);
+
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -1341,5 +1397,102 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
 	//Cleanup
 	Gateway_LL_Destroy(gw);
 }
+
+/* Tests_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Event System and report GATEWAY_CREATED event. ]*/
+TEST_FUNCTION(Gateway_LL_Event_System_Create_And_Report)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	
+	//Expectations
+	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, MessageBus_Create());
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	
+	expectEventSystemInit(mocks);
+
+	//Act
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+/* Tests_SRS_GATEWAY_LL_26_002: [ If Event System module fails to be initialized the gateway module shall be destroyed and NULL returned with no events reported. ] */
+TEST_FUNCTION(Gateway_LL_Event_System_Create_Fail)
+{
+	// Arrange
+	CGatewayLLMocks mocks;
+
+	//Expectations
+	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, MessageBus_Create());
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	// Fail to create
+	EXPECTED_CALL(mocks, EventSystem_Init())
+		.SetFailReturn((EVENTSYSTEM_HANDLE)NULL);
+	// Note - no EventSystem_Report()!
+	// Gateway_destroy called from inside create
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(NULL, IGNORED_PTR_ARG, GATEWAY_DESTROYED))
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_Destroy(NULL));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, MessageBus_Destroy(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+
+	//Act
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+
+	//Assert
+	ASSERT_IS_NULL(gw);
+	mocks.AssertActualAndExpectedCalls();
+}
+
+/* Tests_SRS_GATEWAY_LL_26_003: [ If the Event System module is initialized, this function shall report GATEWAY_DESTROYED event. ] */
+/* Tests_SRS_GATEWAY_LL_26_004: [ This function shall destroy the attached Event System. ] */
+TEST_FUNCTION(Gateway_LL_Event_System_Report_Destroy)
+{
+	// Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	mocks.ResetAllCalls();
+
+	// Expectations
+	expectEventSystemDestroy(mocks);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, MessageBus_Destroy(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+
+	// Act
+	Gateway_LL_Destroy(gw);
+
+	// Assert
+	mocks.AssertActualAndExpectedCalls();
+}
+
+/* Tests_SRS_GATEWAY_LL_26_006: [** This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
+TEST_FUNCTION(Gateway_LL_AddEventCallback_NULL_Gateway)
+{
+	// Arrange
+	CGatewayLLMocks mocks;
+
+	// Expectations
+	// Empty! No callbacks should happen at all
+
+	// Act
+	Gateway_AddEventCallback(NULL, GATEWAY_CREATED, NULL);
+	Gateway_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL);
+	Gateway_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc);
+
+	// Assert
+	ASSERT_ARE_EQUAL(int, sampleCallbackFuncCallCount, 0);
+	mocks.AssertActualAndExpectedCalls();
+}
+
 
 END_TEST_SUITE(gateway_ll_unittests)
