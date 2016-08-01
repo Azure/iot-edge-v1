@@ -249,7 +249,7 @@
       <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\message_bus_broadcast.c">
+    <ClCompile Include="..\..\..\..\core\src\broadcast_message_bus.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>

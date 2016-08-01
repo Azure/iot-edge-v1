@@ -72,7 +72,7 @@
     <ClCompile Include="..\..\..\..\core\src\module_loader.c">
       <Filter>core/src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\message_bus_broadcast.c" >
+    <ClCompile Include="..\..\..\..\core\src\broadcast_message_bus.c" >
       <Filter>core/src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\internal\event_system.c">
