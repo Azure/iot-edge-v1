@@ -28,6 +28,7 @@
 #include "module.h"
 #include "message_bus.h"
 
+/* minimum size for a guid string, 36 characters + null terminator */
 #define MESSAGE_BUS_GUID_SIZE            37
 #define INPROC_URL_HEAD "inproc://"
 #define INPROC_URL_HEAD_SIZE  9

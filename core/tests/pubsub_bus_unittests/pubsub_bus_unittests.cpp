@@ -647,7 +647,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , int, nn_connect, int, s, const 
 DECLARE_GLOBAL_MOCK_METHOD_4(CMessageBusMocks, , int, nn_send, int, s, const void*, buf, size_t, len, int, flags)
 DECLARE_GLOBAL_MOCK_METHOD_4(CMessageBusMocks, , int, nn_recv, int, s, void*, buf, size_t, len, int, flags)
 
-BEGIN_TEST_SUITE(message_bus_nn_unittests)
+BEGIN_TEST_SUITE(pubsub_bus_unittests)
 
 TEST_SUITE_INITIALIZE(TestClassInitialize)
 {
@@ -2736,4 +2736,4 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
 }
 
 
-END_TEST_SUITE(message_bus_nn_unittests)
+END_TEST_SUITE(pubsub_bus_unittests)

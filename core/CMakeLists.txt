@@ -66,10 +66,12 @@ set(gateway_h_sources
     ./inc/dynamic_library.h
 )
 
-if (${default_broker})
+if (GW_BROKER_TYPE STREQUAL "PubSub")
     set(gateway_c_sources ${gateway_c_sources} ./src/message_bus.c)
-else()
-    set(gateway_c_sources ${gateway_c_sources} ./src/message_bus_broadcast.c)
+endif()
+
+if (GW_BROKER_TYPE STREQUAL "Broadcast")
+    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_message_bus.c)
 endif()
 
 include_directories(./inc)

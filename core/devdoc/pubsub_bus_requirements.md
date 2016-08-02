@@ -1,4 +1,4 @@
-# Message Bus
+# Pub/Sub Message Bus
 
 ## Overview
 

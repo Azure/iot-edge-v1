@@ -1,4 +1,4 @@
-# Message Bus
+# Broadcast Message Bus
 
 ## Overview
 
