@@ -349,82 +349,90 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 		JAVA_MODULE_HANDLE_DATA* moduleHandle = (JAVA_MODULE_HANDLE_DATA*)module;
 
 		/*Codes_SRS_JAVA_MODULE_HOST_14_023: [This function shall serialize message.]*/
-		int32_t size;
-		unsigned char* serialized_message = (unsigned char*)Message_ToByteArray(message, &size);
+		int32_t size = Message_ToByteArray(message, NULL, 0);
 
-		if (serialized_message == NULL)
+		if (size < 0)
 		{
 			/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
 			LogError("Could not serialize the message to a byte array.");
 		}
 		else
 		{
-			/*Codes_SRS_JAVA_MODULE_HOST_14_042: [This function shall attach the JVM to the current thread.]*/
-			jint jni_result = JNIFunc(moduleHandle->jvm, AttachCurrentThread, (void**)(&(moduleHandle->env)), NULL);
-
-			if (jni_result == JNI_OK)
+			unsigned char* serialized_message = (unsigned char*)malloc(size);
+			if (serialized_message == NULL)
 			{
-				/*Codes_SRS_JAVA_MODULE_HOST_14_043: [This function shall create a new jbyteArray for the serialized message.]*/
-				jbyteArray arr = JNIFunc(moduleHandle->env, NewByteArray, size);
-				if (arr == NULL)
+				LogError("Could not allocate byte array for message.");
+			}
+			else
+			{
+				Message_ToByteArray(message, serialized_message, size);
+
+				/*Codes_SRS_JAVA_MODULE_HOST_14_042: [This function shall attach the JVM to the current thread.]*/
+				jint jni_result = JNIFunc(moduleHandle->jvm, AttachCurrentThread, (void**)(&(moduleHandle->env)), NULL);
+
+				if (jni_result == JNI_OK)
 				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-					LogError("New jbyteArray could not be constructed.");
-				}
-				else
-				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_044: [This function shall set the contents of the jbyteArray to the serialized_message.]*/
-					JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, serialized_message);
-					jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-					if (exception)
+					/*Codes_SRS_JAVA_MODULE_HOST_14_043: [This function shall create a new jbyteArray for the serialized message.]*/
+					jbyteArray arr = JNIFunc(moduleHandle->env, NewByteArray, size);
+					if (arr == NULL)
 					{
 						/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-						LogError("Exception occurred in SetByteArrayRegion.");
-						JNIFunc(moduleHandle->env, ExceptionDescribe);
-						JNIFunc(moduleHandle->env, ExceptionClear);
+						LogError("New jbyteArray could not be constructed.");
 					}
 					else
 					{
-						/*Codes_SRS_JAVA_MODULE_HOST_14_045: [This function shall get the user - defined Java module class using the module parameter and get the receive() method.]*/
-						jclass jModule_class = JNIFunc(moduleHandle->env, GetObjectClass, moduleHandle->module);
-						if (jModule_class == NULL)
+						/*Codes_SRS_JAVA_MODULE_HOST_14_044: [This function shall set the contents of the jbyteArray to the serialized_message.]*/
+						JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, serialized_message);
+						jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
+						if (exception)
 						{
 							/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-							LogError("Could not find class (%s) for the module Java object. destroy() will not be called on this object.", moduleHandle->moduleName);
+							LogError("Exception occurred in SetByteArrayRegion.");
+							JNIFunc(moduleHandle->env, ExceptionDescribe);
+							JNIFunc(moduleHandle->env, ExceptionClear);
 						}
 						else
 						{
-							jmethodID jModule_receive = JNIFunc(moduleHandle->env, GetMethodID, jModule_class, MODULE_RECEIVE_METHOD_NAME, MODULE_RECEIVE_DESCRIPTOR);
-							exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-							if (jModule_receive == NULL || exception)
+							/*Codes_SRS_JAVA_MODULE_HOST_14_045: [This function shall get the user - defined Java module class using the module parameter and get the receive() method.]*/
+							jclass jModule_class = JNIFunc(moduleHandle->env, GetObjectClass, moduleHandle->module);
+							if (jModule_class == NULL)
 							{
 								/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-								LogError("Failed to find the %s destroy() method. destroy() will not be called on this object.", moduleHandle->moduleName);
-								JNIFunc(moduleHandle->env, ExceptionDescribe);
-								JNIFunc(moduleHandle->env, ExceptionClear);
+								LogError("Could not find class (%s) for the module Java object. destroy() will not be called on this object.", moduleHandle->moduleName);
 							}
 							else
 							{
-								/*Codes_SRS_JAVA_MODULE_HOST_14_024: [This function shall call the void receive(byte[] source) method of the Java module object passing the serialized message.]*/
-								CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_receive, 1, arr);
+								jmethodID jModule_receive = JNIFunc(moduleHandle->env, GetMethodID, jModule_class, MODULE_RECEIVE_METHOD_NAME, MODULE_RECEIVE_DESCRIPTOR);
 								exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-								if (exception)
+								if (jModule_receive == NULL || exception)
 								{
 									/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-									LogError("Exception occurred in receive() of %s.", moduleHandle->moduleName);
+									LogError("Failed to find the %s destroy() method. destroy() will not be called on this object.", moduleHandle->moduleName);
 									JNIFunc(moduleHandle->env, ExceptionDescribe);
 									JNIFunc(moduleHandle->env, ExceptionClear);
 								}
+								else
+								{
+									/*Codes_SRS_JAVA_MODULE_HOST_14_024: [This function shall call the void receive(byte[] source) method of the Java module object passing the serialized message.]*/
+									CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_receive, 1, arr);
+									exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
+									if (exception)
+									{
+										/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
+										LogError("Exception occurred in receive() of %s.", moduleHandle->moduleName);
+										JNIFunc(moduleHandle->env, ExceptionDescribe);
+										JNIFunc(moduleHandle->env, ExceptionClear);
+									}
+								}
 							}
 						}
+						JNIFunc(moduleHandle->env, DeleteLocalRef, arr);
 					}
-					JNIFunc(moduleHandle->env, DeleteLocalRef, arr);
+					/*Codes_SRS_JAVA_MODULE_HOST_14_046: [This function shall detach the JVM from the current thread.]*/
+					JNIFunc(moduleHandle->jvm, DetachCurrentThread);
 				}
-				/*Codes_SRS_JAVA_MODULE_HOST_14_046: [This function shall detach the JVM from the current thread.]*/
-				JNIFunc(moduleHandle->jvm, DetachCurrentThread);
+				free(serialized_message);
 			}
-
-			free(serialized_message);
 		}
 	}
 

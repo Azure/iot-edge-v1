@@ -378,16 +378,28 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 	SAFEARRAY *psaAzureIoTGatewayMessageConstructorArgs = NULL;
 	bool returnResult = false;
 	int32_t msg_size;
+	unsigned char*msgByteArray = NULL;
 
 
 	try
 	{
-		const unsigned char*msgByteArray = Message_ToByteArray(messageHandle, &msg_size);
+		msg_size = Message_ToByteArray(messageHandle, NULL, 0);
+		SAFEARRAYBOUND rgsabound[1];
+
+		if (msg_size > 0)
+		{
+			msgByteArray = (unsigned char*)malloc(msg_size);
+			if (msgByteArray != NULL)
+			{
+				Message_ToByteArray(messageHandle, msgByteArray, msg_size);
+				rgsabound[0].cElements = msg_size;
+				rgsabound[0].lLbound = 0;
+			}
+		}
+
 		variant_t msgContentInByteArray;
 		V_VT(&msgContentInByteArray) = VT_ARRAY | VT_UI1;
-		SAFEARRAYBOUND rgsabound[1];
-		rgsabound[0].cElements = msg_size;
-		rgsabound[0].lLbound = 0;
+
 		HRESULT hrResult;
 		void * pArrayData = NULL;
 
