@@ -220,6 +220,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\core\inc\dynamic_library.h" />
+    <ClInclude Include="..\..\..\..\core\inc\gateway.h" />
+    <ClInclude Include="..\..\..\..\core\inc\gateway_ll.h" />
+    <ClInclude Include="..\..\..\..\core\inc\message.h" />
+    <ClInclude Include="..\..\..\..\core\inc\message_bus.h" />
+    <ClInclude Include="..\..\..\..\core\inc\module.h" />
+    <ClInclude Include="..\..\..\..\core\inc\module_config_resources.h" />
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
     <ClInclude Include="MessageUwp.h" />
@@ -233,90 +240,79 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="WIndowsShims.cpp" />
-    <ClCompile Include="..\..\..\..\core\adapters\dynamic_library_windows.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>NO_LOGGING;UWP_BINDING;WIN32;_CRT_SECURE_NO_WARNINGS;_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\module_loader.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
-      <CompileAsWinRT>false</CompileAsWinRT>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\message.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\broadcast_message_bus.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\internal\event_system.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\core\src\gateway_ll.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\condition_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\lock_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\threadapi_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\buffer.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\list.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\strings.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constbuffer.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\map.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constmap.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\crt_abstractions.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\vector.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalOptions>/TP %(AdditionalOptions)</AdditionalOptions>
+      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
   </ItemGroup>

@@ -7,24 +7,17 @@
 #include "dynamic_library.h"
 #include "azure_c_shared_utility/xlogging.h"
 
-#ifdef UWP_BINDING
-
-HMODULE WINAPI LoadLibraryA(LPCSTR lpFileName);
-DWORD WINAPI GetCurrentDirectoryA(DWORD  nBufferLength, LPSTR lpBuffer);
-
-#endif // UWP_BINDING
-
 /* Codes_SRS_DYNAMIC_LIBRARY_17_001: [DynamicLibrary_LoadLibrary shall make the OS system call to load the named library, returning an opaque pointer as a library reference.] */
 DYNAMIC_LIBRARY_HANDLE DynamicLibrary_LoadLibrary(const char* dynamicLibraryFileName)
 {
 	DYNAMIC_LIBRARY_HANDLE returnValue = LoadLibraryA(dynamicLibraryFileName);
 	if (returnValue == NULL)
 	{
-    	DWORD error = GetLastError();
+		DWORD error = GetLastError();
+		LogError("Error Loading Library. Error code is:  %u", error);
+
 		DWORD status;
 		char currentPath[MAX_PATH];
-
-		LogError("Error Loading Library. Error code is:  %u", error);
 
 		//This retry was needed because when you run multiple tests together LoadLibraryA failed to find the Library. 
 		//So we need to help by building the string with current Path.
