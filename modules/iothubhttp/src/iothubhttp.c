@@ -16,7 +16,7 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/strings.h"
 #include "messageproperties.h"
-#include "message_bus.h"
+#include "broker.h"
 
 typedef struct PERSONALITY_TAG
 {

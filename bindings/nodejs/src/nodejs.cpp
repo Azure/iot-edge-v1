@@ -33,7 +33,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "messageproperties.h"
 
 #include "nodejs_common.h"

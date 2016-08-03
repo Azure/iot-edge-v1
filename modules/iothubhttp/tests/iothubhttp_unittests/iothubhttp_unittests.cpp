@@ -16,7 +16,7 @@
 #include "azure_c_shared_utility/strings.h"
 #include "iothubtransport.h"
 #include "iothub_message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "message.h"
 #include "messageproperties.h"
 

@@ -11,7 +11,7 @@
 #include <stddef.h>
 
 #include "gateway_ll.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "module_loader.h"
 #include "internal/event_system.h"
 

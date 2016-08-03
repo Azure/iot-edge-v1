@@ -11,7 +11,7 @@
 #include "messageproperties.h"
 
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {

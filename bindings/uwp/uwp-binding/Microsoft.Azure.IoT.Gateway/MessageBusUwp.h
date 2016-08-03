@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pch.h"
-#include "..\..\..\core\inc\message_bus.h"
+#include "..\..\..\core\inc\broker.h"
 
 namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 

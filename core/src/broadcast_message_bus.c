@@ -21,7 +21,7 @@
 
 #include "message.h"
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 
 /*The message bus implementation shall use the following definition as the backing structure for the message bus handle*/
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG

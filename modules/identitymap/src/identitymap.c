@@ -14,7 +14,7 @@
 #include "azure_c_shared_utility/crt_abstractions.h"
 #include "messageproperties.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "identitymap.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/constbuffer.h"

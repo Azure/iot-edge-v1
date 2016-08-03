@@ -7,7 +7,7 @@
 #include "MessageUwp.h"
 #include "IGatewayModule.h"
 
-#include "message_bus.h"
+#include "broker.h"
 
 using namespace Windows::Foundation::Collections;
 using namespace Microsoft::Azure::IoT::Gateway;

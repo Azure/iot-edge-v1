@@ -26,7 +26,7 @@
 
 #include "message.h"
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 
 /* minimum size for a guid string, 36 characters + null terminator */
 #define MESSAGE_BUS_GUID_SIZE            37

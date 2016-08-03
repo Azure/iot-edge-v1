@@ -22,7 +22,7 @@ typedef void* MODULE_HANDLE;
 typedef struct MODULE_APIS_TAG MODULE_APIS;
 
 #include "azure_c_shared_utility/macro_utils.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "message.h"
 
 

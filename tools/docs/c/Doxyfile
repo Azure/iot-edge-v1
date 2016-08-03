@@ -775,7 +775,7 @@ INPUT                  = mainpage.dox \
                          ../../../core/inc/gateway.h \
 			 ../../../core/inc/gateway_ll.h \
 			 ../../../core/inc/message.h \
-			 ../../../core/inc/message_bus.h \
+			 ../../../core/inc/broker.h \
 			 ../../../core/inc/module.h \
 
 # This tag can be used to specify the character encoding of the source files

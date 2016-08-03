@@ -43,7 +43,7 @@ namespace BASEIMPLEMENTATION
 #include "vector.c"
 };
 
-#include "message_bus.h"
+#include "broker.h"
 #include "azure_c_shared_utility/lock.h"
 
 DEFINE_MICROMOCK_ENUM_TO_STRING(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);

@@ -19,7 +19,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "ble.h"
 #include "ble_printer.h"
 #include "messageproperties.h"

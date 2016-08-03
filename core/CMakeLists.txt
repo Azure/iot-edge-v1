@@ -57,7 +57,7 @@ set(gateway_c_sources
 
 set(gateway_h_sources
     ./inc/message.h
-    ./inc/message_bus.h
+    ./inc/broker.h
     ./inc/module.h
     ./inc/internal/event_system.h
     ./inc/gateway_ll.h

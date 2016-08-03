@@ -23,7 +23,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
 #include "messageproperties.h"

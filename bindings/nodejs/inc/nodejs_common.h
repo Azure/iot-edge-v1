@@ -8,7 +8,7 @@
 
 #include "v8.h"
 
-#include "message_bus.h"
+#include "broker.h"
 #include "lock.h"
 
 struct NODEJS_MODULE_HANDLE_DATA;

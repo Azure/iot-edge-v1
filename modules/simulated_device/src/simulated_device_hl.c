@@ -12,7 +12,7 @@
 #include "messageproperties.h"
 
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "parson.h"
 
 static void SimulatedDevice_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)

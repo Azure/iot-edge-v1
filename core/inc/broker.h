@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/** @file		message_bus.h
+/** @file		broker.h
 *	@brief		Library for configuring and using the gateway's message bus.
 *
 *	@details	This is the API to create a reference counted and thread safe 

@@ -12,7 +12,7 @@
 #include "azure_c_shared_utility/lock.h"
 
 #include "gateway_ll.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "internal/event_system.h"
 #include "module_loader.h"
 

@@ -13,7 +13,7 @@ all modules have the same interface.
 #define MODULE_H
 
 #include "macro_utils.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "message.h"
 
 #ifdef __cplusplus

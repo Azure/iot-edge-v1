@@ -14,7 +14,7 @@
 #include "azure_c_shared_utility/crt_abstractions.h"
 
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 
 #define GW_E2E_MODULE "E2EMODULE"
 

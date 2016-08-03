@@ -26,7 +26,7 @@
 #include "azure_c_shared_utility/map.h"
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 
 #include "nodejs.h"
 #include "nodejs_common.h"
