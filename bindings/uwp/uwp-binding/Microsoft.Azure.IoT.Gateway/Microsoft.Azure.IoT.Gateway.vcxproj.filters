@@ -85,5 +85,13 @@
     <ClInclude Include="MessageBusUwp.h" />
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
+    <ClInclude Include="..\..\..\..\core\inc\dynamic_library.h" />
+    <ClInclude Include="..\..\..\..\core\inc\gateway.h" />
+    <ClInclude Include="..\..\..\..\core\inc\gateway_ll.h" />
+    <ClInclude Include="..\..\..\..\core\inc\message.h" />
+    <ClInclude Include="..\..\..\..\core\inc\message_bus.h" />
+    <ClInclude Include="..\..\..\..\core\inc\module.h" />
+    <ClInclude Include="..\..\..\..\core\inc\module_config_resources.h" />
+    <ClInclude Include="..\..\..\..\core\inc\module_loader.h" />
   </ItemGroup>
 </Project>

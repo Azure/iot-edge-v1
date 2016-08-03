@@ -10,13 +10,9 @@
 using namespace Windows::Foundation::Collections;
 using namespace Microsoft::Azure::IoT::Gateway;
 
-
-ref class Message;
-
-MODULE_HANDLE InternalGatewayModule::Module_Create(MESSAGE_BUS_HANDLE busHandle, IMapView<Platform::String^, Platform::String^>^ properties)
+void InternalGatewayModule::Module_Create(MESSAGE_BUS_HANDLE busHandle, IMapView<Platform::String^, Platform::String^>^ properties)
 {
 	_moduleImpl->Create(ref new MessageBus(busHandle, (MODULE_HANDLE)this), properties);
-	return (MODULE_HANDLE)this;
 }
 void InternalGatewayModule::Module_Destroy()
 {
@@ -51,11 +47,10 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, 
 		throw ref new Platform::FailureException("Failed to create VECTOR for modules.");
 	}
 
-	 
- 	for (auto mod : modules)
+	for (auto mod : modules)
 	{
-		std::unique_ptr<InternalGatewayModule> imod(new InternalGatewayModule(mod));
-		auto module_handle = imod->Module_Create(messagebus_handle, properties);
+		auto imod = std::make_unique<InternalGatewayModule>(mod);
+		imod->Module_Create(messagebus_handle, properties);
 
 		MODULE module;
 		module.module_instance = imod.get();

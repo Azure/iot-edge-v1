@@ -41,23 +41,24 @@ extern "C"
         virtual void Module_Receive(MESSAGE_HANDLE messageHandle) = 0;
     };
 
-#endif // UWP_BINDING
+    typedef struct MODULE_TAG
+    {
+        /** @brief Interface implementation for module. */
+        IInternalGatewayModule* module_instance;
+    }MODULE;
 
-	/** @brief	Structure used to represent/abstract the idea of a module.  May
+#else
+
+    /** @brief	Structure used to represent/abstract the idea of a module.  May
 	*			contain Hamdle/FxnPtrs or an interface ptr or some unforseen
 	*			representation.
 	*/
     typedef struct MODULE_TAG
     {
-#ifdef UWP_BINDING
-		/** @brief Interface implementation for module. */
-		IInternalGatewayModule* module_instance;
-#else
 		/** @brief Struct containing function pointers */
 		const MODULE_APIS* module_apis;
 		/** @brief HANDLE for module. */
 		MODULE_HANDLE module_handle;
-#endif // UWP_BINDING
     }MODULE;
 
 	/** @brief		Creates a module using the specified configuration connecting
@@ -135,6 +136,7 @@ extern "C"
 *			the functions for the particular module.
 */
 MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+#endif // UWP_BINDING
 
 #ifdef __cplusplus
 }

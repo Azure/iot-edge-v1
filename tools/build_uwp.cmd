@@ -78,7 +78,7 @@ goto args-loop
 rem -----------------------------------------------------------------------------
 rem -- build csharp language binding project.
 rem -----------------------------------------------------------------------------
-call nuget restore "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.sln"
+call nuget restore "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.Test.sln"
 
 
 

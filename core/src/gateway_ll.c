@@ -34,6 +34,7 @@ typedef struct MODULE_DATA_TAG {
 	MODULE_HANDLE module;
 } MODULE_DATA;
 
+#ifndef UWP_BINDING
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_path, const void* module_configuration);
 static void gateway_removemodule_internal(GATEWAY_HANDLE gw, MODULE_DATA* module);
 static void gateway_destroy_internal(GATEWAY_HANDLE gw);
@@ -228,12 +229,8 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 			{
 				/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
 				MODULE module;
-#ifdef UWP_BINDING
-				module.module_instance = NULL;
-#else
 				module.module_apis = module_apis;
 				module.module_handle = module_handle;
-#endif // UWP_BINDING
 
 				/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
 				/*Codes_SRS_GATEWAY_LL_14_018: [If the message bus linking is unsuccessful, the function shall return NULL.]*/
@@ -332,12 +329,8 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
 {
 	MODULE module;
-#ifdef UWP_BINDING
-	module.module_instance = NULL;
-#else
 	module.module_apis = NULL;
 	module.module_handle = module_data->module;
-#endif // UWP_BINDING
 
 	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
 	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
@@ -355,7 +348,7 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 	VECTOR_erase(gateway_handle->modules, module_data, 1);
 }
 
-#ifdef UWP_BINDING
+#else
 
 GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus)
 {
@@ -451,4 +444,3 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 }
 
 #endif // UWP_BINDING
-
