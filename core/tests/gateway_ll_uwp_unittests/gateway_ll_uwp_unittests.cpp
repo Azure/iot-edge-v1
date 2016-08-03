@@ -76,7 +76,6 @@ public:
 };
 static MODULE dummyModule;
 static VECTOR_HANDLE dummyModules;
-static MODULE_APIS dummyAPIs;
 
 
 TYPED_MOCK_CLASS(CGatewayUwpLLMocks, CGlobalMock)
@@ -174,10 +173,6 @@ public:
 		handle = (MODULE_LIBRARY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	}
 	MOCK_METHOD_END(MODULE_LIBRARY_HANDLE, handle);
-
-	MOCK_STATIC_METHOD_1(, const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle)
-		const MODULE_APIS* apis = &dummyAPIs;
-	MOCK_METHOD_END(const MODULE_APIS*, apis);
 
 	MOCK_STATIC_METHOD_1(, void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
 		BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
@@ -286,7 +281,6 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_IncRef, MESS
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_DecRef, MESSAGE_BUS_HANDLE, bus);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayUwpLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
@@ -361,12 +355,6 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 
 	dummyModules = BASEIMPLEMENTATION::VECTOR_create(sizeof(MODULE));
 	BASEIMPLEMENTATION::VECTOR_push_back(dummyModules, &dummyModule, 1);
-
-	dummyAPIs = {
-		mock_Module_Create,
-		mock_Module_Destroy,
-		mock_Module_Receive
-	};
 
 }
 

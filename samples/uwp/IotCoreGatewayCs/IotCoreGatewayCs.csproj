@@ -135,7 +135,7 @@
       <Name>Microsoft.Azure.IoT.Gateway</Name>
     </ProjectReference>
     <ProjectReference Include="..\SetOfCppModules\SetOfCppModules.vcxproj">
-      <Project>{4af9d6c8-e041-43ce-9cdf-4ef809b1c0af}</Project>
+      <Project>{5f4e503d-39b4-4f12-b171-3f31ff666db1}</Project>
       <Name>SetOfCppModules</Name>
     </ProjectReference>
     <ProjectReference Include="..\SetOfCsModules\SetOfCsModules.csproj">
