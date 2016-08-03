@@ -336,15 +336,15 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 		mock_Module_Receive
 	};
 
-	GATEWAY_PROPERTIES_ENTRY dummyEntry = {
+	GATEWAY_MODULES_ENTRY dummyEntry = {
 		"dummy module",
 		DUMMY_LIBRARY_PATH,
 		NULL
 	};
 
 	dummyProps = (GATEWAY_PROPERTIES*)malloc(sizeof(GATEWAY_PROPERTIES));
-	dummyProps->gateway_properties_entries = BASEIMPLEMENTATION::VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY));
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry, 1);
+	dummyProps->gateway_modules = BASEIMPLEMENTATION::VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry, 1);
 }
 
 TEST_FUNCTION_CLEANUP(TestMethodCleanup)
@@ -359,7 +359,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	currentMessageBus_Create_call = 0;
 	whenShallMessageBus_Create_fail = 0;
 
-	BASEIMPLEMENTATION::VECTOR_destroy(dummyProps->gateway_properties_entries);
+	BASEIMPLEMENTATION::VECTOR_destroy(dummyProps->gateway_modules);
 	free(dummyProps);
 }
 
@@ -473,13 +473,13 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	CGatewayLLMocks mocks;
 
 	//Add another entry to the properties
-	GATEWAY_PROPERTIES_ENTRY dummyEntry2 = {
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
 		"dummy module 2",
 		"x2.dll",
 		NULL
 	};
 
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
@@ -487,10 +487,10 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, MessageBus_Create());
 	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_properties_entries));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_modules));
 
 	//Adding module 1 (Success)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 0));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -507,7 +507,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(2);
 
 	//Adding module 2 (Failure)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 1));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -572,20 +572,20 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 
 }
 
-/*Tests_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_PROPERTIES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
+/*Tests_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
 TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In_Props)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
 
 	//Add another entry to the properties
-	GATEWAY_PROPERTIES_ENTRY dummyEntry2 = {
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
 		"dummy module 2",
 		"x2.dll",
 		NULL
 	};
 
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
@@ -593,10 +593,10 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 	STRICT_EXPECTED_CALL(mocks, MessageBus_Create());
 	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_properties_entries));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_modules));
 
 	//Adding module 1 (Success)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 0));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -613,7 +613,7 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 		.IgnoreArgument(2);
 
 	//Adding module 2 (Failure)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 1));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -668,20 +668,20 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 
 }
 
-/*Tests_SRS_GATEWAY_LL_14_009: [ The function shall use each GATEWAY_PROPERTIES_ENTRY use each of GATEWAY_PROPERTIES's gateway_properties_entries to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_009: [ The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
 TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
 
 	//Add another entry to the properties
-	GATEWAY_PROPERTIES_ENTRY dummyEntry2 = {
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
 		"dummy module 2",
 		"x2.dll",
 		NULL
 	};
 
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
@@ -689,10 +689,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, MessageBus_Create());
 	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_properties_entries));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_modules));
 
 	//Adding module 1 (Failure)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 0));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -709,7 +709,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 		.IgnoreArgument(2);
 
 	//Adding module 2 (Success)
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_properties_entries, 1));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -759,13 +759,13 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_
 	CGatewayLLMocks mocks;
 
 	//Add another entry to the properties
-	GATEWAY_PROPERTIES_ENTRY dummyEntry2 = {
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
 		"dummy module 2",
 		"x2.dll",
 		NULL
 	};
 
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 	mocks.ResetAllCalls();
@@ -834,13 +834,13 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	CGatewayLLMocks mocks;
 
 	//Add another entry to the properties
-	GATEWAY_PROPERTIES_ENTRY dummyEntry2 = {
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
 		"dummy module 2",
 		"x2.dll",
 		NULL
 	};
 
-	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_properties_entries, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 	mocks.ResetAllCalls();
@@ -901,7 +901,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Gateway)
 {
 	//Arrange
@@ -911,7 +911,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Gateway)
 	mocks.ResetAllCalls();
 
 	//Act
-	MODULE_HANDLE handle0 = Gateway_LL_AddModule(NULL, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle0 = Gateway_LL_AddModule(NULL, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 	
 	//Assert
 	ASSERT_IS_NULL(handle0);
@@ -921,7 +921,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Gateway)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Module)
 {
 	//Arrange
@@ -941,7 +941,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Module)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+/*Tests_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 {
 	//Arrange
@@ -951,9 +951,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 	mocks.ResetAllCalls();
 
 	//Act
-	GATEWAY_PROPERTIES_ENTRY* entry = (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries);
+	GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules);
 	entry->module_path = NULL;
-	MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	//Assert
 	ASSERT_IS_NULL(handle2);
@@ -963,7 +963,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_PROPERTIES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_017: [ The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
 /*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus. ]*/
@@ -996,7 +996,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 		.IgnoreArgument(2);
 
 	//Act
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	//Assert
 	ASSERT_IS_NOT_NULL(handle);
@@ -1020,7 +1020,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Fails)
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	//Assert
 	ASSERT_IS_NULL(handle);
@@ -1030,7 +1030,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Fails)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_015: [ The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_PROPERTIES_ENTRY's module_properties. ]*/
+/*Tests_SRS_GATEWAY_LL_14_015: [ The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_properties. ]*/
 /*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 {
@@ -1041,7 +1041,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 	mocks.ResetAllCalls();
 	bool* properties = (bool*)malloc(sizeof(bool));
 	*properties = true;
-	GATEWAY_PROPERTIES_ENTRY entry = {
+	GATEWAY_MODULES_ENTRY entry = {
 		"Test module",
 		DUMMY_LIBRARY_PATH,
 		properties
@@ -1085,7 +1085,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
 	mocks.ResetAllCalls();
 	//Setting this boolean to false will cause mock_Module_Create to fail
 	bool properties = false;
-	GATEWAY_PROPERTIES_ENTRY entry = {
+	GATEWAY_MODULES_ENTRY entry = {
 		"Test module",
 		DUMMY_LIBRARY_PATH,
 		&properties
@@ -1140,7 +1140,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 	
 
 	//Act
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	ASSERT_IS_NULL(handle);
 	mocks.AssertActualAndExpectedCalls();
@@ -1185,7 +1185,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 		.IgnoreArgument(1);
 
 	//Act
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	ASSERT_IS_NULL(handle);
 	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
@@ -1201,7 +1201,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Does_Nothing_If_Gateway_NULL)
 	//Arrange
 	CGatewayLLMocks mocks;
 	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 	mocks.ResetAllCalls();
 
 	//Act
@@ -1248,7 +1248,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 	//Arrange
 	CGatewayLLMocks mocks;
 	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -1285,7 +1285,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Failure)
 	//Arrange
 	CGatewayLLMocks mocks;
 	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -1309,7 +1309,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
 	//Arrange
 	CGatewayLLMocks mocks;
 	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
-	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_PROPERTIES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_properties_entries));
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	mocks.ResetAllCalls();
 

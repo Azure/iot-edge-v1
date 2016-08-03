@@ -21,7 +21,8 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief The message bus contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
 
-	VECTOR_HANDLE routes;
+	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
+	VECTOR_HANDLE links;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
@@ -30,17 +31,31 @@ typedef struct MODULE_DATA_TAG {
 
 	/** @brief The MODULE_HANDLE of the same module that lives on the message bus.*/
 	MODULE_HANDLE module;
+
+	/** @brief The name of the module added. This name is unique on a gateway. */
+	const char* module_name; 
 } MODULE_DATA;
 
-typedef struct ROUTE_DATA_TAG {
-	const char* module_output;
-	const char* module_input;
-} ROUTE_DATA;
+typedef struct LINK_DATA_TAG {
+	MODULE_HANDLE module_source_handle;
+	MODULE_HANDLE module_sink_handle;
+} LINK_DATA;
 
-static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_path, const void* module_configuration);
-static void gateway_removemodule_internal(GATEWAY_HANDLE gw, MODULE_DATA* module);
-//static GATEWAY_RESULT gateway_addroute_internal(GATEWAY_HANDLE gw, const char* output_module_name, const char* input_module_name);
+static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name);
+
+static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module);
+
+static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry);
+
+static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data);
+
+static bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_name);
+
 static bool module_data_find(const void* element, const void* value);
+
+static bool module_name_find(const void* element, const char* module_name);
+
+static bool link_data_find(const void* element, const GATEWAY_LINK_ENTRY* link_data);
 
 GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 {
@@ -72,24 +87,24 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 			}
 			else
 			{
-				if (properties != NULL && properties->gateway_properties_entries != NULL)
+				if (properties != NULL && properties->gateway_modules != NULL)
 				{
-					/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_PROPERTIES_ENTRY use each of GATEWAY_PROPERTIES's gateway_properties_entries to create and add a module to the GATEWAY_HANDLE message bus. ]*/
-					size_t entries_count = VECTOR_size(properties->gateway_properties_entries);
+					/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+					size_t entries_count = VECTOR_size(properties->gateway_modules);
 					if (entries_count > 0)
 					{
 						//Add the first module, if successfull add others
-						GATEWAY_PROPERTIES_ENTRY* entry = (GATEWAY_PROPERTIES_ENTRY*)VECTOR_element(properties->gateway_properties_entries, 0);
-						MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration);
+						GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
+						MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
 
 						//Continue adding modules until all are added or one fails
 						for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
 						{
-							entry = (GATEWAY_PROPERTIES_ENTRY*)VECTOR_element(properties->gateway_properties_entries, properties_index);
-							module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration);
+							entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
+							module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
 						}
 
-						/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_PROPERTIES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
 						if (module == NULL)
 						{
 							LogError("Gateway_LL_Create(): Unable to add module '%s'. The gateway will be destroyed.", entry->module_name);
@@ -106,35 +121,76 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						}
 					}
 
-					//gateway->routes = VECTOR_create(sizeof(ROUTE_DATA));
-					//if (gateway->routes == NULL)
-					//{
-					//	while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
-					//	{
-					//		MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
-					//		//By design, there will be no NULL module_data pointers in the vector
-					//		gateway_removemodule_internal(gateway, module_data);
-					//	}
-					//	VECTOR_destroy(gateway->modules);
+					if (gateway != NULL)
+					{
+						/* Codes_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
+						gateway->links = VECTOR_create(sizeof(LINK_DATA));
 
-					//	MessageBus_Destroy(gateway->bus);
-					//	free(gateway);
-					//	gateway = NULL;
-					//	LogError("Gateway_LL_Create(): VECTOR_create for routes failed.");
-					//}
-					//else
-					//{
-					//	if (properties->gateway_links != NULL)
-					//	{
-					//		size_t entries_count = VECTOR_size(properties->gateway_links);
-					//		if (entries_count > 0)
-					//		{
-					//			//For each routing entry we shall validate is the module exists. This is the first validation. 
-					//			//In the future we will have more validation/action, on the broker code. 
+						if (gateway->links == NULL)
+						{
+							/* Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
+							/* Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created MESSAGE_BUS_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ] */
+							while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
+							{
+								MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
+								//By design, there will be no NULL module_data pointers in the vector
+								gateway_removemodule_internal(gateway, module_data);
+							}
+							VECTOR_destroy(gateway->modules);
 
-					//		}
-					//	}
-					//}
+							MessageBus_Destroy(gateway->bus);
+							free(gateway);
+							gateway = NULL;
+							LogError("Gateway_LL_Create(): VECTOR_create for links failed.");
+						}
+						else
+						{
+							if (properties->gateway_links != NULL)
+							{
+								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY use each of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE message bus. ] */
+								size_t entries_count = VECTOR_size(properties->gateway_links);
+
+
+								if (entries_count > 0)
+								{
+									//Add the first link, if successfull add others
+									GATEWAY_LINK_ENTRY* entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, 0);
+									bool linkAdded = gateway_addlink_internal(gateway, entry);
+
+									//Continue adding links until all are added or one fails
+									for (size_t links_index = 1; links_index < entries_count && linkAdded; ++links_index)
+									{
+										entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, links_index);
+										linkAdded = gateway_addlink_internal(gateway, entry);
+									}
+
+									if (!linkAdded)
+									{
+										LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink );
+										while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
+										{
+											MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
+											//By design, there will be no NULL module_data pointers in the vector
+											gateway_removemodule_internal(gateway, module_data);
+										}
+										VECTOR_destroy(gateway->modules);
+
+
+										while (gateway->links != NULL && VECTOR_size(gateway->links) > 0)
+										{
+											LINK_DATA* link_data = (LINK_DATA*)VECTOR_front(gateway->links);
+											gateway_removelink_internal(gateway, link_data);
+										}
+										VECTOR_destroy(gateway->links);
+
+										MessageBus_Destroy(gateway->bus);
+										free(gateway);
+										gateway = NULL;
+									}									
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -166,6 +222,13 @@ void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 
 		VECTOR_destroy(gateway_handle->modules);
 
+		while (gateway_handle->links != NULL && VECTOR_size(gateway_handle->links) > 0)
+		{
+			LINK_DATA* link_data = (LINK_DATA*)VECTOR_front(gateway_handle->links);
+			gateway_removelink_internal(gateway_handle, link_data);
+		}
+		VECTOR_destroy(gateway_handle->links);
+
 		/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
 		MessageBus_Destroy(gateway_handle->bus);
 
@@ -177,13 +240,13 @@ void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 	}
 }
 
-MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry)
+MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry)
 {
 	MODULE_HANDLE module;
-	/*Codes_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+	/*Codes_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 	if (gw != NULL && entry != NULL)
 	{
-		module = gateway_addmodule_internal(gw, entry->module_path, entry->module_configuration);
+		module = gateway_addmodule_internal(gw, entry->module_path, entry->module_configuration, entry->module_name);
 
 		if (module == NULL)
 		{
@@ -193,7 +256,7 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_E
 	else
 	{
 		module = NULL;
-		LogError("Gateway_LL_AddModule(): Unable to add module to NULL GATEWAY_HANDLE or from NULL GATEWAY_PROPERTIES_ENTRY*. gw = %p, entry = %p.", gw, entry);
+		LogError("Gateway_LL_AddModule(): Unable to add module to NULL GATEWAY_HANDLE or from NULL GATEWAY_MODULES_ENTRY*. gw = %p, entry = %p.", gw, entry);
 	}
 
 	return module;
@@ -224,96 +287,174 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 	}
 }
 
-/*Private*/
-
-static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration)
+GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink)
 {
-	MODULE_HANDLE module_result;
-	if (module_path != NULL)
+	GATEWAY_ADD_LINK_RESULT result;
+
+	if (gw != NULL && entryLink != NULL)
 	{
-		/*Codes_SRS_GATEWAY_LL_14_012: [The function shall load the module located at GATEWAY_PROPERTIES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
-		MODULE_LIBRARY_HANDLE module_library_handle = ModuleLoader_Load(module_path);
-		/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
-		if (module_library_handle == NULL)
+		if (!gateway_addlink_internal(gw, entryLink))
 		{
-			module_result = NULL;
-			LogError("Failed to add module because the module located at [%s] could not be loaded.", module_path);
+			result = GATEWAY_ADD_LINK_ERROR;
 		}
 		else
 		{
-			//Should always be a safe call.
-			/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
-			const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
+			result = GATEWAY_ADD_LINK_SUCCESS;
+		}
+	}
+	else
+	{
+		result = GATEWAY_ADD_LINK_INVALID_ARG;
+		LogError("Gateway_LL_AddLink(): Unable to add linkk to NULL GATEWAY_HANDLE or from NULL GATEWAY_LINK_ENTRY*. gw = %p, entryLink = %p.", gw, entryLink);
+	}
 
-			/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_PROPERTIES_ENTRY's module_configuration. ]*/
-			MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->bus, module_configuration);
-			/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
-			if (module_handle == NULL)
+	return result;
+}
+
+void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink)
+{
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+
+		LINK_DATA* link_data = (LINK_DATA*)VECTOR_find_if(gateway_handle->links, link_data_find, entryLink);
+
+		if (link_data != NULL)
+		{
+			gateway_removelink_internal(gateway_handle, link_data);
+		}
+		else
+		{
+			LogError("Gateway_LL_RemoveLink(): Could not find link given it's source/sink.");
+		}
+	}
+	else
+	{
+		LogError("Gateway_LL_RemoveLink(): Failed to remove link because the GATEWAY_HANDLE is NULL.");
+	}
+}
+
+
+/*Private*/
+
+bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_name)
+{
+	bool exists = false;
+
+	MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, module_name);
+
+	return module_data == NULL ? false : true;
+}
+
+bool checkIfLinkExists(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
+{
+	bool exists = false;
+
+	LINK_DATA* link_data = (LINK_DATA*)VECTOR_find_if(gateway_handle->links, link_data_find, link_entry);
+
+	return link_data == NULL ? false : true;
+}
+
+static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name)
+{
+	MODULE_HANDLE module_result;
+	if (gateway_handle != NULL || module_path != NULL || module_name != NULL)
+	{
+		//First check if a module with a given name already exists.
+		bool moduleExist = checkIfModuleExists(gateway_handle, module_name);
+
+		if (!moduleExist)
+		{
+			/*Codes_SRS_GATEWAY_LL_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
+			MODULE_LIBRARY_HANDLE module_library_handle = ModuleLoader_Load(module_path);
+			/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
+			if (module_library_handle == NULL)
 			{
 				module_result = NULL;
-				ModuleLoader_Unload(module_library_handle);
-				LogError("Module_Create failed.");
+				LogError("Failed to add module because the module located at [%s] could not be loaded.", module_path);
 			}
 			else
 			{
-				/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
-				MODULE module;
-#ifdef UWP_BINDING
-				module.module_instance = NULL;
-#else
-				module.module_apis = module_apis;
-				module.module_handle = module_handle;
-#endif // UWP_BINDING
+				//Should always be a safe call.
+				/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
+				const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
 
-				/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
-				/*Codes_SRS_GATEWAY_LL_14_018: [If the message bus linking is unsuccessful, the function shall return NULL.]*/
-				if (MessageBus_AddModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
+				/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
+				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->bus, module_configuration);
+				/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
+				if (module_handle == NULL)
 				{
 					module_result = NULL;
-					LogError("Failed to add module to the gateway bus.");
+					ModuleLoader_Unload(module_library_handle);
+					LogError("Module_Create failed.");
 				}
 				else
 				{
-					/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
-					MessageBus_IncRef(gateway_handle->bus);
-					/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus.]*/
-					MODULE_DATA module_data =
+					/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
+					MODULE module;
+#ifdef UWP_BINDING
+					module.module_instance = NULL;
+#else
+					module.module_apis = module_apis;
+					module.module_handle = module_handle;
+#endif // UWP_BINDING
+
+					/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
+					/*Codes_SRS_GATEWAY_LL_14_018: [If the message bus linking is unsuccessful, the function shall return NULL.]*/
+					if (MessageBus_AddModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 					{
-						module_library_handle,
-						module_handle
-					};
-					/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
-					if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
-					{
-						MessageBus_DecRef(gateway_handle->bus);
 						module_result = NULL;
-						if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
-						{
-							LogError("Failed to remove module [%p] from the gateway message bus. This module will remain linked.", &module);
-						}
-						LogError("Unable to add MODULE_DATA* to the gateway module vector.");
+						LogError("Failed to add module to the gateway bus.");
 					}
 					else
 					{
-						/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
-						module_result = module_handle;
+						/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+						MessageBus_IncRef(gateway_handle->bus);
+						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus.]*/
+						MODULE_DATA module_data =
+						{
+							module_library_handle,
+							module_handle, 
+							module_name
+						};
+						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
+						if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
+						{
+							MessageBus_DecRef(gateway_handle->bus);
+							module_result = NULL;
+							if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
+							{
+								LogError("Failed to remove module [%p] from the gateway message bus. This module will remain linked.", &module);
+							}
+							LogError("Unable to add MODULE_DATA* to the gateway module vector.");
+						}
+						else
+						{
+							/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+							module_result = module_handle;
+						}
 					}
-				}
 
-				/*Codes_SRS_GATEWAY_LL_14_030: [If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed.]*/
-				if (module_result == NULL)
-				{
-					module_apis->Module_Destroy(module_handle);
-					ModuleLoader_Unload(module_library_handle);
+					/*Codes_SRS_GATEWAY_LL_14_030: [If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed.]*/
+					if (module_result == NULL)
+					{
+						module_apis->Module_Destroy(module_handle);
+						ModuleLoader_Unload(module_library_handle);
+					}
 				}
 			}
 		}
+		else
+		{
+			module_result = NULL;
+			LogError("Error to add module. Duplicated module name: %s", module_name);
+		}
 	}
-	/*Codes_SRS_GATEWAY_LL_14_011: [If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+	/*Codes_SRS_GATEWAY_LL_14_011: [If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 	else
 	{
 		module_result = NULL;
-		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL or the module_path string is NULL or empty. gw = %p, module_path = '%s'.", gateway_handle, module_path);
+		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_path string is NULL or empty or module_name is NULL or empty. gw = %p, module_path = '%s', module_name = '%s'.", gateway_handle, module_path, module_name);
 	}
 	return module_result;
 }
@@ -321,6 +462,16 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 static bool module_data_find(const void* element, const void* value)
 {
 	return ((MODULE_DATA*)element)->module == value;
+}
+
+static bool module_name_find(const void* element, const char* module_name)
+{
+	return (strcmp(((MODULE_DATA*)element)->module_name, module_name) == 0);
+}
+
+static bool link_data_find(const void* element, const GATEWAY_LINK_ENTRY* linkEntry)
+{
+	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source_handle)->module_name, linkEntry->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink_handle)->module_name, linkEntry->module_sink) == 0);
 }
 
 static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
@@ -444,3 +595,70 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 
 #endif // UWP_BINDING
 
+static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
+{
+	bool result;
+	if (gateway_handle != NULL || link_entry != NULL || link_entry->module_source || link_entry->module_sink != NULL)
+	{
+		//First check if a link with a given source/sink pair already exists.
+		bool linkExist = checkIfLinkExists(gateway_handle, link_entry);
+
+		if (!linkExist)
+		{
+			MODULE_DATA* module_source_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_source);
+
+			//Check of Source Module exists. 
+			if (module_source_handle == NULL)
+			{
+				LogError("Failed to add the link. Source module doesn't exists on this gateway. Module Name: %s.", link_entry->module_source);
+				result = false;
+			}
+			else
+			{
+				MODULE_DATA* module_sink_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
+				if (module_sink_handle == NULL)
+				{
+					LogError("Failed to add the link. Sink module doesn't exists on this gateway. Module Name: %s.", link_entry->module_sink);
+					result = false;
+				}
+				else
+				{
+					//Todo: Add the link to message Bus, since it's already validated.
+					LINK_DATA link_data =
+					{
+						module_source_handle,
+						module_sink_handle
+					};
+
+					if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
+					{
+						LogError("Unable to add LINK_DATA* to the gateway links vector.");
+						result = false;
+						//TODO: failed to add link to the links vector, remove it from Message Bus when we have this api.
+					}
+					else
+					{
+						result = true;
+					}
+				}
+			}
+		}
+		else
+		{
+			result = false;
+			LogError("Error to add link. Duplicated link found. Source_name: %s, Sink_name: %s", link_entry->module_source, link_entry->module_sink);
+		}
+	}
+	else
+	{
+		result = false;
+		LogError("Failed to add link because either the GATEWAY_HANDLE is NULL, module_source string is NULL or empty or module_sink is NULL or empty. gw = %p, module_source = '%s', module_sink = '%s'.", gateway_handle, link_entry->module_source, link_entry->module_sink);
+	}
+	return result;
+}
+
+static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data)
+{
+	//TODO: Remove Link from Message_bus, as soon as Message Bus API is in place.
+	VECTOR_erase(gateway_handle->links, link_data, 1);
+}

@@ -504,7 +504,7 @@ TEST_FUNCTION(Gateway_Create_Parses_Valid_JSON_Configuration_File)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 	STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.SetReturn(2);
@@ -613,7 +613,7 @@ TEST_FUNCTION(Gateway_Create_Traverses_JSON_Value_Success)
 	STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.SetReturn(2);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
 	STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
 		.IgnoreArgument(1);
@@ -720,7 +720,7 @@ TEST_FUNCTION(Gateway_Create_Traverses_JSON_Push_Back_Fail)
 	STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.SetReturn(2);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
 	STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
 		.IgnoreArgument(1);
@@ -819,7 +819,7 @@ TEST_FUNCTION(Gateway_Create_Traverses_JSON_Value_VECTOR_Create_Fail)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)))
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)))
 		.SetFailReturn((VECTOR_HANDLE)NULL);
 
 	STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
@@ -850,7 +850,7 @@ TEST_FUNCTION(Gateway_Create_Traverses_JSON_Value_VECTOR_Create_for_links_Fail)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 	STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.SetReturn(2);
@@ -954,7 +954,7 @@ TEST_FUNCTION(Gateway_Create_Fails_For_Missing_Info_In_JSON_Configuration)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY)));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
 	STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)

@@ -32,10 +32,11 @@ extern "C"
 #define MESSAGE_BUS_RESULT_VALUES \
     MESSAGE_BUS_OK, \
     MESSAGE_BUS_ERROR, \
+    MESSAGE_BUS_ADD_LINK_ERROR, \
     MESSAGE_BUS_INVALIDARG
 
 /** @brief	Enumeration describing the result of ::MessageBus_Publish, 
-*			::MessageBus_AddModule, and ::MessageBus_RemoveModule.
+*			::MessageBus_AddModule,::MessageBus_AddLink, and ::MessageBus_RemoveModule.
 */
 DEFINE_ENUM(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
 
