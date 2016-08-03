@@ -10,7 +10,6 @@ using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::ApplicationModel::Background;
 using namespace Microsoft::Azure::IoT::Gateway;
-using namespace SetOfCppModules;
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
@@ -20,9 +19,11 @@ void StartupTask::Run(IBackgroundTaskInstance^ taskInstance)
 
 
 	auto modules = ref new Vector<IGatewayModule^>();
-	modules->Append(ref new Sensor());
-	modules->Append(ref new Printer());
-	
+	modules->Append(ref new SetOfCsModules::Sensor());
+	modules->Append(ref new SetOfCsModules::Printer());
+	modules->Append(ref new SetOfCppModules::Sensor());
+	modules->Append(ref new SetOfCppModules::Printer());
+
 	auto properties = ref new Platform::Collections::Map<Platform::String^, Platform::String^>();
 	properties->Insert("ConfigProperty", "ConfigValue");
 	gateway = ref new Gateway(modules, properties->GetView());
