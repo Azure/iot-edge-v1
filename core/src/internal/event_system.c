@@ -40,17 +40,22 @@ typedef struct THREAD_QUEUE_ROW_TAG {
 	GATEWAY_HANDLE gateway;
 	GATEWAY_EVENT event_type;
 	VECTOR_HANDLE callbacks;
+	GATEWAY_EVENT_CTX context;
 } THREAD_QUEUE_ROW;
 
 /** @brief How long should the thread stay alive before shutting down when the processing queue is empty */
 static const int THREAD_EMPTY_QUEUE_TIMEOUT_MS = 200;
 
 static void destroy_event_system(EVENTSYSTEM_HANDLE handle);
-static void callbacks_call(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, VECTOR_HANDLE callbacks);
+static void callbacks_call(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, VECTOR_HANDLE callbacks, GATEWAY_EVENT_CTX context);
 static int add_to_thread_queue(EVENTSYSTEM_HANDLE event_system, THREAD_QUEUE_ROW* row);
 static THREAD_QUEUE_ROW* get_from_thread_queue(EVENTSYSTEM_HANDLE event_system, int timeout_ms);
 static void destroy_thread_row(THREAD_QUEUE_ROW* row);
 static int callback_thread_main_func(void* event_system_param);
+static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks);
+
+/** @brief This function assumes that the context is a #VECTOR_HANDLE and destroys it */
+static void callback_destroy_vector(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
 
 EVENTSYSTEM_HANDLE EventSystem_Init(void)
 {
@@ -173,7 +178,21 @@ void EventSystem_ReportEvent(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw,
 					}
 					else
 					{
-						callbacks_call(event_system, gw, event_type, call_queue);
+						GATEWAY_EVENT_CTX context = NULL;
+						/* handlers might change event_system->is_errored */
+						switch (event_type)
+						{
+						case GATEWAY_MODULE_LIST_CHANGED:
+							context = handle_module_list_update(event_system, gw, call_queue);
+							break;
+						default:
+							break;
+						}
+
+						if (event_system->is_errored)
+							VECTOR_destroy(call_queue);
+						else
+							callbacks_call(event_system, gw, event_type, call_queue, context);
 					}
 				}
 			}
@@ -247,7 +266,7 @@ static void destroy_event_system(EVENTSYSTEM_HANDLE handle)
 	}
 }
 
-static void callbacks_call(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, VECTOR_HANDLE callbacks)
+static void callbacks_call(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, VECTOR_HANDLE callbacks, GATEWAY_EVENT_CTX context)
 {
 	THREAD_QUEUE_ROW* row = (THREAD_QUEUE_ROW*)malloc(sizeof(THREAD_QUEUE_ROW));
 	if (row == NULL)
@@ -260,6 +279,7 @@ static void callbacks_call(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, G
 		row->gateway = gw;
 		row->event_type = event_type;
 		row->callbacks = callbacks;
+		row->context = context;
 		/* Failed to add to queue, we have allocated row which won't be freed during EventSystem destroy */
 		if (add_to_thread_queue(event_system, row))
 		{
@@ -350,9 +370,9 @@ static int callback_thread_main_func(void* event_system_param)
 		/* Codes_SRS_EVENTSYSTEM_26_009: [ This function shall call all registered callbacks in First - In - First - Out order in terms registration. ] */
 		for (size_t i = 0; i < vector_size; i++)
 		{
-			GATEWAY_CALLBACK callback = *((GATEWAY_CALLBACK*)VECTOR_element(row->callbacks, i));
+			GATEWAY_CALLBACK callback = *(GATEWAY_CALLBACK*)VECTOR_element(row->callbacks, i);
 			/* Codes_SRS_EVENTSYSTEM_26_010: [ The given GATEWAY_CALLBACK function shall be called with proper GATEWAY_HANDLE and GATEWAY_EVENT as function parameters coresponding to the gateway and the event that occured. ] */
-			callback(row->gateway, row->event_type, NULL);
+			callback(row->gateway, row->event_type, row->context);
 		}
 		destroy_thread_row(row);
 	}
@@ -364,6 +384,35 @@ static int callback_thread_main_func(void* event_system_param)
 
 	Unlock(event_system->internal_change_lock);
 
-	ThreadAPI_Exit(THREADAPI_OK);
 	return THREADAPI_OK;
+}
+
+static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks)
+{
+	/* Codes_SRS_GATEWAY_LL_26_014: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks ] */
+	VECTOR_HANDLE modules = Gateway_GetModuleList(gateway);
+	if (modules == NULL)
+	{
+		event_system->is_errored = 1;
+	}
+	else
+	{
+		/* You can't directly get a poitner to a function pointer, so we need a local copy for it to work */
+		GATEWAY_CALLBACK destroy_vec_ptr = callback_destroy_vector;
+		/* Codes_SRS_GATEWAY_LL_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks ] */
+		if (VECTOR_push_back(callbacks, &destroy_vec_ptr, 1) != 0)
+		{
+			LogError("Failed to push back during handling module list updated event");
+			VECTOR_destroy(modules);
+			event_system->is_errored = 1;
+			modules = NULL;
+		}
+	}
+	return modules;
+}
+
+
+static void callback_destroy_vector(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context)
+{
+	VECTOR_destroy((VECTOR_HANDLE)context);
 }

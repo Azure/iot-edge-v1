@@ -49,16 +49,31 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 	VECTOR_HANDLE gateway_properties_entries;
 } GATEWAY_PROPERTIES;
 
+/** @brief Struct representing current information about a single module */
+typedef struct GATEWAY_MODULE_INFO_TAG
+{
+	/** @brief The (possibly @c NULL) name of the module */
+	const char* module_name;
+} GATEWAY_MODULE_INFO;
+
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
 	GATEWAY_CREATED = 0,
+	/** @brief  Called everytime a list of modules changed, also during gateway creation
+	 * VECTOR_HANDLE from #Gateway_GetModuleList will be provided as the context to the callback.
+	 */
+	GATEWAY_MODULE_LIST_CHANGED,
 	GATEWAY_DESTROYED,
 	/* @brief  Not an actual event, used to keep track of count of different events */
 	GATEWAY_EVENTS_COUNT
 } GATEWAY_EVENT;
 
-/** @brief  Placeholder for possible event context in the future. Right now NULL will be passed. */
+/** @brief Context that is provided to the callback.
+ * The context is shared between all the callbacks for a current event and cleaned up afterwards.
+ * See #GATEWAY_EVENT for specific contexts for each event.
+ * If the event doesn't provide a context, NULL will be passed instead.
+ */
 typedef void* GATEWAY_EVENT_CTX;
 
 /** @brief	Function pointer that can be registered and will be called for gateway events */
@@ -106,6 +121,16 @@ extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 *   @param  callback   Pointer to a function that will be called when the event happens
 */
 extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+
+/** @brief Returns a snapshot copy of information about running modules
+*   Since this function allocates new memory for the snapshot, the vector handle should be 
+*   later destroyed with #VECTOR_destroy
+*
+*   @param gw          Pointer to a #GATEWAY_HANDLE from which the module list should be snapshoted
+*
+*   @return            A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO. NULL if function errored.
+*/
+extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 
 #ifdef UWP_BINDING
 

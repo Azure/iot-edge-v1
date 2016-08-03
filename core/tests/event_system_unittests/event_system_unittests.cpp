@@ -55,6 +55,10 @@ static THREAD_START_FUNC last_thread_func;
 static void* last_thread_arg;
 static int last_thread_result;
 
+static void* last_context;
+
+static VECTOR_HANDLE module_list;
+
 struct ListNode
 {
 	const void* item;
@@ -188,6 +192,10 @@ public:
 	MOCK_STATIC_METHOD_1(, void, Condition_Deinit, COND_HANDLE, handle);
 		BASEIMPLEMENTATION::gballoc_free(handle);
 	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, Gateway_GetModuleList, GATEWAY_HANDLE, gw);
+	MOCK_METHOD_END(VECTOR_HANDLE, module_list);
+		
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
@@ -225,6 +233,8 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , COND_RESULT, Condition_Post, C
 DECLARE_GLOBAL_MOCK_METHOD_3(CEventSystemMocks, , COND_RESULT, Condition_Wait, COND_HANDLE, handle, LOCK_HANDLE, lock, int, timeout_milliseconds);
 DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , void, Condition_Deinit, COND_HANDLE, handle);
 
+DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , VECTOR_HANDLE, Gateway_GetModuleList, GATEWAY_HANDLE, gw);
+
 static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thread, int nodes_in_queue)
 {
 	EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG)).ExpectedAtLeastTimes(2);
@@ -253,10 +263,16 @@ static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thre
 		.ExpectedTimesExactly(nodes_in_queue + 1);
 }
 
-static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx) {
+static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+{
 	ASSERT_IS_TRUE(event_type < GATEWAY_EVENTS_COUNT);
 	callback_gw_history.push_back(gw);
 	callback_per_event_count[event_type]++;
+}
+
+static void catch_context_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+{
+	last_context = ctx;
 }
 
 BEGIN_TEST_SUITE(event_system_unittests)
@@ -288,6 +304,8 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	last_thread_result = THREADAPI_ERROR;
 	last_thread_arg = NULL;
 	last_thread_func = NULL;
+	module_list = NULL;
+	last_context = NULL;
 }
 
 TEST_FUNCTION_CLEANUP(TestMethodCleanup)
@@ -944,6 +962,123 @@ TEST_FUNCTION(EventSystem_ReportEvent_list_add_fail)
 	// Act
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_CREATED);
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_CREATED);
+
+	// Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	EventSystem_Destroy(handle);
+}
+
+/* Tests_SRS_GATEWAY_LL_26_014: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks ] */
+/* Tests_SRS_GATEWAY_LL_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks ] */
+TEST_FUNCTION(EventSystem_ReportEvent_Modules_Proper_List_Given)
+{
+	// Arrange
+	CEventSystemMocks mocks;
+	module_list = BASEIMPLEMENTATION::VECTOR_create(1);
+	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(6);
+	EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(6);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Gateway_GetModuleList(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	// simulated thread
+	EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(3);
+	EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Condition_Wait(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+
+	// Act
+	EventSystem_ReportEvent(handle, NULL, GATEWAY_MODULE_LIST_CHANGED);
+	// simulate the thread running
+	last_thread_func(last_thread_arg);
+
+	// Assert
+	ASSERT_IS_TRUE(module_list == (VECTOR_HANDLE)last_context);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	EventSystem_Destroy(handle);
+}
+
+TEST_FUNCTION(EventSystem_ReportEvent_Modules_GetModuleList_Fails)
+{
+	// Arrange
+	CEventSystemMocks mocks;
+	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(1);
+	EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(1);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Gateway_GetModuleList(IGNORED_PTR_ARG))
+		.SetFailReturn((VECTOR_HANDLE)NULL);
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG));
+
+	// Act
+	EventSystem_ReportEvent(handle, NULL, GATEWAY_MODULE_LIST_CHANGED);
+
+	// Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	EventSystem_Destroy(handle);
+}
+
+TEST_FUNCTION(EventSystem_ReportEvent_Modules_Pushback_Fails)
+{
+	// Arrange
+	CEventSystemMocks mocks;
+	module_list = BASEIMPLEMENTATION::VECTOR_create(1);
+	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(1);
+	EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(1);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Gateway_GetModuleList(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.SetFailReturn(1);
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+
+	// Act
+	EventSystem_ReportEvent(handle, NULL, GATEWAY_MODULE_LIST_CHANGED);
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();

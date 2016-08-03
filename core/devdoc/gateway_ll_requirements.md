@@ -47,6 +47,8 @@ Gateway_LL_Create creates a new gateway using information about modules in the `
 
 **SRS_GATEWAY_LL_26_002: [** If Event System module fails to be initialized the gateway module shall be destroyed and NULL returned with no events reported. **]**
 
+**SRS_GATEWAY_LL_26_010: [** This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. **]**
+
 ```
 extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
 ```
@@ -160,3 +162,14 @@ When the event happens the callback will be put in a queue and executed in a sep
 Also see `event_system_requirements.md` file for further requirements.
 
 **SRS_GATEWAY_LL_26_006: [** This function shall log a failure and do nothing else when `gw` parameter is NULL. **]**
+
+## Gateway_GetModuleList
+```
+extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
+```
+
+**SRS_GATEWAY_LL_26_007: [** This function shall return a snapshot copy of information about current gateway modules. **]**
+
+**SRS_GATEWAY_LL_26_008: [** If the `gw` parameter is NULL, the function shall return NULL handle and not allocate any data. **]**
+
+**SRS_GATEWAY_LL_26_009: [** This function shall return a NULL handle should any internal callbacks fail. **]**
