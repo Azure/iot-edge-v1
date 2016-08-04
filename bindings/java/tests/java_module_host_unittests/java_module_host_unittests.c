@@ -64,7 +64,7 @@ typedef signed char jbyte;
 
 #endif
 
-#include "message_bus_proxy.h"
+#include "broker_proxy.h"
 #include <jni.h>
 
 //=============================================================================

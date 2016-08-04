@@ -26,7 +26,7 @@ set(java_module_host_sources
 )
 
 set(java_module_host_headers
-    ./inc/message_bus_proxy.h
+    ./inc/broker_proxy.h
     ./inc/java_module_host_common.h
     ./inc/java_module_host.h
     ${java_module_host_manager_headers}
@@ -45,7 +45,7 @@ set(java_module_host_hl_sources
 )
 
 set(java_module_host_hl_headers
-    ./inc/message_bus_proxy.h
+    ./inc/broker_proxy.h
     ./inc/java_module_host_hl.h
 )
 

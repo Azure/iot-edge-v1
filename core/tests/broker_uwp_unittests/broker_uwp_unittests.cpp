@@ -534,7 +534,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , LIST_ITEM_HANDLE, list_find, LI
 DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
 
 
-BEGIN_TEST_SUITE(message_bus_uwp_unittests)
+BEGIN_TEST_SUITE(broker_uwp_unittests)
 
 TEST_SUITE_INITIALIZE(TestClassInitialize)
 {
@@ -847,4 +847,4 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     MessageBus_Destroy(bus);
 }
 
-END_TEST_SUITE(message_bus_uwp_unittests)
+END_TEST_SUITE(broker_uwp_unittests)

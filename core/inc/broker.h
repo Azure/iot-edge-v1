@@ -69,7 +69,7 @@ extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus);
 *
 *	@details	For details about threading with regard to the message bus and
 *				modules connected to the message bus, see
-*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_bus_hld.md">Bus High Level Design Documentation</a>.
+*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Bus High Level Design Documentation</a>.
 *
 *	@param		bus		The #MESSAGE_BUS_HANDLE onto which the message will be
 *						published.
@@ -87,7 +87,7 @@ extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HAND
 *
 *	@details	For details about threading with regard to the message bus and
 *				modules connected to the message bus, see 
-*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_bus_hld.md">Bus High Level Design Documentation</a>.
+*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Bus High Level Design Documentation</a>.
 *
 *	@param		bus				The #MESSAGE_BUS_HANDLE onto which the module will be 
 *								added.

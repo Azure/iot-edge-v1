@@ -14,7 +14,7 @@ add_subdirectory(event_system_unittests)
 add_subdirectory(gateway_unittests)
 
 if(WIN32)
-add_subdirectory(message_bus_uwp_unittests)
+add_subdirectory(broker_uwp_unittests)
 add_subdirectory(gateway_ll_uwp_unittests)
 endif()
 

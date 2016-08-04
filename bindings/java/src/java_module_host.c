@@ -51,7 +51,7 @@ typedef signed char jbyte;
 
 #endif //UNDER_TEST
 
-#include "message_bus_proxy.h"
+#include "broker_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
 #include "azure_c_shared_utility/xlogging.h"
