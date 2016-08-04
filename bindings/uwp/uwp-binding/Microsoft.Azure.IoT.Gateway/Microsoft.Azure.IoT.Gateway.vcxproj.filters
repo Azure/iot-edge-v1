@@ -57,7 +57,7 @@
     <ClCompile Include="..\..\..\..\core\src\message.c">
       <Filter>core/src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\message_bus.c">
+    <ClCompile Include="..\..\..\..\core\src\broker.c">
       <Filter>core/src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\strings.c">

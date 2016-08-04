@@ -67,7 +67,7 @@ set(gateway_h_sources
 )
 
 if (GW_BROKER_TYPE STREQUAL "PubSub")
-    set(gateway_c_sources ${gateway_c_sources} ./src/message_bus.c)
+    set(gateway_c_sources ${gateway_c_sources} ./src/broker.c)
 endif()
 
 if (GW_BROKER_TYPE STREQUAL "Broadcast")

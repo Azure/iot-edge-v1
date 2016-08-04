@@ -14,7 +14,7 @@ ${theseTestsName}.cpp
 )
 
 set(${theseTestsName}_c_files
-	../../src/message_bus.c
+	../../src/broker.c
 )
 
 set(${theseTestsName}_h_files
