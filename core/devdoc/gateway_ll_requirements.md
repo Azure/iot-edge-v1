@@ -311,10 +311,24 @@ extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEW
 ```
 Gateway_LL_AddLink adds a link to the gateway message bus using the provided `GATEWAY_LINK_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
 
+**SRS_GATEWAY_LL_04_008: [** If `gw` , `entryLink`, `entryLink->module_source` or `entryLink->module_source` is NULL the function shall return `GATEWAY_ADD_LINK_INVALID_ARG`. **]**
+
+**SRS_GATEWAY_LL_04_009: [** This function shall check if a given link already exists.  **]**
+
+**SRS_GATEWAY_LL_04_010: [** If the entryLink already exists it the function shall return `GATEWAY_ADD_LINK_ERROR` **]**
+
+**SRS_GATEWAY_LL_04_011: [** If the module referenced by the `entryLink->module_source` or `entryLink->module_sink` doesn't exists this function shall return `GATEWAY_ADD_LINK_ERROR` **]**
+
+**SRS_GATEWAY_LL_04_012: [** This function shall add the entryLink to the `gw->links` **]**
+
+**SRS_GATEWAY_LL_04_013: [** If adding the link succeed this function shall return `GATEWAY_ADD_LINK_SUCCESS` **]**
+
 ## Gateway_LL_RemoveLink
 ```
 extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 ```
+Gateway_RemoveLink will remove the specified `link` from the message bus.
+
 **SRS_GATEWAY_LL_04_005: [** If `gw` or `entryLink` is `NULL` the function shall return. **]**  
 
 **SRS_GATEWAY_LL_04_006: [** The function shall locate the `LINK_DATA` object in `GATEWAY_HANDLE_DATA`'s `links` containing `link` and return if it cannot be found. **]**

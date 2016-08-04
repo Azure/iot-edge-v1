@@ -290,21 +290,25 @@ GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK
 {
 	GATEWAY_ADD_LINK_RESULT result;
 
-	if (gw != NULL && entryLink != NULL)
+	if (gw == NULL || entryLink == NULL || entryLink->module_source == NULL || entryLink->module_sink == NULL)
+	{
+		/*Codes_SRS_GATEWAY_LL_04_008: [ If gw , entryLink, entryLink->module_source or entryLink->module_source is NULL the function shall return GATEWAY_ADD_LINK_INVALID_ARG. ]*/
+		result = GATEWAY_ADD_LINK_INVALID_ARG;
+		LogError("Failed to add link because either the GATEWAY_HANDLE is NULL, entryLink, module_source string is NULL or empty or module_sink is NULL or empty. gw = %p, module_source = '%s', module_sink = '%s'.", gw, entryLink, (entryLink != NULL)? entryLink->module_source:NULL, (entryLink != NULL) ? entryLink->module_sink : NULL);
+	}
+	else
 	{
 		if (!gateway_addlink_internal(gw, entryLink))
 		{
+			/*Codes_SRS_GATEWAY_LL_04_010: [ If the entryLink already exists it the function shall return GATEWAY_ADD_LINK_ERROR ] */
+			/*Codes_SRS_GATEWAY_LL_04_011: [ If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 			result = GATEWAY_ADD_LINK_ERROR;
 		}
 		else
 		{
+			/*Codes_SRS_GATEWAY_LL_04_013: [ If adding the link succeed this function shall return GATEWAY_ADD_LINK_SUCCESS ]*/
 			result = GATEWAY_ADD_LINK_SUCCESS;
 		}
-	}
-	else
-	{
-		result = GATEWAY_ADD_LINK_INVALID_ARG;
-		LogError("Gateway_LL_AddLink(): Unable to add linkk to NULL GATEWAY_HANDLE or from NULL GATEWAY_LINK_ENTRY*. gw = %p, entryLink = %p.", gw, entryLink);
 	}
 
 	return result;
@@ -359,7 +363,14 @@ bool checkIfLinkExists(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_E
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name)
 {
 	MODULE_HANDLE module_result;
-	if (gateway_handle != NULL || module_path != NULL || module_name != NULL)
+
+	/*Codes_SRS_GATEWAY_LL_14_011: [If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
+	if (gateway_handle == NULL || module_path == NULL || module_name == NULL)		
+	{
+		module_result = NULL;
+		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_path string is NULL or empty or module_name is NULL or empty. gw = %p, module_path = '%s', module_name = '%s'.", gateway_handle, module_path, module_name);
+	}
+	else	
 	{
 		//First check if a module with a given name already exists.
 		/*Codes_SRS_GATEWAY_LL_04_004: [ If a module with the same module_name already exists, this function shall fail and the GATEWAY_HANDLE will be destroyed. ]*/
@@ -452,12 +463,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 			LogError("Error to add module. Duplicated module name: %s", module_name);
 		}
 	}
-	/*Codes_SRS_GATEWAY_LL_14_011: [If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
-	else
-	{
-		module_result = NULL;
-		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_path string is NULL or empty or module_name is NULL or empty. gw = %p, module_path = '%s', module_name = '%s'.", gateway_handle, module_path, module_name);
-	}
+	
 	return module_result;
 }
 
@@ -603,16 +609,23 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
 {
 	bool result;
-	if (gateway_handle != NULL || link_entry != NULL || link_entry->module_source || link_entry->module_sink != NULL)
+	if (gateway_handle == NULL || link_entry == NULL || link_entry->module_source == NULL || link_entry->module_sink == NULL)
+	{
+		result = false;
+		LogError("Failed to add link because either the GATEWAY_HANDLE is NULL, module_source string is NULL or empty or module_sink is NULL or empty. gw = %p, module_source = '%s', module_sink = '%s'.", gateway_handle, link_entry->module_source, link_entry->module_sink);
+	}
+	else
 	{
 		//First check if a link with a given source/sink pair already exists.
+		/*Codes_SRS_GATEWAY_LL_04_009: [ This function shall check if a given link already exists. ]*/
 		bool linkExist = checkIfLinkExists(gateway_handle, link_entry);
 
 		if (!linkExist)
 		{
 			MODULE_DATA* module_source_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_source);
 
-			//Check of Source Module exists. 
+			//Check of Source Module exists.
+			/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 			if (module_source_handle == NULL)
 			{
 				LogError("Failed to add the link. Source module doesn't exists on this gateway. Module Name: %s.", link_entry->module_source);
@@ -621,6 +634,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 			else
 			{
 				MODULE_DATA* module_sink_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
+				/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 				if (module_sink_handle == NULL)
 				{
 					LogError("Failed to add the link. Sink module doesn't exists on this gateway. Module Name: %s.", link_entry->module_sink);
@@ -635,6 +649,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 						module_sink_handle
 					};
 
+					/*Codes_SRS_GATEWAY_LL_04_012: [ This function shall add the entryLink to the gw->links ] */
 					if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
 					{
 						LogError("Unable to add LINK_DATA* to the gateway links vector.");
@@ -654,11 +669,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 			LogError("Error to add link. Duplicated link found. Source_name: %s, Sink_name: %s", link_entry->module_source, link_entry->module_sink);
 		}
 	}
-	else
-	{
-		result = false;
-		LogError("Failed to add link because either the GATEWAY_HANDLE is NULL, module_source string is NULL or empty or module_sink is NULL or empty. gw = %p, module_source = '%s', module_sink = '%s'.", gateway_handle, link_entry->module_source, link_entry->module_sink);
-	}
+
 	return result;
 }
 
