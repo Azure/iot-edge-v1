@@ -132,11 +132,23 @@ Message^ Message::CreateMessage(Windows::Foundation::Collections::IVector<byte>^
 
 Windows::Foundation::Collections::IVector<byte>^ Message::ToBytes()
 {
-	int arrayLength = 0;
-	auto byteArray = Message_ToByteArray(this->_message_handle, &arrayLength);
-	if (byteArray == nullptr)
+	int arrayLength = Message_ToByteArray(this->_message_handle, NULL,0);
+	unsigned char *byteArray;
+	if (arrayLength < 0 )
 	{
-		throw ref new Platform::FailureException("Failed to create byte array for message.");
+			throw ref new Platform::FailureException("Failed to serialize message.");
+	}
+	else
+	{
+		byteArray = (unsigned char *)malloc(arrayLength);
+		if (byteArray == nullptr)
+		{
+			throw ref new Platform::FailureException("Failed to create byte array for message.");
+		}
+		else
+		{
+			Message_ToByteArray(this->_message_handle, byteArray, arrayLength);
+		}
 	}
 
 	Windows::Foundation::Collections::IVector<byte>^ messageBytes =
