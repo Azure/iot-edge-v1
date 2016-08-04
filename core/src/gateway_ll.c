@@ -27,6 +27,9 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
+	/** @brief Possibly NULL module name for easier identification */
+	const char* module_name;
+
 	/** @brief The MODULE_LIBRARY_HANDLE associated with 'module'*/
 	MODULE_LIBRARY_HANDLE module_library_handle;
 
@@ -34,8 +37,65 @@ typedef struct MODULE_DATA_TAG {
 	MODULE_HANDLE module;
 } MODULE_DATA;
 
+/* Since we're currently not modyfing the modules in any way during gateway lifecycle and this function
+ * is expected only to be called between _Create and _Destroy, it's inherently thread-safe. */
+VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw)
+{
+	VECTOR_HANDLE result;
+
+	/*Codes_SRS_GATEWAY_LL_26_008: [ If the `gw` parameter is NULL, the function shall return NULL handle and not allocate any data. ] */
+	if (gw == NULL)
+	{
+		LogError("NULL gateway handle given to GetModuleLIst");
+		result = NULL;
+	}
+	else
+	{
+		result = VECTOR_create(sizeof(GATEWAY_MODULE_INFO));
+		/*Codes_SRS_GATEWAY_LL_26_009: [ This function shall return a NULL handle should any internal callbacks fail. ]*/
+		if (result == NULL)
+		{
+			LogError("Failed to init vector during GetModuleList");
+		}
+		else
+		{
+			size_t module_count = VECTOR_size(gw->modules);
+			GATEWAY_MODULE_INFO *info = (GATEWAY_MODULE_INFO*)malloc(module_count * sizeof(GATEWAY_MODULE_INFO));
+			for (size_t i = 0; i < module_count; i++)
+			{
+				MODULE_DATA *module_data = (MODULE_DATA*)VECTOR_element(gw->modules, i);
+				info[i].module_name = module_data->module_name;
+			}
+
+			/*Codes_SRS_GATEWAY_LL_26_007: [ This function shall return a snapshot copy of information about current gateway modules. ]*/
+			/*Codes_SRS_GATEWAY_LL_26_009: [ This function shall return a NULL handle should any internal callbacks fail ]*/
+			if (VECTOR_push_back(result, info, module_count) != 0)
+			{
+				LogError("failed to push back to vector during getting module list");
+				VECTOR_destroy(result);
+				result = NULL;
+			}
+			free(info);
+		}
+	}
+	return result;
+}
+
+void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+{
+	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
+	if (gw == NULL)
+	{
+		LogError("invalid gateway when registering callback");
+	}
+	else
+	{
+		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
+	}
+}
+
 #ifndef UWP_BINDING
-static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_path, const void* module_configuration);
+static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE gw, const char* module_name, const char* module_path, const void* module_configuration);
 static void gateway_removemodule_internal(GATEWAY_HANDLE gw, MODULE_DATA* module);
 static void gateway_destroy_internal(GATEWAY_HANDLE gw);
 static bool module_data_find(const void* element, const void* value);
@@ -81,13 +141,13 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 					{
 						//Add the first module, if successfull add others
 						GATEWAY_PROPERTIES_ENTRY* entry = (GATEWAY_PROPERTIES_ENTRY*)VECTOR_element(properties->gateway_properties_entries, 0);
-						MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration);
+						MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_name, entry->module_path, entry->module_configuration);
 
 						//Continue adding modules until all are added or one fails
 						for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
 						{
 							entry = (GATEWAY_PROPERTIES_ENTRY*)VECTOR_element(properties->gateway_properties_entries, properties_index);
-							module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration);
+							module = gateway_addmodule_internal(gateway, entry->module_name, entry->module_path, entry->module_configuration);
 						}
 
 						/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_PROPERTIES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
@@ -116,6 +176,8 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 					{
 						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
 						EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_CREATED);
+						/*Codes_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
+						EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
 					}
 				}
 			}
@@ -141,7 +203,7 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_E
 	/*Codes_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_PROPERTIES_ENTRY's module_path is NULL the function shall return NULL. ]*/
 	if (gw != NULL && entry != NULL)
 	{
-		module = gateway_addmodule_internal(gw, entry->module_path, entry->module_configuration);
+		module = gateway_addmodule_internal(gw, entry->module_name, entry->module_path, entry->module_configuration);
 
 		if (module == NULL)
 		{
@@ -182,22 +244,9 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 	}
 }
 
-void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
-{
-	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
-	if (gw == NULL)
-	{
-		LogError("invalid gateway when registering callback");
-	}
-	else
-	{
-		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
-	}
-}
-
 /*Private*/
 
-static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration)
+static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_name, const char* module_path, const void* module_configuration)
 {
 	MODULE_HANDLE module_result;
 	if (module_path != NULL)
@@ -246,6 +295,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 					/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus.]*/
 					MODULE_DATA module_data =
 					{
+						module_name,
 						module_library_handle,
 						module_handle
 					};
