@@ -3,7 +3,7 @@
 
 #include "pch.h"
 
-#include "MessageBusUwp.h"
+#include "BrokerUwp.h"
 #include "MessageUwp.h"
 #include "IGatewayModule.h"
 

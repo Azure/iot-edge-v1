@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="IGatewayModule.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="MessageBus.cs" />
+    <Compile Include="Broker.cs" />
     <Compile Include="NativeDotNetHostWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

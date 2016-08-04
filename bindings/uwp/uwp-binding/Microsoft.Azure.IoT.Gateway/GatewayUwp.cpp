@@ -4,7 +4,7 @@
 #include "pch.h"
 
 #include "GatewayUwp.h"
-#include "MessageBusUwp.h"
+#include "BrokerUwp.h"
 #include "MessageUwp.h"
 
 using namespace Windows::Foundation::Collections;

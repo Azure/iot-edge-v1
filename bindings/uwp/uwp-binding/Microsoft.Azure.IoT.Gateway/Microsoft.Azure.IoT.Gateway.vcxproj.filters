@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="MessageUwp.cpp" />
-    <ClCompile Include="MessageBusUwp.cpp" />
+    <ClCompile Include="BrokerUwp.cpp" />
     <ClCompile Include="GatewayUwp.cpp" />
     <ClCompile Include="WIndowsShims.cpp" />
     <ClCompile Include="..\..\..\..\core\adapters\dynamic_library_windows.c">
@@ -82,7 +82,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="MessageUwp.h" />
-    <ClInclude Include="MessageBusUwp.h" />
+    <ClInclude Include="BrokerUwp.h" />
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
     <ClInclude Include="..\..\..\..\core\inc\dynamic_library.h" />

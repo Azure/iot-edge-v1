@@ -230,13 +230,13 @@
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
     <ClInclude Include="MessageUwp.h" />
-    <ClInclude Include="MessageBusUwp.h" />
+    <ClInclude Include="BrokerUwp.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GatewayUwp.cpp" />
     <ClCompile Include="MessageUwp.cpp" />
-    <ClCompile Include="MessageBusUwp.cpp" />
+    <ClCompile Include="BrokerUwp.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
