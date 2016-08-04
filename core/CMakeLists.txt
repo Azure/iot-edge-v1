@@ -71,7 +71,7 @@ if (GW_BROKER_TYPE STREQUAL "PubSub")
 endif()
 
 if (GW_BROKER_TYPE STREQUAL "Broadcast")
-    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_message_bus.c)
+    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_broker.c)
 endif()
 
 include_directories(./inc)

@@ -245,7 +245,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\broadcast_message_bus.c">
+    <ClCompile Include="..\..\..\..\core\src\broadcast_broker.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
