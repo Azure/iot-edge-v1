@@ -13,6 +13,8 @@ option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
 
+SET(use_condition ON CACHE BOOL "Build C shared utility with condition code" FORCE)
+
 #making a nice global variable to know if we are on linux or not.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(LINUX TRUE)
