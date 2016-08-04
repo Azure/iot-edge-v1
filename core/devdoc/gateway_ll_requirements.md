@@ -5,7 +5,7 @@ This is the API to create and manage a gateway. Contained within a gateway is a 
 
 ## References
 
-##Gateway Handle Implementation
+## Gateway Handle Implementation
 
 This section details the internal structure defined in the gateway implementation used to track a gateway and the information it contains.
 
@@ -17,7 +17,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief The message bus contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
 
-	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
+	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
 } GATEWAY_HANDLE_DATA;
 ```
@@ -171,10 +171,9 @@ extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
 #endif
 
 #endif // GATEWAY_LL_H
-
 ```
 
-##Gateway_Create
+## Gateway_Create
 ```
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 ```
@@ -200,7 +199,9 @@ Gateway_LL_Create creates a new gateway using information about modules in the `
 
 **SRS_GATEWAY_LL_14_036: [** If any `MODULE_HANDLE` is unable to be created from a `GATEWAY_MODULES_ENTRY` the `GATEWAY_HANDLE` will be destroyed. **]**
 
-**SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` use each of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE` message bus. **]**
+**SRS_GATEWAY_LL_04_004: [** If a module with the same `module_name` already exists, this function shall fail and the `GATEWAY_HANDLE` will be destroyed. **]**
+
+**SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE` message bus. **]**
 
 **SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the `MESSAGE_Bus` the `GATEWAY_HANDLE` will be destroyed. **]**
 
@@ -219,7 +220,7 @@ Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` 
 
 **SRS_GATEWAY_LL_99_005: [** The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. **]**
 
-##Gateway_Destroy
+## Gateway_Destroy
 ```
 extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 ```
@@ -248,7 +249,7 @@ Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
 
-##Gateway_AddModule
+## Gateway_AddModule
 ```
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
 ```
@@ -282,7 +283,7 @@ Gateway_LL_AddModule adds a module to the gateway message bus using the provided
 
 **SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
 
-##Gateway_RemoveModule
+## Gateway_RemoveModule
 ```
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 ```
@@ -304,9 +305,18 @@ Gateway_RemoveModule will remove the specified `module` from the message bus.
 
 **SRS_GATEWAY_LL_14_026: [** The function shall remove that `MODULE_DATA` from `GATEWAY_HANDLE_DATA`'s `modules`. **]**
 
-##Gateway_LL_AddLink
+## Gateway_LL_AddLink
 ```
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 ```
 Gateway_LL_AddLink adds a link to the gateway message bus using the provided `GATEWAY_LINK_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
 
+## Gateway_LL_RemoveLink
+```
+extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
+```
+**SRS_GATEWAY_LL_04_005: [** If `gw` or `entryLink` is `NULL` the function shall return. **]**  
+
+**SRS_GATEWAY_LL_04_006: [** The function shall locate the `LINK_DATA` object in `GATEWAY_HANDLE_DATA`'s `links` containing `link` and return if it cannot be found. **]**
+
+**SRS_GATEWAY_LL_04_007: [** The functional shall remove that `LINK_DATA` from `GATEWAY_HANDLE_DATA`'s `links`. **]**

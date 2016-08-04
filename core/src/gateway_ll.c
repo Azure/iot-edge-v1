@@ -21,7 +21,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief The message bus contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
 
-	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
+	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
 } GATEWAY_HANDLE_DATA;
 
@@ -53,9 +53,9 @@ static bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char*
 
 static bool module_data_find(const void* element, const void* value);
 
-static bool module_name_find(const void* element, const char* module_name);
+static bool module_name_find(const void* element, const void* module_name);
 
-static bool link_data_find(const void* element, const GATEWAY_LINK_ENTRY* link_data);
+static bool link_data_find(const void* element, const void* link_data);
 
 GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 {
@@ -87,69 +87,67 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 			}
 			else
 			{
-				if (properties != NULL && properties->gateway_modules != NULL)
+				/* Codes_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
+				gateway->links = VECTOR_create(sizeof(LINK_DATA));
+				if (gateway->links == NULL)
 				{
-					/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
-					size_t entries_count = VECTOR_size(properties->gateway_modules);
-					if (entries_count > 0)
+					/* Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
+					/* Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created MESSAGE_BUS_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ] */
+					while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
 					{
-						//Add the first module, if successfull add others
-						GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
-						MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
-
-						//Continue adding modules until all are added or one fails
-						for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
-						{
-							entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
-							module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
-						}
-
-						/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
-						if (module == NULL)
-						{
-							LogError("Gateway_LL_Create(): Unable to add module '%s'. The gateway will be destroyed.", entry->module_name);
-							while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
-							{
-								MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
-								//By design, there will be no NULL module_data pointers in the vector
-								gateway_removemodule_internal(gateway, module_data);
-							}
-							VECTOR_destroy(gateway->modules);
-							MessageBus_Destroy(gateway->bus);
-							free(gateway);
-							gateway = NULL;
-						}
+						MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
+						//By design, there will be no NULL module_data pointers in the vector
+						gateway_removemodule_internal(gateway, module_data);
 					}
+					VECTOR_destroy(gateway->modules);
 
-					if (gateway != NULL)
+					MessageBus_Destroy(gateway->bus);
+					free(gateway);
+					gateway = NULL;
+					LogError("Gateway_LL_Create(): VECTOR_create for links failed.");
+				}
+				else
+				{
+					if (properties != NULL && properties->gateway_modules != NULL)
 					{
-						/* Codes_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
-						gateway->links = VECTOR_create(sizeof(LINK_DATA));
-
-						if (gateway->links == NULL)
+						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+						size_t entries_count = VECTOR_size(properties->gateway_modules);
+						if (entries_count > 0)
 						{
-							/* Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
-							/* Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created MESSAGE_BUS_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ] */
-							while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
-							{
-								MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
-								//By design, there will be no NULL module_data pointers in the vector
-								gateway_removemodule_internal(gateway, module_data);
-							}
-							VECTOR_destroy(gateway->modules);
+							//Add the first module, if successfull add others
+							GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
+							MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
 
-							MessageBus_Destroy(gateway->bus);
-							free(gateway);
-							gateway = NULL;
-							LogError("Gateway_LL_Create(): VECTOR_create for links failed.");
+							//Continue adding modules until all are added or one fails
+							for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
+							{
+								entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
+								module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name);
+							}
+
+							/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
+							if (module == NULL)
+							{
+								LogError("Gateway_LL_Create(): Unable to add module '%s'. The gateway will be destroyed.", entry->module_name);
+								while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
+								{
+									MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
+									//By design, there will be no NULL module_data pointers in the vector
+									gateway_removemodule_internal(gateway, module_data);
+								}
+								VECTOR_destroy(gateway->modules);
+								MessageBus_Destroy(gateway->bus);
+								free(gateway);
+								gateway = NULL;
+							}
 						}
-						else
+
+						if (gateway != NULL)
 						{
 							if (properties->gateway_links != NULL)
 							{
-								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY use each of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE message bus. ] */
+								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE message bus. ] */
 								size_t entries_count = VECTOR_size(properties->gateway_links);
-
 
 								if (entries_count > 0)
 								{
@@ -164,9 +162,10 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 										linkAdded = gateway_addlink_internal(gateway, entry);
 									}
 
+									/*Codes_SRS_GATEWAY_LL_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the MESSAGE_Bus the GATEWAY_HANDLE will be destroyed.]*/
 									if (!linkAdded)
 									{
-										LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink );
+										LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink);
 										while (gateway->modules != NULL && VECTOR_size(gateway->modules) > 0)
 										{
 											MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway->modules);
@@ -186,7 +185,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 										MessageBus_Destroy(gateway->bus);
 										free(gateway);
 										gateway = NULL;
-									}									
+									}
 								}
 							}
 						}
@@ -313,10 +312,16 @@ GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK
 
 void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink)
 {
-	if (gw != NULL)
+	/*Codes_SRS_GATEWAY_LL_04_005: [ If gw or entryLink is NULL the function shall return. ]*/
+	if (gw == NULL || entryLink == NULL)
+	{
+		LogError("Gateway_LL_RemoveLink(): Failed to remove link because the GATEWAY_HANDLE is NULL or entryLink is NULL.");
+	}
+	else
 	{
 		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
 
+		/*Codes_SRS_GATEWAY_LL_04_006: [ The function shall locate the LINK_DATA object in GATEWAY_HANDLE_DATA's links containing link and return if it cannot be found. ]*/
 		LINK_DATA* link_data = (LINK_DATA*)VECTOR_find_if(gateway_handle->links, link_data_find, entryLink);
 
 		if (link_data != NULL)
@@ -327,10 +332,6 @@ void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLin
 		{
 			LogError("Gateway_LL_RemoveLink(): Could not find link given it's source/sink.");
 		}
-	}
-	else
-	{
-		LogError("Gateway_LL_RemoveLink(): Failed to remove link because the GATEWAY_HANDLE is NULL.");
 	}
 }
 
@@ -361,6 +362,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 	if (gateway_handle != NULL || module_path != NULL || module_name != NULL)
 	{
 		//First check if a module with a given name already exists.
+		/*Codes_SRS_GATEWAY_LL_04_004: [ If a module with the same module_name already exists, this function shall fail and the GATEWAY_HANDLE will be destroyed. ]*/
 		bool moduleExist = checkIfModuleExists(gateway_handle, module_name);
 
 		if (!moduleExist)
@@ -464,14 +466,17 @@ static bool module_data_find(const void* element, const void* value)
 	return ((MODULE_DATA*)element)->module == value;
 }
 
-static bool module_name_find(const void* element, const char* module_name)
+static bool module_name_find(const void* element, const void* module_name)
 {
-	return (strcmp(((MODULE_DATA*)element)->module_name, module_name) == 0);
+	const char* module_name_casted = (const char*)module_name;
+	return (strcmp(((MODULE_DATA*)element)->module_name, module_name_casted) == 0);
 }
 
-static bool link_data_find(const void* element, const GATEWAY_LINK_ENTRY* linkEntry)
+static bool link_data_find(const void* element, const void* linkEntry)
 {
-	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source_handle)->module_name, linkEntry->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink_handle)->module_name, linkEntry->module_sink) == 0);
+	GATEWAY_LINK_ENTRY* link_entry_casted = (GATEWAY_LINK_ENTRY*)linkEntry;
+
+	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source_handle)->module_name, link_entry_casted->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink_handle)->module_name, link_entry_casted->module_sink) == 0);
 }
 
 static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
@@ -660,5 +665,6 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data)
 {
 	//TODO: Remove Link from Message_bus, as soon as Message Bus API is in place.
+	/*Codes_SRS_GATEWAY_LL_04_007: [The functional shall remove that LINK_DATA from GATEWAY_HANDLE_DATA's links. ]*/
 	VECTOR_erase(gateway_handle->links, link_data, 1);
 }
