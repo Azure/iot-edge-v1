@@ -230,6 +230,8 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_14_028: [** The function shall remove each module in `GATEWAY_HANDLE_DATA`'s `modules` vector and destroy `GATEWAY_HANDLE_DATA`'s `modules`. **]**
 
+**SRS_GATEWAY_LL_04_014: [** The function shall remove each link in `GATEWAY_HANDLE_DATA`'s `links` vector and destroy `GATEWAY_HANDLE_DATA`'s `link`. **]**
+
 **SRS_GATEWAY_LL_14_037: [** If `GATEWAY_HANDLE_DATA`'s message bus cannot unlink module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**

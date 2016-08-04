@@ -1139,6 +1139,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_
 
 /*Tests_SRS_GATEWAY_LL_14_028: [ The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules. ]*/
 /*Tests_SRS_GATEWAY_LL_14_006: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
 TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
 {
 	//Arrange
@@ -1150,8 +1151,14 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 		"x2.dll",
 		NULL
 	};
+	
+	GATEWAY_LINK_ENTRY dummyLink = {
+		"dummy module",
+		"dummy module 2"
+	};
 
 	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink, 1);
 
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 	mocks.ResetAllCalls();
@@ -1190,6 +1197,15 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)

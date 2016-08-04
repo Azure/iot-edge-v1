@@ -220,7 +220,7 @@ void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 		}
 
 		VECTOR_destroy(gateway_handle->modules);
-
+		/*Codes_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
 		while (gateway_handle->links != NULL && VECTOR_size(gateway_handle->links) > 0)
 		{
 			LINK_DATA* link_data = (LINK_DATA*)VECTOR_front(gateway_handle->links);
