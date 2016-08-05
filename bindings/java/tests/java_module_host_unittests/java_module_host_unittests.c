@@ -99,10 +99,10 @@ MESSAGE_HANDLE my_Message_CreateFromByteArray(const unsigned char* source, int32
 {
 	return (MESSAGE_HANDLE)malloc(1);
 }
-MOCKABLE_FUNCTION(, const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t*, size);
-const unsigned char* my_MessageToByteArray(MESSAGE_HANDLE messageHandle, int32_t* size)
+MOCKABLE_FUNCTION(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t, size);
+int32_t my_MessageToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size)
 {
-	return (const unsigned char*)malloc(1);
+	return 1;
 }
 MOCKABLE_FUNCTION(, void, Message_Destroy, MESSAGE_HANDLE, message);
 void my_Message_Destroy(MESSAGE_HANDLE message)
@@ -1435,8 +1435,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_success)
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL,0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 
 	STRICT_EXPECTED_CALL(AttachCurrentThread(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1)
@@ -1555,8 +1559,9 @@ TEST_FUNCTION(JavaModuleHost_Receive_Message_ToByteArray_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0))
+		.SetFailReturn(-1);
+
 
 	umock_c_negative_tests_snapshot();
 
@@ -1575,6 +1580,47 @@ TEST_FUNCTION(JavaModuleHost_Receive_Message_ToByteArray_failure)
 
 }
 
+/*Tests_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
+TEST_FUNCTION(JavaModuleHost_Receive_Message_allocate_failure)
+{
+	//Arrange
+	const unsigned char msg[] =
+	{
+		0xA1, 0x60,             /*header*/
+		0x00, 0x00, 0x00, 14,   /*size of this array*/
+		0x00, 0x00, 0x00, 0x00, /*zero properties*/
+		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
+	};
+
+	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
+	umock_c_reset_all_calls();
+
+	int result = 0;
+	result = umock_c_negative_tests_init();
+	ASSERT_ARE_EQUAL(int, 0, result);
+
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1)
+		.SetFailReturn(NULL);
+
+	umock_c_negative_tests_snapshot();
+
+	//Act
+	umock_c_negative_tests_fail_call(1);
+	JavaModuleHost_Receive(module, message);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//Cleanup
+	Message_Destroy(message);
+	JavaModuleHost_Destroy(module);
+
+	umock_c_negative_tests_deinit();
+
+}
 /*Tests_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
 TEST_FUNCTION(JavaModuleHost_Receive_AttachCurrentThread_failure)
 {
@@ -1595,8 +1641,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_AttachCurrentThread_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
@@ -1605,7 +1655,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_AttachCurrentThread_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(1);
+	umock_c_negative_tests_fail_call(3);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert
@@ -1638,8 +1688,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_NewByteArray_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(NewByteArray(global_env, IGNORED_NUM_ARG))
@@ -1653,7 +1707,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_NewByteArray_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(2);
+	umock_c_negative_tests_fail_call(4);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert
@@ -1686,8 +1740,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_SetByteArrayRegion_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(NewByteArray(global_env, IGNORED_NUM_ARG))
@@ -1709,7 +1767,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_SetByteArrayRegion_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(4);
+	umock_c_negative_tests_fail_call(6);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert
@@ -1742,8 +1800,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetObjectClass_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(NewByteArray(global_env, IGNORED_NUM_ARG))
@@ -1765,7 +1827,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetObjectClass_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(5);
+	umock_c_negative_tests_fail_call(7);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert
@@ -1798,8 +1860,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetMethodID_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(NewByteArray(global_env, IGNORED_NUM_ARG))
@@ -1826,7 +1892,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetMethodID_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(6);
+	umock_c_negative_tests_fail_call(8);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert
@@ -1859,8 +1925,12 @@ TEST_FUNCTION(JavaModuleHost_Receive_CallVoidMethod_failure)
 	result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, result);
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(message, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(NewByteArray(global_env, IGNORED_NUM_ARG))
@@ -1892,7 +1962,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_CallVoidMethod_failure)
 	umock_c_negative_tests_snapshot();
 
 	//Act
-	umock_c_negative_tests_fail_call(9);
+	umock_c_negative_tests_fail_call(11);
 	JavaModuleHost_Receive(module, message);
 
 	//Assert

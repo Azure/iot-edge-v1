@@ -3,7 +3,7 @@
 
  
 
-##Overview
+## Overview
 This is the API to create a gateway message. 
 Messages, once created, should be considered immutable by the consuming user code. 
 Modules create messages. Modules publish the said messages to the message bus. 
@@ -12,13 +12,13 @@ Messages on the message bus have a bag of properties (name, value) and an opaque
 
 The creation of the message is considered finished at the moment when the message is transferred from the producer to the consumer.
 
-##References
+## References
 
 [constmap.h](../azure-c-shared-utility/c/devdoc/constmap_requirements.md)
 
 [constbuffer.h](../azure-c-shared-utility/c/devdoc/constbuffer_requirements.md)
 
-##Exposed API
+## Exposed API
 ```C
 #ifndef MESSAGE_H
 #define MESSAGE_H
@@ -68,7 +68,7 @@ extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg)
 MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
 
 /*this creates a byte array from a message*/
-const unsigned char* Message_ToByteArray(MESSAGE_HANDLE source, int32_t* size);
+extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, const unsigned char* buf, int32_t size);
 
 /*this clones a message. Since messages are immutable, it would only increment the inner count*/
 extern MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
@@ -95,7 +95,7 @@ extern void Message_Destroy(MESSAGE_HANDLE message);
 
 ```
 
-##Message_Create
+## Message_Create
 ```C
 extern MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
 ```
@@ -108,7 +108,7 @@ Message_Create creates a new message from the cfg parameter.
 **SRS_MESSAGE_17_003: [**`Message_Create` shall copy the `source` to a readonly CONSTBUFFER.**]**
 **SRS_MESSAGE_02_006: [**Otherwise, `Message_Create` shall return a non-`NULL` handle and shall set the internal ref count to "1".**]**
  
- ##Message_CreateFromBuffer
+ ## Message_CreateFromBuffer
  ```C
  extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg);
  ```
@@ -122,13 +122,13 @@ Message_Create creates a new message from the cfg parameter.
  **SRS_MESSAGE_17_013: [**`Message_CreateFromBuffer` shall clone the CONSTBUFFER `sourceBuffer`.**]**
  **SRS_MESSAGE_17_014: [**On success, `Message_CreateFromBuffer` shall return a non-`NULL` handle and set the internal ref count to "1".**]**
  
- ##Message_CreateFromByteArray
+ ## Message_CreateFromByteArray
  ```c
  MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size)
  ```
  Message_CreateFromByteArray creates a `MESSAGE_HANDLE` from a byte array.
  
- ###Implementation details
+ ### Implementation details
  the structure of the byte array shall be as follows:
  a header formed of the following hex characters in this order: 0xA1 0x60
  4 bytes in MSB order representing the total size of the byte array. 
@@ -159,22 +159,32 @@ Message_Create creates a new message from the cfg parameter.
  **SRS_MESSAGE_02_030: [** If any of the above steps fails, then `Message_CreateFromByteArray` shall fail and return NULL. **]**
   
  **SRS_MESSAGE_02_031: [** Otherwise `Message_CreateFromByteArray` shall succeed and return a non-NULL handle. **]**
- 
-##Message_ToByteArray
+
+## Message_ToByteArray
 ```c
 extern const unsigned char* Message_ToByteArray(MESSAGE_HANDLE messageHandle, int32_t *size);
+extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size);
+
 ```
 Creates a byte array from a `MESSAGE_HANDLE`.
 
-**SRS_MESSAGE_02_032: [** If `messageHandle` is NULL then `Message_ToByteArray` shall fail and return NULL. **]**
-**SRS_MESSAGE_02_038: [** If `size` is NULL then `Message_ToByteArray` shall fail and return NULL. **]**
-**SRS_MESSAGE_02_033: [** `Message_ToByteArray` shall precompute the needed memory size and shall pre allocate it. **]**
+**SRS_MESSAGE_02_032: [** If `messageHandle` is NULL then `Message_ToByteArray` shall fail and return -1. **]**
+
+**SRS_MESSAGE_02_033: [** `Message_ToByteArray` shall precompute the needed memory size. **]**
+
+**SRS_MESSAGE_17_015: [** if `buf` is NULL and `size` is not equal to zero, `Message_ToByteArray` shall return -1; **]**
+
+**SRS_MESSAGE_17_016: [** If `buf` is NULL and `size` is equal to zero,  `Message_ToByteArray` shall return the needed memory size. **]**
+
+**SRS_MESSAGE_17_017: [** If `buf` is not NULL and `size` is less than the needed memory size,  `Message_ToByteArray` shall return -1; **]**
+
 **SRS_MESSAGE_02_034: [** `Message_ToByteArray` shall populate the memory with values as indicated in the implementation details. **]**
 
-**SRS_MESSAGE_02_035: [** If any of the above steps fails then `Message_ToByteArray` shall fail and return NULL. **]**
-**SRS_MESSAGE_02_036: [** Otherwise `Message_ToByteArray` shall succeed, write in \*size the byte array size and return a non-NULL result. **]**
+**SRS_MESSAGE_02_035: [** If any of the above steps fails then `Message_ToByteArray` shall fail and return -1. **]**
+
+**SRS_MESSAGE_02_036: [** Otherwise `Message_ToByteArray` shall succeed, and return the byte array size. **]**
  
-##Message_Clone
+## Message_Clone
 ```C
 extern MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE messageHandle);
 ```
@@ -186,7 +196,7 @@ Message_Clone creates a clone of the messageHandle. Notice: messages once create
 **SRS_MESSAGE_17_004: [**`Message_Clone` shall clone the CONSTBUFFER handle**]**
 **SRS_MESSAGE_02_010: [**Message_Clone shall return messageHandle.**]**
 
-##Message_GetProperties
+## Message_GetProperties
 ```C
 extern CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
 ```
@@ -195,7 +205,7 @@ Message_GetProperties returns a CONSTMAP handle that can be used to access the p
 **SRS_MESSAGE_02_011: [**If message is `NULL` then Message_GetProperties shall return `NULL`.**]**
 **SRS_MESSAGE_02_012: [**Otherwise, `Message_GetProperties` shall shall clone and return the CONSTMAP handle representing the properties of the message.**]**
 
-##Message_GetContent
+## Message_GetContent
 ```C
 extern const MESSAGE_CONTENT* Message_GetContent(MESSAGE_HANDLE message)
 ```
@@ -205,7 +215,7 @@ extern const MESSAGE_CONTENT* Message_GetContent(MESSAGE_HANDLE message)
 **SRS_MESSAGE_02_016: [**The CONSTBUFFER's field `buffer` shall compare equal byte-by-byte to the cfg's field `source`.**]**
 The return of this function needs no free.
 
-##Message_GetContentHandle
+## Message_GetContentHandle
 ```C
 extern CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
 ```
@@ -215,7 +225,7 @@ This function returns a CONSTBUFFER handle that can be used to access the conten
 **SRS_MESSAGE_17_006: [**If message is `NULL` then `Message_GetContentHandle` shall return `NULL`.**]**
 **SRS_MESSAGE_17_007: [**Otherwise, `Message_GetContentHandle` shall shall clone and return the CONSTBUFFER_HANDLE representing the message content.**]**
 
-##Message_Destroy(MESSAGE_HANDLE message)
+## Message_Destroy(MESSAGE_HANDLE message)
 ```C
 extern void Message_Destroy(MESSAGE_HANDLE message);
 ```

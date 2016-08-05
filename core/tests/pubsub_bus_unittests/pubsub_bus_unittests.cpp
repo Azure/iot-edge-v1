@@ -375,9 +375,8 @@ public:
 	MOCK_STATIC_METHOD_2(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
 	MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)(new RefCountObject()))
 
-	MOCK_STATIC_METHOD_2(, const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t*, size)
-	*size = 1;
-	MOCK_METHOD_END(const unsigned char*, (const unsigned char*)malloc(1))
+	MOCK_STATIC_METHOD_3(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char *, buffer, int32_t, size)
+	MOCK_METHOD_END(int32_t, (int32_t)1)
 
     // list.h
 
@@ -616,8 +615,8 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , THREADAPI_RESULT, ThreadAPI_Joi
 DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg);
 DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , MESSAGE_HANDLE, Message_Clone, MESSAGE_HANDLE, message);
 DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t*, size)
+DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
+DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char *, buffer, int32_t, size);
 
 // list.h
 DECLARE_GLOBAL_MOCK_METHOD_0(CMessageBusMocks, , LIST_HANDLE, list_create);
@@ -2567,9 +2566,8 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_Message_ToByteArray_fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
-	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2)
-		.SetFailReturn(nullptr);
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0))
+		.SetFailReturn(-1);
 
     ///act
     result = MessageBus_Publish(bus, NULL, message);
@@ -2608,12 +2606,8 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_allocmsg_fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
-	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(IGNORED_NUM_ARG, 0))
-		.IgnoreArgument(1)
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
 		.SetFailReturn(nullptr);
 
     ///act
@@ -2653,14 +2647,13 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_send_fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
-	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG))
-		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(IGNORED_NUM_ARG, 0))
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_freemsg(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2)
@@ -2711,12 +2704,11 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
-	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(IGNORED_NUM_ARG, 0))
-		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);

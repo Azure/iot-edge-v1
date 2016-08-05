@@ -704,12 +704,12 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
 		}
 		else
 		{
-			int32_t msg_size = 0;
+			int32_t msg_size;
 			/*Codes_SRS_MESSAGE_BUS_17_007: [ MessageBus_Publish shall clone the message. ]*/
 			MESSAGE_HANDLE msg = Message_Clone(message);
 			/*Codes_SRS_MESSAGE_BUS_17_008: [ MessageBus_Publish shall serialize the message. ]*/
-			const unsigned char* serial_message = Message_ToByteArray(msg, &msg_size);
-			if (serial_message == NULL)
+			msg_size = Message_ToByteArray(message, NULL, 0);
+			if (msg_size < 0)
 			{
 				/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
 				LogError("unable to serialize a message [%p]", msg);
@@ -728,7 +728,8 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
 				}
 				else
 				{
-					memcpy(nn_msg, serial_message, msg_size);
+					Message_ToByteArray(message, nn_msg, msg_size);
+
 					/*Codes_SRS_MESSAGE_BUS_17_010: [ MessageBus_Publish shall send a message on the publish_socket. ]*/
 					int nbytes = nn_send(bus_data->publish_socket, &nn_msg, NN_MSG, 0);
 					if (nbytes != msg_size)
@@ -747,7 +748,6 @@ MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
 				/*Codes_SRS_MESSAGE_BUS_17_012: [ MessageBus_Publish shall free the message. ]*/
 				Message_Destroy(msg);
 				/*Codes_SRS_MESSAGE_BUS_17_011: [ MessageBus_Publish shall free the serialized message data. ]*/
-				free((void*)serial_message);
 			}
 			/*Codes_SRS_MESSAGE_BUS_17_023: [ MessageBus_Publish shall Unlock the modules lock. ]*/
 			Unlock(bus_data->modules_lock);
