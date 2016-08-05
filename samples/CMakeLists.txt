@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 2.8.11)
 
 add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
+add_subdirectory(callbacks_sample)
 
 if(${enable_dotnet_binding})
     add_subdirectory(dotnet_binding_sample)

@@ -21,9 +21,8 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		{
 		}
 
-		MODULE_HANDLE Module_Create(MESSAGE_BUS_HANDLE busHandle, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
+		void Module_Create(MESSAGE_BUS_HANDLE busHandle, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
 		void Module_Destroy();
-
 		void Module_Receive(MESSAGE_HANDLE messageHandle);
 
 	private:

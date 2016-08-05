@@ -14,6 +14,7 @@
 #include "gateway_ll.h"
 #include "message_bus.h"
 #include "module_loader.h"
+#include "internal/event_system.h"
 
 #define DUMMY_LIBRARY_PATH "x.dll"
 
@@ -75,7 +76,6 @@ public:
 };
 static MODULE dummyModule;
 static VECTOR_HANDLE dummyModules;
-static MODULE_APIS dummyAPIs;
 
 
 TYPED_MOCK_CLASS(CGatewayUwpLLMocks, CGlobalMock)
@@ -174,12 +174,23 @@ public:
 	}
 	MOCK_METHOD_END(MODULE_LIBRARY_HANDLE, handle);
 
-	MOCK_STATIC_METHOD_1(, const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle)
-		const MODULE_APIS* apis = &dummyAPIs;
-	MOCK_METHOD_END(const MODULE_APIS*, apis);
-
 	MOCK_STATIC_METHOD_1(, void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
 		BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
+	MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
+
+	MOCK_STATIC_METHOD_3(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback)
+		// no-op
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_3(, void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type)
+		// no-op
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle)
+		BASEIMPLEMENTATION::gballoc_free(handle);
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
@@ -270,8 +281,12 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_IncRef, MESS
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_DecRef, MESSAGE_BUS_HANDLE, bus);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
+
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayUwpLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
+DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayUwpLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback);
+DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayUwpLLMocks, , void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, VECTOR_destroy, VECTOR_HANDLE, handle);
@@ -340,12 +355,6 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 
 	dummyModules = BASEIMPLEMENTATION::VECTOR_create(sizeof(MODULE));
 	BASEIMPLEMENTATION::VECTOR_push_back(dummyModules, &dummyModule, 1);
-
-	dummyAPIs = {
-		mock_Module_Create,
-		mock_Module_Destroy,
-		mock_Module_Receive
-	};
 
 }
 

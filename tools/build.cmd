@@ -58,6 +58,7 @@ goto args-continue
 :arg-enable-java-binding
 set enable-java-binding=ON
 call %current-path%\build_java.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
 :arg-enable_nodejs_binding
@@ -103,8 +104,15 @@ mkdir %cmake-root%
 rem no error checking
 
 pushd %cmake-root%
-cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%"
-if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+if %build-platform% == x64 (
+	echo ***Running CMAKE for Win64***
+        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%" -G "Visual Studio 14 Win64"
+        if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+) else (
+	echo ***Running CMAKE for Win32***
+        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%"
+        if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+)
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!

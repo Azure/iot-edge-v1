@@ -48,21 +48,31 @@ endfunction(includeHttp)
 set(gateway_c_sources
     ./src/message.c
     ./src/module_loader.c
-    ./src/message_bus.c
+    ./src/internal/event_system.c
     ./src/gateway_ll.c
     ./src/gateway.c
     ${dynamic_library_c_file}
 )
 
+
 set(gateway_h_sources
     ./inc/message.h
     ./inc/message_bus.h
     ./inc/module.h
+    ./inc/internal/event_system.h
     ./inc/gateway_ll.h
     ./inc/gateway.h
     ./inc/module_loader.h
     ./inc/dynamic_library.h
 )
+
+if (GW_BROKER_TYPE STREQUAL "PubSub")
+    set(gateway_c_sources ${gateway_c_sources} ./src/message_bus.c)
+endif()
+
+if (GW_BROKER_TYPE STREQUAL "Broadcast")
+    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_message_bus.c)
+endif()
 
 include_directories(./inc)
 
@@ -71,7 +81,17 @@ add_library(gateway
     ${gateway_h_sources}
 )
 
+if(WIN32)
+    target_link_libraries(gateway rpcrt4.lib)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(UIDLINUX REQUIRED uuid)
+
+    target_link_libraries(gateway uuid)
+endif()
+
 target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library} )
 link_broker(gateway)
 #this adds the tests to the build process
+
 add_subdirectory(tests)

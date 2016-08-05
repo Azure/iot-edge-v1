@@ -12,9 +12,9 @@ set(${theseTestsName}_cpp_files
 ${theseTestsName}.cpp
 )
 
-set_source_files_properties(../../src/message_bus.c PROPERTIES LANGUAGE CXX) 
+set_source_files_properties(../../src/broadcast_message_bus.c PROPERTIES LANGUAGE CXX) 
 set(${theseTestsName}_c_files
-	../../src/message_bus.c
+	../../src/broadcast_message_bus.c
 )
 
 set(${theseTestsName}_h_files

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+
 #include <stdlib.h>
 #ifdef _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -329,8 +330,6 @@ static const unsigned char fail_whenThereIsOnly1ByteOfcontentSize[] =
     0x00                    /*not enough bytes for contentSize*/
 };
 
-
-
 #define TEST_MAP_HANDLE ((MAP_HANDLE)(1))
 #define TEST_CONSTBUFFER_HANDLE ((CONSTBUFFER_HANDLE)2)
 #define TEST_CONSTMAP_HANDLE ((CONSTMAP_HANDLE)3)
@@ -350,7 +349,7 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
         g_testByTest = TEST_MUTEX_CREATE();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        umock_c_init(on_umock_c_error);
+         umock_c_init(on_umock_c_error);
 
         int result = umocktypes_charptr_register_types();
         ASSERT_ARE_EQUAL(int, 0, result);
@@ -379,14 +378,15 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
         REGISTER_UMOCK_ALIAS_TYPE(const unsigned char*, void*);
         REGISTER_UMOCK_ALIAS_TYPE(const char* const*, void*);
         REGISTER_UMOCK_ALIAS_TYPE(const char* const* *, void*);
-
         //
+
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
     {
         TEST_MUTEX_DESTROY(g_testByTest);
-        TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
+		umock_c_deinit();
+		TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
     }
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
@@ -1851,30 +1851,89 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
         int32_t size;
 
         ///act
-        const unsigned char* byteArray = Message_ToByteArray(NULL, &size);
+        size = Message_ToByteArray(NULL, NULL, 0);
 
         ///assert
-        ASSERT_IS_NULL(byteArray);
+		ASSERT_IS_TRUE(size < 0);
         ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
         ///cleanup
     }
 
-    /*Tests_SRS_MESSAGE_02_038: [ If size is NULL then Message_ToByteArray shall fail and return NULL. ]*/
-    TEST_FUNCTION(Message_ToByteArray_fails_with_NULL_size_parameter)
+    /*Tests_SRS_MESSAGE_17_015: [ if buf is NULL and size is not equal to zero, Message_ToByteArray shall return -1; ]*/
+    TEST_FUNCTION(Message_ToByteArray_fails_with_NULL_buffer_and_nonzero_size1)
     {
 
         ///arrange
 
         ///act
-        const unsigned char* byteArray = Message_ToByteArray(TEST_MESSAGE_HANDLE, NULL);
+		int32_t size = Message_ToByteArray(TEST_MESSAGE_HANDLE, NULL, -1);
 
         ///assert
-        ASSERT_IS_NULL(byteArray);
-        ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+		ASSERT_IS_TRUE(size < 0);
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
         ///cleanup
     }
+
+	/*Tests_SRS_MESSAGE_17_015: [ if buf is NULL and size is not equal to zero, Message_ToByteArray shall return -1; ]*/
+	TEST_FUNCTION(Message_ToByteArray_fails_with_NULL_buffer_and_nonzero_size2)
+	{
+
+		///arrange
+
+		///act
+		int32_t size = Message_ToByteArray(TEST_MESSAGE_HANDLE, NULL, 1);
+
+		///assert
+		ASSERT_IS_TRUE(size < 0);
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+		///cleanup
+	}
+
+    /*Tests_SRS_MESSAGE_17_016: [ If buf is NULL and size is equal to zero, Message_ToByteArray shall return the needed memory size. ]*/
+	TEST_FUNCTION(Message_ToByteArray_returns_correct_size)
+	{
+		///arrange
+		int32_t size = 0;
+		unsigned char * buf = NULL;
+
+		STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
+			.IgnoreArgument_mapFilterFunc()
+			.SetReturn(TEST_MAP_HANDLE);
+		EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+			.IgnoreAllCalls();
+		STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 0))
+			.IgnoreArgument_source();
+		STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
+		STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
+
+		MESSAGE_HANDLE messageHandle = Message_CreateFromByteArray(notFail____minimalMessage, sizeof(notFail____minimalMessage));
+
+		size_t zero = 0;
+		const CONSTBUFFER bufferContent = { NULL, 0 };
+
+		STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument_handle()
+			.IgnoreArgument_keys()
+			.IgnoreArgument_values()
+			.CopyOutArgumentBuffer(4, &zero, sizeof(zero));
+		STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
+			.IgnoreArgument_constbufferHandle()
+			.SetReturn(&bufferContent);
+
+
+		///act
+		int32_t nbytes = Message_ToByteArray(messageHandle, buf, size);
+
+		///assert
+		ASSERT_ARE_EQUAL(int32_t, sizeof(notFail____minimalMessage), nbytes);
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+		///cleanup
+		Message_Destroy(messageHandle);
+	}
 
     /*Tests_SRS_MESSAGE_02_033: [ Message_ToByteArray shall precompute the needed memory size and shall pre allocate it. ]*/
     /*Tests_SRS_MESSAGE_02_034: [ Message_ToByteArray shall populate the memory with values as indicated in the implementation details. ]*/
@@ -1883,13 +1942,16 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
     {
 
         ///arrange
-        int32_t size;
+        int32_t size = sizeof(notFail____minimalMessage);
+		unsigned char * buf = (unsigned char *)malloc(sizeof(notFail____minimalMessage));
+		ASSERT_IS_NOT_NULL(buf);
+		umock_c_reset_all_calls();
 
         STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument_mapFilterFunc()
             .SetReturn(TEST_MAP_HANDLE);
-        EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreAllCalls();
+		EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+			.IgnoreAllCalls();
         STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 0))
             .IgnoreArgument_source();
         STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
@@ -1908,87 +1970,89 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
         STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
             .IgnoreArgument_constbufferHandle()
             .SetReturn(&bufferContent);
-        STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument_size();
+
 
         ///act
-        const unsigned char* byteArray = Message_ToByteArray(messageHandle, &size);
+		int32_t nbytes = Message_ToByteArray(messageHandle, buf, size);
 
         ///assert
-        ASSERT_IS_NOT_NULL(byteArray);
-        ASSERT_ARE_EQUAL(int32_t, sizeof(notFail____minimalMessage), size);
-        ASSERT_ARE_EQUAL(int, 0, memcmp(byteArray, notFail____minimalMessage, size));
+		ASSERT_ARE_EQUAL(int32_t, sizeof(notFail____minimalMessage), nbytes);
+        ASSERT_ARE_EQUAL(int, 0, memcmp(buf, notFail____minimalMessage, size));
         ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
         ///cleanup
-        free((void*)byteArray);
+        free((void*)buf);
         Message_Destroy(messageHandle);
     }
 
     /*Tests_SRS_MESSAGE_02_033: [ Message_ToByteArray shall precompute the needed memory size and shall pre allocate it. ]*/
     /*Tests_SRS_MESSAGE_02_034: [ Message_ToByteArray shall populate the memory with values as indicated in the implementation details. ]*/
     /*Tests_SRS_MESSAGE_02_036: [ Otherwise Message_ToByteArray shall succeed, write in *size the byte array size and return a non-NULL result. ]*/
-    TEST_FUNCTION(Message_ToByteArray_with_properties_and_content_happy_path)
-    {
+	TEST_FUNCTION(Message_ToByteArray_with_properties_and_content_happy_path)
+	{
 
-        ///arrange
-        int32_t size;
+		///arrange
+		int32_t size = sizeof(notFail__2Property_2bytes);
+		unsigned char * buf = (unsigned char *)malloc(sizeof(notFail__2Property_2bytes));
+		ASSERT_IS_NOT_NULL(buf);
+		umock_c_reset_all_calls();
 
-        STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
-            .IgnoreArgument_mapFilterFunc()
-            .SetReturn(TEST_MAP_HANDLE);
-        STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreAllArguments();
-        STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreAllArguments();
-        EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreAllCalls();
-        STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 2))
-            .IgnoreArgument_source();
-        STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
-        STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
+		STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
+			.IgnoreArgument_mapFilterFunc()
+			.SetReturn(TEST_MAP_HANDLE);
+		STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+		STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+		EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+			.IgnoreAllCalls();
+		STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 2))
+			.IgnoreArgument_source();
+		STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
+		STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
 
-        MESSAGE_HANDLE messageHandle = Message_CreateFromByteArray(notFail__2Property_2bytes, sizeof(notFail__2Property_2bytes));
+		MESSAGE_HANDLE messageHandle = Message_CreateFromByteArray(notFail__2Property_2bytes, sizeof(notFail__2Property_2bytes));
 
-        size_t two = 2;
-        const char* keys[] = { "BleedingEdge", "Azure IoT Gateway is" };
-        const char* values[] = { "rocks", "awesome" };
-        const char* const* *pkeys = (const char* const* *)&keys;
-        const char* const* *pvalues = (const char* const* *)&values;
+		size_t two = 2;
+		const char* keys[] = { "BleedingEdge", "Azure IoT Gateway is" };
+		const char* values[] = { "rocks", "awesome" };
+		const char* const* *pkeys = (const char* const* *)&keys;
+		const char* const* *pvalues = (const char* const* *)&values;
 
-        const CONSTBUFFER bufferContent = { (const unsigned char*)"34", 2 };
+		const CONSTBUFFER bufferContent = { (const unsigned char*)"34", 2 };
 
-        STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument_handle()
-            .CopyOutArgumentBuffer(2, &pkeys, sizeof(char**))
-            .CopyOutArgumentBuffer(3, &pvalues, sizeof(char**))
-            .CopyOutArgumentBuffer(4, &two, sizeof(two));
-        STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
-            .IgnoreArgument_constbufferHandle()
-            .SetReturn(&bufferContent);
-        STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument_size();
+		STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument_handle()
+			.CopyOutArgumentBuffer(2, &pkeys, sizeof(char**))
+			.CopyOutArgumentBuffer(3, &pvalues, sizeof(char**))
+			.CopyOutArgumentBuffer(4, &two, sizeof(two));
+		STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
+			.IgnoreArgument_constbufferHandle()
+			.SetReturn(&bufferContent);
 
-        ///act
-        const unsigned char* byteArray = Message_ToByteArray(messageHandle, &size);
+		///act
+		int32_t nbytes = Message_ToByteArray(messageHandle, buf, size);
 
-        ///assert
-        ASSERT_IS_NOT_NULL(byteArray);
-        ASSERT_ARE_EQUAL(int32_t, sizeof(notFail__2Property_2bytes), size);
-        ASSERT_ARE_EQUAL(int, 0, memcmp(byteArray, notFail__2Property_2bytes, size));
-        ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+		///assert
+		ASSERT_ARE_EQUAL(int32_t, sizeof(notFail__2Property_2bytes), nbytes);
+		ASSERT_ARE_EQUAL(int, 0, memcmp(buf, notFail__2Property_2bytes, size));
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
-        ///cleanup
-        free((void*)byteArray);
-        Message_Destroy(messageHandle);
-    }
+		///cleanup
+		free((void*)buf);
+		Message_Destroy(messageHandle);
+	}
+
 
     /*Tests_SRS_MESSAGE_02_035: [ If any of the above steps fails then Message_ToByteArray shall fail and return NULL. ]*/
     TEST_FUNCTION(Message_ToByteArray_with_properties_and_content_fails_when_ConstMap_GetInternals_fails)
     {
 
         ///arrange
-        int32_t size;
+		int32_t size = sizeof(notFail__2Property_2bytes);
+		unsigned char * buf = (unsigned char *)malloc(sizeof(notFail__2Property_2bytes));
+		ASSERT_IS_NOT_NULL(buf);
+		umock_c_reset_all_calls();
 
         STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument_mapFilterFunc()
@@ -2022,70 +2086,70 @@ BEGIN_TEST_SUITE(gwmessage_unittests)
             .SetReturn(CONSTMAP_ERROR);
 
         ///act
-        const unsigned char* byteArray = Message_ToByteArray(messageHandle, &size);
+		int32_t nbytes = Message_ToByteArray(messageHandle, buf, size);
 
         ///assert
-        ASSERT_IS_NULL(byteArray);
-        ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+		ASSERT_IS_TRUE(nbytes < 0);
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
         ///cleanup
-        free((void*)byteArray);
+        free((void*)buf);
         Message_Destroy(messageHandle);
     }
 
-    /*Tests_SRS_MESSAGE_02_035: [ If any of the above steps fails then Message_ToByteArray shall fail and return NULL. ]*/
-    TEST_FUNCTION(Message_ToByteArray_with_properties_and_content_fails_when_malloc_fails)
-    {
+    /*Tests_SRS_MESSAGE_17_017: [ If buf is not NULL and size is less than the needed memory size, Message_ToByteArray shall return -1; ]*/
+	TEST_FUNCTION(Message_ToByteArray_with_properties_and_content_fails_size_too_small)
+	{
 
-        ///arrange
-        int32_t size;
+		///arrange
+		int32_t size = sizeof(notFail__2Property_2bytes)-1;
+		unsigned char * buf = (unsigned char *)malloc(sizeof(notFail__2Property_2bytes));
+		ASSERT_IS_NOT_NULL(buf);
+		umock_c_reset_all_calls();
 
-        STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
-            .IgnoreArgument_mapFilterFunc()
-            .SetReturn(TEST_MAP_HANDLE);
-        STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreAllArguments();
-        STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreAllArguments();
-        EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreAllCalls();
-        STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 2))
-            .IgnoreArgument_source();
-        STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
-        STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
+		STRICT_EXPECTED_CALL(Map_Create(IGNORED_PTR_ARG))
+			.IgnoreArgument_mapFilterFunc()
+			.SetReturn(TEST_MAP_HANDLE);
+		STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+		STRICT_EXPECTED_CALL(Map_Add(TEST_MAP_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+		EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+			.IgnoreAllCalls();
+		STRICT_EXPECTED_CALL(CONSTBUFFER_Create(IGNORED_PTR_ARG, 2))
+			.IgnoreArgument_source();
+		STRICT_EXPECTED_CALL(ConstMap_Create(TEST_MAP_HANDLE));
+		STRICT_EXPECTED_CALL(Map_Destroy(TEST_MAP_HANDLE));
 
-        MESSAGE_HANDLE messageHandle = Message_CreateFromByteArray(notFail__2Property_2bytes, sizeof(notFail__2Property_2bytes));
+		MESSAGE_HANDLE messageHandle = Message_CreateFromByteArray(notFail__2Property_2bytes, sizeof(notFail__2Property_2bytes));
 
-        size_t two = 2;
-        const char* keys[] = { "BleedingEdge", "Azure IoT Gateway is" };
-        const char* values[] = { "rocks", "awesome" };
-        const char* const* *pkeys = (const char* const* *)&keys;
-        const char* const* *pvalues = (const char* const* *)&values;
+		size_t two = 2;
+		const char* keys[] = { "BleedingEdge", "Azure IoT Gateway is" };
+		const char* values[] = { "rocks", "awesome" };
+		const char* const* *pkeys = (const char* const* *)&keys;
+		const char* const* *pvalues = (const char* const* *)&values;
 
-        const CONSTBUFFER bufferContent = { (const unsigned char*)"34", 2 };
+		const CONSTBUFFER bufferContent = { (const unsigned char*)"34", 2 };
 
-        STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument_handle()
-            .CopyOutArgumentBuffer(2, &pkeys, sizeof(char**))
-            .CopyOutArgumentBuffer(3, &pvalues, sizeof(char**))
-            .CopyOutArgumentBuffer(4, &two, sizeof(two));
-        STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
-            .IgnoreArgument_constbufferHandle()
-            .SetReturn(&bufferContent);
-        STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument_size()
-            .SetReturn(NULL);
+		STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument_handle()
+			.CopyOutArgumentBuffer(2, &pkeys, sizeof(char**))
+			.CopyOutArgumentBuffer(3, &pvalues, sizeof(char**))
+			.CopyOutArgumentBuffer(4, &two, sizeof(two));
+		STRICT_EXPECTED_CALL(CONSTBUFFER_GetContent(IGNORED_PTR_ARG))
+			.IgnoreArgument_constbufferHandle()
+			.SetReturn(&bufferContent);
 
-        ///act
-        const unsigned char* byteArray = Message_ToByteArray(messageHandle, &size);
+		///act
+		int32_t nbytes = Message_ToByteArray(messageHandle, buf, size);
 
-        ///assert
-        ASSERT_IS_NULL(byteArray);
-        ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+		///assert
+		ASSERT_IS_TRUE(nbytes < 0);
+		ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
-        ///cleanup
-        free((void*)byteArray);
-        Message_Destroy(messageHandle);
-    }
+		///cleanup
+		free((void*)buf);
+		Message_Destroy(messageHandle);
+	}
 
 END_TEST_SUITE(gwmessage_unittests)

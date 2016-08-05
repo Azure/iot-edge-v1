@@ -547,7 +547,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , LIST_ITEM_HANDLE, list_find, LI
 DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
 
 
-BEGIN_TEST_SUITE(message_bus_unittests)
+BEGIN_TEST_SUITE(broadcast_bus_unittests)
 
 TEST_SUITE_INITIALIZE(TestClassInitialize)
 {
@@ -2240,4 +2240,4 @@ TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 	MessageBus_Destroy(bus);
 }
 
-END_TEST_SUITE(message_bus_unittests)
+END_TEST_SUITE(broadcast_bus_unittests)

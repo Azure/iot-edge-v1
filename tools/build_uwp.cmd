@@ -34,7 +34,7 @@ rem ----------------------------------------------------------------------------
 
 rem // default build options
 set build-clean=0
-set build-config=Release
+set build-config=Debug
 set build-platform=x86
 set run-unit-tests=1
 
@@ -78,7 +78,7 @@ goto args-loop
 rem -----------------------------------------------------------------------------
 rem -- build csharp language binding project.
 rem -----------------------------------------------------------------------------
-call nuget restore "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.sln"
+call nuget restore "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.Test.sln"
 
 
 
@@ -88,6 +88,21 @@ if %build-clean%==1 (
 )
 call :build-a-solution "%build-root%\bindings\uwp\uwp-binding\Microsoft.Azure.IoT.Gateway.Test.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
+
+rem -----------------------------------------------------------------------------
+rem -- build uwp sample project.
+rem -----------------------------------------------------------------------------
+call nuget restore "%build-root%\samples\uwp\UwpSample.sln"
+
+
+
+if %build-clean%==1 (
+    call :clean-a-solution "%build-root%\samples\uwp\UwpSample.sln" %build-config% %build-platform%
+    if not !errorlevel!==0 exit /b !errorlevel!
+)
+call :build-a-solution "%build-root%\samples\uwp\UwpSample.sln" %build-config% %build-platform%
+if not !errorlevel!==0 exit /b !errorlevel!
+
 
 if not %run-unit-tests%==1 goto :eof
 rem ------------------

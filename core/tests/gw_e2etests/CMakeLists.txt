@@ -47,7 +47,8 @@ if(WIN32)
 			gateway
 			iothub_test
 			rpcrt4
-		)		
+		)	
+		install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	endif()
 else()
 	if(TARGET ${theseTestsName}_exe)
@@ -64,5 +65,6 @@ else()
 	endif()
 
 endif()
+
 
 add_subdirectory(e2e_module)

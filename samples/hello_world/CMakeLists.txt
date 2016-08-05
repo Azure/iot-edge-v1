@@ -32,7 +32,8 @@ add_executable(hello_world_sample ${hello_world_headers} ${modules_path_file} ${
 
 add_dependencies(hello_world_sample logger_hl)
 
-target_link_libraries(hello_world_sample gateway)
+target_link_libraries(hello_world_sample gateway nanomsg)
 linkSharedUtil(hello_world_sample)
+install_broker(hello_world_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(hello_world_sample)

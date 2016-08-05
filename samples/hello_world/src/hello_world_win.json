@@ -4,7 +4,7 @@
         {
             "module name" : "logger_hl",
             "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
-            "args" : {"filename":"c:\\temp\\log.txt"}
+            "args" : {"filename":"f:\\log.txt"}
         },
         {
             "module name" : "hello_world",
@@ -16,7 +16,7 @@
     [
         {
             "source": "hello_world",
-            "sink": "logger"
+            "sink": "logger_hl"
         }
     ]
 }

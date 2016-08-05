@@ -1462,9 +1462,8 @@ public:
 	MOCK_METHOD_END(HRESULT, S_OK);
 
 	//Message Mocks
-	MOCK_STATIC_METHOD_2(, const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size)	
-	     *size = 11;
-	MOCK_METHOD_END(const unsigned char*, (const unsigned char*)"AnyContent");
+	MOCK_STATIC_METHOD_3(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t , size)
+	MOCK_METHOD_END( int32_t, (int32_t)11);
 
 	
 	MOCK_STATIC_METHOD_2(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
@@ -1532,7 +1531,7 @@ extern "C"
 	DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, HRESULT, __stdcall, myTest_SafeArrayUnaccessData, SAFEARRAY *, psa)
 		
 	//Message Mocks
-	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , const unsigned char*, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, int32_t *, size);
+	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t, size);
 
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
 
@@ -3046,9 +3045,38 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
-			.IgnoreArgument(2)
-			.SetFailReturn((const unsigned char*)NULL);
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0))
+			.SetFailReturn(-1);
+			
+
+		///act
+		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	TEST_FUNCTION(DotNET_Receive__does_nothing_when_Message_alloc_fails)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+
+		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+
+		mocks.ResetAllCalls();
+
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11))
+			.SetFailReturn(nullptr);
+
 
 		///act
 		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
@@ -3075,8 +3103,12 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
+
+
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
@@ -3109,7 +3141,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3146,7 +3180,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3186,7 +3222,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3228,7 +3266,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3276,7 +3316,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3327,7 +3369,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3380,7 +3424,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3441,7 +3487,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3507,7 +3555,9 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
 			.IgnoreArgument(2);
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))

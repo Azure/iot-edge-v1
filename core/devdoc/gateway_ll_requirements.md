@@ -203,6 +203,12 @@ Gateway_LL_Create creates a new gateway using information about modules in the `
 
 **SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE` message bus. **]**
 
+**SRS_GATEWAY_LL_26_001: [** This function shall initialize attached Event System and report `GATEWAY_CREATED` event. **]**
+
+**SRS_GATEWAY_LL_26_002: [** If Event System module fails to be initialized the gateway module shall be destroyed and NULL returned with no events reported. **]**
+
+**SRS_GATEWAY_LL_26_010: [** This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. **]**
+
 **SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the `MESSAGE_Bus` the `GATEWAY_HANDLE` will be destroyed. **]**
 
 ```
@@ -235,6 +241,10 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 **SRS_GATEWAY_LL_14_037: [** If `GATEWAY_HANDLE_DATA`'s message bus cannot unlink module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+
+**SRS_GATEWAY_LL_26_003: [** If the Event System module is initialized, this function shall report `GATEWAY_DESTROYED` event. **]**
+
+**SRS_GATEWAY_LL_26_004: [** This function shall destroy the attached Event System.  **]**
 
 ```
 extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
@@ -306,6 +316,28 @@ Gateway_RemoveModule will remove the specified `module` from the message bus.
 **SRS_GATEWAY_LL_14_025: [** The function shall unload `MODULE_DATA`'s `library_handle`. **]**
 
 **SRS_GATEWAY_LL_14_026: [** The function shall remove that `MODULE_DATA` from `GATEWAY_HANDLE_DATA`'s `modules`. **]**
+
+## Gateway_AddEventCallback
+```
+extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+```
+Gateway_AddEventCallback registers callback function to listen to some kind of `GATEWAY_EVENT`.
+When the event happens the callback will be put in a queue and executed in a seperate callback thread in First-In-First-Out order of registration for that event
+Also see `event_system_requirements.md` file for further requirements.
+
+**SRS_GATEWAY_LL_26_006: [** This function shall log a failure and do nothing else when `gw` parameter is NULL. **]**
+
+## Gateway_GetModuleList
+```
+extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
+```
+
+**SRS_GATEWAY_LL_26_007: [** This function shall return a snapshot copy of information about current gateway modules. **]**
+
+**SRS_GATEWAY_LL_26_008: [** If the `gw` parameter is NULL, the function shall return NULL handle and not allocate any data. **]**
+
+**SRS_GATEWAY_LL_26_009: [** This function shall return a NULL handle should any internal callbacks fail. **]**
+
 
 ## Gateway_LL_AddLink
 ```
