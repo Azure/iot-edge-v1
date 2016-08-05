@@ -10,7 +10,7 @@ contains the following modules:
 
   1. A Bluetooth Low Energy (BLE) module that interfaces with the BLE device to
      read temperature data.
-  2. A logger module for producing message bus diagnostics.
+  2. A logger module for producing message broker diagnostics.
   3. An identity mapping module for translating between BLE device MAC addresses
      and Azure IoT Hub device identities.
   4. An IoT Hub HTTP module for uploading BLE telemetry data and for receiving
@@ -30,17 +30,17 @@ device before finding its way to an Azure IoT Hub.
 
   1. The BLE device generates a temperature sample and transfers it over
      Bluetooth to the BLE module.
-  2. The BLE Module receives the sample and publishes it on to the message bus
+  2. The BLE Module receives the sample and publishes it to the message broker
      along with the device's MAC address.
-  3. The identity mapping module picks up this message from the message bus and
-     looks up its internal table in order  to translate the device MAC address 
+  3. The identity mapping module picks up this message from the message broker
+     and looks up its internal table in order to translate the device MAC address 
      into an Azure IoT Hub identity (comprised of a device ID and device key). 
-     It then proceeds to publish a new message on to the message bus containing 
+     It then proceeds to publish a new message on to the message broker containing 
      the temperature sample data, the MAC address, the IoT Hub device ID and
      key.
   4. The IoT Hub HTTP module then receives this message from the identity
      mapping module and publishes it to the Azure IoT Hub itself.
-  5. The logger module logs all messages from the message bus into a file on
+  5. The logger module logs all messages from the message broker into a file on
      the disk.
 
 The cloud to device command data flow pipeline is described via a block diagram
@@ -51,10 +51,10 @@ below:
   1. The IoT Hub HTTP module periodically polls Azure IoT Hub for new command
      messages that might be available.
   2. When the IoT Hub HTTP module receives a new command message, it publishes
-     it on to the message bus.
+     it to the message broker.
   3. The Identity Mapping module picks up the message and translates the Azure
      IoT Hub device ID to a device MAC address and publishes a new message to
-     the message bus including the MAC address in the message's properties map.
+     the message broker including the MAC address in the message's properties map.
   4. The BLE module then picks up this message and executes the I/O instruction
      by communicating with the BLE device.
 

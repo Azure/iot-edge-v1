@@ -19,7 +19,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
 	VECTOR_HANDLE modules;
 
-	/** @brief The message bus contained within this Gateway */
+	/** @brief The message broker contained within this Gateway */
 	MESSAGE_BUS_HANDLE bus;
 
 	/** @brief Handle for callback event system coupled with this Gateway */
@@ -37,7 +37,7 @@ typedef struct MODULE_DATA_TAG {
 	/** @brief The MODULE_LIBRARY_HANDLE associated with 'module'*/
 	MODULE_LIBRARY_HANDLE module_library_handle;
 
-	/** @brief The MODULE_HANDLE of the same module that lives on the message bus.*/
+	/** @brief The MODULE_HANDLE of the same module that lives on the message broker.*/
 	MODULE_HANDLE module;
 
 } MODULE_DATA;
@@ -139,7 +139,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 		/* For freeing up NULL ptrs in case of create failure */
 		memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
 
-		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message bus. ]*/
+		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message broker. ]*/
 		gateway->bus = MessageBus_Create();
 		if (gateway->bus == NULL) 
 		{
@@ -174,7 +174,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 				{
 					if (properties != NULL && properties->gateway_modules != NULL)
 					{
-						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the gateway's message broker. ]*/
 						size_t entries_count = VECTOR_size(properties->gateway_modules);
 						if (entries_count > 0)
 						{
@@ -438,31 +438,31 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 					module.module_handle = module_handle;
 
 					/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
-					/*Codes_SRS_GATEWAY_LL_14_018: [If the message bus linking is unsuccessful, the function shall return NULL.]*/
+					/*Codes_SRS_GATEWAY_LL_14_018: [If the message broker linking is unsuccessful, the function shall return NULL.]*/
 					if (MessageBus_AddModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 					{
 						module_result = NULL;
-						LogError("Failed to add module to the gateway bus.");
+						LogError("Failed to add module to the gateway's broker.");
 					}
 					else
 					{
 						/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
 						MessageBus_IncRef(gateway_handle->bus);
-						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus.]*/
+						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker.]*/
 						MODULE_DATA module_data =
 						{
 							module_name,
 							module_library_handle,
 							module_handle
 						};
-						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message broker. ]*/
 						if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
 						{
 							MessageBus_DecRef(gateway_handle->bus);
 							module_result = NULL;
 							if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 							{
-								LogError("Failed to remove module [%p] from the gateway message bus. This module will remain linked.", &module);
+								LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
 							}
 							LogError("Unable to add MODULE_DATA* to the gateway module vector.");
 						}
@@ -534,7 +534,7 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			{
 				MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
 				//By design, there will be no NULL module_data pointers in the vector
-				/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+				/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing the modules from the GATEWAY_HANDLE. ]*/
 				gateway_removemodule_internal(gateway_handle, module_data);
 			}
 
@@ -576,7 +576,7 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 	if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 	{
-		LogError("Failed to remove module [%p] from the message bus. This module will remain linked to the message bus but will be removed from the gateway.", module_data->module);
+		LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module_data->module);
 	}
 	/*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
 	MessageBus_DecRef(gateway_handle->bus);
@@ -705,7 +705,7 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 					}
 					else
 					{
-						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. ]*/
 						MessageBus_IncRef(gateway->bus);
 					}
 				}
@@ -739,7 +739,7 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 			if (MessageBus_RemoveModule(gateway_handle->bus, module) != MESSAGE_BUS_OK)
 			{
-				LogError("Failed to remove module [%p] from the message bus. This module will remain linked to the message bus but will be removed from the gateway.", module);
+				LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module);
 			}
 			/*Codes_SRS_GATEWAY_LL_99_009: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
 			MessageBus_DecRef(gateway_handle->bus);

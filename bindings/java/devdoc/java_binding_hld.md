@@ -22,7 +22,7 @@ The **Java Module Host** is a C module that
     attempting to connect to the gateway.
 
 2.  Brokers calls **to** the Java module (create, destroy, receive) and
-    facilitates publishing **from** the Java module to the native Message Bus.
+    facilitates publishing **from** the Java module to the native message broker.
 
 Because [JNI](http://docs.oracle.com/javase/8/docs/technotes/guides/jni/) (Java
 Native Interface) only allows one JVM instance per process, the **Java Module
@@ -169,8 +169,8 @@ Communication **FROM** the Java module
 
 In order to communicate **from** the Java module to the native gateway process,
 the `MessageBus` class must be used. The `MessageBus` class provides a method to
-publish messages onto the native Message Bus and loads a dynamic library that
-implements the functions for publishing onto the native message bus. So,the 
+publish messages to the native message broker and loads a dynamic library that
+implements the functions for publishing to the native message broker. So, the 
 above diagram should look a bit more like this:
 
 ![](HLD2.png)

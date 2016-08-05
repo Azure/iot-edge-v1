@@ -736,7 +736,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message bus.This handle value shall not be equal to NULL when the API call is successful.]
+//Tests_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]
 //Tests_SRS_MESSAGE_BUS_13_007: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]
 //Tests_SRS_MESSAGE_BUS_13_023: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]
 //Tests_SRS_MESSAGE_BUS_17_001: [ MessageBus_Create shall initialize a socket for publishing messages. ]

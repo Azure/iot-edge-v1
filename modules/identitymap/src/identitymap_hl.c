@@ -139,7 +139,7 @@ static MODULE_HANDLE IdentityMap_HL_Create(MESSAGE_BUS_HANDLE busHandle, const v
 					}
 					else
 					{
-						/*Codes_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message bus handle and the input vector. ]*/
+						/*Codes_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message broker handle and the input vector. ]*/
 						/*Codes_SRS_IDMAP_HL_17_014: [ When the lower layer identity map module create succeeds, IdentityMap_HL_Create shall succeed and return a non-NULL value. ]*/
 						/*Codes_SRS_IDMAP_HL_17_015: [ If the lower layer identity map module create fails, IdentityMap_HL_Create shall fail and return NULL. ]*/
 						result = MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Create(busHandle, inputVector);
@@ -166,7 +166,7 @@ static void IdentityMap_HL_Destroy(MODULE_HANDLE moduleHandle)
 
 
 /*
- * @brief	Receive a message from the message bus.
+ * @brief	Receive a message from the message broker.
  */
 static void IdentityMap_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {

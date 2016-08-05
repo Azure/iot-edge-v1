@@ -109,7 +109,7 @@ bool buildMessageBusObject(long long  busHandle, long long  moduleHandle, _Assem
 				vtAzureIoTGatewayMessageBusObject)))
 			{
 				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-				LogError("Creating an instance of Message Bus failed with hr 0x%08lx\n", hr);
+				LogError("Creating an instance of the message broker failed with hr 0x%08lx\n", hr);
 			}
 			else
 			{
@@ -259,7 +259,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 			(configuration == NULL)
 			)
 		{
-			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if bus is NULL. ] */
+			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if busHandle is NULL. ] */
 			/* Codes_SRS_DOTNET_04_002: [ DotNET_Create shall return NULL if configuration is NULL. ] */
 			LogError("invalid arg busHandle=%p, configuration=%p", busHandle, configuration);
 		}
@@ -340,7 +340,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 					}
 					else if (!buildMessageBusObject((long long)out->bus, (long long)out, out->spAzureIoTGatewayAssembly, &vtAzureIoTGatewayMessageBusObject))
 					{
-						LogError("Failed to build Message Bus Object.");
+						LogError("Failed to build the message broker object.");
 						delete out;
 						out = NULL;
 					}
@@ -566,20 +566,20 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 	}
 }
 
-MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
+MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 {
 	bool returnValue = false;
 	MESSAGE_HANDLE messageToPublish = NULL;
 
-	if (bus == NULL || sourceModule == NULL || source == NULL || size < 0)
+	if (bus == NULL || sourceModule == NULL || message == NULL || size < 0)
 	{
 		/* Codes_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
 		/* Codes_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
-		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
+		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if message is NULL, or size if lower than 0. ] */
 		LogError("invalid arg bus=%p, sourceModule=%p", bus, sourceModule);
 	}
-	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from source and size by invoking Message_CreateFromByteArray. ] */
-	else if((messageToPublish = Message_CreateFromByteArray(source, size)) == NULL)
+	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
+	else if((messageToPublish = Message_CreateFromByteArray(message, size)) == NULL)
 	{
 		/* Codes_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
 		LogError("Error trying to create message from Byte Array");

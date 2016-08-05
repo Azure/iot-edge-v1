@@ -89,7 +89,7 @@ Creates a new BLE module instance. The parameter `configuration` is a pointer to
 
 **SRS_BLE_13_014: [** If the asynchronous call to `BLEIO_gatt_connect` is successful then the `BLEIO_Seq_Run` function shall be called on the `bleio_seq` field from `BLE_HANDLE_DATA`. **]**
 
-**SRS_BLE_13_019: [** `BLE_Create` shall handle the `ON_BLEIO_SEQ_READ_COMPLETE` callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message bus with the buffer that was read as the content of the message along with the following properties:
+**SRS_BLE_13_019: [** `BLE_Create` shall handle the `ON_BLEIO_SEQ_READ_COMPLETE` callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message broker with the buffer that was read as the content of the message along with the following properties:
 
 >| Property Name           | Description                                                   |
 >|-------------------------|---------------------------------------------------------------|

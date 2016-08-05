@@ -120,7 +120,7 @@ typedef struct IDENTITY_MAP_DATA_TAG
 } IDENTITY_MAP_DATA;
 ```    
 
-Where `busHandle` is the message bus passed in as input, `mappingSize` is the number of 
+Where `busHandle` is the message broker passed in as input, `mappingSize` is the number of 
 elements in the vector `configuration`, and the `macToDeviceArray` and `deviceToMacArray` are the sorted lists 
 of mapping triplets. 
 

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.IoT.Gateway
     public interface IGatewayModule
     {
         /// <summary>
-        ///     Creates a module using the specified configuration connecting to the specified message bus.
+        ///     Creates a module using the specified configuration connecting to the specified message broker.
         /// </summary>
         /// <param name="bus">The bus onto which this module will connect.</param>
         /// <param name="configuration">A string with user-defined configuration for this module.</param>

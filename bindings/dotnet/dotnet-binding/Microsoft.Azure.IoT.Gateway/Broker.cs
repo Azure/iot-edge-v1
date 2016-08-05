@@ -48,7 +48,7 @@ namespace Microsoft.Azure.IoT.Gateway
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
         /// <summary>
-        ///     Publish a message into the gateway message bus. 
+        ///     Publish a message to the gateway message broker. 
         /// </summary>
         /// <param name="message">Object representing the message to be published into the bus.</param>
         /// <returns></returns>

@@ -1,23 +1,23 @@
-Message Bus
-===========
+Message Broker
+==============
 
 High level design
 -----------------
 
 ### Overview
 
-The message bus (or just the "bus") is central to the gateway. The message bus plays the role of a message broker - a central agent responsible for receiving and broadcasting messages between interested parties. In case of the gateway, the interested parties will be *modules*. This document describes the high level design of the message bus along with descriptions of flow of control.
+The message broker (or just the "broker") is central to the gateway. The broker is responsible for sending and receiving messages between interested parties. In the case of the gateway, the interested parties are *modules*. This document describes the high level design of the broker along with descriptions of flow of control.
 
 ### Design Goals
 
-The message bus essentially has two underlying guiding principles that influence its design:
+There are two guiding principles that influence the broker's design:
 
-- The message bus APIs shall be thread-safe, i.e., any piece of code running on any arbitrary thread is allowed to call any API on the message bus at any time concurrently or otherwise.
-- When the bus delivers messages to modules on the bus it shall ensure that it does so in a serial fashion for any given module, i.e., at no point shall it *concurrently* invoke the message receive function on a module. This allows modules to not have to concern themselves with ensuring synchronization of access to shared state on the module.
+- The broker APIs shall be thread-safe, i.e., any piece of code running on any arbitrary thread is allowed to call any API on the broker at any time, concurrently or otherwise.
+- When the broker delivers messages to modules it shall do so serially for a given module, i.e., at no point shall it *concurrently* invoke a module's receive function. Modules do not need to synchronize access to their internal state.
 
-### The Message Bus Data
+### The Broker's Internal State
 
-An instance of the message bus is represented in code via an opaque `MESSAGE_BUS_HANDLE` value and is a reference counted object. The `MESSAGE_BUS_HANDLE` is backed by a data structure called `MESSAGE_BUS_HANDLE_DATA` which looks like this:
+An instance of the broker is represented in code via an opaque `MESSAGE_BUS_HANDLE` value and is a reference counted object. The `MESSAGE_BUS_HANDLE` is backed by a data structure called `MESSAGE_BUS_HANDLE_DATA` which looks like this:
 
 ```C
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
@@ -29,18 +29,16 @@ typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 }MESSAGE_BUS_HANDLE_DATA;
 ```
 
-Here's a description of the members of `MESSAGE_BUS_HANDLE_DATA`.
+`MESSAGE_BUS_HANDLE_DATA` has the following members:
 
->| Field       | Description                                                                  |
->|-------------|------------------------------------------------------------------------------|
+>| Field          | Description                                                           |
+>|----------------|-----------------------------------------------------------------------|
 >| modules        | Vector of modules where each element is an instance of `MODULE_INFO`. |
->| publish_socket | The socket to publish messages to the broadcast bus.                       |
->| url            | A URL to uniquely describe the broadcast bus.        |
->| modules_lock   | A mutex used to synchronize access to the `modules` field.                 |
+>| publish_socket | The socket used to publish messages to other modules.                 |
+>| url            | A URL to uniquely describe the broker.                                |
+>| modules_lock   | A mutex used to synchronize access to the `modules` field.            |
 
-### The Module Info
-    
-Each module that is connected to the message bus is represented using a structure of type `MODULE_INFO` which looks like so:
+Each module that is connected to the broker is represented using a structure of type `MODULE_INFO` which looks like this:
 
 ```C
 typedef struct MODULE_INFO_TAG
@@ -54,24 +52,24 @@ typedef struct MODULE_INFO_TAG
 }MODULE_INFO;
 ```
 
-A description of the fields in the `MODULE_INFO` structure follows:
+`MODULE_INFO` has the following members:
 
->| Field       | Description                                                          |
+>| Field                 | Description                                                          |
 >|-----------------------|----------------------------------------------------------------------|
 >| module                | Reference to the module.                                             |
 >| module_apis           | The function dispatch table for this module.                         |
 >| thread                | Handle to the thread on which this module's message loop is running. |
->| receive\_socket       | The delivery socket for this module.        |
->| socket\_lock          | A mutex used to synchronize access to the nanomsg read function.  |
->| quit\_message\_guid   | A unique ID sent to the worker thread to close it.          |
+>| receive\_socket       | The delivery socket for this module.                                 |
+>| socket\_lock          | A mutex used to synchronize access to the nanomsg read function.     |
+>| quit\_message\_guid   | A unique ID sent to the worker thread to close it.                   |
 
-### Adding A Module To The Message Bus
+### Attaching a Module to the Broker
 
-Whenever a new module is added to the message bus a new thread is created and launched whose responsibility it is to process messages that are delivered for that module by invoking the module's message callback function. The worker thread will wait on receive_socket and deliver messages to the module. If `quit_worker` is equal to `1` then the worker thread will quit and return.
+When a new module is added to the broker a worker thread is created to receive messages for that module. The worker thread will wait on `receive_socket` and deliver messages to the module's receive callback function. If `quit_worker` is equal to `1` then the worker thread will quit and return.
 
 ### Publishing A Message
 
-Using a messaging system like nanomsg strongly encourages the message bus to pass messages as serialized data, rather than passing messages as pointers or handles.
+Using a messaging system like nanomsg strongly encourages the broker to pass messages as serialized data, rather than passing messages as pointers or handles.
 
 Nanomsg sockets are considered thread-safe, which means we can avoid locking during a publish unless we need access to critical module data.
 

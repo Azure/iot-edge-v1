@@ -320,7 +320,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 	//Tests_SRS_IDMAP_HL_17_007: [ IdentityMap_HL_Create shall call VECTOR_create to make the identity map module input vector. ]
 	//Tests_SRS_IDMAP_HL_17_008: [ IdentityMap_HL_Create shall walk through each object of the array. ]
 	//Tests_SRS_IDMAP_HL_17_012: [ IdentityMap_HL_Create shall use "macAddress", "deviceId", and "deviceKey" values as the fields for an IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element to the vector. ]
-    //Tests_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message bus handle and the input vector. ]
+    //Tests_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message broker handle and the input vector. ]
 	//Tests_SRS_IDMAP_HL_17_014: [ When the lower layer identity map module create succeeds, IdentityMap_HL_Create shall succeed and return a non-NULL value. ]
     //Tests_SRS_IDMAP_HL_17_016: [ IdentityMap_HL_Create shall release all data it allocated. ]
 	TEST_FUNCTION(IdentityMap_HL_Create_Success)

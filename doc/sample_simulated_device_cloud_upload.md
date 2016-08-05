@@ -14,7 +14,7 @@ These messages are received by the identity mapping module that will add the dev
 Once messages carrying device name, device key and temperature are received by the IotHubHTTP module, they will be 
 uploaded to IoTHub on a multiplexed connection.
 
-The logger module logs all the exchanges on the message bus to a file. 
+The logger module logs all the exchanges on the message broker to a file. 
 
 ## How to build the sample:
 Linux

@@ -39,7 +39,7 @@ Creates a new .NET module instance. The parameter `configuration` is a
 pointer to a `DOTNET_HOST_CONFIG` object.
 
 
-**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `busHandle` is `NULL`. **]**
 
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -70,7 +70,7 @@ pointer to a `DOTNET_HOST_CONFIG` object.
         public class MessageBus
         {
             /// <summary>
-            ///     Publish a message into the gateway message bus. 
+            ///     Publish a message to the message broker. 
             /// </summary>
             /// <param name="message">Object representing the message to be published into the bus.</param>
             /// <returns></returns>
@@ -97,7 +97,7 @@ void DotNET_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents a message passed between modules. </summary>
         public class Message
         {
             public Buffer Content { set; get; };
@@ -138,16 +138,16 @@ extern const MODULE_APIS* Module_GetAPIS(void);
 Module_DotNetHost_PublishMessage
 --------------------------------
 ```c
-bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
+bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 ```
 
 **SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `bus` is NULL. **]**
 
 **SRS_DOTNET_04_029: [** `Module_DotNetHost_PublishMessage` shall return false if `sourceModule` is NULL.  **]**
 
-**SRS_DOTNET_04_023: [** `Module_DotNetHost_PublishMessage` shall return false if `source` is NULL, or size if lower than 0. **]**
+**SRS_DOTNET_04_023: [** `Module_DotNetHost_PublishMessage` shall return false if `message` is NULL, or size if lower than 0. **]**
 
-**SRS_DOTNET_04_024: [** `Module_DotNetHost_PublishMessage` shall create a message from `source` and size by invoking  `Message_CreateFromByteArray`. **]**
+**SRS_DOTNET_04_024: [** `Module_DotNetHost_PublishMessage` shall create a message from `message` and size by invoking  `Message_CreateFromByteArray`. **]**
 
 **SRS_DOTNET_04_025: [** If `Message_CreateFromByteArray` fails, `Module_DotNetHost_PublishMessage` shall fail. **]**
 

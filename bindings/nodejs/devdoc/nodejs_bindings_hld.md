@@ -224,8 +224,8 @@ interface StringMap {
 }
 
 /**
- * A message object that can be published on to a message bus or
- * is received from a message bus.
+ * A message object that can be published to a message broker or
+ * is received from a message broker.
  */
 interface Message {
     properties: StringMap;
@@ -233,7 +233,7 @@ interface Message {
 }
 
 /**
- * A message bus object.
+ * A message broker object.
  */
 interface MessageBus {
     publish: (message: Message) => boolean;
@@ -273,7 +273,7 @@ following actions:
     loop.
 
 -   When the *libuv* idle handler is invoked, it creates an instance of a proxy
-    object for the Message Bus (conforming to the `MessageBus` interface defined
+    object for the message broker (conforming to the `MessageBus` interface defined
     above).
 
 -   If this is the first time that a Node JS module is being loaded, then it
@@ -308,10 +308,10 @@ constructs an object that implements the `Message` interface and invokes
 The call to `Module_Destroy` is simply forwarded on to `GatewayModule.destroy`.
 It then removes the module reference from it’s internal list of modules.
 
-### Publishing of messages to the bus
+### Publishing of messages to the broker
 
 Whenever the code running on the JavaScript side of the equation publishes a new
-message on to the message bus, it will first construct an object that implements
+message to the message broker, it will first construct an object that implements
 the `Message` interface and invoke `MessageBus.publish` at which point control
 shifts to the native code where the implementation proceeds to construct a
 `MESSAGE_HANDLE` from the JavaScript message object. Once the `MESSAGE_HANDLE`

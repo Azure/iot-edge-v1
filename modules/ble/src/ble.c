@@ -507,13 +507,15 @@ static void on_read_complete(
                         }
                         else
                         {
-                            /*Codes_SRS_BLE_13_019: [BLE_Create shall handle the ON_BLEIO_SEQ_READ_COMPLETE callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the bus with the buffer that was read as the content of the message along with the following properties:
+                            /*Codes_SRS_BLE_13_019: [BLE_Create shall handle the ON_BLEIO_SEQ_READ_COMPLETE callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message broker with the buffer that was read as the content of the message along with the following properties:
 
-                                | Property Name           | Description                                                   |
-                                |-------------------------|---------------------------------------------------------------|
-                                | ble_controller_index    | The index of the bluetooth radio hardware on the device.      |
-                                | mac_address             | MAC address of the BLE device from which the data was read.   |
-                                | timestamp               | Timestamp indicating when the data was read.                  |
+                            | Property Name           | Description                                                   |
+                            |-------------------------|---------------------------------------------------------------|
+                            | ble_controller_index    | The index of the bluetooth radio hardware on the device.      |
+                            | mac_address             | MAC address of the BLE device from which the data was read.   |
+                            | timestamp               | Timestamp indicating when the data was read.                  |
+                            | source                  | This property will always have the value `bleTelemetry`.      |
+
                             ]*/
                             if (MessageBus_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != MESSAGE_BUS_OK)
                             {

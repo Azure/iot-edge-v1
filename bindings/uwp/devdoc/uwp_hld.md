@@ -47,7 +47,7 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents a message passed between modules. </summary>
         public sealed class Message
         {
 			// There are limitations to UWP and overloading ... these static CreateMessage
@@ -88,7 +88,7 @@ The high level design of these objects and interfaces is documented below:
     public interface IGatewayModule
     {
             /// <summary>
-            ///     Creates a module using the specified configuration connecting to the specified message bus.
+            ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
             /// <param name="bus">The bus onto which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>

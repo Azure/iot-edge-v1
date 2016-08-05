@@ -98,7 +98,7 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents a message passed between modules. </summary>
         public class Message
         {
             public byte[] Content { set; get; };
@@ -128,7 +128,7 @@ The high level design of these objects and interfaces is documented below:
         public class MessageBus
         {
             /// <summary>
-            ///     Publish a message into the gateway message bus. 
+            ///     Publish a message to the message broker. 
             /// </summary>
             /// <param name="message">Object representing the message to be published into the bus.</param>
             /// <returns></returns>
@@ -144,7 +144,7 @@ The high level design of these objects and interfaces is documented below:
     public interface IGatewayModule
     {
             /// <summary>
-            ///     Creates a module using the specified configuration connecting to the specified message bus.
+            ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
             /// <param name="bus">The bus onto which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>

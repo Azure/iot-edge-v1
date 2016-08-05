@@ -591,7 +591,7 @@ static v8::Local<v8::Object> create_message_bus(v8::Isolate* isolate, v8::Local<
     auto message_bus_template = nodejs_module::NodeJSUtils::CreateObjectTemplateWithMethod("publish", message_bus_publish);
     if (message_bus_template.IsEmpty() == true)
     {
-        LogError("Could not instantiate an object template for the message bus");
+        LogError("Could not instantiate an object template for the message broker");
     }
     else
     {
@@ -664,7 +664,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
             auto message_bus = create_message_bus(isolate, context);
             if (message_bus.IsEmpty())
             {
-                LogError("Could not instantiate a message bus object");
+                LogError("Could not instantiate a message broker object");
                 info.GetReturnValue().Set(false);
             }
             else
@@ -674,7 +674,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                 auto module_id = info[1]->ToNumber()->Uint32Value();
                 NODEJS_MODULE_HANDLE_DATA& handle_data = nodejs_module::ModulesManager::Get()->GetModuleFromId(module_id);
 
-                // save the module id in the message bus object so we can retrieve this
+                // save the module id in the message broker object so we can retrieve it
                 // from the message_bus_publish function
                 auto module_id_value = v8::Uint32::NewFromUnsigned(isolate, module_id);
                 if (module_id_value.IsEmpty() == true)
@@ -690,7 +690,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                     // from NODEJS_Destroy
                     handle_data.module_object.Reset(isolate, gateway);
 
-                    // invoke the 'create' method on 'gateway' passing the message bus
+                    // invoke the 'create' method on 'gateway' passing the message broker
                     auto create_method_name = v8::String::NewFromUtf8(isolate, "create");
                     if (create_method_name.IsEmpty() == true)
                     {

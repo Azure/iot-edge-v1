@@ -34,7 +34,7 @@
 #define INPROC_URL_HEAD_SIZE  9
 #define URL_SIZE (INPROC_URL_HEAD_SIZE + MESSAGE_BUS_GUID_SIZE +1)
 
-/*The message bus implementation shall use the following definition as the backing structure for the message bus handle*/
+/*The structure backing the message broker handle*/
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 {
     LIST_HANDLE                modules;
@@ -48,7 +48,7 @@ DEFINE_REFCOUNT_TYPE(MESSAGE_BUS_HANDLE_DATA);
 typedef struct MESSAGE_BUS_MODULEINFO_TAG
 {
     /**
-    * Handle to the module that's connected to the bus.
+    * Handle to the module that's associated with the broker.
     */
     MODULE*             module;
 
@@ -190,7 +190,7 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
         }
     }
 
-    /*Codes_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message bus.This handle value shall not be equal to NULL when the API call is successful.]*/
+    /*Codes_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]*/
     return result;
 }
 

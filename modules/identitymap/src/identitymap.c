@@ -389,7 +389,7 @@ static void publish_with_new_properties(MAP_HANDLE newProperties, MESSAGE_HANDLE
 			busStatus = MessageBus_Publish(idModule->busHandle, (MODULE_HANDLE)idModule, newMessage);
 			if (busStatus != MESSAGE_BUS_OK)
 			{
-				LogError("Message bus publish failure: %s", ENUM_TO_STRING(MESSAGE_BUS_RESULT, busStatus));
+				LogError("Message broker publish failure: %s", ENUM_TO_STRING(MESSAGE_BUS_RESULT, busStatus));
 			}
 			Message_Destroy(newMessage);
 		}
@@ -550,7 +550,7 @@ static bool determine_message_direction(const char * source, bool * isC2DMessage
 }
 
 /*
- * @brief	Receive a message from the message bus.
+ * @brief	Receive a message from the message broker.
  */
 static void IdentityMap_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {

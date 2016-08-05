@@ -716,13 +716,13 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *
     *  [5] `module_publish_worker_calls_module_receive_Condition_Wait` uses the data pointed at by
     *      the global variable `interceptArgs_for_Condition_Wait` to get a handle to the
-    *      message bus and the message to be published on the message bus. We assign a pointer to a local
+    *      message broker and the message to be published to the message broker. We assign a pointer to a local
     *      variable of type `Condition_Wait_Callback_Input` in the test case
     *      (i.e. `module_publish_worker_calls_module_receive`) to 'interceptArgs_for_Condition_Wait'.
     *
     *  [6] `module_publish_worker_calls_module_receive_Condition_Wait` publishes a message on to
-    *      the message bus via `MessageBus_Publish` and replaces `intercept_for_Condition_Wait` so that it
-    *      points to the function `module_publish_worker_calls_module_receive_Condition_Wait2`.
+    *      the message broker via `MessageBus_Publish` and replaces `intercept_for_Condition_Wait` so that
+    *      it points to the function `module_publish_worker_calls_module_receive_Condition_Wait2`.
     *
     *  [7] Control then goes back to `module_publish_worker` which proceeds to consume the newly
     *      enqueued message and delivers it to the fake module. `FakeModule_Receive` gets called
@@ -732,8 +732,8 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *      time the `module_publish_worker_calls_module_receive_Condition_Wait2` function ends up
     *      being called. In this function our goal is to assign `1` to the `quit_worker`
     *      variable in the module's `MESSAGE_BUS_MODULEINFO` struct. Since we don't have access to the
-    *      structs backing the message bus we use the global variables `MESSAGE_BUS_offsetof_modules` and
-    *      `MESSAGE_BUS_offsetof_quit_worker` provided by the message bus API to figure out the location where
+    *      structs backing the message broker we use the global variables `MESSAGE_BUS_offsetof_modules` and
+    *      `MESSAGE_BUS_offsetof_quit_worker` provided by the message broker API to figure out the location where
     *      the `quit_worker` variable resides in memory and assign `1` to it.
     *
     *  [9] Since `quit_worker` is now `1`, `module_publish_worker` will exit its processing loop

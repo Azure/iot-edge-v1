@@ -10,7 +10,7 @@ The sample contains:
 
 1. A printer module (C#) that interprets telemetry from sensor and prints it's content and properties into Console.
 2. A sensor module (C#) that publishes random data to the gateway.
-3. A logger module for producing message bus diagnostics.
+3. A logger module for producing message broker diagnostics.
 
 Other resources:
 *[getting started doc](getting_started.md)

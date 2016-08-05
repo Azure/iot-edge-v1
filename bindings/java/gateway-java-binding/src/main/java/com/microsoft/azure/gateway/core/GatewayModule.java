@@ -59,7 +59,7 @@ public abstract class GatewayModule implements IGatewayModule{
      * Publishes the {@link Message} onto to the {@link MessageBus}.
      *
      * @param message The {@link Message} to be published
-     * @return 0 on success, non-zero otherwise. See <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_requirements.md" target="_top">Message Bus Documentation</a>.
+     * @return 0 on success, non-zero otherwise. See <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_requirements.md" target="_top">Message broker documentation</a>.
      * @throws IOException If the {@link Message} cannot be serialized.
      */
     public int publish(Message message) throws IOException {

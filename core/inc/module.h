@@ -2,15 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 /** @file		module.h
-*	@brief		Interface for modules which connect to a message bus.
+*	@brief		Interface for modules which communicate with other modules via
+*               a message broker.
 *
-*	@details	Every module on the message bus must implement this interface.
-*				A module can only belong to 1 message bus and a message bus may
-*				have many modules connected to it.
+*	@details	Every module associated with the message broker must implement
+*               this interface.
+*				A module can only belong to one message broker; a message broker
+*               may have many modules associated with it.
 *
-*				A module is a pointer to a structure containing several function
-*				pointers. By convention, every module exports a function that 
-*				returns a pointer to an instance of the #MODULE_APIS structure..
+*               Every module library exports a function (Module_GetAPIs) that
+*               returns a pointer to the #MODULE_APIS structure.
 */
 
 #ifndef MODULE_H
@@ -62,7 +63,7 @@ extern "C"
     }MODULE;
 
 	/** @brief		Creates a module using the specified configuration connecting
-	*				to the specified message bus.
+	*				to the specified message broker.
 	*
 	*	@details	This function is to be implemented by the module creator.
 	*

@@ -415,7 +415,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
-/*Tests_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_033: [ The function shall create a vector to store each MODULE_DATA. ]*/
 /*Tests_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
 TEST_FUNCTION(Gateway_LL_Create_Creates_Handle_Success)
@@ -838,7 +838,7 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_14_009: [ The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_009: [ The function shall use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the gateway's message broker. ]*/
 TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 {
 	//Arrange
@@ -1124,7 +1124,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Does_Nothing_If_NULL)
 	mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_LL_14_037: [ If GATEWAY_HANDLE_DATA's message bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_037: [ If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing modules from the GATEWAY_HANDLE. ]*/
 TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
 {
 	//Arrange
@@ -1366,8 +1366,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 /*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_017: [ The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
-/*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus. ]*/
-/*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
+/*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_019: [ The function shall return the newly created MODULE_HANDLE only if each API call returns successfully. ]*/
 /*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
 /*Tests_SRS_GATEWAY_LL_99_011: [ The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
@@ -1520,7 +1520,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_018: [ If the message bus linking is unsuccessful, the function shall return NULL. ]*/
+/*Tests_SRS_GATEWAY_LL_14_018: [ If the message broker linking is unsuccessful, the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 {
 	//Arrange

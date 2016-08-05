@@ -138,7 +138,7 @@ static MODULE_HANDLE SimulatedDevice_Create(MESSAGE_BUS_HANDLE busHandle, const 
         }
         else
         {
-			/* save the message bus */
+			/* save the message broker */
 			result->bus = busHandle;
 			/* set module is running to true */
 			result->simulatedDeviceRunning = 1;

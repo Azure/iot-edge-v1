@@ -14,7 +14,7 @@ Types
 ```C#
 namespace Microsoft.Azure.IoT.Gateway
 {
-    /// <summary> Object that represents a message on the message bus. </summary>
+    /// <summary> Object that represents a message passed between modules. </summary>
     public class Message
     {
         public byte[] Content { get; }

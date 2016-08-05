@@ -1,25 +1,25 @@
-# Pub/Sub Message Bus
+# Pub/Sub Message Broker
 
 ## Overview
 
-The message bus (or just the "bus") is central to the gateway. The bus plays the role of a message broker - a central agent responsible for receiving and broadcasting messages between interested parties. In case of the gateway, the interested parties will be modules. This document describes the API for the message bus and what some of the threading implications are.
+The message broker (or just the "broker") is central to the gateway. The broker is responsible for sending and receiving messages between interested parties. In the case of the gateway, the interested parties are modules. This document describes the API for the message broker and what some of the threading implications are.
 
 ## References
 
-* [Message Bus High Level Design](bus_hld.md)
+* [Message Broker High-level Design](broker_hld.md)
 * `module.h` - [Module API requirements](module.md)
 * [Message API requirements](message_requirements.md)
 * [nanomsg](http://nanomsg.org/)
 
 ## Tracking Modules
 
-The message bus implementation shall use the following structure definition to track each module that's connected to the bus:
+The message broker implementation shall use the following structure definition to track each associated module:
 
 ```C
 typedef struct MESSAGE_BUS_MODULEINFO_TAG
 {
     /**
-     * Handle to the module that's connected to the message bus.
+     * Handle to a module associated with this broker.
      */
     MODULE_HANDLE             module;
     
@@ -51,7 +51,7 @@ typedef struct MESSAGE_BUS_MODULEINFO_TAG
 }MESSAGE_BUS_MODULEINFO;
 ```
 
-## Message Bus API
+## Message Broker API
 
 ```C
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG* MESSAGE_BUS_HANDLE;
@@ -77,17 +77,17 @@ extern void MessageBus_Destroy(MESSAGE_BUS_HANDLE bus);
 MESSAGE_BUS_HANDLE MessageBus_Create(void)
 ```
 
-**SRS_MESSAGE_BUS_13_001: [** This API shall yield a `MESSAGE_BUS_HANDLE` representing the newly created message bus. This handle value shall not be equal to `NULL` when the API call is successful. **]**
+**SRS_MESSAGE_BUS_13_001: [** This API shall yield a `MESSAGE_BUS_HANDLE` representing the newly created message broker. This handle value shall not be equal to `NULL` when the API call is successful. **]**
 
 **SRS_MESSAGE_BUS_13_003: [** This function shall return `NULL` if an underlying API call to the platform causes an error. **]**
 
-The message bus implementation shall use the following definition as the backing structure for the message bus handle:
+The backing structure for a message broker handle is defined as follows:
 
 ```C
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 {
     /**
-     * List of modules that are attached to this message bus. Each element in this
+     * List of modules that are attached to this message broker. Each element in this
      * vector is an instance of MESSAGE_BUS_MODULEINFO.
      */
     VECTOR_HANDLE           modules;
@@ -98,12 +98,12 @@ typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
     LOCK_HANDLE             modules_lock;
 
     /**
-     * Socket to publish messages to bus.
+     * Socket to publish messages to broker.
      */
     int                     publish_socket;
 
     /**
-     * URL of message bus binding.
+     * URL of message broker binding.
      */
     STRING_HANDLE           url;
 }MESSAGE_BUS_HANDLE_DATA;
@@ -128,7 +128,7 @@ typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
 ```C
 void MessageBus_IncRef(MESSAGE_BUS_HANDLE bus);
 ```
-MessageBus_Clone creates a clone of the message bus handle.
+MessageBus_Clone creates a clone of the message broker handle.
 
 **SRS_MESSAGE_BUS_13_108: [** If `bus` is `NULL` then `MessageBus_IncRef` shall do nothing. **]**
 

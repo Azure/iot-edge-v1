@@ -1,7 +1,7 @@
 # Gateway Requirements
 
 ## Overview
-This is the higher level API to create and manage a gateway. Contained within a gateway is a message bus onto which any number of modules may be loaded. This gateway API is essentially a convenience layer facilitating the easy addition and removal of modules from the message bus.
+This is the higher level API to create and manage a gateway via a JSON configuration file. Modules are added to the gateway, and communication "links" are established between modules via a message broker.
 
 ## References
 

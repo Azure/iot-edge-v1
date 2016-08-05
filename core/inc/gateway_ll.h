@@ -184,7 +184,7 @@ extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* e
 *								specific modules.
 *
 *	@param		bus       		#MESSAGE_BUS_HANDLE structure containing
-*								specific message bus.
+*								specific message broker instance.
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
 *				gateway or @c NULL on failure.

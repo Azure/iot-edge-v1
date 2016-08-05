@@ -376,7 +376,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 }
 
 /*Tests_SRS_GATEWAY_LL_99_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
-/*Tests_SRS_GATEWAY_LL_99_005: [The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus.]*/
+/*Tests_SRS_GATEWAY_LL_99_005: [The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker.]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 {
 	//Arrange

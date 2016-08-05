@@ -2,19 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 /** @file		broker.h
-*	@brief		Library for configuring and using the gateway's message bus.
+*	@brief		Library for configuring and using the gateway's message broker.
 *
 *	@details	This is the API to create a reference counted and thread safe 
-*				gateway message bus. The message bus broadcasts the messages to 
-*				the subscribers. Messages on the message bus have a bag of 
-*				properties (name, value) and an opaque array of bytes that is 
-*				the message content.
+*				gateway message broker. The broker sends messages to other
+*				modules. Messages published to the broker have a bag of
+*               properties (name, value) and an opaque array of bytes that
+*               constitute the message content.
 */
 
 #ifndef MESSAGE_BUS_H
 #define MESSAGE_BUS_H
 
-/** @brief Struct representing a particular message bus. */
+/** @brief Struct representing a message broker. */
 typedef struct MESSAGE_BUS_HANDLE_DATA_TAG* MESSAGE_BUS_HANDLE;
 
 #include "azure_c_shared_utility/macro_utils.h"
@@ -40,13 +40,13 @@ extern "C"
 */
 DEFINE_ENUM(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
 
-/** @brief	Creates a new message bus.
+/** @brief	Creates a new message broker.
 *
 *	@return	A valid #MESSAGE_BUS_HANDLE upon success, or @c NULL upon failure.
 */
 extern MESSAGE_BUS_HANDLE MessageBus_Create(void);
 
-/** @brief		Creates a clone of the message bus.
+/** @brief		Increments the reference count of a message broker.
 *
 *	@details	This function will simply increment the internal reference
 *				count of the provided #MESSAGE_BUS_HANDLE.
@@ -55,21 +55,21 @@ extern MESSAGE_BUS_HANDLE MessageBus_Create(void);
 */
 extern void MessageBus_IncRef(MESSAGE_BUS_HANDLE bus);
 
-/** @brief		Decrements the reference count of a message bus.
+/** @brief		Decrements the reference count of a message broker.
 *
 *	@details	This function will simply decrement the internal reference
 *				count of the provided #MESSAGE_BUS_HANDLE, destroying the message
-*				bus when the reference count reaches 0.
+*				broker when the reference count reaches 0.
 *
 *	@param		bus		The #MESSAGE_BUS_HANDLE whose ref count will be decremented.
 */
 extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus);
 
-/** @brief		Publishes a message onto the message bus.
+/** @brief		Publishes a message to the message broker.
 *
-*	@details	For details about threading with regard to the message bus and
-*				modules connected to the message bus, see
-*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Bus High Level Design Documentation</a>.
+*	@details	For details about threading with regard to the message broker
+*				and modules connected to it, see
+*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
 *	@param		bus		The #MESSAGE_BUS_HANDLE onto which the message will be
 *						published.
@@ -83,22 +83,22 @@ extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus);
 */
 extern MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message);
 
-/** @brief		Adds a module onto the message bus.
+/** @brief		Adds a module onto the message broker.
 *
-*	@details	For details about threading with regard to the message bus and
-*				modules connected to the message bus, see 
-*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Bus High Level Design Documentation</a>.
+*	@details	For details about threading with regard to the message broker
+*				and modules connected to it, see 
+*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
 *	@param		bus				The #MESSAGE_BUS_HANDLE onto which the module will be 
 *								added.
 *	@param		module			The #MODULE for the module that will be added 
-*								to this message bus.
+*								to this message broker.
 *
 *	@return		A #MESSAGE_BUS_RESULT describing the result of the function.
 */
 extern MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* module);
 
-/** @brief	Removes a module from the message bus.
+/** @brief	Removes a module from the message broker.
 *
 *	@param	bus		The #MESSAGE_BUS_HANDLE from which the module will be removed.
 *	@param	module	The #MODULE of the module to be removed.
@@ -107,7 +107,7 @@ extern MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MOD
 */
 extern MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE* module);
 
-/** @brief Disposes of resources allocated by a message bus.
+/** @brief Disposes of resources allocated by a message broker.
 *
 *	@param	bus		The #MESSAGE_BUS_HANDLE to be destroyed.
 */

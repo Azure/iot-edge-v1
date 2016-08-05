@@ -112,7 +112,7 @@ to the vector. **]**
 then `IdentityMap_HL_Create` shall fail and return NULL. **]** 
 
 **SRS_IDMAP_HL_17_013: [** `IdentityMap_HL_Create` shall invoke 
-identity map module's create, passing in the message bus handle and the input vector. 
+identity map module's create, passing in the message broker handle and the input vector. 
 **]**
 
 **SRS_IDMAP_HL_17_014: [** When the lower layer identity map module 

@@ -95,7 +95,7 @@ static int e2e_module_worker(void * user_data)
 			{
 				if (MessageBus_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != MESSAGE_BUS_OK)
 				{
-					LogError("Failed to publish module data to the message bus.");
+					LogError("Failed to publish module data to the message broker.");
 				}
 				Message_Destroy(newMessage);
 			}
@@ -128,7 +128,7 @@ static MODULE_HANDLE E2EModule_Create(MESSAGE_BUS_HANDLE busHandle, const void* 
 			E2EMODULE_CONFIG* e2eModuleConfig = (E2EMODULE_CONFIG*)configuration;
 			int status;
 
-			/* save the message bus */
+			/* save the message broker */
 			result->bus = busHandle;
 
 			/* save fake MacAddress */

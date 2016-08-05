@@ -8,7 +8,7 @@
 
 This module is a *passthrough* implementation that simply wraps the BLE Module code by providing an easy to use JSON based configuration interface. It de-serializes the JSON into a `BLE_CONFIG` instance and passes control to the underlying implementation. This module shall also accept cloud to device messages and transform cloud messages into a structure understood by the BLE module.
 
-### Receiving messages on the message bus
+### Receiving messages on the message broker
 The module identifies the messages that it needs to process by the following 
 properties that must exist:
 
