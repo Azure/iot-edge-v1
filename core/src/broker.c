@@ -35,15 +35,15 @@
 #define URL_SIZE (INPROC_URL_HEAD_SIZE + MESSAGE_BUS_GUID_SIZE +1)
 
 /*The structure backing the message broker handle*/
-typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
+typedef struct BROKER_HANDLE_DATA_TAG
 {
     LIST_HANDLE                modules;
     LOCK_HANDLE             modules_lock;
 	int                     publish_socket;
 	STRING_HANDLE           url;
-}MESSAGE_BUS_HANDLE_DATA;
+}BROKER_HANDLE_DATA;
 
-DEFINE_REFCOUNT_TYPE(MESSAGE_BUS_HANDLE_DATA);
+DEFINE_REFCOUNT_TYPE(BROKER_HANDLE_DATA);
 
 typedef struct MESSAGE_BUS_MODULEINFO_TAG
 {
@@ -74,13 +74,13 @@ typedef struct MESSAGE_BUS_MODULEINFO_TAG
 }MESSAGE_BUS_MODULEINFO;
 
 // This variable is unused in this library, but is defined in the header file.
-size_t BUS_offsetof_quit_worker = 0;
+size_t BROKER_offsetof_quit_worker = 0;
 
 static STRING_HANDLE construct_url()
 {
 	STRING_HANDLE result;
 
-	/*Codes_SRS_MESSAGE_BUS_17_002: [ MessageBus_Create shall create a unique id. ]*/
+	/*Codes_SRS_MESSAGE_BUS_17_002: [ Broker_Create shall create a unique id. ]*/
 	char uuid[MESSAGE_BUS_GUID_SIZE];
 	memset(uuid, 0, MESSAGE_BUS_GUID_SIZE);
 	if (UniqueId_Generate(uuid, MESSAGE_BUS_GUID_SIZE) != UNIQUEID_OK)
@@ -90,7 +90,7 @@ static STRING_HANDLE construct_url()
 	}
 	else
 	{
-		/*Codes_SRS_MESSAGE_BUS_17_003: [ MessageBus_Create shall initialize a url consisting of "inproc://" + unique id. ]*/
+		/*Codes_SRS_MESSAGE_BUS_17_003: [ Broker_Create shall initialize a url consisting of "inproc://" + unique id. ]*/
 		result = STRING_construct(INPROC_URL_HEAD);
 		if (result == NULL)
 		{
@@ -110,12 +110,12 @@ static STRING_HANDLE construct_url()
 	return result;
 }
 
-MESSAGE_BUS_HANDLE MessageBus_Create(void)
+BROKER_HANDLE Broker_Create(void)
 {
-    MESSAGE_BUS_HANDLE_DATA* result;
+    BROKER_HANDLE_DATA* result;
 
-    /*Codes_SRS_MESSAGE_BUS_13_067: [MessageBus_Create shall malloc a new instance of MESSAGE_BUS_HANDLE_DATA and return NULL if it fails.]*/
-    result = REFCOUNT_TYPE_CREATE(MESSAGE_BUS_HANDLE_DATA);
+    /*Codes_SRS_MESSAGE_BUS_13_067: [Broker_Create shall malloc a new instance of BROKER_HANDLE_DATA and return NULL if it fails.]*/
+    result = REFCOUNT_TYPE_CREATE(BROKER_HANDLE_DATA);
     if (result == NULL)
     {
         LogError("malloc returned NULL");
@@ -123,7 +123,7 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
     }
     else
     {
-        /*Codes_SRS_MESSAGE_BUS_13_007: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]*/
+        /*Codes_SRS_MESSAGE_BUS_13_007: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]*/
         result->modules = list_create();
         if (result->modules == NULL)
         {
@@ -134,7 +134,7 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
         }
         else
         {
-            /*Codes_SRS_MESSAGE_BUS_13_023: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]*/
+            /*Codes_SRS_MESSAGE_BUS_13_023: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]*/
             result->modules_lock = Lock_Init();
             if (result->modules_lock == NULL)
             {
@@ -146,7 +146,7 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
             }
 			else
 			{
-				/*Codes_SRS_MESSAGE_BUS_17_001: [ MessageBus_Create shall initialize a socket for publishing messages. ]*/
+				/*Codes_SRS_MESSAGE_BUS_17_001: [ Broker_Create shall initialize a socket for publishing messages. ]*/
 				result->publish_socket = nn_socket(AF_SP, NN_PUB);
 				if (result->publish_socket < 0)
 				{
@@ -172,7 +172,7 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
 					}
 					else
 					{
-						/*Codes_SRS_MESSAGE_BUS_17_004: [ MessageBus_Create shall bind the socket to the MESSAGE_BUS_HANDLE_DATA::url. ]*/
+						/*Codes_SRS_MESSAGE_BUS_17_004: [ Broker_Create shall bind the socket to the BROKER_HANDLE_DATA::url. ]*/
 						if (nn_bind(result->publish_socket, STRING_c_str(result->url)) < 0)
 						{
 							/*Codes_SRS_MESSAGE_BUS_13_003: [ This function shall return NULL if an underlying API call to the platform causes an error. ]*/
@@ -190,21 +190,21 @@ MESSAGE_BUS_HANDLE MessageBus_Create(void)
         }
     }
 
-    /*Codes_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]*/
+    /*Codes_SRS_MESSAGE_BUS_13_001: [This API shall yield a BROKER_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]*/
     return result;
 }
 
-void MessageBus_IncRef(MESSAGE_BUS_HANDLE bus)
+void Broker_IncRef(BROKER_HANDLE bus)
 {
-    /*Codes_SRS_MESSAGE_BUS_13_108: [If `bus` is NULL then MessageBus_IncRef shall do nothing.]*/
+    /*Codes_SRS_MESSAGE_BUS_13_108: [If `bus` is NULL then Broker_IncRef shall do nothing.]*/
     if (bus == NULL)
     {
         LogError("invalid arg: bus is NULL");
     }
     else
     {
-        /*Codes_SRS_MESSAGE_BUS_13_109: [Otherwise, MessageBus_IncRef shall increment the internal ref count.]*/
-        INC_REF(MESSAGE_BUS_HANDLE_DATA, bus);
+        /*Codes_SRS_MESSAGE_BUS_13_109: [Otherwise, Broker_IncRef shall increment the internal ref count.]*/
+        INC_REF(BROKER_HANDLE_DATA, bus);
     }
 }
 
@@ -291,16 +291,16 @@ static int module_publish_worker(void * user_data)
     return 0;
 }
 
-static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const MODULE* module)
+static BROKER_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const MODULE* module)
 {
-    MESSAGE_BUS_RESULT result;
+    BROKER_RESULT result;
 
     /*Codes_SRS_MESSAGE_BUS_13_107: The function shall assign the `module` handle to `MESSAGE_BUS_MODULEINFO::module`.*/
     module_info->module = (MODULE*)malloc(sizeof(MODULE));
     if (module_info->module == NULL)
     {
         LogError("Allocate module failed");
-        result = MESSAGE_BUS_ERROR;
+        result = BROKER_ERROR;
     }
 	else
 	{
@@ -317,9 +317,9 @@ static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const
 		module_info->socket_lock = Lock_Init();
 		if (module_info->socket_lock == NULL)
 		{
-			/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+			/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 			LogError("Lock_Init for socket lock failed");
-			result = MESSAGE_BUS_ERROR;
+			result = BROKER_ERROR;
 		}
 		else
 		{
@@ -328,24 +328,24 @@ static MESSAGE_BUS_RESULT init_module(MESSAGE_BUS_MODULEINFO* module_info, const
 			/*Codes_SRS_MESSAGE_BUS_17_020: [ The function shall create a unique ID used as a quit signal. ]*/
 			if (UniqueId_Generate(uuid, MESSAGE_BUS_GUID_SIZE) != UNIQUEID_OK)
 			{
-				/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+				/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 				LogError("Lock_Init for socket lock failed");
 				Lock_Deinit(module_info->socket_lock);
-				result = MESSAGE_BUS_ERROR;
+				result = BROKER_ERROR;
 			}
 			else
 			{
 				module_info->quit_message_guid = STRING_construct(uuid);
 				if (module_info->quit_message_guid == NULL)
 				{
-					/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+					/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 					LogError("String construct failed for module guid");
 					Lock_Deinit(module_info->socket_lock);
-					result = MESSAGE_BUS_ERROR;
+					result = BROKER_ERROR;
 				}
 				else
 				{
-					result = MESSAGE_BUS_OK;
+					result = BROKER_OK;
 				}
 			}
 		}
@@ -361,30 +361,30 @@ static void deinit_module(MESSAGE_BUS_MODULEINFO* module_info)
 	free(module_info->module);
 }
 
-static MESSAGE_BUS_RESULT start_module(MESSAGE_BUS_MODULEINFO* module_info, STRING_HANDLE url)
+static BROKER_RESULT start_module(MESSAGE_BUS_MODULEINFO* module_info, STRING_HANDLE url)
 {
-    MESSAGE_BUS_RESULT result;
+    BROKER_RESULT result;
 
 	/* Connect to pub/sub */
 	/*Codes_SRS_MESSAGE_BUS_17_013: [ The function shall create a nanomsg socket for reception. ]*/
 	module_info->receive_socket = nn_socket(AF_SP, NN_SUB);
 	if (module_info->receive_socket < 0)
 	{
-		/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+		/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 		LogError("module receive socket create failed");
-		result = MESSAGE_BUS_ERROR;
+		result = BROKER_ERROR;
 	}
 	else
 	{
-		/*Codes_SRS_MESSAGE_BUS_17_014: [ The function shall bind the socket to the the MESSAGE_BUS_HANDLE_DATA::url. ]*/
+		/*Codes_SRS_MESSAGE_BUS_17_014: [ The function shall bind the socket to the the BROKER_HANDLE_DATA::url. ]*/
 		int connect_result = nn_connect(module_info->receive_socket, STRING_c_str(url));
 		if (connect_result < 0)
 		{
-			/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+			/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 			LogError("nn_connect failed");
 			nn_close(module_info->receive_socket);
 			module_info->receive_socket = -1;
-			result = MESSAGE_BUS_ERROR;
+			result = BROKER_ERROR;
 		}
 		else
 		{
@@ -392,11 +392,11 @@ static MESSAGE_BUS_RESULT start_module(MESSAGE_BUS_MODULEINFO* module_info, STRI
 			if (nn_setsockopt(
 				module_info->receive_socket, NN_SUB, NN_SUB_SUBSCRIBE, "", 0) < 0)
 			{
-				/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+				/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 				LogError("nn_setsockopt failed");
 				nn_close(module_info->receive_socket);
 				module_info->receive_socket = -1;
-				result = MESSAGE_BUS_ERROR;
+				result = BROKER_ERROR;
 			}
 			else
 			{
@@ -407,14 +407,14 @@ static MESSAGE_BUS_RESULT start_module(MESSAGE_BUS_MODULEINFO* module_info, STRI
 					(void*)module_info
 				) != THREADAPI_OK)
 				{
-					/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+					/*Codes_SRS_MESSAGE_BUS_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 					LogError("ThreadAPI_Create failed");
 					nn_close(module_info->receive_socket);
-					result = MESSAGE_BUS_ERROR;
+					result = BROKER_ERROR;
 				}
 				else
 				{
-					result = MESSAGE_BUS_OK;
+					result = BROKER_OK;
 				}
 			}
 		}
@@ -440,7 +440,7 @@ static int stop_module(int publish_socket, MESSAGE_BUS_MODULEINFO* module_info)
 	}
 	else
 	{
-		/*Codes_SRS_MESSAGE_BUS_02_001: [ MessageBus_RemoveModule shall lock MESSAGE_BUS_MODULEINFO::socket_lock. ]*/
+		/*Codes_SRS_MESSAGE_BUS_02_001: [ Broker_RemoveModule shall lock MESSAGE_BUS_MODULEINFO::socket_lock. ]*/
 		if (Lock(module_info->socket_lock) != LOCK_OK)
 		{
 			/*Codes_SRS_MESSAGE_BUS_17_015: [ This function shall close the MESSAGE_BUS_MODULEINFO::receive_socket. ]*/
@@ -460,7 +460,7 @@ static int stop_module(int publish_socket, MESSAGE_BUS_MODULEINFO* module_info)
 			{
 				/*all is fine, thread will eventually stop and be joined*/
 			}
-			/*Codes_SRS_MESSAGE_BUS_02_003: [ After closing the socket, MessageBus_RemoveModule shall unlock MESSAGE_BUS_MODULEINFO::info_lock. ]*/
+			/*Codes_SRS_MESSAGE_BUS_02_003: [ After closing the socket, Broker_RemoveModule shall unlock MESSAGE_BUS_MODULEINFO::info_lock. ]*/
 			if (Unlock(module_info->socket_lock) != LOCK_OK)
 			{
 				LogError("unable to unlock socket lock");
@@ -480,28 +480,28 @@ static int stop_module(int publish_socket, MESSAGE_BUS_MODULEINFO* module_info)
     return result;
 }
 
-MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
+BROKER_RESULT Broker_AddModule(BROKER_HANDLE bus, const MODULE* module)
 {
-    MESSAGE_BUS_RESULT result;
+    BROKER_RESULT result;
 
-    /*Codes_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
+    /*Codes_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is NULL the function shall return BROKER_INVALIDARG.]*/
     if (bus == NULL || module == NULL)
     {
-        result = MESSAGE_BUS_INVALIDARG;
+        result = BROKER_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
 #ifdef UWP_BINDING
-	/*Codes_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	/*Codes_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]*/
 	else if (module->module_instance == NULL)
 	{
-		result = MESSAGE_BUS_INVALIDARG;
+		result = BROKER_INVALIDARG;
 		LogError("invalid parameter (NULL).");
 	}
 #else
-	/*Codes_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]*/
+	/*Codes_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]*/
 	else if (module->module_apis == NULL || module->module_handle == NULL)
 	{
-		result = MESSAGE_BUS_INVALIDARG;
+		result = BROKER_INVALIDARG;
 		LogError("invalid parameter (NULL).");
 	}
 #endif // UWP_BINDING
@@ -511,60 +511,60 @@ MESSAGE_BUS_RESULT MessageBus_AddModule(MESSAGE_BUS_HANDLE bus, const MODULE* mo
         if (module_info == NULL)
         {
             LogError("Allocate module info failed");
-            result = MESSAGE_BUS_ERROR;
+            result = BROKER_ERROR;
         }
         else
         {
-            if (init_module(module_info, module) != MESSAGE_BUS_OK)
+            if (init_module(module_info, module) != BROKER_OK)
             {
-                /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+                /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
                 LogError("start_module failed");
                 free(module_info->module);
                 free(module_info);
-                result = MESSAGE_BUS_ERROR;
+                result = BROKER_ERROR;
             }
             else
             {
-                /*Codes_SRS_MESSAGE_BUS_13_039: [This function shall acquire the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]*/
-                MESSAGE_BUS_HANDLE_DATA* bus_data = (MESSAGE_BUS_HANDLE_DATA*)bus;
+                /*Codes_SRS_MESSAGE_BUS_13_039: [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]*/
+                BROKER_HANDLE_DATA* bus_data = (BROKER_HANDLE_DATA*)bus;
                 if (Lock(bus_data->modules_lock) != LOCK_OK)
                 {
-                    /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+                    /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
                     LogError("Lock on bus_data->modules_lock failed");
                     deinit_module(module_info);
                     free(module_info);
-                    result = MESSAGE_BUS_ERROR;
+                    result = BROKER_ERROR;
                 }
                 else
                 {
-                    /*Codes_SRS_MESSAGE_BUS_13_045: [MessageBus_AddModule shall append the new instance of MESSAGE_BUS_MODULEINFO to MESSAGE_BUS_HANDLE_DATA::modules.]*/
+                    /*Codes_SRS_MESSAGE_BUS_13_045: [Broker_AddModule shall append the new instance of MESSAGE_BUS_MODULEINFO to BROKER_HANDLE_DATA::modules.]*/
                     LIST_ITEM_HANDLE moduleListItem = list_add(bus_data->modules, module_info);
                     if (moduleListItem == NULL)
                     {
-                        /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+                        /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
                         LogError("list_add failed");
                         deinit_module(module_info);
                         free(module_info);
-                        result = MESSAGE_BUS_ERROR;
+                        result = BROKER_ERROR;
                     }
                     else
                     {
-                        if (start_module(module_info, bus_data->url) != MESSAGE_BUS_OK)
+                        if (start_module(module_info, bus_data->url) != BROKER_OK)
                         {
                             LogError("start_module failed");
                             deinit_module(module_info);
                             list_remove(bus_data->modules, moduleListItem);
                             free(module_info);
-                            result = MESSAGE_BUS_ERROR;
+                            result = BROKER_ERROR;
                         }
                         else
                         {
-                            /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
-                            result = MESSAGE_BUS_OK;
+                            /*Codes_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
+                            result = BROKER_OK;
                         }
                     }
 
-                    /*Codes_SRS_MESSAGE_BUS_13_046: [This function shall release the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]*/
+                    /*Codes_SRS_MESSAGE_BUS_13_046: [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]*/
                     Unlock(bus_data->modules_lock);
                 }
             }
@@ -585,36 +585,36 @@ static bool find_module_predicate(LIST_ITEM_HANDLE list_item, const void* value)
 #endif // UWP_BINDING
 }
 
-MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE* module)
+BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE bus, const MODULE* module)
 {
-    /*Codes_SRS_MESSAGE_BUS_13_048: [If `bus` or `module` is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
-    MESSAGE_BUS_RESULT result;
+    /*Codes_SRS_MESSAGE_BUS_13_048: [If `bus` or `module` is NULL the function shall return BROKER_INVALIDARG.]*/
+    BROKER_RESULT result;
     if (bus == NULL || module == NULL)
     {
-		/*Codes_SRS_MESSAGE_BUS_13_053: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
-        result = MESSAGE_BUS_INVALIDARG;
+		/*Codes_SRS_MESSAGE_BUS_13_053: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
+        result = BROKER_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
     else
     {
-        /*Codes_SRS_MESSAGE_BUS_13_088: [This function shall acquire the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]*/
-        MESSAGE_BUS_HANDLE_DATA* bus_data = (MESSAGE_BUS_HANDLE_DATA*)bus;
+        /*Codes_SRS_MESSAGE_BUS_13_088: [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]*/
+        BROKER_HANDLE_DATA* bus_data = (BROKER_HANDLE_DATA*)bus;
         if (Lock(bus_data->modules_lock) != LOCK_OK)
         {
-            /*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+            /*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
             LogError("Lock on bus_data->modules_lock failed");
-            result = MESSAGE_BUS_ERROR;
+            result = BROKER_ERROR;
         }
         else
         {
-            /*Codes_SRS_MESSAGE_BUS_13_049: [MessageBus_RemoveModule shall perform a linear search for module in MESSAGE_BUS_HANDLE_DATA::modules.]*/
+            /*Codes_SRS_MESSAGE_BUS_13_049: [Broker_RemoveModule shall perform a linear search for module in BROKER_HANDLE_DATA::modules.]*/
             LIST_ITEM_HANDLE module_info_item = list_find(bus_data->modules, find_module_predicate, module);
 
             if (module_info_item == NULL)
             {
-				/*Codes_SRS_MESSAGE_BUS_13_050: [MessageBus_RemoveModule shall unlock MESSAGE_BUS_HANDLE_DATA::modules_lock and return MESSAGE_BUS_ERROR if the module is not found in MESSAGE_BUS_HANDLE_DATA::modules.]*/
+				/*Codes_SRS_MESSAGE_BUS_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]*/
                 LogError("Supplied module is not attached to the broker");
-                result = MESSAGE_BUS_ERROR;
+                result = BROKER_ERROR;
             }
             else
             {
@@ -628,15 +628,15 @@ MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE*
                     LogError("unable to stop module");
                 }
 
-                /*Codes_SRS_MESSAGE_BUS_13_052: [The function shall remove the module from MESSAGE_BUS_HANDLE_DATA::modules.]*/
+                /*Codes_SRS_MESSAGE_BUS_13_052: [The function shall remove the module from BROKER_HANDLE_DATA::modules.]*/
                 list_remove(bus_data->modules, module_info_item);
                 free(module_info);
 
-                /*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
-                result = MESSAGE_BUS_OK;
+                /*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
+                result = BROKER_OK;
             }
 
-            /*Codes_SRS_MESSAGE_BUS_13_054: [This function shall release the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]*/
+            /*Codes_SRS_MESSAGE_BUS_13_054: [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]*/
             Unlock(bus_data->modules_lock);
         }
     }
@@ -644,16 +644,16 @@ MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE*
     return result;
 }
 
-static void bus_decrement_ref(MESSAGE_BUS_HANDLE bus)
+static void bus_decrement_ref(BROKER_HANDLE bus)
 {
     /*Codes_SRS_MESSAGE_BUS_13_058: [If `bus` is NULL the function shall do nothing.]*/
     if (bus != NULL)
     {
-        /*Codes_SRS_MESSAGE_BUS_13_111: [Otherwise, MessageBus_Destroy shall decrement the internal ref count of the message.]*/
+        /*Codes_SRS_MESSAGE_BUS_13_111: [Otherwise, Broker_Destroy shall decrement the internal ref count of the message.]*/
         /*Codes_SRS_MESSAGE_BUS_13_112: [If the ref count is zero then the allocated resources are freed.]*/
-        if (DEC_REF(MESSAGE_BUS_HANDLE_DATA, bus) == DEC_RETURN_ZERO)
+        if (DEC_REF(BROKER_HANDLE_DATA, bus) == DEC_RETURN_ZERO)
         {
-            MESSAGE_BUS_HANDLE_DATA* bus_data = (MESSAGE_BUS_HANDLE_DATA*)bus; 
+            BROKER_HANDLE_DATA* bus_data = (BROKER_HANDLE_DATA*)bus; 
             if (list_get_head_item(bus_data->modules) != NULL)
             {
                 LogError("WARNING: There are still active modules attached to the broker and the broker is being destroyed.");
@@ -672,88 +672,88 @@ static void bus_decrement_ref(MESSAGE_BUS_HANDLE bus)
     }
 }
 
-extern void MessageBus_Destroy(MESSAGE_BUS_HANDLE bus)
+extern void Broker_Destroy(BROKER_HANDLE bus)
 {
     bus_decrement_ref(bus);
 }
 
-extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus)
+extern void Broker_DecRef(BROKER_HANDLE bus)
 {
-    /*Codes_SRS_MESSAGE_BUS_13_113: [This function shall implement all the requirements of the MessageBus_Destroy API.]*/
+    /*Codes_SRS_MESSAGE_BUS_13_113: [This function shall implement all the requirements of the Broker_Destroy API.]*/
     bus_decrement_ref(bus);
 }
 
-MESSAGE_BUS_RESULT MessageBus_Publish(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message)
+BROKER_RESULT Broker_Publish(BROKER_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message)
 {
-    MESSAGE_BUS_RESULT result;
-    /*Codes_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return MESSAGE_BUS_INVALIDARG.]*/
+    BROKER_RESULT result;
+    /*Codes_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return BROKER_INVALIDARG.]*/
     if (bus == NULL || message == NULL)
     {
-        result = MESSAGE_BUS_INVALIDARG;
+        result = BROKER_INVALIDARG;
         LogError("Bus handle and/or message handle is NULL");
     }
     else
     {
-		MESSAGE_BUS_HANDLE_DATA* bus_data = (MESSAGE_BUS_HANDLE_DATA*)bus;
-		/*Codes_SRS_MESSAGE_BUS_17_022: [ MessageBus_Publish shall Lock the modules lock. ]*/
+		BROKER_HANDLE_DATA* bus_data = (BROKER_HANDLE_DATA*)bus;
+		/*Codes_SRS_MESSAGE_BUS_17_022: [ Broker_Publish shall Lock the modules lock. ]*/
 		if (Lock(bus_data->modules_lock) != LOCK_OK)
 		{
-			/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+			/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
 			LogError("Lock on bus_data->modules_lock failed");
-			result = MESSAGE_BUS_ERROR;
+			result = BROKER_ERROR;
 		}
 		else
 		{
 			int32_t msg_size;
-			/*Codes_SRS_MESSAGE_BUS_17_007: [ MessageBus_Publish shall clone the message. ]*/
+			/*Codes_SRS_MESSAGE_BUS_17_007: [ Broker_Publish shall clone the message. ]*/
 			MESSAGE_HANDLE msg = Message_Clone(message);
-			/*Codes_SRS_MESSAGE_BUS_17_008: [ MessageBus_Publish shall serialize the message. ]*/
+			/*Codes_SRS_MESSAGE_BUS_17_008: [ Broker_Publish shall serialize the message. ]*/
 			msg_size = Message_ToByteArray(message, NULL, 0);
 			if (msg_size < 0)
 			{
-				/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+				/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
 				LogError("unable to serialize a message [%p]", msg);
 				Message_Destroy(msg);
-				result = MESSAGE_BUS_ERROR;
+				result = BROKER_ERROR;
 			}
 			else
 			{
-				/*Codes_SRS_MESSAGE_BUS_17_009: [ MessageBus_Publish shall allocate a nanomsg buffer and copy the serialized message into it. ]*/
+				/*Codes_SRS_MESSAGE_BUS_17_009: [ Broker_Publish shall allocate a nanomsg buffer and copy the serialized message into it. ]*/
 				void* nn_msg = nn_allocmsg(msg_size, 0);
 				if (nn_msg == NULL)
 				{
-					/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+					/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
 					LogError("unable to serialize a message [%p]", msg);
-					result = MESSAGE_BUS_ERROR;
+					result = BROKER_ERROR;
 				}
 				else
 				{
 					Message_ToByteArray(message, nn_msg, msg_size);
 
-					/*Codes_SRS_MESSAGE_BUS_17_010: [ MessageBus_Publish shall send a message on the publish_socket. ]*/
+					/*Codes_SRS_MESSAGE_BUS_17_010: [ Broker_Publish shall send a message on the publish_socket. ]*/
 					int nbytes = nn_send(bus_data->publish_socket, &nn_msg, NN_MSG, 0);
 					if (nbytes != msg_size)
 					{
-						/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]*/
+						/*Codes_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
 						LogError("unable to send a message [%p]", msg);
-						/*Codes_SRS_MESSAGE_BUS_17_012: [ MessageBus_Publish shall free the message. ]*/
+						/*Codes_SRS_MESSAGE_BUS_17_012: [ Broker_Publish shall free the message. ]*/
 						nn_freemsg(nn_msg);
-						result = MESSAGE_BUS_ERROR;
+						result = BROKER_ERROR;
 					}
 					else
 					{
-						result = MESSAGE_BUS_OK;
+						result = BROKER_OK;
 					}
 				}
-				/*Codes_SRS_MESSAGE_BUS_17_012: [ MessageBus_Publish shall free the message. ]*/
+				/*Codes_SRS_MESSAGE_BUS_17_012: [ Broker_Publish shall free the message. ]*/
 				Message_Destroy(msg);
-				/*Codes_SRS_MESSAGE_BUS_17_011: [ MessageBus_Publish shall free the serialized message data. ]*/
+				/*Codes_SRS_MESSAGE_BUS_17_011: [ Broker_Publish shall free the serialized message data. ]*/
 			}
-			/*Codes_SRS_MESSAGE_BUS_17_023: [ MessageBus_Publish shall Unlock the modules lock. ]*/
+			/*Codes_SRS_MESSAGE_BUS_17_023: [ Broker_Publish shall Unlock the modules lock. ]*/
 			Unlock(bus_data->modules_lock);
 		}
 
     }
-	/*Codes_SRS_MESSAGE_BUS_13_037: [ This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise. ]*/
+	/*Codes_SRS_MESSAGE_BUS_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
     return result;
 }

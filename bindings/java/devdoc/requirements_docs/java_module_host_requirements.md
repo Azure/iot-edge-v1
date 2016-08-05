@@ -57,7 +57,7 @@ fields non-`NULL`. **]**
 
 ##JavaModuleHost_Create
 ```C
-static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 
 Creates a new Java Module Host instance. The parameter `configuration` is a
@@ -159,7 +159,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 **SRS_JAVA_MODULE_HOST_14_047: [** This function shall exit if any underlying function fails. **]**
 
-##MessageBus_Publish
+##Broker_Publish
 ```C
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv *env, jobject MessageBus, jlong addr, jbyteArray message);
 ```
@@ -168,6 +168,6 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishM
 
 **SRS_JAVA_MODULE_HOST_14_026: [** This function shall use the serialized message in a call to `Message_Create`. **]**
 
-**SRS_JAVA_MODULE_HOST_14_027: [** This function shall publish the message to the `MESSAGE_BUS_HANDLE` addressed by `addr` and return the value of this function call. **]**
+**SRS_JAVA_MODULE_HOST_14_027: [** This function shall publish the message to the `BROKER_HANDLE` addressed by `addr` and return the value of this function call. **]**
 
 **SRS_JAVA_MODULE_HOST_14_048: [**  This function shall return a non-zero value if any underlying function call fails. **]**

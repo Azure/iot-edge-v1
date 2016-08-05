@@ -19,7 +19,7 @@ typedef void(*PFNMODULE_START)(NODEJS_MODULE_HANDLE_DATA* handle_data);
 
 struct NODEJS_MODULE_HANDLE_DATA
 {
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               bus;
     std::string                 main_path;
     std::string                 configuration_json;
     v8::Isolate                 *v8_isolate;
@@ -32,7 +32,7 @@ struct NODEJS_MODULE_HANDLE_DATA
 NODEJS_Create
 -------------
 ```c
-MODULE_HANDLE NodeJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE NodeJS_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 
 Creates a new Node JS module instance. The parameter `configuration` is a
@@ -160,9 +160,9 @@ interface Message {
 
 **SRS_NODEJS_13_030: [** `message_bus_publish` shall construct and initialize a `MESSAGE_HANDLE` from the first argument. **]**
 
-**SRS_NODEJS_13_032: [** `message_bus_publish` shall call `MessageBus_Publish` passing the newly constructed `MESSAGE_HANDLE`. **]**
+**SRS_NODEJS_13_032: [** `message_bus_publish` shall call `Broker_Publish` passing the newly constructed `MESSAGE_HANDLE`. **]**
 
-**SRS_NODEJS_13_033: [** `message_bus_publish` shall set the return value to `true` or `false` depending on the status of the `MessageBus_Publish` call. **]**
+**SRS_NODEJS_13_033: [** `message_bus_publish` shall set the return value to `true` or `false` depending on the status of the `Broker_Publish` call. **]**
 
 **SRS_NODEJS_13_034: [** `message_bus_publish` shall destroy the `MESSAGE_HANDLE`. **]**
 

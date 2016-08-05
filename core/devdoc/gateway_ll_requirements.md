@@ -15,7 +15,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	VECTOR_HANDLE modules;
 
     /** @brief The message broker used by this gateway */
-	MESSAGE_BUS_HANDLE bus;
+    BROKER_HANDLE bus;
 
 	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
@@ -183,9 +183,9 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_14_002: [** This function shall return `NULL` upon any memory allocation failure. **]**
 
-**SRS_GATEWAY_LL_14_003: [** This function shall create a new `MESSAGE_BUS_HANDLE` for the gateway representing this gateway's message broker. **]**
+**SRS_GATEWAY_LL_14_003: [** This function shall create a new `BROKER_HANDLE` for the gateway representing this gateway's message broker. **]**
 
-**SRS_GATEWAY_LL_14_004: [** This function shall return `NULL` if a `MESSAGE_BUS_HANDLE` cannot be created. **]**
+**SRS_GATEWAY_LL_14_004: [** This function shall return `NULL` if a `BROKER_HANDLE` cannot be created. **]**
 
 **SRS_GATEWAY_LL_14_033: [** The function shall create a vector to store each `MODULE_DATA`. **]**
 
@@ -193,7 +193,7 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_14_034: [** This function shall return `NULL` if a `VECTOR_HANDLE` cannot be created. **]**
 
-**SRS_GATEWAY_LL_14_035: [** This function shall destroy the previously created `MESSAGE_BUS_HANDLE` and free the `GATEWAY_HANDLE` if the `VECTOR_HANDLE` cannot be created. **]**
+**SRS_GATEWAY_LL_14_035: [** This function shall destroy the previously created `BROKER_HANDLE` and free the `GATEWAY_HANDLE` if the `VECTOR_HANDLE` cannot be created. **]**
 
 **SRS_GATEWAY_LL_14_009: [** The function shall use each of `GATEWAY_PROPERTIES`'s `gateway_modules` to create and add a module to the gateway's message broker. **]**
 
@@ -209,22 +209,22 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_26_010: [** This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. **]**
 
-**SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the `MESSAGE_Bus` the `GATEWAY_HANDLE` will be destroyed. **]**
+**SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the broker the `GATEWAY_HANDLE` will be destroyed. **]**
 
 ```
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE bus);
 ```
-Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` struct and the message broker described by the `MESSAGE_BUS_HANDLE` to configure the modules on the message broker.
+Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` struct and the message broker described by the `BROKER_HANDLE` to configure the modules on the message broker.
 
 **SRS_GATEWAY_LL_99_001: [** This function shall create a `GATEWAY_HANDLE` representing the newly created gateway. **]**
 
 **SRS_GATEWAY_LL_99_002: [** This function shall return `NULL` upon any memory allocation failure. **]**
 
-**SRS_GATEWAY_LL_99_003: [** This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. **]**
+**SRS_GATEWAY_LL_99_003: [** This function shall return `NULL` if a `NULL` `BROKER_HANDLE` is received. **]**
 
 **SRS_GATEWAY_LL_99_004: [** This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received. **]**
 
-**SRS_GATEWAY_LL_99_005: [** The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. **]**
+**SRS_GATEWAY_LL_99_005: [** The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. **]**
 
 ## Gateway_Destroy
 ```
@@ -240,7 +240,7 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_14_037: [** If `GATEWAY_HANDLE_DATA`'s message broker cannot remove a module, the function shall log the error and continue removing modules from the `GATEWAY_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_26_003: [** If the Event System module is initialized, this function shall report `GATEWAY_DESTROYED` event. **]**
 
@@ -253,13 +253,13 @@ Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_99_006: [** If `gw` is `NULL` the function shall do nothing. **]**
 
-**SRS_GATEWAY_LL_99_007: [** The function shall detach modules from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_007: [** The function shall detach modules from the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_99_008: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach a module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_99_009: [** The function shall decrement the MESSAGE_BUS_HANDLE reference count. **]**
+**SRS_GATEWAY_LL_99_009: [** The function shall decrement the BROKER_HANDLE reference count. **]**
 
-**SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
 
 ## Gateway_AddModule
 ```
@@ -279,9 +279,9 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_016: [** If the module creation is unsuccessful, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_017: [** The function shall attach the module to the `GATEWAY_HANDLE_DATA`'s `bus` using a call to `MessageBus_AddModule`. **]**
+**SRS_GATEWAY_LL_14_017: [** The function shall attach the module to the `GATEWAY_HANDLE_DATA`'s `bus` using a call to `Broker_AddModule`. **]**
 
-**SRS_GATEWAY_LL_14_039: [** The function shall increment the `MESSAGE_BUS_HANDLE` reference count if the `MODULE_HANDLE` was successfully linked to the `GATEWAY_HANDLE_DATA`'s `bus`. **]**
+**SRS_GATEWAY_LL_14_039: [** The function shall increment the `BROKER_HANDLE` reference count if the `MODULE_HANDLE` was successfully linked to the `GATEWAY_HANDLE_DATA`'s `bus`. **]**
 
 **SRS_GATEWAY_LL_14_018: [** If the function cannot attach the module to the message broker, the function shall return `NULL`. **]**
 
@@ -305,11 +305,11 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_14_023: [** The function shall locate the `MODULE_DATA` object in `GATEWAY_HANDLE_DATA`'s `modules` containing `module` and return if it cannot be found.  **]**
 
-**SRS_GATEWAY_LL_14_021: [** The function shall detach `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_021: [** The function shall detach `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_038: [** The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. **]**
+**SRS_GATEWAY_LL_14_038: [** The function shall decrement the `BROKER_HANDLE` reference count. **]**
 
 **SRS_GATEWAY_LL_14_024: [** The function shall use the `MODULE_DATA`'s `library_handle` to retrieve the `MODULE_APIS` and destroy `module`. **]**
 

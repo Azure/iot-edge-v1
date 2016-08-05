@@ -17,7 +17,7 @@ public class MessageBus {
 
     //Private Native Methods
     /**
-     * Native MessageBus_Publish function. When this method is called, it will call into the native MessageBus_Publish
+     * Native Broker_Publish function. When this method is called, it will call into the native Broker_Publish
      * function to publish the provided {@link Message} onto the native MessageBus.
      *
      * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_requirements.md" target="_top">Message broker documentation</a>

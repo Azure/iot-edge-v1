@@ -235,7 +235,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE NODEJS_Create(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void NODEJS_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -337,7 +337,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&NODEJS_APIS);
 
-    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, NODEJS_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, busHandle, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
     MOCK_STATIC_METHOD_1(, void, NODEJS_Destroy, MODULE_HANDLE, moduleHandle);
@@ -367,17 +367,17 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, gballoc_free, void*, ptr);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CNODEJSHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , MODULE_HANDLE, NODEJS_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, busHandle, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, NODEJS_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , void, NODEJS_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
-MODULE_HANDLE (*NODEJS_HL_Create)(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE (*NODEJS_HL_Create)(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void (*NODEJS_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*NODEJS_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-static MESSAGE_BUS_HANDLE validBusHandle = (MESSAGE_BUS_HANDLE)0x1;
+static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
 
 #define VALID_CONFIG_STRING ""                \

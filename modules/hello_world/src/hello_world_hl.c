@@ -12,7 +12,7 @@
 #include "hello_world.h"
 #include "hello_world_hl.h"
 
-static MODULE_HANDLE HelloWorld_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE HelloWorld_HL_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     MODULE_HANDLE result;
     if((result = MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)()->Module_Create(busHandle, configuration))==NULL)

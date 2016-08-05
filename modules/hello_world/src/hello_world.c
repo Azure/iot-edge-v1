@@ -19,7 +19,7 @@ typedef struct HELLOWORLD_HANDLE_DATA_TAG
     THREAD_HANDLE threadHandle;
     LOCK_HANDLE lockHandle;
     int stopThread;
-    MESSAGE_BUS_HANDLE busHandle;
+    BROKER_HANDLE busHandle;
 
 }HELLOWORLD_HANDLE_DATA;
 
@@ -66,7 +66,7 @@ int helloWorldThread(void *param)
                         }
                         else
                         {
-                            (void)MessageBus_Publish(handleData->busHandle, (MODULE_HANDLE)handleData, helloWorldMessage);
+                            (void)Broker_Publish(handleData->busHandle, (MODULE_HANDLE)handleData, helloWorldMessage);
                             (void)Unlock(handleData->lockHandle);
                         }
                     }
@@ -83,7 +83,7 @@ int helloWorldThread(void *param)
     return 0;
 }
 
-static MODULE_HANDLE HelloWorld_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     HELLOWORLD_HANDLE_DATA* result;
     if (

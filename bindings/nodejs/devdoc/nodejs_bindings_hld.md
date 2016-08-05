@@ -315,7 +315,7 @@ message to the message broker, it will first construct an object that implements
 the `Message` interface and invoke `MessageBus.publish` at which point control
 shifts to the native code where the implementation proceeds to construct a
 `MESSAGE_HANDLE` from the JavaScript message object. Once the `MESSAGE_HANDLE`
-has been initialized it calls `MessageBus_Publish`.
+has been initialized it calls `Broker_Publish`.
 
 Another implementation option could be to have the JavaScript code serialize the
 message into a byte array according to the requirements of the

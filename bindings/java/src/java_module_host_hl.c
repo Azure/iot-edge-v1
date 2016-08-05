@@ -15,7 +15,7 @@
 
 static int parse_jvm_options_internal(JAVA_MODULE_HOST_CONFIG* config, JSON_Object* obj);
 
-static MODULE_HANDLE JavaModuleHost_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE bus, const void* configuration)
 {
 	MODULE_HANDLE result;
 	if (bus == NULL || configuration == NULL)

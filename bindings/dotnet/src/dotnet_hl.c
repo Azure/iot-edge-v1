@@ -16,7 +16,7 @@
 
 #include "parson.h"
 
-static MODULE_HANDLE DotNET_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE DotNET_HL_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
 	MODULE_HANDLE result;
 	/* Codes_SRS_DOTNET_HL_04_001: [ If busHandle is NULL then DotNET_HL_Create shall fail and return NULL. ]  */

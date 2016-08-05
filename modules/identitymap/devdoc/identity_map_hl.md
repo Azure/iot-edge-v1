@@ -63,7 +63,7 @@ to a MODULE_APIS structure.**]**
 
 ## IdentityMap_HL_Create
 ```C
-MODULE_HANDLE IdentityMap_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE busHandle, const void* configuration);
 ```
 This function creates the identity map HL module. This module reads a JSON 
 array and converts this to a VECTOR of IDENTITY_MAP_CONFIG, as expected by

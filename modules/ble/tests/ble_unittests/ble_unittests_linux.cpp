@@ -324,9 +324,9 @@ public:
         auto result2 = seq->run();
     MOCK_METHOD_END(BLEIO_SEQ_RESULT, result2)
     
-    MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
-        auto result2 = MESSAGE_BUS_OK;
-    MOCK_METHOD_END(MESSAGE_BUS_RESULT, result2)
+    MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+        auto result2 = BROKER_OK;
+    MOCK_METHOD_END(BROKER_RESULT, result2)
     
     MOCK_STATIC_METHOD_1(, CONSTMAP_HANDLE, ConstMap_Create, MAP_HANDLE, sourceMap)
         auto result2 = BASEIMPLEMENTATION::ConstMap_Create(sourceMap);
@@ -554,7 +554,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , void, BLEIO_Seq_Destroy, BLEIO_SEQ_HAN
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , BLEIO_SEQ_RESULT, BLEIO_Seq_Run, BLEIO_SEQ_HANDLE, bleio_seq_handle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEMocks, , BLEIO_SEQ_RESULT, BLEIO_Seq_AddInstruction, BLEIO_SEQ_HANDLE, bleio_seq_handle, BLEIO_SEQ_INSTRUCTION*, instruction);
 
-DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , time_t, gb_time, time_t*, timer);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , struct tm*, gb_localtime, const time_t*, timer);
@@ -634,7 +634,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         CBLEMocks mocks;
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -655,7 +655,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         };
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -679,7 +679,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -715,7 +715,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((void*)NULL);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -755,7 +755,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -798,7 +798,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -850,7 +850,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((int)1);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -905,7 +905,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreArgument(2);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -972,7 +972,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         should_g_main_loop_quit_call_thread_func = true;
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1043,7 +1043,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         should_g_main_loop_quit_call_thread_func = true;
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1129,7 +1129,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         should_g_main_loop_quit_call_thread_func = true;
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1192,7 +1192,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetReturn((THREADAPI_RESULT)THREADAPI_OK);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1267,7 +1267,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetReturn((THREADAPI_RESULT)THREADAPI_OK);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1345,7 +1345,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetReturn((THREADAPI_RESULT)THREADAPI_OK);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1427,7 +1427,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((time_t)-1);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1511,7 +1511,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((struct tm*)NULL);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1597,7 +1597,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((size_t)0);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1686,7 +1686,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreAllArguments();
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1783,7 +1783,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreAllArguments();
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1887,7 +1887,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreAllArguments();
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1998,7 +1998,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreAllArguments();
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -2115,7 +2115,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .IgnoreAllArguments();
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -2229,7 +2229,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetFailReturn((MESSAGE_HANDLE)NULL);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -2364,7 +2364,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, Broker_Publish((BROKER_HANDLE)0x42, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(2)
             .IgnoreArgument(3);
 
@@ -2374,7 +2374,7 @@ BEGIN_TEST_SUITE(ble_unittests)
             .SetReturn((THREADAPI_RESULT)THREADAPI_OK);
 
         ///act
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -2430,7 +2430,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we want thread func called from g_main_loop_quit
         should_g_main_loop_quit_call_thread_func = true;
 
-        auto result = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_disconnect(IGNORED_PTR_ARG, NULL, NULL))
@@ -2542,7 +2542,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL); // empty map
         MESSAGE_CONFIG message_config =
@@ -2608,7 +2608,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, "boo");
@@ -2675,7 +2675,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND);
@@ -2746,7 +2746,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND);
@@ -2814,7 +2814,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND);
@@ -2881,7 +2881,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND);
@@ -2953,7 +2953,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         // we don't want ThreadAPI_Create to call the callback
         shouldThreadAPI_Create_invoke_callback = false;
 
-        auto handle = BLE_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto handle = BLE_Create((BROKER_HANDLE)0x42, &config);
 
         MAP_HANDLE properties = Map_Create(NULL);
         Map_Add(properties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND);

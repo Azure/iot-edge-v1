@@ -273,7 +273,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE DotNET_Create(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void DotNET_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -382,7 +382,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&DOTNET_APIS);
 
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, DotNET_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, busHandle, const void*, configuration)
 		MODULE_HANDLE result2 = NULL;
 		if (busHandle != NULL)
 		{
@@ -423,7 +423,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , JSON_Object*, json_array_get_obje
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, busHandle, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, DotNET_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , void, DotNET_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 DECLARE_GLOBAL_MOCK_METHOD_0(CDOTNETHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST));
@@ -487,7 +487,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		CDOTNETHLMocks mocks;
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, NULL);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -507,7 +507,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 			.SetFailReturn((JSON_Value*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -530,7 +530,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 			.SetFailReturn((JSON_Object*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -556,7 +556,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 			.SetFailReturn((const char*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -585,7 +585,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		.SetFailReturn((const char*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -617,7 +617,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 			.SetFailReturn((const char*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -650,12 +650,12 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
 
-		STRICT_EXPECTED_CALL(mocks, DotNET_Create((MESSAGE_BUS_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, DotNET_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(2)
 			.SetFailReturn((MODULE_HANDLE*)NULL);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -688,11 +688,11 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
 
-		STRICT_EXPECTED_CALL(mocks, DotNET_Create((MESSAGE_BUS_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, DotNET_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		///act
-		auto result = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto result = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -712,7 +712,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		messageBuffer.buffer = &fake;
 		messageBuffer.size = 1;
 
-		auto module = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto module = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 		mocks.ResetAllCalls();
 
 		MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -752,7 +752,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		///arrange
 		CDOTNETHLMocks mocks;
 
-		auto module = DotNET_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		auto module = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());

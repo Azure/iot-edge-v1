@@ -67,7 +67,7 @@ extern "C"
 	*
 	*	@details	This function is to be implemented by the module creator.
 	*
-	*	@param		busHandle		The #MESSAGE_BUS_HANDLE onto which this module
+	*	@param		busHandle		The #BROKER_HANDLE onto which this module
 	*								will connect.
 	*	@param		configureation	A pointer to the user-defined configuration 
 	*								structure for this module.
@@ -75,7 +75,7 @@ extern "C"
 	*	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
 	*			failure.
 	*/
-    typedef MODULE_HANDLE(*pfModule_Create)(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+    typedef MODULE_HANDLE(*pfModule_Create)(BROKER_HANDLE busHandle, const void* configuration);
 
 	/** @brief		Disposes of the resources allocated by/for this module.
 	*

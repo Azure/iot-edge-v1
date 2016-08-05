@@ -28,7 +28,7 @@ The message content is a JSON object of the format:
 
 ## BLE_HL_Create
 ```c
-MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE bus, const void* configuration)
 ```
 
 Creates a new BLE Module HL instance. `configuration` is a `const char*` that contains a JSON string that's typically passed through via the high level Gateway API `Gateway_Create_From_JSON`. The JSON object should conform to the following structure:

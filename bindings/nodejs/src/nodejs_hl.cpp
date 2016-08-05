@@ -14,7 +14,7 @@
 #include "nodejs.h"
 #include "nodejs_hl.h"
 
-static MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE NODEJS_HL_Create(BROKER_HANDLE bus, const void* configuration)
 {
     MODULE_HANDLE result;
 

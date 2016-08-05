@@ -60,9 +60,9 @@
     "})();"
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
-static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
+static bool validate_input(BROKER_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
 
-static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE bus, const void* configuration)
 {
     MODULE_HANDLE result;
     const NODEJS_MODULE_CONFIG* module_config = reinterpret_cast<const NODEJS_MODULE_CONFIG*>(configuration);
@@ -129,7 +129,7 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
     return result;
 }
 
-static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
+static bool validate_input(BROKER_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
 {
     bool result;
 
@@ -556,16 +556,16 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
                         }
                         else
                         {
-                            /*Codes_SRS_NODEJS_13_032: [ message_bus_publish shall call MessageBus_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
-                            if (MessageBus_Publish(handle_data.bus, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != MESSAGE_BUS_OK)
+                            /*Codes_SRS_NODEJS_13_032: [ message_bus_publish shall call Broker_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
+                            if (Broker_Publish(handle_data.bus, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != BROKER_OK)
                             {
                                 /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-                                LogError("MessageBus_Publish() failed");
+                                LogError("Broker_Publish() failed");
                                 info.GetReturnValue().Set(false);
                             }
                             else
                             {
-                                /*Codes_SRS_NODEJS_13_033: [ message_bus_publish shall set the return value to true or false depending on the status of the MessageBus_Publish call. ]*/
+                                /*Codes_SRS_NODEJS_13_033: [ message_bus_publish shall set the return value to true or false depending on the status of the Broker_Publish call. ]*/
                                 info.GetReturnValue().Set(true);
                             }
 

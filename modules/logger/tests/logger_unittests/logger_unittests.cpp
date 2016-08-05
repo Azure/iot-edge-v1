@@ -110,7 +110,7 @@ static LOGGER_CONFIG validConfig =
     LOGGING_TO_FILE,
     "a.txt"
 };
-static MESSAGE_BUS_HANDLE validBusHandle = (MESSAGE_BUS_HANDLE)0x1;
+static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
 
 static LOGGER_CONFIG invalidConfig_fileName =
 {

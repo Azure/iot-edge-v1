@@ -17,19 +17,19 @@ There are two guiding principles that influence the broker's design:
 
 ### The Broker's Internal State
 
-An instance of the broker is represented in code via an opaque `MESSAGE_BUS_HANDLE` value and is a reference counted object. The `MESSAGE_BUS_HANDLE` is backed by a data structure called `MESSAGE_BUS_HANDLE_DATA` which looks like this:
+An instance of the broker is represented in code via an opaque `BROKER_HANDLE` value and is a reference counted object. The `BROKER_HANDLE` is backed by a data structure called `BROKER_HANDLE_DATA` which looks like this:
 
 ```C
-typedef struct MESSAGE_BUS_HANDLE_DATA_TAG
+typedef struct BROKER_HANDLE_DATA_TAG
 {
     VECTOR_HANDLE           modules;
     int                     publish_socket;
     STRING_HANDLE           url;
     LOCK_HANDLE             modules_lock;
-}MESSAGE_BUS_HANDLE_DATA;
+}BROKER_HANDLE_DATA;
 ```
 
-`MESSAGE_BUS_HANDLE_DATA` has the following members:
+`BROKER_HANDLE_DATA` has the following members:
 
 >| Field          | Description                                                           |
 >|----------------|-----------------------------------------------------------------------|

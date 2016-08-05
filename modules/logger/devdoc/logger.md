@@ -31,7 +31,7 @@ typedef struct LOGGER_CONFIG_TAG
 
 ###Logger_Create
 ```c
-MODULE_HANDLE Logger_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE Logger_Create(BROKER_HANDLE busHandle, const void* configuration);
 ```
 Creates a new LOGGER instance. `configuration` is a pointer to a `LOGGER_CONFIG`.
 

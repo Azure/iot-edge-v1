@@ -18,7 +18,7 @@ to the underlying implementation.
 NODEJS_HL_Create
 ----------------
 ```c
-MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE NODEJS_HL_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 
 Creates a new Node JS module HL instance. `configuration` is a pointer to a

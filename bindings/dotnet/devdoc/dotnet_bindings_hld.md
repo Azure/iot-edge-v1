@@ -22,7 +22,7 @@ The **.NET Module Host** is a C module that
 
 2. Brokers calls **to** the .NET Module (create, destroy, receive).
 
-3. Brokers calls **from** the .NET Module (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `MessageBus_Publish`);
+3. Brokers calls **from** the .NET Module (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `Broker_Publish`);
 
 ###JSON Configuration
 

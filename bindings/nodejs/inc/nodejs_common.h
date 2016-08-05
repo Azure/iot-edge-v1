@@ -35,7 +35,7 @@ struct NODEJS_MODULE_HANDLE_DATA
     }
 
     NODEJS_MODULE_HANDLE_DATA(
-        MESSAGE_BUS_HANDLE message_bus,
+        BROKER_HANDLE message_bus,
         const char* path,
         const char* config,
         PFNMODULE_START module_start)
@@ -121,7 +121,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_state = state;
     }
 
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               bus;
     std::string                 main_path;
     std::string                 configuration_json;
     v8::Isolate                 *v8_isolate;

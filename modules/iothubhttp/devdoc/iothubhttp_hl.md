@@ -28,7 +28,7 @@ create function to  interpret the serialized JSON module arguments.
 
 ###IoTHubHttp_HL_Create
 ```C
-MODULE_HANDLE IoTHubHttp_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IoTHubHttp_HL_Create(BROKER_HANDLE busHandle, const void* configuration);
 ```
 Creates a new IoTHubHttp_HL instance. `configuration` is a pointer to a char* 
 of the serialzed JSON object, as supplied by `Gateway_Create_From_JSON`.

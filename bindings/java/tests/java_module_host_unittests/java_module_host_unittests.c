@@ -115,7 +115,7 @@ void my_Message_Destroy(MESSAGE_HANDLE message)
 }
 
 //MessageBus mocks
-MOCKABLE_FUNCTION(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+MOCKABLE_FUNCTION(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 //JEnv function mocks
 MOCKABLE_FUNCTION(JNICALL, jclass, FindClass, JNIEnv*, env, const char*, name);
@@ -437,7 +437,7 @@ static pfModule_Destroy JavaModuleHost_Destroy = NULL; /*gets assigned in TEST_S
 static pfModule_Receive JavaModuleHost_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 IMPLEMENT_UMOCK_C_ENUM_TYPE(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
+IMPLEMENT_UMOCK_C_ENUM_TYPE(BROKER_RESULT, BROKER_RESULT_VALUES);
 
 BEGIN_TEST_SUITE(JavaModuleHost_UnitTests)
 
@@ -541,14 +541,14 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	REGISTER_UMOCK_ALIAS_TYPE(jsize, int);
 	REGISTER_UMOCK_ALIAS_TYPE(const jbyte*, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(jarray, void*);
-	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_BUS_HANDLE, void*);
+	REGISTER_UMOCK_ALIAS_TYPE(BROKER_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(const char*, char*);
 
 	REGISTER_UMOCK_ALIAS_TYPE(void**, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(va_list, void*);
 
 	REGISTER_TYPE(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT);
-	REGISTER_TYPE(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT);
+	REGISTER_TYPE(BROKER_RESULT, BROKER_RESULT);
 }
 
 TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -604,7 +604,7 @@ TEST_FUNCTION(JavaModuleHost_Create_with_NULL_config_fails)
 	//Arrange
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, NULL);
 
 	//Assert
 	ASSERT_IS_NULL(result);
@@ -626,7 +626,7 @@ TEST_FUNCTION(JavaModuleHost_Create_with_NULL_class_name_fails)
 	};
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &no_class_name_config);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &no_class_name_config);
 
 	//Assert
 	ASSERT_IS_NULL(result);
@@ -643,7 +643,7 @@ TEST_FUNCTION(JavaModuleHost_Create_malloc_failure_fails)
 		.IgnoreArgument(1);
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 
 	//Assert
 	ASSERT_IS_NULL(result);
@@ -875,7 +875,7 @@ TEST_FUNCTION(JavaModuleHost_Create_API_failure_tests)
 			umock_c_negative_tests_fail_call(i);
 
 			// act
-			MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config2);
+			MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config2);
 
 			// assert
 			ASSERT_ARE_EQUAL(void_ptr, NULL, result);
@@ -1022,7 +1022,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
 
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config2);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config2);
 
 	//Assert
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1228,7 +1228,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_additio
 
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config2);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config2);
 
 	//Assert
 	ASSERT_IS_NOT_NULL(result);
@@ -1310,7 +1310,7 @@ TEST_FUNCTION(JavaModuleHost_Create_allocates_structure_success)
 		.IgnoreAllArguments();
 
 	//Act
-	MODULE_HANDLE result = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 
 	//Assert
 	ASSERT_IS_NOT_NULL(result);
@@ -1324,7 +1324,7 @@ TEST_FUNCTION(JavaModuleHost_Create_allocates_structure_success)
 TEST_FUNCTION(JavaModuleHost_Create_gets_previously_created_JVM_success)
 {
 	//Arrange
-	MODULE_HANDLE handle = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE handle = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	int result = 0;
@@ -1395,7 +1395,7 @@ TEST_FUNCTION(JavaModuleHost_Create_gets_previously_created_JVM_success)
 
 	//Act
 	umock_c_negative_tests_fail_call(3);
-	MODULE_HANDLE handle2 = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE handle2 = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 
 	//Assert
 	ASSERT_IS_NOT_NULL(handle);
@@ -1431,7 +1431,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_success)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1526,7 +1526,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_module_NULL_failure)
 TEST_FUNCTION(JavaModuleHost_Receive_message_NULL_failure)
 {
 	//Arrange
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 	
 	//Act
@@ -1551,7 +1551,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_Message_ToByteArray_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1592,7 +1592,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_Message_allocate_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1633,7 +1633,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_AttachCurrentThread_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1680,7 +1680,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_NewByteArray_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1732,7 +1732,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_SetByteArrayRegion_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1792,7 +1792,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetObjectClass_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1852,7 +1852,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_GetMethodID_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1917,7 +1917,7 @@ TEST_FUNCTION(JavaModuleHost_Receive_CallVoidMethod_failure)
 		0x00, 0x00, 0x00, 0x00  /*zero message content size*/
 	};
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	MESSAGE_HANDLE message = Message_CreateFromByteArray(msg, sizeof(msg));
 	umock_c_reset_all_calls();
 
@@ -1989,7 +1989,7 @@ TEST_FUNCTION(JavaModuleHost_Destroy_success)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm , IGNORED_PTR_ARG, NULL))
@@ -2033,8 +2033,8 @@ TEST_FUNCTION(JavaModuleHost_Destroy_multiple_success)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
-	MODULE_HANDLE module2 = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	MODULE_HANDLE module2 = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
@@ -2117,7 +2117,7 @@ TEST_FUNCTION(JavaModuleHost_Destroy_attach_fails)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 	
 	int result = 0;
@@ -2147,7 +2147,7 @@ TEST_FUNCTION(JavaModuleHost_Destroy_GetObjectClass_fails)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	int result = 0;
@@ -2180,7 +2180,7 @@ TEST_FUNCTION(JavaModuleHost_Destroy_GetMethodID_fails)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	int result = 0;
@@ -2223,7 +2223,7 @@ TEST_FUNCTION(JavaModuleHost_Destroy_CallVoidMethod_fails)
 {
 	//Arrange
 
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	int result = 0;
@@ -2292,17 +2292,17 @@ TEST_FUNCTION(JavaModuleHost_Destroy_CallVoidMethod_fails)
 
 /*Tests_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_026: [This function shall use the serialized message in a call to Message_Create.]*/
-/*Tests_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the MESSAGE_BUS_HANDLE addressed by addr and return the value of this function call.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the BROKER_HANDLE addressed by addr and return the value of this function call.]*/
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_success)
 {
 	//Arrange
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	jbyteArray serialized_message = (jbyteArray)0x42;
 	jobject jMessageBus = (jobject)0x42;
 	jlong bus_address = (jlong)0x42;
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)bus_address;
+	BROKER_HANDLE bus = (BROKER_HANDLE)bus_address;
 
 	STRICT_EXPECTED_CALL(GetArrayLength(global_env, serialized_message));
 
@@ -2318,7 +2318,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 	STRICT_EXPECTED_CALL(Message_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, module, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(Broker_Publish(bus, module, IGNORED_PTR_ARG))
 		.IgnoreArgument(3);
 
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
@@ -2343,13 +2343,13 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_failure)
 {
 	//Arrange
-	MODULE_HANDLE module = JavaModuleHost_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	jbyteArray serialized_message = (jbyteArray)0x42;
 	jobject jMessageBus = (jobject)0x42;
 	jlong bus_address = (jlong)0x42;
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)bus_address;
+	BROKER_HANDLE bus = (BROKER_HANDLE)bus_address;
 
 	int init_result = 0;
 	init_result = umock_c_negative_tests_init();
@@ -2372,9 +2372,9 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 		.IgnoreAllArguments()
 		.SetFailReturn(NULL);
 
-	STRICT_EXPECTED_CALL(MessageBus_Publish(bus, module, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(Broker_Publish(bus, module, IGNORED_PTR_ARG))
 		.IgnoreArgument(3)
-		.SetFailReturn(MESSAGE_BUS_ERROR);
+		.SetFailReturn(BROKER_ERROR);
 
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);

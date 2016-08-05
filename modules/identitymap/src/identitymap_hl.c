@@ -77,7 +77,7 @@ static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
 /*
  * @brief	Create an identity map HL module.
  */
-static MODULE_HANDLE IdentityMap_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
 	MODULE_HANDLE *result;
 	if ((busHandle == NULL) || (configuration == NULL))

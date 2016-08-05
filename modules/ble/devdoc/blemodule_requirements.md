@@ -51,7 +51,7 @@ typedef struct BLE_CONFIG_TAG
 
 typedef struct BLE_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE  bus;
+    BROKER_HANDLE       bus;
     BLE_DEVICE_CONFIG   device_config;
     BLEIO_GATT_HANDLE   bleio_gatt;
     BLEIO_SEQ_HANDLE    bleio_seq;
@@ -60,7 +60,7 @@ typedef struct BLE_HANDLE_DATA_TAG
 
 ## BLE_Create
 ```c
-MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE BLE_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 
 Creates a new BLE module instance. The parameter `configuration` is a pointer to a `BLE_CONFIG` object.

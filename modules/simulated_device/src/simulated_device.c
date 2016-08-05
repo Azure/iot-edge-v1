@@ -15,7 +15,7 @@
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {
-	MESSAGE_BUS_HANDLE	bus;
+	BROKER_HANDLE	    bus;
     THREAD_HANDLE       simulatedDeviceThread;
     const char *        fakeMacAddress;
     unsigned int                 simulatedDeviceRunning : 1;
@@ -100,7 +100,7 @@ static int simulated_device_worker(void * user_data)
 						}
 						else
 						{
-							if (MessageBus_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != MESSAGE_BUS_OK)
+							if (Broker_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
 							{
 								LogError("Failed to create new message");
 							}
@@ -120,7 +120,7 @@ static int simulated_device_worker(void * user_data)
 }
 
 
-static MODULE_HANDLE SimulatedDevice_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     SIMULATEDDEVICE_DATA * result;
     if (busHandle == NULL || configuration == NULL)

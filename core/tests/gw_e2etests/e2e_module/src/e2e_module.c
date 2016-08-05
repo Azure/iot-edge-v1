@@ -20,7 +20,7 @@
 
 typedef struct E2E_MODULE_DATA_TAG
 {
-	MESSAGE_BUS_HANDLE  bus;
+	BROKER_HANDLE       bus;
     THREAD_HANDLE       e2eModulethread;
 	char*               fakeMacAddress;
 	char*               dataToSend;
@@ -93,7 +93,7 @@ static int e2e_module_worker(void * user_data)
 			}
 			else
 			{
-				if (MessageBus_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != MESSAGE_BUS_OK)
+				if (Broker_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
 				{
 					LogError("Failed to publish module data to the message broker.");
 				}
@@ -107,7 +107,7 @@ static int e2e_module_worker(void * user_data)
 }
 
 
-static MODULE_HANDLE E2EModule_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     E2E_MODULE_DATA * result;
     if (busHandle == NULL || configuration == NULL)

@@ -34,7 +34,7 @@ DEFINE_ENUM_STRINGS(BLEIO_SEQ_INSTRUCTION_TYPE, BLEIO_SEQ_INSTRUCTION_TYPE_VALUE
 
 typedef struct BLE_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE  bus;
+    BROKER_HANDLE       bus;
     BLE_DEVICE_CONFIG   device_config;
     BLEIO_GATT_HANDLE   bleio_gatt;
     BLEIO_SEQ_HANDLE    bleio_seq;
@@ -100,7 +100,7 @@ static bool terminate_event_dispatcher(
 );
 #endif
 
-static MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE BLE_Create(BROKER_HANDLE bus, const void* configuration)
 {
     BLE_HANDLE_DATA* result;
     BLE_CONFIG* config = (BLE_CONFIG*)configuration;
@@ -517,9 +517,9 @@ static void on_read_complete(
                             | source                  | This property will always have the value `bleTelemetry`.      |
 
                             ]*/
-                            if (MessageBus_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != MESSAGE_BUS_OK)
+                            if (Broker_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != BROKER_OK)
                             {
-                                LogError("MessageBus_Publish() failed");
+                                LogError("Broker_Publish() failed");
                             }
 
                             Message_Destroy(message);

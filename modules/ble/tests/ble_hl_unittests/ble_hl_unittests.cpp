@@ -295,7 +295,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE BLE_Create(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void BLE_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -447,7 +447,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&BLE_APIS);
 
-    MOCK_STATIC_METHOD_2(, MODULE_HANDLE, BLE_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2(, MODULE_HANDLE, BLE_Create, BROKER_HANDLE, busHandle, const void*, configuration)
         BLE_CONFIG *config = (BLE_CONFIG*)malloc(sizeof(BLE_CONFIG));
         memcpy(config, configuration, sizeof(BLE_CONFIG));
         MODULE_HANDLE result2 = (MODULE_HANDLE)config;
@@ -563,7 +563,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , JSON_Object*, json_array_get_object,
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, BROKER_HANDLE, busHandle, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, BLE_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 DECLARE_GLOBAL_MOCK_METHOD_0(CBLEHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE));
@@ -651,7 +651,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
         CBLEHLMocks mocks;
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -671,7 +671,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -695,7 +695,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -721,7 +721,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((int)-1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -749,7 +749,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((const char*)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -779,7 +779,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((JSON_Array *)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -811,7 +811,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetReturn((size_t)0);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -845,7 +845,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((VECTOR_HANDLE)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -885,7 +885,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -931,7 +931,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -979,7 +979,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1030,7 +1030,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1086,7 +1086,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1142,7 +1142,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1201,7 +1201,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1254,7 +1254,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1319,7 +1319,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1409,7 +1409,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1477,7 +1477,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1545,7 +1545,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1616,7 +1616,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1643,7 +1643,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
 
-        STRICT_EXPECTED_CALL(mocks, BLE_Create((MESSAGE_BUS_HANDLE)0x42, IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, BLE_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
             .IgnoreArgument(2)
             .SetFailReturn((MODULE_HANDLE)NULL);
 
@@ -1699,7 +1699,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1774,7 +1774,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1795,7 +1795,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
 
-        STRICT_EXPECTED_CALL(mocks, BLE_Create((MESSAGE_BUS_HANDLE)0x42, IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, BLE_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
             .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
@@ -1843,7 +1843,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1881,7 +1881,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
@@ -1940,7 +1940,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2021,7 +2021,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2101,7 +2101,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2178,7 +2178,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2251,7 +2251,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2320,7 +2320,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2381,7 +2381,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2439,7 +2439,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2494,7 +2494,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2547,7 +2547,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2595,7 +2595,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2640,7 +2640,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2684,7 +2684,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2725,7 +2725,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
@@ -2770,7 +2770,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
             .IgnoreArgument(1)
             .SetReturn((size_t)1);
 
-        auto module = BLE_HL_Create((MESSAGE_BUS_HANDLE)0x42, (const void*)FAKE_CONFIG);
+        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         ///act

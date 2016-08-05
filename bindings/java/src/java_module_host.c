@@ -86,7 +86,7 @@ static void deinit_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE options_st
 static jobject NewObjectInternal(JNIEnv* env, jclass clazz, jmethodID methodID, int args_count, ...);
 static void CallVoidMethodInternal(JNIEnv* env, jobject obj, jmethodID methodID, int args_count, ...);
 
-static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE bus, const void* configuration)
 {
 	JAVA_MODULE_HANDLE_DATA* result;
 	if(bus == NULL || configuration == NULL)
@@ -441,9 +441,9 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv* env, jobject jMessageBus, jlong bus_address, jlong module_address, jbyteArray serialized_message)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_14_048: [This function shall return a non - zero value if any underlying function call fails.]*/
-	MESSAGE_BUS_RESULT result = MESSAGE_BUS_ERROR;
+	BROKER_RESULT result = BROKER_ERROR;
 
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)bus_address;
+	BROKER_HANDLE bus = (BROKER_HANDLE)bus_address;
 	MODULE_HANDLE module = (MODULE_HANDLE)module_address;
 
 	size_t length = JNIFunc(env, GetArrayLength, serialized_message);
@@ -480,8 +480,8 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishM
 				}
 				else
 				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the MESSAGE_BUS_HANDLE addressed by addr and return the value of this function call.]*/
-					result = MessageBus_Publish(bus, module, message);
+					/*Codes_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the BROKER_HANDLE addressed by addr and return the value of this function call.]*/
+					result = Broker_Publish(bus, module, message);
 
 					//Cleanup
 					Message_Destroy(message);

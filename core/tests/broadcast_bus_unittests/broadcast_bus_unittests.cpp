@@ -46,7 +46,7 @@ namespace BASEIMPLEMENTATION
 #include "broker.h"
 #include "azure_c_shared_utility/lock.h"
 
-DEFINE_MICROMOCK_ENUM_TO_STRING(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
+DEFINE_MICROMOCK_ENUM_TO_STRING(BROKER_RESULT, BROKER_RESULT_VALUES);
 
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
@@ -120,7 +120,7 @@ static void* interceptArgs_for_Condition_Wait;
 static PFN_CONDITION_WAIT_INTERCEPT intercept_for_Condition_Wait;
 
 static MODULE_HANDLE fake_module_handle = (MODULE_HANDLE)0x42;
-static MODULE_HANDLE FakeModule_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE FakeModule_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     return (MODULE_HANDLE)malloc(1);
 }
@@ -634,9 +634,9 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_MESSAGE_BUS_13_001: [This API shall yield a MESSAGE_BUS_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]
-//Tests_SRS_MESSAGE_BUS_13_007: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]
-//Tests_SRS_MESSAGE_BUS_13_023: [MessageBus_Create shall initialize MESSAGE_BUS_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]
+//Tests_SRS_MESSAGE_BUS_13_001: [This API shall yield a BROKER_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]
+//Tests_SRS_MESSAGE_BUS_13_007: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]
+//Tests_SRS_MESSAGE_BUS_13_023: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]
 TEST_FUNCTION(MessageBus_Create_succeeds)
 {
     ///arrange
@@ -648,18 +648,18 @@ TEST_FUNCTION(MessageBus_Create_succeeds)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
 
     ///act
-    auto r = MessageBus_Create();
+    auto r = Broker_Create();
 
     ///assert
     ASSERT_IS_NOT_NULL(r);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(r);
+    Broker_Destroy(r);
 }
 
 //Tests_SRS_MESSAGE_BUS_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
-/*Tests_SRS_MESSAGE_BUS_13_067: [ MessageBus_Create shall malloc a new instance of MESSAGE_BUS_HANDLE_DATA and return NULL if it fails. ]*/
+/*Tests_SRS_MESSAGE_BUS_13_067: [ Broker_Create shall malloc a new instance of BROKER_HANDLE_DATA and return NULL if it fails. ]*/
 TEST_FUNCTION(MessageBus_Create_fails_when_malloc_fails)
 {
     ///arrange
@@ -670,7 +670,7 @@ TEST_FUNCTION(MessageBus_Create_fails_when_malloc_fails)
         .IgnoreArgument(1);
 
     ///act
-    auto r = MessageBus_Create();
+    auto r = Broker_Create();
 
     ///assert
     ASSERT_IS_NULL(r);
@@ -693,7 +693,7 @@ TEST_FUNCTION(MessageBus_Create_fails_when_list_create_fails)
     STRICT_EXPECTED_CALL(mocks, list_create());
 
     ///act
-    auto r = MessageBus_Create();
+    auto r = Broker_Create();
 
     ///assert
     ASSERT_IS_NULL(r);
@@ -718,7 +718,7 @@ TEST_FUNCTION(MessageBus_Create_fails_when_Lock_Init_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
 
     ///act
-    auto r = MessageBus_Create();
+    auto r = Broker_Create();
 
     ///assert
     ASSERT_IS_NULL(r);
@@ -727,39 +727,39 @@ TEST_FUNCTION(MessageBus_Create_fails_when_Lock_Init_fails)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto result = MessageBus_AddModule(NULL, (MODULE*)0x1);
+    auto result = Broker_AddModule(NULL, (MODULE*)0x1);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+//Tests_SRS_MESSAGE_BUS_99_013: [If `bus` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, NULL);
+    auto result = Broker_AddModule((BROKER_HANDLE)0x1, NULL);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
 {
     ///arrange
@@ -772,16 +772,16 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_apis)
     };
     
     ///act
-    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, &module);
+    auto result = Broker_AddModule((BROKER_HANDLE)0x1, &module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+//Tests_SRS_MESSAGE_BUS_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_handle)
 {
     ///arrange
@@ -794,47 +794,47 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_module_handle)
     };
     
     ///act
-    auto result = MessageBus_AddModule((MESSAGE_BUS_HANDLE)0x1, &module);
+    auto result = Broker_AddModule((BROKER_HANDLE)0x1, &module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_alloc_module_info_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     whenShallmalloc_fail = currentmalloc_call + 1;
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
 TEST_FUNCTION(MessageBus_AddModule_fails_when_VECTOR_create_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -849,25 +849,25 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_VECTOR_create_fails)
 		.IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_Lock_Init_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -884,25 +884,25 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Lock_Init_fails)
 		.IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_Condition_Init_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -922,25 +922,25 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_Condition_Init_fails)
 		.IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_list_add_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -968,25 +968,25 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_list_add_fails)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_ThreadAPI_Create_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -1018,25 +1018,25 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_ThreadAPI_Create_fails)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -1060,14 +1060,14 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
 
@@ -1078,18 +1078,18 @@ TEST_FUNCTION(MessageBus_AddModule_fails_when_lock_on_modules_lock_fails)
 //Tests_SRS_MESSAGE_BUS_13_100 : [The function shall initialize MESSAGE_BUS_MODULEINFO::mq_cond with a valid condition handle.]
 //Tests_SRS_MESSAGE_BUS_13_101 : [ The function shall assign 0 to MESSAGE_BUS_MODULEINFO::quit_worker. ]
 //Tests_SRS_MESSAGE_BUS_13_102 : [The function shall create a new thread for the module by calling ThreadAPI_Create using module_publish_worker as the thread callback and using the newly allocated MESSAGE_BUS_MODULEINFO object as the thread context.]
-//Tests_SRS_MESSAGE_BUS_13_039 : [This function shall acquire the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]
-//Tests_SRS_MESSAGE_BUS_13_045 : [MessageBus_AddModule shall append the new instance of MESSAGE_BUS_MODULEINFO to MESSAGE_BUS_HANDLE_DATA::modules.]
-//Tests_SRS_MESSAGE_BUS_13_046 : [This function shall release the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]
-//Tests_SRS_MESSAGE_BUS_13_047 : [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_039 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_MESSAGE_BUS_13_045 : [Broker_AddModule shall append the new instance of MESSAGE_BUS_MODULEINFO to BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_046 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_MESSAGE_BUS_13_047 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_AddModule_succeeds)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -1108,20 +1108,20 @@ TEST_FUNCTION(MessageBus_AddModule_succeeds)
         .IgnoreAllArguments();
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 struct Condition_Wait_Callback_Input
 {
-    MESSAGE_BUS_HANDLE bus;
+    BROKER_HANDLE bus;
     MESSAGE_HANDLE message;
 };
 
@@ -1134,7 +1134,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait2(vo
 
     // We added one module for the test, that's our fake list...
     unsigned char* module_info = (unsigned char*)fake_list[0];
-    sig_atomic_t* quit_worker = (sig_atomic_t*)(module_info + BUS_offsetof_quit_worker);
+    sig_atomic_t* quit_worker = (sig_atomic_t*)(module_info + BROKER_offsetof_quit_worker);
     *quit_worker = 1;
 
     return COND_OK;
@@ -1144,8 +1144,8 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
 {
     // publish a message on to the bus
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
-    auto result = MessageBus_Publish(input->bus, NULL, input->message);
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);
+    auto result = Broker_Publish(input->bus, NULL, input->message);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, BROKER_OK, result);
 
     // schedule module_publish_worker_calls_module_receive_Condition_Wait2 to be
     // called during the next intercept of the Condition_Wait mock
@@ -1177,7 +1177,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *      function when `shouldThreadAPI_Create_invoke_callback` is `true`.
     *      We set this variable to `true` in this test.
     *
-    *  [2] We call `MessageBus_AddModule` in this test. That function will eventually
+    *  [2] We call `Broker_AddModule` in this test. That function will eventually
     *      call `ThreadAPI_Create`. `ThreadAPI_Create` will call the
     *      `module_publish_worker` function which, among other things, will
     *      call `Condition_Wait` which we have also mocked.
@@ -1190,7 +1190,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *
     *  [4] Here's what the call stack looks like right now:
     *
-    *          MessageBus_AddModule -> ThreadAPI_Create -> module_publish_worker ->
+    *          Broker_AddModule -> ThreadAPI_Create -> module_publish_worker ->
     *          Condition_Wait -> module_publish_worker_calls_module_receive_Condition_Wait
     *
     *  [5] `module_publish_worker_calls_module_receive_Condition_Wait` uses the data pointed at by
@@ -1200,7 +1200,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *      (i.e. `module_publish_worker_calls_module_receive`) to 'interceptArgs_for_Condition_Wait'.
     *
     *  [6] `module_publish_worker_calls_module_receive_Condition_Wait` publishes a message to the
-    *      message broker via `MessageBus_Publish` and replaces `intercept_for_Condition_Wait` so that
+    *      message broker via `Broker_Publish` and replaces `intercept_for_Condition_Wait` so that
     *      it points to the function `module_publish_worker_calls_module_receive_Condition_Wait2`.
     *
     *  [7] Control then goes back to `module_publish_worker` which proceeds to consume the newly
@@ -1217,12 +1217,12 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *
     *  [9] Since `quit_worker` is now `1`, `module_publish_worker` will exit its processing loop
     *      and the entire stack will unwind and control comes back to the test case when
-    *      `MessageBus_AddModule` returns.
+    *      `Broker_AddModule` returns.
     */
 
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // make ThreadAPI_Create mock call the callback function
     shouldThreadAPI_Create_invoke_callback = true;
@@ -1243,7 +1243,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1266,7 +1266,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     STRICT_EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -1315,16 +1315,16 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 /*Tests_SRS_MESSAGE_BUS_02_004: [ If acquiring the lock fails, then module_publish_worker shall return. ]*/
@@ -1332,7 +1332,7 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // make ThreadAPI_Create mock call the callback function
     shouldThreadAPI_Create_invoke_callback = true;
@@ -1345,7 +1345,7 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
 
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -1369,15 +1369,15 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
         .SetFailReturn(LOCK_ERROR);
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 
@@ -1390,7 +1390,7 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // we want to intercept Condition_Wait when it is called
     shouldIntercept_Condition_Wait = true;
@@ -1407,11 +1407,11 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
     call_status_for_FakeModule_Receive.module = fake_module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
         
-    auto result = MessageBus_AddModule(bus, &fake_module);
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    auto result = Broker_AddModule(bus, &fake_module);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
 
-    result = MessageBus_Publish(bus, NULL, message);
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);
+    result = Broker_Publish(bus, NULL, message);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, BROKER_OK, result);
 
     mocks.ResetAllCalls();
 
@@ -1443,7 +1443,7 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 
 
     //Calls for when Condition_Wait is Intercepted
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1500,79 +1500,79 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 
-//Tests_SRS_MESSAGE_BUS_13_048: [If bus or module is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_13_048: [If bus or module is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(MessageBus_RemoveModule_fails_with_null_bus)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_RemoveModule(NULL, (const MODULE*)0x1);
+    auto r1 = Broker_RemoveModule(NULL, (const MODULE*)0x1);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_048: [If bus or module is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_13_048: [If bus or module is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(MessageBus_RemoveModule_fails_with_null_module)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_RemoveModule((MESSAGE_BUS_HANDLE)0x1, NULL);
+    auto r1 = Broker_RemoveModule((BROKER_HANDLE)0x1, NULL);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_053: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_RemoveModule_fails_when_Lock_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto bus = Broker_Create();
+    auto result = Broker_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_RemoveModule call
+    // this is for the Broker_RemoveModule call
     whenShallLock_fail = currentLock_call + 1;
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_RemoveModule(bus, &fake_module);
+    result = Broker_RemoveModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_050: [MessageBus_RemoveModule shall unlock MESSAGE_BUS_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in MESSAGE_BUS_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in BROKER_HANDLE_DATA::modules.]
 TEST_FUNCTION(MessageBus_RemoveModule_fails_when_list_find_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto bus = Broker_Create();
+    auto result = Broker_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_RemoveModule call
+    // this is for the Broker_RemoveModule call
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1583,29 +1583,29 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_list_find_fails)
         .IgnoreArgument(2);
 
     ///act
-    result = MessageBus_RemoveModule(bus, &fake_module);
+    result = Broker_RemoveModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 /*Tests_SRS_MESSAGE_BUS_02_002: [ If locking fails, then terminating the thread shall not be attempted (signalling the condition and joining the thread). ]*/
-//Tests_SRS_MESSAGE_BUS_13_050: [MessageBus_RemoveModule shall unlock MESSAGE_BUS_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in MESSAGE_BUS_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in BROKER_HANDLE_DATA::modules.]
 TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
 {
     {
         ///arrange
         CMessageBusMocks mocks;
-        auto bus = MessageBus_Create();
-        auto result = MessageBus_AddModule(bus, &fake_module);
+        auto bus = Broker_Create();
+        auto result = Broker_AddModule(bus, &fake_module);
         mocks.ResetAllCalls();
 
-        // this is for the MessageBus_RemoveModule call
+        // this is for the Broker_RemoveModule call
         STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1639,37 +1639,37 @@ TEST_FUNCTION(MessageBus_RemoveModule_fails_when_lock_mq_lock_fails)
 
 
         ///act
-        result = MessageBus_RemoveModule(bus, &fake_module);
+        result = Broker_RemoveModule(bus, &fake_module);
 
         ///assert
-        ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+        ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
-        MessageBus_Destroy(bus);
+        Broker_Destroy(bus);
     }
 }
-//Tests_SRS_MESSAGE_BUS_13_088 : [This function shall acquire the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]
-//Tests_SRS_MESSAGE_BUS_13_049 : [MessageBus_RemoveModule shall perform a linear search for module in MESSAGE_BUS_HANDLE_DATA::modules.]
-//Tests_SRS_MESSAGE_BUS_13_050 : [MessageBus_RemoveModule shall unlock MESSAGE_BUS_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in MESSAGE_BUS_HANDLE_DATA::modules.]
-//Tests_SRS_MESSAGE_BUS_13_052 : [The function shall remove the module from MESSAGE_BUS_HANDLE_DATA::modules.]
-//Tests_SRS_MESSAGE_BUS_13_054 : [This function shall release the lock on MESSAGE_BUS_HANDLE_DATA::modules_lock.]
-/*Tests_SRS_MESSAGE_BUS_02_001: [ MessageBus_RemoveModule shall lock `MESSAGE_BUS_MODULEINFO::mq_lock`. ]*/
-/*Tests_SRS_MESSAGE_BUS_02_003: [ After signaling the condition, MessageBus_RemoveModule shall unlock MESSAGE_BUS_MODULEINFO::mq_lock. ]*/
+//Tests_SRS_MESSAGE_BUS_13_088 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_MESSAGE_BUS_13_049 : [Broker_RemoveModule shall perform a linear search for module in BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_050 : [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return MESSAGE_BUS_MODULENOTFOUND if the module is not found in BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_052 : [The function shall remove the module from BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_MESSAGE_BUS_13_054 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
+/*Tests_SRS_MESSAGE_BUS_02_001: [ Broker_RemoveModule shall lock `MESSAGE_BUS_MODULEINFO::mq_lock`. ]*/
+/*Tests_SRS_MESSAGE_BUS_02_003: [ After signaling the condition, Broker_RemoveModule shall unlock MESSAGE_BUS_MODULEINFO::mq_lock. ]*/
 //Tests_SRS_MESSAGE_BUS_13_103 : [The function shall assign 1 to MESSAGE_BUS_MODULEINFO::quit_worker.]
 //Tests_SRS_MESSAGE_BUS_17_001: [The function shall signal MESSAGE_BUS_MODULEINFO::mq_cond to release module from waiting.]
 //Tests_SRS_MESSAGE_BUS_13_104 : [The function shall wait for the module's thread to exit by joining MESSAGE_BUS_MODULEINFO::thread via ThreadAPI_Join. ]
 //Tests_SRS_MESSAGE_BUS_13_057 : [The function shall free all members of the MESSAGE_BUS_MODULEINFO object.]
-//Tests_SRS_MESSAGE_BUS_13_053 : [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_053 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_RemoveModule_succeeds)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto bus = Broker_Create();
+    auto result = Broker_AddModule(bus, &fake_module);
     mocks.ResetAllCalls();
 
-    // this is for the MessageBus_RemoveModule call
+    // this is for the Broker_RemoveModule call
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1707,14 +1707,14 @@ TEST_FUNCTION(MessageBus_RemoveModule_succeeds)
 
 
     ///act
-    result = MessageBus_RemoveModule(bus, &fake_module);
+    result = Broker_RemoveModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
 /*Tests_SRS_MESSAGE_BUS_13_056: [If MESSAGE_BUS_MODULEINFO::mq is not empty then this function shall call Message_Destroy on every message still left in the collection.]*/
@@ -1722,17 +1722,17 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto bus = Broker_Create();
+    auto result = Broker_AddModule(bus, &fake_module);
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
-    auto result2 = MessageBus_Publish(bus, NULL, message);
+    auto result2 = Broker_Publish(bus, NULL, message);
     Message_Destroy(message);
     mocks.ResetAllCalls();
 
 
-    // this is for the MessageBus_RemoveModule call
+    // this is for the Broker_RemoveModule call
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -1773,24 +1773,24 @@ TEST_FUNCTION(MessageBus_RemoveModule_with_msg_succeeds)
 
 
     ///act
-    result = MessageBus_RemoveModule(bus, &fake_module);
+    result = Broker_RemoveModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_108: [If bus is NULL then MessageBus_IncRef shall do nothing.]
+//Tests_SRS_MESSAGE_BUS_13_108: [If bus is NULL then Broker_IncRef shall do nothing.]
 TEST_FUNCTION(MessageBus_IncRef_does_nothing_with_null_input)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    MessageBus_IncRef(NULL);
+    Broker_IncRef(NULL);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
@@ -1798,42 +1798,42 @@ TEST_FUNCTION(MessageBus_IncRef_does_nothing_with_null_input)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_109: [Otherwise, `MessageBus_IncRef` shall increment the internal ref count.]
+//Tests_SRS_MESSAGE_BUS_13_109: [Otherwise, `Broker_IncRef` shall increment the internal ref count.]
 TEST_FUNCTION(MessageBus_IncRef_increments_ref_count_1)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
     ///act
-    MessageBus_IncRef(bus);
-    MessageBus_DecRef(bus);
+    Broker_IncRef(bus);
+    Broker_DecRef(bus);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_111: [ Otherwise, MessageBus_Destroy shall decrement the internal ref count of the message. ]
+//Tests_SRS_MESSAGE_BUS_13_111: [ Otherwise, Broker_Destroy shall decrement the internal ref count of the message. ]
 TEST_FUNCTION(MessageBus_IncRef_increments_ref_count_1_destroy)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
     ///act
-    MessageBus_IncRef(bus);
-    MessageBus_Destroy(bus);
+    Broker_IncRef(bus);
+    Broker_Destroy(bus);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
 //Tests_SRS_MESSAGE_BUS_13_058: [If bus is NULL the function shall do nothing.]
@@ -1843,7 +1843,7 @@ TEST_FUNCTION(MessageBus_Destroy_does_nothing_with_null_input)
     CMessageBusMocks mocks;
 
     ///act
-    MessageBus_Destroy(NULL);
+    Broker_Destroy(NULL);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
@@ -1858,7 +1858,7 @@ TEST_FUNCTION(MessageBus_DecRef_does_nothing_with_null_input)
     CMessageBusMocks mocks;
 
     ///act
-    MessageBus_DecRef(NULL);
+    Broker_DecRef(NULL);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
@@ -1871,10 +1871,10 @@ TEST_FUNCTION(MessageBus_Destroy_works)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // these are for MessageBus_Destroy
+    // these are for Broker_Destroy
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
@@ -1885,7 +1885,7 @@ TEST_FUNCTION(MessageBus_Destroy_works)
         .IgnoreArgument(1);
 
     ///act
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
@@ -1894,15 +1894,15 @@ TEST_FUNCTION(MessageBus_Destroy_works)
 }
 
 //Tests_SRS_MESSAGE_BUS_13_112: [If the ref count is zero then the allocated resources are freed.]
-//Tests_SRS_MESSAGE_BUS_13_113: [ This function shall implement all the requirements of the MessageBus_Destroy API. ]
+//Tests_SRS_MESSAGE_BUS_13_113: [ This function shall implement all the requirements of the Broker_Destroy API. ]
 TEST_FUNCTION(MessageBus_DecRef_works)
 {
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
     mocks.ResetAllCalls();
 
-    // these are for MessageBus_Destroy
+    // these are for Broker_Destroy
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
@@ -1913,7 +1913,7 @@ TEST_FUNCTION(MessageBus_DecRef_works)
         .IgnoreArgument(1);
 
     ///act
-    MessageBus_DecRef(bus);
+    Broker_DecRef(bus);
 
     ///assert
     mocks.AssertActualAndExpectedCalls();
@@ -1921,45 +1921,45 @@ TEST_FUNCTION(MessageBus_DecRef_works)
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(MessageBus_Publish_fails_with_null_bus)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_Publish(NULL, NULL, (MESSAGE_HANDLE)0x1);
+    auto r1 = Broker_Publish(NULL, NULL, (MESSAGE_HANDLE)0x1);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return MESSAGE_BUS_INVALIDARG.]
+//Tests_SRS_MESSAGE_BUS_13_030: [If bus or message is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(MessageBus_Publish_fails_with_null_message)
 {
     ///arrange
     CMessageBusMocks mocks;
 
     ///act
-    auto r1 = MessageBus_Publish((MESSAGE_BUS_HANDLE)0x1, NULL, NULL);
+    auto r1 = Broker_Publish((BROKER_HANDLE)0x1, NULL, NULL);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, r1, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
 }
 
-//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_modules_lock_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
 
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // create a message to send
     unsigned char fake;
@@ -1968,41 +1968,41 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_modules_lock_fails)
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     whenShallLock_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     ///act
-    auto result = MessageBus_Publish(bus, NULL, message);
+    auto result = Broker_Publish(bus, NULL, message);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_Destroy(bus);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_module_mq_lock_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
 
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // create a message to send
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     whenShallLock_fail = currentLock_call + 2;
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -2018,36 +2018,36 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_lock_on_module_mq_lock_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, NULL, message);
+    result = Broker_Publish(bus, NULL, message);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_Publish_fails_when_vector_push_back_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
 
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // create a message to send
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
@@ -2072,36 +2072,36 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_push_back_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, NULL, message);
+    result = Broker_Publish(bus, NULL, message);
 
     ///assert
-    ASSERT_ARE_EQUAL(int, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(int, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_Publish_fails_when_vector_condition_post_fails)
 {
     ///arrange
     CMessageBusMocks mocks;
 
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // create a message to send
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -2126,43 +2126,43 @@ TEST_FUNCTION(MessageBus_Publish_fails_when_vector_condition_post_fails)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, NULL, message);
+    result = Broker_Publish(bus, NULL, message);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_ERROR);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_13_031: [MessageBus_Publish shall acquire the lock MESSAGE_BUS_HANDLE_DATA::modules_lock.]
-//Tests_SRS_MESSAGE_BUS_13_032: [ MessageBus_Publish shall start a processing loop for every module in MESSAGE_BUS_HANDLE_DATA::modules. ]
+//Tests_SRS_MESSAGE_BUS_13_031: [Broker_Publish shall acquire the lock BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_MESSAGE_BUS_13_032: [ Broker_Publish shall start a processing loop for every module in BROKER_HANDLE_DATA::modules. ]
 //Tests_SRS_MESSAGE_BUS_13_033 : [In the loop, the function shall first acquire the lock on MESSAGE_BUS_MODULEINFO::mq_lock.]
 //Tests_SRS_MESSAGE_BUS_13_034 : [The function shall then append message to MESSAGE_BUS_MODULEINFO::mq by calling Message_Clone and VECTOR_push_back.]
 //Tests_SRS_MESSAGE_BUS_13_035 : [The function shall then release MESSAGE_BUS_MODULEINFO::mq_lock.]
 //Tests_SRS_MESSAGE_BUS_13_096 : [The function shall then signal MESSAGE_BUS_MODULEINFO::mq_cond.]
-//Tests_SRS_MESSAGE_BUS_13_040 : [MessageBus_Publish shall release the lock MESSAGE_BUS_HANDLE_DATA::modules_lock after the loop.]
-//Tests_SRS_MESSAGE_BUS_13_037 : [This function shall return MESSAGE_BUS_ERROR if an underlying API call to the platform causes an error or MESSAGE_BUS_OK otherwise.]
+//Tests_SRS_MESSAGE_BUS_13_040 : [Broker_Publish shall release the lock BROKER_HANDLE_DATA::modules_lock after the loop.]
+//Tests_SRS_MESSAGE_BUS_13_037 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(MessageBus_Publish_succeeds)
 {
     ///arrange
     CMessageBusMocks mocks;
 
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // create a message to send
     unsigned char fake;
     MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
     auto message = Message_Create(&c);
 
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -2186,36 +2186,36 @@ TEST_FUNCTION(MessageBus_Publish_succeeds)
         .IgnoreArgument(1);
 
     ///act
-    result = MessageBus_Publish(bus, NULL, message);
+    result = Broker_Publish(bus, NULL, message);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
-//Tests_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, MessageBus_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]
+//Tests_SRS_MESSAGE_BUS_17_002: [ If source is not NULL, Broker_Publish shall not publish the message to the MESSAGE_BUS_MODULEINFO::module which matches source. ]
 TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 {
 	///arrange
 	CMessageBusMocks mocks;
 
-	auto bus = MessageBus_Create();
+	auto bus = Broker_Create();
 
 	// create a message to send
 	unsigned char fake;
 	MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
 	auto message = Message_Create(&c);
 
-	auto result = MessageBus_AddModule(bus, &fake_module);
+	auto result = Broker_AddModule(bus, &fake_module);
 
 	mocks.ResetAllCalls();
 
-	// this is for MessageBus_Publish
+	// this is for Broker_Publish
 	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -2228,16 +2228,16 @@ TEST_FUNCTION(MessageBus_Publish_succeeds_skips_self)
 		.IgnoreArgument(1);
 
 	///act
-	result = MessageBus_Publish(bus, fake_module_handle, message);
+	result = Broker_Publish(bus, fake_module_handle, message);
 
 	///assert
-	ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
 	mocks.AssertActualAndExpectedCalls();
 
 	///cleanup
 	Message_Destroy(message);
-	MessageBus_RemoveModule(bus, &fake_module);
-	MessageBus_Destroy(bus);
+	Broker_RemoveModule(bus, &fake_module);
+	Broker_Destroy(bus);
 }
 
 END_TEST_SUITE(broadcast_bus_unittests)

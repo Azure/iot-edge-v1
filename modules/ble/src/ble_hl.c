@@ -28,7 +28,7 @@
 
 typedef struct BLE_HL_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE      bus;
+    BROKER_HANDLE           bus;
     STRING_HANDLE           mac_address;
     MODULE_HANDLE           module_handle;
 }BLE_HL_HANDLE_DATA;
@@ -40,7 +40,7 @@ static bool parse_write(JSON_Object* instr, BLEIO_SEQ_INSTRUCTION_TYPE type, BLE
 static void free_instruction(BLE_INSTRUCTION* instr);
 static void free_instructions(VECTOR_HANDLE instructions);
 
-static MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE bus, const void* configuration)
 {
     BLE_HL_HANDLE_DATA* result;
 

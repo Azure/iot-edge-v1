@@ -23,7 +23,7 @@ typedef struct DOTNET_HOST_CONFIG_TAG
 
 typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               bus;
     ICLRMetaHost                *pMetaHost;
     ICLRRuntimeInfo             *pRuntimeInfo;
     ICorRuntimeHost             *pCorRuntimeHost;
@@ -33,7 +33,7 @@ typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 DotNET_Create
 -------------
 ```c
-MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE DotNET_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 Creates a new .NET module instance. The parameter `configuration` is a
 pointer to a `DOTNET_HOST_CONFIG` object.
@@ -138,7 +138,7 @@ extern const MODULE_APIS* Module_GetAPIS(void);
 Module_DotNetHost_PublishMessage
 --------------------------------
 ```c
-bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE , MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
+bool Module_DotNetHost_PublishMessage(BROKER_HANDLE , MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 ```
 
 **SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `bus` is NULL. **]**
@@ -151,8 +151,8 @@ bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE , MODULE_HANDLE sourceM
 
 **SRS_DOTNET_04_025: [** If `Message_CreateFromByteArray` fails, `Module_DotNetHost_PublishMessage` shall fail. **]**
 
-**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `MessageBus_Publish` passing bus, sourceModule, message and size. **]**
+**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `Broker_Publish` passing bus, sourceModule, message and size. **]**
 
-**SRS_DOTNET_04_027: [** If `MessageBus_Publish` fail `Module_DotNetHost_PublishMessage` shall fail.  **]**
+**SRS_DOTNET_04_027: [** If `Broker_Publish` fails `Module_DotNetHost_PublishMessage` shall fail.  **]**
 
-**SRS_DOTNET_04_028: [** If `MessageBus_Publish` succeed `Module_DotNetHost_PublishMessage` shall succeed. **]**
+**SRS_DOTNET_04_028: [** If `Broker_Publish` succeeds `Module_DotNetHost_PublishMessage` shall succeed. **]**

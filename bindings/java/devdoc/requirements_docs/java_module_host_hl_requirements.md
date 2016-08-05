@@ -22,7 +22,7 @@ The following functions are the implementation of those APIs.
 
 ##JavaModuleHost_HL_Create
 ```C
-static MODULE_HANDLE JavaModuleHost_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 
 Creates a new Java Module Host instance. The parameter `configuration` is a pointer to a `const char*` that contains a JSON object supplied by `Gateway_Create_From_JSON`.

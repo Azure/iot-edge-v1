@@ -235,7 +235,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE Logger_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE Logger_Create(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void Logger_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -403,7 +403,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&Logger_APIS);
 
-    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, Logger_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, busHandle, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
     MOCK_STATIC_METHOD_1(, void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
@@ -457,19 +457,19 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , struct tm*, gb_localtime, const tim
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CLoggerMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, busHandle, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , void, Logger_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
 /*definitions of cached functions, initialized in TEST_FIUCNTION_INIT*/
 
-MODULE_HANDLE (*Logger_HL_Create)(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE (*Logger_HL_Create)(BROKER_HANDLE busHandle, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void (*Logger_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*Logger_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-static MESSAGE_BUS_HANDLE validBusHandle = (MESSAGE_BUS_HANDLE)0x1;
+static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
 #define VALID_CONFIG_STRING "{\"filename\":\"log.txt\"}"
 

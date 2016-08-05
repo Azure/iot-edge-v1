@@ -114,7 +114,7 @@ static int append_logStartStop(FILE* fout, bool appendStart, bool isAbsoluteStar
     return result;
 }
 
-static MODULE_HANDLE Logger_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE Logger_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     LOGGER_HANDLE_DATA* result;
     /*Codes_SRS_LOGGER_02_001: [If busHandle is NULL then Logger_Create shall fail and return NULL.]*/

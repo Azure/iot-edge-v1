@@ -92,7 +92,7 @@ The following functions are the implementation of those APIs.
 
 ##IdentityMap_Create
 ```C
-MODULE_HANDLE IdentityMap_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE busHandle, const void* configuration);
 ```
 
 This function creates the identity map module.  This module expects a `VECTOR_HANDLE` 
@@ -113,7 +113,7 @@ The valid module handle will be a pointer to the structure:
 ```C
 typedef struct IDENTITY_MAP_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE busHandle;
+    BROKER_HANDLE busHandle;
     size_t mappingSize;
     IDENTITY_MAP_CONFIG * macToDeviceArray;
     IDENTITY_MAP_CONFIG * deviceToMacArray;    
@@ -226,5 +226,5 @@ Upon recognition of a C2D or D2C message, then a new message shall be published.
 **SRS_IDMAP_17_035: [**If cloning message content fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**   
 **SRS_IDMAP_17_036: [**`IdentityMap_Receive` shall create a new message by calling `Message_CreateFromBuffer` with new map and cloned content.**]**   
 **SRS_IDMAP_17_037: [**If creating new message fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**   
-**SRS_IDMAP_17_038: [**`IdentityMap_Receive` shall call `MessageBus_Publish` with `busHandle` and new message.**]**   
+**SRS_IDMAP_17_038: [**`IdentityMap_Receive` shall call `Broker_Publish` with `busHandle` and new message.**]**   
 **SRS_IDMAP_17_039: [**`IdentityMap_Receive` will destroy all resources it created.**]**   

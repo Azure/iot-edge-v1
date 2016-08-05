@@ -41,7 +41,7 @@ typedef struct IOTHUBHTTP_CONFIG_TAG
 
 ###IoTHubHttp_Create
 ```C
-MODULE_HANDLE IoTHubHttp_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE busHandle, const void* configuration);
 ```
 Creates a new IoTHubHttp instance. configuration is a pointer to a `IOTHUBHTTP_CONFIG`.
 

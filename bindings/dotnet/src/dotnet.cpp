@@ -52,7 +52,7 @@ struct DOTNET_HOST_HANDLE_DATA
 
 	};
 
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               bus;
 
 	variant_t                   vtClientModuleObject;
 	CComPtr<ICLRMetaHost>       spMetaHost;
@@ -248,7 +248,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 	return returnResult;
 }
 
-static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE DotNET_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
 	DOTNET_HOST_HANDLE_DATA* out = NULL;
 
@@ -566,7 +566,7 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 	}
 }
 
-MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
+MODULE_EXPORT bool Module_DotNetHost_PublishMessage(BROKER_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 {
 	bool returnValue = false;
 	MESSAGE_HANDLE messageToPublish = NULL;
@@ -584,15 +584,15 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODU
 		/* Codes_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
 		LogError("Error trying to create message from Byte Array");
 	}
-	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, message and size. ] */
-	else if (MessageBus_Publish(bus, sourceModule, messageToPublish) != MESSAGE_BUS_OK)
+	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing bus, sourceModule, message and size. ] */
+	else if (Broker_Publish(bus, sourceModule, messageToPublish) != BROKER_OK)
 	{
-		/* Codes_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */
+		/* Codes_SRS_DOTNET_04_027: [ If Broker_Publish fails Module_DotNetHost_PublishMessage shall fail. ] */
 		LogError("Error trying to publish message on MessageBus.");
 	}
 	else
 	{
-		/* Codes_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
+		/* Codes_SRS_DOTNET_04_028: [If Broker_Publish succeeds Module_DotNetHost_PublishMessage shall succeed.] */
 		returnValue = true;
 	}
 

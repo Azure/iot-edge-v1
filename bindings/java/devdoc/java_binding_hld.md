@@ -133,7 +133,7 @@ gateway, it:
 -   Creates a JVM with the provided JVM configuration if this is the first Java
     module added to the gateway.
 
--   Constructs a `MessageBus` Java object using the `MESSAGE_BUS_HANDLE`.
+-   Constructs a `MessageBus` Java object using the `BROKER_HANDLE`.
 
 -   Finds the module’s class with the name specified by the `args.class_name`,
     invokes the constructor passing in the native `MODULE_HANDLE` address,

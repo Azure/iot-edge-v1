@@ -46,7 +46,7 @@ using namespace nodejs_module;
 class MockModule
 {
 private:
-    MESSAGE_BUS_HANDLE m_bus;
+    BROKER_HANDLE m_bus;
     bool m_received_message;
     nodejs_module::Lock m_lock;
 
@@ -68,7 +68,7 @@ public:
         m_received_message = false;
     }
 
-    void create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+    void create(BROKER_HANDLE busHandle, const void* configuration)
     {
         LockGuard<MockModule> lock_guard{ *this };
         m_bus = busHandle;
@@ -109,7 +109,7 @@ public:
         config.source = buffer;
 
         MESSAGE_HANDLE message = Message_Create(&config);
-        MessageBus_Publish(m_bus, reinterpret_cast<MODULE_HANDLE>(this), message);
+        Broker_Publish(m_bus, reinterpret_cast<MODULE_HANDLE>(this), message);
         Message_Destroy(message);
         Map_Destroy(message_properties);
     }
@@ -117,9 +117,9 @@ public:
 
 MockModule g_mock_module;
 MODULE_HANDLE g_mock_module_handle = nullptr;
-MESSAGE_BUS_HANDLE g_message_bus = nullptr;
+BROKER_HANDLE g_message_bus = nullptr;
 
-MODULE_HANDLE MockModule_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+MODULE_HANDLE MockModule_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
     g_mock_module.create(busHandle, configuration);
     return reinterpret_cast<MODULE_HANDLE>(&g_mock_module);
@@ -298,13 +298,13 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         NODEJS_Destroy = Module_GetAPIS()->Module_Destroy;
         NODEJS_Receive = Module_GetAPIS()->Module_Receive;
 
-        g_message_bus = MessageBus_Create();
+        g_message_bus = Broker_Create();
 
         g_mock_module_handle = MockModule_Create(g_message_bus, nullptr);
         
         g_module.module_handle = g_mock_module_handle;
         g_module.module_apis = &g_fake_module_apis;
-        MessageBus_AddModule(g_message_bus, &g_module);
+        Broker_AddModule(g_message_bus, &g_module);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -324,9 +324,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ModulesManager::Get()->JoinNodeThread();
 
-        MessageBus_RemoveModule(g_message_bus, &g_module);
+        Broker_RemoveModule(g_message_bus, &g_module);
         MockModule_Destroy(g_mock_module_handle);
-        MessageBus_Destroy(g_message_bus);
+        Broker_Destroy(g_message_bus);
     }
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
@@ -379,7 +379,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ///arrrange
 
         ///act
-        auto result = NODEJS_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+        auto result = NODEJS_Create((BROKER_HANDLE)0x42, NULL);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -391,7 +391,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         NODEJS_MODULE_CONFIG config = { 0 };
 
         ///act
-        auto result = NODEJS_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = NODEJS_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -406,7 +406,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = NODEJS_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -421,7 +421,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create((MESSAGE_BUS_HANDLE)0x42, &config);
+        auto result = NODEJS_Create((BROKER_HANDLE)0x42, &config);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -515,7 +515,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
             Module_GetAPIS(),
             result
         };
-        MessageBus_AddModule(g_message_bus, &module);
+        Broker_AddModule(g_message_bus, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -528,7 +528,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_mock_module.get_received_message() == true);
 
         ///cleanup
-        MessageBus_RemoveModule(g_message_bus, &module);
+        Broker_RemoveModule(g_message_bus, &module);
         NODEJS_Destroy(result);
     }
 
@@ -983,7 +983,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
             Module_GetAPIS(),
             result
         };
-        MessageBus_AddModule(g_message_bus, &module);
+        Broker_AddModule(g_message_bus, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -997,7 +997,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
-        MessageBus_RemoveModule(g_message_bus, &module);
+        Broker_RemoveModule(g_message_bus, &module);
         NODEJS_Destroy(result);
     }
 

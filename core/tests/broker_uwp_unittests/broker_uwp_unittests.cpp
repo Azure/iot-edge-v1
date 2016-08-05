@@ -46,7 +46,7 @@ namespace BASEIMPLEMENTATION
 #include "broker.h"
 #include "azure_c_shared_utility/lock.h"
 
-DEFINE_MICROMOCK_ENUM_TO_STRING(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
+DEFINE_MICROMOCK_ENUM_TO_STRING(BROKER_RESULT, BROKER_RESULT_VALUES);
 
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
@@ -620,7 +620,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `MESSAGE_BUS_INVALIDARG`.]
+//Tests_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
 {
     ///arrange
@@ -631,10 +631,10 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
     };
     
     ///act
-    auto result = MessageBus_AddModule(NULL, &fake_module);
+    auto result = Broker_AddModule(NULL, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_INVALIDARG);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
@@ -642,7 +642,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
 
 struct Condition_Wait_Callback_Input
 {
-    MESSAGE_BUS_HANDLE bus;
+    BROKER_HANDLE bus;
     MESSAGE_HANDLE message;
 };
 
@@ -655,7 +655,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait2(vo
 
     // We added one module for the test, that's our fake list...
     unsigned char* module_info = (unsigned char*)fake_list[0];
-    sig_atomic_t* quit_worker = (sig_atomic_t*)(module_info + BUS_offsetof_quit_worker);
+    sig_atomic_t* quit_worker = (sig_atomic_t*)(module_info + BROKER_offsetof_quit_worker);
     *quit_worker = 1;
 
     return COND_OK;
@@ -665,8 +665,8 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
 {
     // publish a message on to the broker
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
-    auto result = MessageBus_Publish(input->bus, NULL, input->message);
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);
+    auto result = Broker_Publish(input->bus, NULL, input->message);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, BROKER_OK, result);
 
     // schedule module_publish_worker_calls_module_receive_Condition_Wait2 to be
     // called during the next intercept of the Condition_Wait mock
@@ -698,7 +698,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *      function when `shouldThreadAPI_Create_invoke_callback` is `true`.
     *      We set this variable to `true` in this test.
     *
-    *  [2] We call `MessageBus_AddModule` in this test. That function will eventually
+    *  [2] We call `Broker_AddModule` in this test. That function will eventually
     *      call `ThreadAPI_Create`. `ThreadAPI_Create` will call the
     *      `module_publish_worker` function which, among other things, will
     *      call `Condition_Wait` which we have also mocked.
@@ -711,7 +711,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *
     *  [4] Here's what the call stack looks like right now:
     *
-    *          MessageBus_AddModule -> ThreadAPI_Create -> module_publish_worker ->
+    *          Broker_AddModule -> ThreadAPI_Create -> module_publish_worker ->
     *          Condition_Wait -> module_publish_worker_calls_module_receive_Condition_Wait
     *
     *  [5] `module_publish_worker_calls_module_receive_Condition_Wait` uses the data pointed at by
@@ -721,7 +721,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *      (i.e. `module_publish_worker_calls_module_receive`) to 'interceptArgs_for_Condition_Wait'.
     *
     *  [6] `module_publish_worker_calls_module_receive_Condition_Wait` publishes a message on to
-    *      the message broker via `MessageBus_Publish` and replaces `intercept_for_Condition_Wait` so that
+    *      the message broker via `Broker_Publish` and replaces `intercept_for_Condition_Wait` so that
     *      it points to the function `module_publish_worker_calls_module_receive_Condition_Wait2`.
     *
     *  [7] Control then goes back to `module_publish_worker` which proceeds to consume the newly
@@ -738,12 +738,12 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *
     *  [9] Since `quit_worker` is now `1`, `module_publish_worker` will exit its processing loop
     *      and the entire stack will unwind and control comes back to the test case when
-    *      `MessageBus_AddModule` returns.
+    *      `Broker_AddModule` returns.
     */
 
     ///arrange
     CMessageBusMocks mocks;
-    auto bus = MessageBus_Create();
+    auto bus = Broker_Create();
 
     // make ThreadAPI_Create mock call the callback function
     shouldThreadAPI_Create_invoke_callback = true;
@@ -763,7 +763,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
     mocks.ResetAllCalls();
 
-    // this is for MessageBus_Publish
+    // this is for Broker_Publish
     STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
@@ -786,7 +786,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     STRICT_EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    // this is for the MessageBus_AddModule call
+    // this is for the Broker_AddModule call
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module_info*/
         .IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module*/
@@ -835,16 +835,16 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
 
     ///act
-    auto result = MessageBus_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(bus, &fake_module);
 
     ///assert
-    ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, result, MESSAGE_BUS_OK);
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
     mocks.AssertActualAndExpectedCalls();
 
     ///cleanup
     Message_Destroy(message);
-    MessageBus_RemoveModule(bus, &fake_module);
-    MessageBus_Destroy(bus);
+    Broker_RemoveModule(bus, &fake_module);
+    Broker_Destroy(bus);
 }
 
 END_TEST_SUITE(broker_uwp_unittests)

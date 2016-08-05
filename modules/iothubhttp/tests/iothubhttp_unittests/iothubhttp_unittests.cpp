@@ -105,7 +105,7 @@ static size_t IoTHubHttp_receive_message_size;
 /*variable mock :(*/
 extern "C" const void* (*const HTTP_Protocol)(void) = (const void* (*)(void))((void*)11);
 
-#define MESSAGE_BUS_HANDLE_VALID ((MESSAGE_BUS_HANDLE)(1))
+#define MESSAGE_BUS_HANDLE_VALID ((BROKER_HANDLE)(1))
 
 #define IOTHUB_CLIENT_HANDLE_VALID ((IOTHUB_CLIENT_HANDLE)(2))
 #define IOTHUB_MESSAGE_HANDLE_VALID ((IOTHUB_MESSAGE_HANDLE)7)
@@ -574,8 +574,8 @@ public:
 
 
 	// bus
-	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
-	MOCK_METHOD_END(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK)
+	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK)
 
 };
 
@@ -620,7 +620,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , IOTHUBMESSAGE_CONTENT_TYPE, IoT
 DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void*, VECTOR_back, VECTOR_HANDLE, handle)
 DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , TRANSPORT_HANDLE, IoTHubTransport_Create, IOTHUB_CLIENT_TRANSPORT_PROVIDER, protocol, const char*, iotHubName, const char*, iotHubSuffix)
 DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, IoTHubTransport_Destroy, TRANSPORT_HANDLE, transportHlHandle)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 
 BEGIN_TEST_SUITE(iothubhttp_unittests)
 
@@ -755,7 +755,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         CIoTHubHTTPMocks mocks;
 
         ///act
-        auto result = Module_Create((MESSAGE_BUS_HANDLE)1, NULL);
+        auto result = Module_Create((BROKER_HANDLE)1, NULL);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -771,7 +771,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         CIoTHubHTTPMocks mocks;
 
         ///act
-        auto result = Module_Create((MESSAGE_BUS_HANDLE)1, &config_with_NULL_IoTHubName);
+        auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubName);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -787,7 +787,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         CIoTHubHTTPMocks mocks;
 
         ///act
-        auto result = Module_Create((MESSAGE_BUS_HANDLE)1, &config_with_NULL_IoTHubSuffix);
+        auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubSuffix);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -2506,7 +2506,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	//Tests_SRS_IOTHUBHTTP_17_014: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer from results of IoTHubMessage_GetString. ]
 	//Tests_SRS_IOTHUBHTTP_17_015: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer size from the string length. ]
 	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call MessageBus_Publish with the new message and the busHandle. ]
+	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the busHandle. ]
 	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
 	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
 	TEST_FUNCTION(IoTHubHttp_callback_string_success)
@@ -2532,7 +2532,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2557,7 +2557,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	//Tests_SRS_IOTHUBHTTP_17_011: [ IoTHubHttp_ReceiveMessageCallback shall combine message properties with the "source" and "deviceName" properties. ]
 	//Tests_SRS_IOTHUBHTTP_17_013: [ If Message content type is IOTHUBMESSAGE_BYTEARRAY, IoTHubHttp_ReceiveMessageCallback shall get the size and buffer from the results of IoTHubMessage_GetByteArray. ]
 	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call MessageBus_Publish with the new message and the busHandle. ]
+	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the busHandle. ]
 	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
 	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
 	TEST_FUNCTION(IoTHubHttp_callback_byte_array_success)
@@ -2585,7 +2585,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2630,9 +2630,9 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
-			.SetFailReturn(MESSAGE_BUS_ERROR);
+			.SetFailReturn(BROKER_ERROR);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 

@@ -17,7 +17,7 @@ This module is just a passthrough to .NET Host Module in all aspects except for 
 DotNET_HL_Create
 -------------
 ```c
-MODULE_HANDLE DotNET_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE DotNET_HL_Create(BROKER_HANDLE bus, const void* configuration);
 ```
 Creates a new dotNET HOST Module HL instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_Create_From_JSON`.
 By convention in the json object should contain 

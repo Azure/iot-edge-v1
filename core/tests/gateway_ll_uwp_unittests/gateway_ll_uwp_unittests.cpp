@@ -81,7 +81,7 @@ static VECTOR_HANDLE dummyModules;
 TYPED_MOCK_CLASS(CGatewayUwpLLMocks, CGlobalMock)
 {
 public:
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration)
 		currentModule_Create_call++;
 	MODULE_HANDLE result1;
 	if (configuration != NULL && *((bool*)configuration) == false)
@@ -102,7 +102,7 @@ public:
 	MOCK_STATIC_METHOD_2(, void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
 		MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, MessageBus_DecRef, MESSAGE_BUS_HANDLE, bus)
+	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, bus)
 		if (currentMessageBus_ref_count > 0)
 		{
 			--currentMessageBus_ref_count;
@@ -113,12 +113,12 @@ public:
 		}
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, MessageBus_IncRef, MESSAGE_BUS_HANDLE, bus)
+	MOCK_STATIC_METHOD_1(, void, Broker_IncRef, BROKER_HANDLE, bus)
 		++currentMessageBus_ref_count;
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_0(, MESSAGE_BUS_HANDLE, MessageBus_Create)
-	MESSAGE_BUS_HANDLE result1;
+	MOCK_STATIC_METHOD_0(, BROKER_HANDLE, Broker_Create)
+	BROKER_HANDLE result1;
 	currentMessageBus_Create_call++;
 	if (whenShallMessageBus_Create_fail >= 0 && whenShallMessageBus_Create_fail == currentMessageBus_Create_call)
 	{
@@ -127,11 +127,11 @@ public:
 	else
 	{
 		++currentMessageBus_ref_count;
-		result1 = (MESSAGE_BUS_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
+		result1 = (BROKER_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	}
-	MOCK_METHOD_END(MESSAGE_BUS_HANDLE, result1);
+	MOCK_METHOD_END(BROKER_HANDLE, result1);
 
-	MOCK_STATIC_METHOD_1(, void, MessageBus_Destroy, MESSAGE_BUS_HANDLE, bus)
+	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, bus)
 		if (currentMessageBus_ref_count > 0)
 		{
 			--currentMessageBus_ref_count;
@@ -142,28 +142,28 @@ public:
 		}
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module)
+	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module)
 		currentMessageBus_AddModule_call++;
-		MESSAGE_BUS_RESULT result1  = MESSAGE_BUS_ERROR;
+		BROKER_RESULT result1  = BROKER_ERROR;
 		if (handle != NULL && module != NULL)
 		{
 			if (whenShallMessageBus_AddModule_fail != currentMessageBus_AddModule_call)
 			{
 				++currentMessageBus_module_count;
-				result1 = MESSAGE_BUS_OK;
+				result1 = BROKER_OK;
 			}
 		}
-	MOCK_METHOD_END(MESSAGE_BUS_RESULT, result1);
+	MOCK_METHOD_END(BROKER_RESULT, result1);
 
-	MOCK_STATIC_METHOD_2(, MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module)
+	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module)
 		currentMessageBus_RemoveModule_call++;
-		MESSAGE_BUS_RESULT result1 = MESSAGE_BUS_ERROR;
+		BROKER_RESULT result1 = BROKER_ERROR;
 		if (handle != NULL && module != NULL && currentMessageBus_module_count > 0 && whenShallMessageBus_RemoveModule_fail != currentMessageBus_RemoveModule_call)
 		{
 			--currentMessageBus_module_count;
-			result1 = MESSAGE_BUS_OK;
+			result1 = BROKER_OK;
 		}
-	MOCK_METHOD_END(MESSAGE_BUS_RESULT, result1);
+	MOCK_METHOD_END(BROKER_RESULT, result1);
 
 	MOCK_STATIC_METHOD_1(, MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName)
 		currentModuleLoader_Load_call++;
@@ -269,16 +269,16 @@ public:
 
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MODULE_HANDLE, mock_Module_Create, MESSAGE_BUS_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayUwpLLMocks, , MESSAGE_BUS_HANDLE, MessageBus_Create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_Destroy, MESSAGE_BUS_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MESSAGE_BUS_RESULT, MessageBus_AddModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module);
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MESSAGE_BUS_RESULT, MessageBus_RemoveModule, MESSAGE_BUS_HANDLE, handle, const MODULE*, module);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_IncRef, MESSAGE_BUS_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, MessageBus_DecRef, MESSAGE_BUS_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayUwpLLMocks, , BROKER_HANDLE, Broker_Create);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_Destroy, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_IncRef, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_DecRef, BROKER_HANDLE, bus);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
@@ -376,13 +376,13 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 }
 
 /*Tests_SRS_GATEWAY_LL_99_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
-/*Tests_SRS_GATEWAY_LL_99_005: [The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker.]*/
+/*Tests_SRS_GATEWAY_LL_99_005: [The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker.]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	MESSAGE_BUS_HANDLE bus = MessageBus_Create();
+	BROKER_HANDLE bus = Broker_Create();
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -390,10 +390,10 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyModules));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyModules, 0));
-	STRICT_EXPECTED_CALL(mocks, MessageBus_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_IncRef(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_IncRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
 	//Act
@@ -429,7 +429,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Malloc_Failure)
 	//Nothing to cleanup
 }
 
-/*Tests_SRS_GATEWAY_LL_99_003: [ This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received. ]*/
+/*Tests_SRS_GATEWAY_LL_99_003: [ This function shall return `NULL` if a `NULL` `BROKER_HANDLE` is received. ]*/
 TEST_FUNCTION(Gateway_LL_UwpCreate_Null_MessageBus_Handle_Failure)
 {
 	//Arrange
@@ -490,28 +490,28 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
+/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus BROKER_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's bus BROKER_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	MESSAGE_BUS_HANDLE bus = MessageBus_Create();
+	BROKER_HANDLE bus = Broker_Create();
 	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
 	mocks.ResetAllCalls();
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyModules));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyModules, 0));
-	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_DecRef(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(mocks, MessageBus_Destroy(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -529,7 +529,7 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModu
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	MESSAGE_BUS_HANDLE bus = MessageBus_Create();
+	BROKER_HANDLE bus = Broker_Create();
 	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
 	mocks.ResetAllCalls();
 
@@ -537,13 +537,13 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModu
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyModules));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyModules, 0));
 	whenShallMessageBus_RemoveModule_fail = 1;
-	STRICT_EXPECTED_CALL(mocks, MessageBus_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(mocks, MessageBus_DecRef(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(mocks, MessageBus_Destroy(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);

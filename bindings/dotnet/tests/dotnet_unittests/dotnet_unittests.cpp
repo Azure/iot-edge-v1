@@ -1482,8 +1482,8 @@ public:
 	MOCK_VOID_METHOD_END()
 
 	//MessageBus Mocks
-	MOCK_STATIC_METHOD_3(, MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
-	MOCK_METHOD_END(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK);
+	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK);
 };
 
 extern "C"
@@ -1538,7 +1538,7 @@ extern "C"
 	DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
 
 	//MessageBus Mocks
-	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , MESSAGE_BUS_RESULT, MessageBus_Publish, MESSAGE_BUS_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 }
 
@@ -1691,7 +1691,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, NULL);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1714,7 +1714,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1737,7 +1737,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1760,7 +1760,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1791,7 +1791,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1818,7 +1818,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1848,7 +1848,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1881,7 +1881,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1915,7 +1915,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.IgnoreAllArguments();
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1953,7 +1953,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1992,7 +1992,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 		
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2036,7 +2036,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2082,7 +2082,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2132,7 +2132,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2185,7 +2185,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2243,7 +2243,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2305,7 +2305,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((SAFEARRAY*)NULL);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2377,7 +2377,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2452,7 +2452,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2531,7 +2531,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2612,7 +2612,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2701,7 +2701,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2786,7 +2786,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2881,7 +2881,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2983,7 +2983,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.IgnoreArgument(6);
 
 		///act
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3041,7 +3041,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3069,7 +3069,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3099,7 +3099,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3137,7 +3137,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3176,7 +3176,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3218,7 +3218,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3262,7 +3262,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3312,7 +3312,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3365,7 +3365,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3420,7 +3420,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3483,7 +3483,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrReceiveClientMethodName(L"Receive");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3551,7 +3551,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrReceiveClientMethodName(L"Receive");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3636,7 +3636,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrDestroyClientMethodName(L"Destroy");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((MESSAGE_BUS_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 		STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrDestroyClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -3675,7 +3675,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		CDOTNETMocks mocks;
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)NULL, (const unsigned char *)"AnyContent", 11);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)NULL, (const unsigned char *)"AnyContent", 11);
 
 		///assert
 		ASSERT_IS_FALSE(result);
@@ -3690,7 +3690,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		CDOTNETMocks mocks;
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, NULL, 11);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, NULL, 11);
 
 		///assert
 		ASSERT_IS_FALSE(result);
@@ -3705,7 +3705,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		CDOTNETMocks mocks;
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", -1);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", -1);
 
 		///assert
 		ASSERT_IS_FALSE(result);
@@ -3725,7 +3725,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 			.SetFailReturn((MESSAGE_HANDLE)NULL);
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
 
 		///assert
 		ASSERT_IS_FALSE(result);
@@ -3733,7 +3733,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */
+	/* Tests_SRS_DOTNET_04_027: [ If Broker_Publish fails Module_DotNetHost_PublishMessage shall fail. ] */
 	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_MessageBus_Publish_fail)
 	{
 		///arrage
@@ -3742,15 +3742,15 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
-			.SetFailReturn((MESSAGE_BUS_RESULT)MESSAGE_BUS_ERROR);
+			.SetFailReturn((BROKER_RESULT)BROKER_ERROR);
 
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
 
 		///assert
 		ASSERT_IS_FALSE(result);
@@ -3759,8 +3759,8 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
-	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, message and size. ] */
-	/* Tests_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
+	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing bus, sourceModule, message and size. ] */
+	/* Tests_SRS_DOTNET_04_028: [If Broker_Publish succeeds Module_DotNetHost_PublishMessage shall succeed.] */
 	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_succeed)
 	{
 		///arrage
@@ -3769,14 +3769,14 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, MessageBus_Publish((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 
 		///act
-		auto result = Module_DotNetHost_PublishMessage((MESSAGE_BUS_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
+		auto result = Module_DotNetHost_PublishMessage((BROKER_HANDLE)0x42, (MODULE_HANDLE)0x42, (const unsigned char *)"AnyContent", 11);
 
 		///assert
 		ASSERT_IS_TRUE(result);

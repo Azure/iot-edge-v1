@@ -32,8 +32,8 @@ static bool malloc_will_fail = false;
 //=============================================================================
 
 //JavaModuleHost mocks
-MOCKABLE_FUNCTION(, MODULE_HANDLE, JavaModuleHost_Create, MESSAGE_BUS_HANDLE, bus, const void*, configuration);
-MODULE_HANDLE my_JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+MOCKABLE_FUNCTION(, MODULE_HANDLE, JavaModuleHost_Create, BROKER_HANDLE, bus, const void*, configuration);
+MODULE_HANDLE my_JavaModuleHost_Create(BROKER_HANDLE bus, const void* configuration)
 {
 	MODULE_HANDLE handle = NULL;
 	if (bus != NULL && configuration != NULL)
@@ -266,7 +266,7 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 
 	REGISTER_UMOCK_ALIAS_TYPE(MODULE_HANDLE, void*);
 
-	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_BUS_HANDLE, void*);
+	REGISTER_UMOCK_ALIAS_TYPE(BROKER_HANDLE, void*);
 
 	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_HANDLE, void*);
 
@@ -323,7 +323,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_configuration_param)
 	//Arrange
 
 	//Act
-	MODULE_HANDLE module = JavaModuleHost_HL_Create((MESSAGE_BUS_HANDLE)0x42, NULL);
+	MODULE_HANDLE module = JavaModuleHost_HL_Create((BROKER_HANDLE)0x42, NULL);
 
 	//Assert
 	ASSERT_IS_NULL(module);
@@ -341,7 +341,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_configuration_param)
 TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 {
 	//Arrange
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)0x42;
+	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 
 	int result = 0;
@@ -431,7 +431,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 {
 	//Arrange
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)0x42;
+	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 
 	STRICT_EXPECTED_CALL(json_parse_string((const char*)configuration));
@@ -515,7 +515,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 TEST_FUNCTION(JavaModuleHost_HL_Receive_LL_function_call_test)
 {
 	//Arrange
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)0x42;
+	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 	MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
 	MESSAGE_HANDLE message = (MESSAGE_HANDLE)0x43;
@@ -539,7 +539,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Receive_LL_function_call_test)
 TEST_FUNCTION(JavaModuleHostHL_Destroy_LL_function_call_test)
 {
 	//Arrange
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)0x42;
+	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 	MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
 	umock_c_reset_all_calls();

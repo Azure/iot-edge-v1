@@ -23,7 +23,7 @@
 
 typedef struct IDENTITY_MAP_DATA_TAG
 {
-	MESSAGE_BUS_HANDLE busHandle;
+	BROKER_HANDLE busHandle;
 	size_t mappingSize;
 	IDENTITY_MAP_CONFIG * macToDevIdArray;
 	IDENTITY_MAP_CONFIG * devIdToMacArray;
@@ -36,7 +36,7 @@ typedef struct IDENTITY_MAP_DATA_TAG
 
 DEFINE_ENUM(IDENTITYMAP_RESULT, IDENTITYMAP_RESULT_VALUES)
 
-DEFINE_ENUM_STRINGS(MESSAGE_BUS_RESULT, MESSAGE_BUS_RESULT_VALUES);
+DEFINE_ENUM_STRINGS(BROKER_RESULT, BROKER_RESULT_VALUES);
 
 /*
  * @brief	duplicate a string and convert to upper case. New string must be released
@@ -232,7 +232,7 @@ static bool IdentityMap_ValidateConfig(const VECTOR_HANDLE mappingVector)
 /*
  * @brief	Create an identity map module.
  */
-static MODULE_HANDLE IdentityMap_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
 	IDENTITY_MAP_DATA* result;
 	if (busHandle == NULL || configuration == NULL)
@@ -384,12 +384,12 @@ static void publish_with_new_properties(MAP_HANDLE newProperties, MESSAGE_HANDLE
 		}
 		else
 		{
-			MESSAGE_BUS_RESULT busStatus;
-			/*Codes_SRS_IDMAP_17_038: [IdentityMap_Receive shall call MessageBus_Publish with busHandle and new message.]*/
-			busStatus = MessageBus_Publish(idModule->busHandle, (MODULE_HANDLE)idModule, newMessage);
-			if (busStatus != MESSAGE_BUS_OK)
+			BROKER_RESULT busStatus;
+			/*Codes_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with busHandle and new message.]*/
+			busStatus = Broker_Publish(idModule->busHandle, (MODULE_HANDLE)idModule, newMessage);
+			if (busStatus != BROKER_OK)
 			{
-				LogError("Message broker publish failure: %s", ENUM_TO_STRING(MESSAGE_BUS_RESULT, busStatus));
+				LogError("Message broker publish failure: %s", ENUM_TO_STRING(BROKER_RESULT, busStatus));
 			}
 			Message_Destroy(newMessage);
 		}

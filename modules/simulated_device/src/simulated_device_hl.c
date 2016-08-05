@@ -25,7 +25,7 @@ static void SimulatedDevice_HL_Destroy(MODULE_HANDLE moduleHandle)
 	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Destroy(moduleHandle);
 }
 
-static MODULE_HANDLE SimulatedDevice_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE busHandle, const void* configuration)
 {
 	MODULE_HANDLE result;
     if (busHandle == NULL || configuration == NULL)

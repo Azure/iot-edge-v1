@@ -20,7 +20,7 @@ void MessageBus::Publish(Message ^message)
 	}
 
 	MESSAGE_HANDLE msg = message->MessageHandle;
-	if (MessageBus_Publish(message_bus_handle, module_handle, msg) != MESSAGE_BUS_OK)
+	if (Broker_Publish(message_bus_handle, module_handle, msg) != BROKER_OK)
 	{
 		throw ref new Platform::FailureException("Failed to publish message.");
 	}
