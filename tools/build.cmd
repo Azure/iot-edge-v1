@@ -58,6 +58,7 @@ goto args-continue
 :arg-enable-java-binding
 set enable-java-binding=ON
 call %current-path%\build_java.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
 :arg-enable_nodejs_binding
