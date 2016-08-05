@@ -1365,7 +1365,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 
 /*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_14_017: [ The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
+/*Tests_SRS_GATEWAY_LL_14_017: [ The function shall attach the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
 /*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_019: [ The function shall return the newly created MODULE_HANDLE only if each API call returns successfully. ]*/
@@ -1520,7 +1520,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_018: [ If the message broker linking is unsuccessful, the function shall return NULL. ]*/
+/*Tests_SRS_GATEWAY_LL_14_018: [ If the function cannot attach the module to the message broker, the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 {
 	//Arrange
@@ -1650,7 +1650,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Does_Nothing_If_Module_NULL)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_023: [ The function shall locate the MODULE_DATA object in GATEWAY_HANDLE_DATA's modules containing module and return if it cannot be found. ]*/
-/*Tests_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
 /*Tests_SRS_GATEWAY_LL_14_025: [ The function shall unload MODULE_DATA's module_library_handle. ]*/
 /*Tests_SRS_GATEWAY_LL_14_026: [ The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
@@ -1714,7 +1714,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Failure)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_038: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
 TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
 {

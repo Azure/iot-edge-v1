@@ -56,7 +56,7 @@ The JSON should conform to the following structure:
 
 **SRS_NODEJS_HL_13_006: [** `NODEJS_HL_Create` shall extract the value of the `args` property from the configuration JSON. **]**
 
-**SRS_NODEJS_HL_13_005: [** `NODEJS_HL_Create` shall populate a `NODEJS_MODULE_CONFIG` object with the values of the `main_path` and `args` properties and invoke `NODEJS_Create` passing the `bus` handle the config object. **]**
+**SRS_NODEJS_HL_13_005: [** `NODEJS_HL_Create` shall populate a `NODEJS_MODULE_CONFIG` object with the values of the `main_path` and `args` properties and invoke `NODEJS_Create` passing the `bus` handle and the config object. **]**
 
 **SRS_NODEJS_HL_13_007: [** If `NODEJS_Create` succeeds then a valid `MODULE_HANDLE` shall be returned. **]**
 

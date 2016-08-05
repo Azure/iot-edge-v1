@@ -65,7 +65,7 @@ static MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* config
                         main_path, args_str
                     };
 
-                    /*Codes_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle the config object. ]*/
+                    /*Codes_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle and the config object. ]*/
                     result = MODULE_STATIC_GETAPIS(NODEJS_MODULE)()->Module_Create(bus, (const void*)&config);
                     if (result == NULL)
                     {

@@ -259,7 +259,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 			(configuration == NULL)
 			)
 		{
-			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if busHandle is NULL. ] */
+			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if bus is NULL. ] */
 			/* Codes_SRS_DOTNET_04_002: [ DotNET_Create shall return NULL if configuration is NULL. ] */
 			LogError("invalid arg busHandle=%p, configuration=%p", busHandle, configuration);
 		}
@@ -584,7 +584,7 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODU
 		/* Codes_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
 		LogError("Error trying to create message from Byte Array");
 	}
-	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, byte array and msgHandle. ] */
+	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, message and size. ] */
 	else if (MessageBus_Publish(bus, sourceModule, messageToPublish) != MESSAGE_BUS_OK)
 	{
 		/* Codes_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */

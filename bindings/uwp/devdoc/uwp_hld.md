@@ -18,13 +18,13 @@ UWP Wrappers and objects
 
 This is a layer written in UWP that wraps what is required to publish a given message. 
 For UWP Modules the following wrappers will be provided:
-1. `Message` - Object that represents a message;
+1. `Message` - Object that represents a message
 
-2. `MessageBus` - Object that represents the bus, which will be used to publish messages on to the bus;
+2. `MessageBus` - Object that represents the message broker, to which messsages will be published
 
-3. `IGatewayModule` - interface that has to be implemented by the .NET Module; 
+3. `IGatewayModule` - interface that has to be implemented by the .NET Module
 
-4. `Gateway` - Object that represents the gateway, which will be used to construct the gateway;
+4. `Gateway` - Object that represents the gateway, which will be used to construct the gateway
 
 The high level design of these objects and interfaces is documented below:
 
@@ -73,7 +73,7 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
+        /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
         public sealed class MessageBus
         {
             public void Publish(Message message);
@@ -90,7 +90,7 @@ The high level design of these objects and interfaces is documented below:
             /// <summary>
             ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
-            /// <param name="bus">The bus onto which this module will connect.</param>
+            /// <param name="bus">The broker to which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
             void Create(MessageBus bus, IReadOnlyDictionary<string, string> properties);

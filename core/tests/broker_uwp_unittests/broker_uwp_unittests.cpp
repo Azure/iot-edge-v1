@@ -651,7 +651,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait2(vo
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
 
     // cause the worker to quit during the next iteration;
-    // first we get the modules vector from the bus handle
+    // first we get the modules vector from the broker handle
 
     // We added one module for the test, that's our fake list...
     unsigned char* module_info = (unsigned char*)fake_list[0];
@@ -663,7 +663,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait2(vo
 
 static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(void)
 {
-    // publish a message on to the bus
+    // publish a message on to the broker
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
     auto result = MessageBus_Publish(input->bus, NULL, input->message);
     ASSERT_ARE_EQUAL(MESSAGE_BUS_RESULT, MESSAGE_BUS_OK, result);

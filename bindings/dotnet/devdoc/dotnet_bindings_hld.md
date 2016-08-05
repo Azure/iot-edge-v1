@@ -85,7 +85,7 @@ This is going to be a layer written in .NET that will wrap a method in our host 
 For .NET Modules the following wrappers will be provided:
 1. `Message` - Object that represents a message;
 
-2. `MessageBus` - Object that represents the bus, which will be used to publish messages on to the bus;
+2. `MessageBus` - Object that represents the broker, which passes messages between modules;
 
 3. `IGatewayModule` - interface that has to be implemented by the .NET Module; 
 
@@ -124,13 +124,13 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
+        /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
         public class MessageBus
         {
             /// <summary>
             ///     Publish a message to the message broker. 
             /// </summary>
-            /// <param name="message">Object representing the message to be published into the bus.</param>
+            /// <param name="message">Object representing the message to be published to the broker.</param>
             /// <returns></returns>
             public void Publish(Message message);
         }        
@@ -146,7 +146,7 @@ The high level design of these objects and interfaces is documented below:
             /// <summary>
             ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
-            /// <param name="bus">The bus onto which this module will connect.</param>
+            /// <param name="bus">The broker to which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
             void Create(MessageBus bus, string configuration);

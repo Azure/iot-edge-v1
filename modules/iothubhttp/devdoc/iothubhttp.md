@@ -7,8 +7,8 @@ High level design
 ### Overview
 
 #### Publishing events
-This module ensured IoTHub connectivity for all the mapped devices on the bus. The module identifies the messages that it needs to process
-by the following properties that must exist:
+This module ensures connectivity to IoT Hub for all the mapped devices behind the gateway. It identifies the messages that it needs to process
+by the following mandatory properties:
 
 >| PropertyName | Description                                                                  |
 >|--------------|------------------------------------------------------------------------------|
@@ -20,11 +20,11 @@ The module shall dynamically create instances of IoTHubClient (one per each devi
 protocol for connections.
 
 #### Receiving IoT Hub messages
-Upon reception of a message from the IoTHub, this module will publish a message to the bus.  The published message will have the following properties:
+Upon reception of a message from the IoT hub, this module will publish a message to the broker.  The published message will have the following properties:
 >| PropertyName  | Description                                                                         |
 >| ------------- | ----------------------------------------------------------------------------------- |
 >| source        | "IoTHubHTTP"                                                                    |
->| deviceName    | The receiver's deviceName, as registered with IoTHub                                |
+>| deviceName    | The receiver's deviceName, as registered with IoT Hub                                |
 >| * (all other) | All other properties of the received message will be added to the published message |
 
 The body of the published message will be the body of the received message.

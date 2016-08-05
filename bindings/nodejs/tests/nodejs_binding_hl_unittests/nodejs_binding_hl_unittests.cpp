@@ -459,7 +459,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
     /*Tests_SRS_NODEJS_HL_13_012: [ NODEJS_HL_Create shall parse configuration as a JSON string. ]*/
     /*Tests_SRS_NODEJS_HL_13_013: [ NODEJS_HL_Create shall extract the value of the main_path property from the configuration JSON. ]*/
     /*Tests_SRS_NODEJS_HL_13_006: [ NODEJS_HL_Create shall extract the value of the args property from the configuration JSON. ]*/
-    /*Tests_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle the config object. ]*/
+    /*Tests_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle and the config object. ]*/
     /*Tests_SRS_NODEJS_HL_13_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
     TEST_FUNCTION(NODEJS_HL_Create_happy_path_succeeds)
     {

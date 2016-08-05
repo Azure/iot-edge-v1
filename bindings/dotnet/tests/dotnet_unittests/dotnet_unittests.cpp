@@ -1662,7 +1662,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
         }
     }
 	
-	/* Tests_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if busHandle is NULL. ] */
+	/* Tests_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if bus is NULL. ] */
 	TEST_FUNCTION(DotNET_Create_returns_NULL_when_bus_is_Null)
 	{
 		///arrage
@@ -3759,7 +3759,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
-	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, byte array and msgHandle. ] */
+	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, message and size. ] */
 	/* Tests_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
 	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_succeed)
 	{

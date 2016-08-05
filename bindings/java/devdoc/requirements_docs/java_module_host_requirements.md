@@ -7,7 +7,7 @@ Java. This module will broker communication to and from the native gateway as
 well as manage the lifetime of the Java Virtual Machine. Please read the [high
 level design](./java_binding_hld.md) document for more design details. This 
 module will be built as a dynamic library and loaded by the Java class using
-`System.loadLibrary(...)` in order to publish messages to the bus. The path 
+`System.loadLibrary(...)` in order to publish messages to the broker. The path 
 to the .dll or .so must be included in `library_path` of the configuration for 
 the java module host, or be part of the default library path.
 

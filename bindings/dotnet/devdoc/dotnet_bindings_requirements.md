@@ -39,7 +39,7 @@ Creates a new .NET module instance. The parameter `configuration` is a
 pointer to a `DOTNET_HOST_CONFIG` object.
 
 
-**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `busHandle` is `NULL`. **]**
+**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `bus` is `NULL`. **]**
 
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -66,13 +66,13 @@ pointer to a `DOTNET_HOST_CONFIG` object.
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
+        /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
         public class MessageBus
         {
             /// <summary>
             ///     Publish a message to the message broker. 
             /// </summary>
-            /// <param name="message">Object representing the message to be published into the bus.</param>
+            /// <param name="message">Object representing the message to be published to the broker.</param>
             /// <returns></returns>
             public void Publish(Message message);
         }        
@@ -138,7 +138,7 @@ extern const MODULE_APIS* Module_GetAPIS(void);
 Module_DotNetHost_PublishMessage
 --------------------------------
 ```c
-bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
+bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE , MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 ```
 
 **SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `bus` is NULL. **]**
@@ -151,7 +151,7 @@ bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sour
 
 **SRS_DOTNET_04_025: [** If `Message_CreateFromByteArray` fails, `Module_DotNetHost_PublishMessage` shall fail. **]**
 
-**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `MessageBus_Publish` passing bus, sourceModule, byte array and msgHandle. **]**
+**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `MessageBus_Publish` passing bus, sourceModule, message and size. **]**
 
 **SRS_DOTNET_04_027: [** If `MessageBus_Publish` fail `Module_DotNetHost_PublishMessage` shall fail.  **]**
 

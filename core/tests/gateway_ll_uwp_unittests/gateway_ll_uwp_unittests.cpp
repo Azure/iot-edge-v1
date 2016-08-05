@@ -490,9 +490,9 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
-/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. ]*/
-/*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. ]*/
+/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success)
 {
 	//Arrange
@@ -523,7 +523,7 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success
 	mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_LL_99_008: [ If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. ]*/
+/*Tests_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
 {
 	//Arrange

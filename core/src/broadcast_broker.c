@@ -495,7 +495,7 @@ MESSAGE_BUS_RESULT MessageBus_RemoveModule(MESSAGE_BUS_HANDLE bus, const MODULE*
             if (module_info_item == NULL)
             {
                 /*Codes_SRS_MESSAGE_BUS_13_050: [MessageBus_RemoveModule shall unlock MESSAGE_BUS_HANDLE_DATA::modules_lock and return MESSAGE_BUS_ERROR if the module is not found in MESSAGE_BUS_HANDLE_DATA::modules.]*/
-                LogError("Supplied module was not found on the bus");
+                LogError("Supplied module was not found on the broker");
                 result = MESSAGE_BUS_ERROR;
             }
             else
@@ -538,7 +538,7 @@ static void bus_decrement_ref(MESSAGE_BUS_HANDLE bus)
             MESSAGE_BUS_HANDLE_DATA* bus_data = (MESSAGE_BUS_HANDLE_DATA*)bus; 
             if (list_get_head_item(bus_data->modules) != NULL)
             {
-                LogError("WARNING: There are still active modules connected to the bus and the bus is being destroyed.");
+                LogError("WARNING: There are still active modules connected to the broker and the broker is being destroyed.");
             }
 
             list_destroy(bus_data->modules);
@@ -548,7 +548,7 @@ static void bus_decrement_ref(MESSAGE_BUS_HANDLE bus)
     }
     else
     {
-        LogError("bus handle is NULL");
+        LogError("broker handle is NULL");
     }
 }
 

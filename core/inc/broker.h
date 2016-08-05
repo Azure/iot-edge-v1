@@ -74,7 +74,7 @@ extern void MessageBus_DecRef(MESSAGE_BUS_HANDLE bus);
 *	@param		bus		The #MESSAGE_BUS_HANDLE onto which the message will be
 *						published.
 *	@param		source	The #MODULE_HANDLE from which the message will be
-*						published. The bus will not publish the message to this
+*						published. The broker will not publish the message to this
 *                       module. (optional, may be NULL)
 *	@param		message	The #MESSAGE_HANDLE representing the message to be
 *						published.

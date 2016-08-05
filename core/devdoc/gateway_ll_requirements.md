@@ -253,9 +253,9 @@ Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_99_006: [** If `gw` is `NULL` the function shall do nothing. **]**
 
-**SRS_GATEWAY_LL_99_007: [** The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. **]**
+**SRS_GATEWAY_LL_99_007: [** The function shall detach modules from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_99_008: [** If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. **]**
+**SRS_GATEWAY_LL_99_008: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach a module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_99_009: [** The function shall decrement the MESSAGE_BUS_HANDLE reference count. **]**
 
@@ -279,11 +279,11 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_016: [** If the module creation is unsuccessful, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_017: [** The function shall link the module to the `GATEWAY_HANDLE_DATA`'s `bus` using a call to `MessageBus_AddModule`. **]**
+**SRS_GATEWAY_LL_14_017: [** The function shall attach the module to the `GATEWAY_HANDLE_DATA`'s `bus` using a call to `MessageBus_AddModule`. **]**
 
 **SRS_GATEWAY_LL_14_039: [** The function shall increment the `MESSAGE_BUS_HANDLE` reference count if the `MODULE_HANDLE` was successfully linked to the `GATEWAY_HANDLE_DATA`'s `bus`. **]**
 
-**SRS_GATEWAY_LL_14_018: [** If the message broker linking is unsuccessful, the function shall return `NULL`. **]**
+**SRS_GATEWAY_LL_14_018: [** If the function cannot attach the module to the message broker, the function shall return `NULL`. **]**
 
 **SRS_GATEWAY_LL_14_029: [** The function shall create a new `MODULE_DATA` containting the `MODULE_HANDLE` and `MODULE_LIBRARY_HANDLE` if the module was successfully linked to the message broker. **]**
 
@@ -305,9 +305,9 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_14_023: [** The function shall locate the `MODULE_DATA` object in `GATEWAY_HANDLE_DATA`'s `modules` containing `module` and return if it cannot be found.  **]**
 
-**SRS_GATEWAY_LL_14_021: [** The function shall unlink `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_021: [** The function shall detach `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `MESSAGE_BUS_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot unlink `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_038: [** The function shall decrement the `MESSAGE_BUS_HANDLE` reference count. **]**
 

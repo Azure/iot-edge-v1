@@ -112,7 +112,7 @@ Navigate to /bindings/java/gateway-java-binding and run: ```mvn clean install```
 
 ### Building the Java modules
 There are 2 sample Java modules in this sample. The first is a Printer modules that prints any incoming messages to the console. The second is a simulated Sensor
-module that generates random sensor data and publishes it on the bus.
+module that generates random sensor data and publishes it to the broker.
 
 Navigate to /samples/java_sample/java_modules/Printer and run: ```mvn clean install```
 

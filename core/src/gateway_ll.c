@@ -437,8 +437,8 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 					module.module_apis = module_apis;
 					module.module_handle = module_handle;
 
-					/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
-					/*Codes_SRS_GATEWAY_LL_14_018: [If the message broker linking is unsuccessful, the function shall return NULL.]*/
+				    /*Codes_SRS_GATEWAY_LL_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
+					/*Codes_SRS_GATEWAY_LL_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
 					if (MessageBus_AddModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 					{
 						module_result = NULL;
@@ -572,8 +572,8 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 	module.module_apis = NULL;
 	module.module_handle = module_data->module;
 
-	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 	if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
 	{
 		LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module_data->module);
@@ -701,7 +701,7 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 					{
 						free(gateway);
 						gateway = NULL;
-						LogError("Failed to add module to the gateway bus.");
+						LogError("Failed to attach module to the gateway's broker.");
 					}
 					else
 					{
@@ -735,8 +735,8 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 			MODULE* module = (MODULE*)VECTOR_element(gateway_handle->modules, index);
 
 			//By design, there will be no NULL module_data pointers in the vector
-			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 			if (MessageBus_RemoveModule(gateway_handle->bus, module) != MESSAGE_BUS_OK)
 			{
 				LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module);

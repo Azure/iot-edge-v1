@@ -12,7 +12,7 @@ The message broker (or just the "broker") is central to the gateway. The broker 
 
 ## Tracking Modules
 
-The message broker implementation shall use the following structure definition to track each module that's connected to the bus:
+The message broker implementation shall use the following structure definition to track each module that's connected to the broker:
 
 ```C
 typedef struct MESSAGE_BUS_MODULEINFO_TAG

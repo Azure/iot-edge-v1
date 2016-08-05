@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.IoT.Gateway
 {
-    /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
+    /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
     public class MessageBus
     {
         private long msgBusHandle;
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <summary>
         ///     Publish a message to the gateway message broker. 
         /// </summary>
-        /// <param name="message">Object representing the message to be published into the bus.</param>
+        /// <param name="message">Object representing the message to be published to the broker.</param>
         /// <returns></returns>
         public void Publish(Message message)
         {
