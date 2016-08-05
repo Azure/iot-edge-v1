@@ -154,7 +154,7 @@ endif()
 option(NN_TESTS "" OFF )
 option(NN_ENABLE_NANOCAT "" OFF)
 set(ENV{CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_BINARY_DIR} )
-set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll )
+set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
 add_subdirectory(./deps/nanomsg)
 include_directories(./deps/nanomsg/src)
 
