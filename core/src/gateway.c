@@ -118,11 +118,11 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
 {
     PARSE_JSON_RESULT result;
 
-    JSON_Object *modules_object = json_value_get_object(root);
-    if (modules_object != NULL)
+    JSON_Object *json_document = json_value_get_object(root);
+    if (json_document != NULL)
     {
-        JSON_Array *modules_array = json_object_get_array(modules_object, MODULES_KEY);
-		JSON_Array *links_array = json_object_get_array(modules_object, LINKS_KEY);
+        JSON_Array *modules_array = json_object_get_array(json_document, MODULES_KEY);
+		JSON_Array *links_array = json_object_get_array(json_document, LINKS_KEY);
 
         if (modules_array != NULL && links_array != NULL)
         {
