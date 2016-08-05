@@ -12,7 +12,6 @@ cd %build-root%\tools
 
 call build_dotnet.cmd %*
 if errorlevel 1 goto :eof
-cd %build-root%
 
 call build_uwp.cmd %*
 if errorlevel 1 goto :eof
