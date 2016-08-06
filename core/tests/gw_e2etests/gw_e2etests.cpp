@@ -178,7 +178,7 @@ BEGIN_TEST_SUITE(gw_e2etests)
 			}
 		}
 		
-		GATEWAY_PROPERTIES_ENTRY modules[3];
+		GATEWAY_MODULES_ENTRY modules[3];
 
 		modules[0].module_configuration = &iotHubConfig;
 		modules[0].module_name = "IoTHub";
@@ -195,13 +195,13 @@ BEGIN_TEST_SUITE(gw_e2etests)
 		
 		
 		GATEWAY_PROPERTIES m6GatewayProperties;
-		VECTOR_HANDLE gatewayProps = VECTOR_create(sizeof(GATEWAY_PROPERTIES_ENTRY));
+		VECTOR_HANDLE gatewayProps = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
 
 		VECTOR_push_back(gatewayProps, &modules, 3);
 
 
 		///act
-		m6GatewayProperties.gateway_properties_entries = gatewayProps;
+		m6GatewayProperties.gateway_modules = gatewayProps;
 		e2eGatewayInstance = Gateway_LL_Create(&m6GatewayProperties);
 
 
