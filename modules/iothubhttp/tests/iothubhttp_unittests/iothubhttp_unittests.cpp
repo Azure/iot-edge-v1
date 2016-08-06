@@ -105,7 +105,7 @@ static size_t IoTHubHttp_receive_message_size;
 /*variable mock :(*/
 extern "C" const void* (*const HTTP_Protocol)(void) = (const void* (*)(void))((void*)11);
 
-#define MESSAGE_BUS_HANDLE_VALID ((BROKER_HANDLE)(1))
+#define BROKER_HANDLE_VALID ((BROKER_HANDLE)(1))
 
 #define IOTHUB_CLIENT_HANDLE_VALID ((IOTHUB_CLIENT_HANDLE)(2))
 #define IOTHUB_MESSAGE_HANDLE_VALID ((IOTHUB_MESSAGE_HANDLE)7)
@@ -573,8 +573,8 @@ public:
 
 
 
-	// bus
-	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+	// broker
+	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK)
 
 };
@@ -620,7 +620,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , IOTHUBMESSAGE_CONTENT_TYPE, IoT
 DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void*, VECTOR_back, VECTOR_HANDLE, handle)
 DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , TRANSPORT_HANDLE, IoTHubTransport_Create, IOTHUB_CLIENT_TRANSPORT_PROVIDER, protocol, const char*, iotHubName, const char*, iotHubSuffix)
 DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, IoTHubTransport_Destroy, TRANSPORT_HANDLE, transportHlHandle)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 
 BEGIN_TEST_SUITE(iothubhttp_unittests)
 
@@ -732,8 +732,8 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_001: [If busHandle is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_MESSAGE_BUS_HANDLE_returns_NULL)
+    /*Tests_SRS_IOTHUBHTTP_02_001: [If broker is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
+    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_BROKER_HANDLE_returns_NULL)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
@@ -801,7 +801,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	/*Tests_SRS_IOTHUBHTTP_17_001: [ IoTHubHttp_Create shall create a shared transport by calling IoTHubTransport_Create. ]*/
     /*Tests_SRS_IOTHUBHTTP_02_029: [IoTHubHttp_Create shall create a copy of configuration->IoTHubName.]*/
     /*Tests_SRS_IOTHUBHTTP_02_028: [IoTHubHttp_Create shall create a copy of configuration->IoTHubSuffix.]*/
-	//Tests_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the busHandle. ]
+	//Tests_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the broker. ]
     TEST_FUNCTION(IoTHubHttp_Create_succeeds)
     {
         ///arrange
@@ -823,7 +823,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 			.IgnoreAllArguments();
 
         ///act
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
         ///assert
         ASSERT_IS_NOT_NULL(module);
@@ -864,7 +864,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
         ///assert
         ASSERT_IS_NULL(module);
@@ -901,7 +901,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 
 
         ///act
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
         ///assert
         ASSERT_IS_NULL(module);
@@ -933,7 +933,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 
 
 		///act
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
 		///assert
 		ASSERT_IS_NULL(module);
@@ -959,7 +959,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
         ///assert
         ASSERT_IS_NULL(module);
@@ -979,7 +979,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 
         ///assert
         ASSERT_IS_NULL(module);
@@ -1008,7 +1008,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
 		/* transport handle */
@@ -1047,7 +1047,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         /*this is IoTHubName*/
@@ -1089,7 +1089,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
 
@@ -1142,7 +1142,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_2);
         mocks.ResetAllCalls();
@@ -1224,7 +1224,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         ///act
@@ -1247,7 +1247,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -1363,7 +1363,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
 
@@ -1446,7 +1446,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
 
@@ -1560,7 +1560,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -1675,7 +1675,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -1786,7 +1786,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -1893,7 +1893,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -1994,7 +1994,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2075,7 +2075,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2151,7 +2151,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2197,7 +2197,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2262,7 +2262,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2333,7 +2333,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2383,7 +2383,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2423,7 +2423,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2452,7 +2452,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2479,7 +2479,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
     {
         ///arrange
         CIoTHubHTTPMocks mocks;
-        auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
@@ -2506,14 +2506,14 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	//Tests_SRS_IOTHUBHTTP_17_014: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer from results of IoTHubMessage_GetString. ]
 	//Tests_SRS_IOTHUBHTTP_17_015: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer size from the string length. ]
 	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the busHandle. ]
+	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]
 	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
 	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
 	TEST_FUNCTION(IoTHubHttp_callback_string_success)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2532,7 +2532,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2557,14 +2557,14 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	//Tests_SRS_IOTHUBHTTP_17_011: [ IoTHubHttp_ReceiveMessageCallback shall combine message properties with the "source" and "deviceName" properties. ]
 	//Tests_SRS_IOTHUBHTTP_17_013: [ If Message content type is IOTHUBMESSAGE_BYTEARRAY, IoTHubHttp_ReceiveMessageCallback shall get the size and buffer from the results of IoTHubMessage_GetByteArray. ]
 	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the busHandle. ]
+	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]
 	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
 	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
 	TEST_FUNCTION(IoTHubHttp_callback_byte_array_success)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2585,7 +2585,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2605,11 +2605,11 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	}
 
 	//Tests_SRS_IOTHUBHTTP_17_019: [ If the message fails to publish, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_bus_publish_fails)
+	TEST_FUNCTION(IoTHubHttp_callback_broker_publish_fails)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2630,7 +2630,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(MESSAGE_BUS_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
 			.SetFailReturn(BROKER_ERROR);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
@@ -2655,7 +2655,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2697,7 +2697,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2738,7 +2738,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2776,7 +2776,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2812,7 +2812,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2846,7 +2846,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
@@ -2876,7 +2876,7 @@ BEGIN_TEST_SUITE(iothubhttp_unittests)
 	{
 		///arrange
 		CIoTHubHTTPMocks mocks;
-		auto module = Module_Create(MESSAGE_BUS_HANDLE_VALID, &config_valid);
+		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();

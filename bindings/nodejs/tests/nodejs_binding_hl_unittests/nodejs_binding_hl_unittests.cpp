@@ -235,7 +235,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE NODEJS_Create(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void NODEJS_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -337,7 +337,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&NODEJS_APIS);
 
-    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, broker, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
     MOCK_STATIC_METHOD_1(, void, NODEJS_Destroy, MODULE_HANDLE, moduleHandle);
@@ -367,17 +367,17 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, gballoc_free, void*, ptr);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CNODEJSHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, NODEJS_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , void, NODEJS_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
-MODULE_HANDLE (*NODEJS_HL_Create)(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE (*NODEJS_HL_Create)(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void (*NODEJS_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*NODEJS_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
+static BROKER_HANDLE validBrokerHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
 
 #define VALID_CONFIG_STRING ""                \
@@ -424,8 +424,8 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
         }
     }
 
-    /*Tests_SRS_NODEJS_HL_13_001: [ NODEJS_HL_Create shall return NULL if bus is NULL. ]*/
-    TEST_FUNCTION(NODEJS_HL_Create_with_NULL_busHandle_fails)
+    /*Tests_SRS_NODEJS_HL_13_001: [ NODEJS_HL_Create shall return NULL if broker is NULL. ]*/
+    TEST_FUNCTION(NODEJS_HL_Create_with_NULL_broker_fails)
     {
         ///arrage
         CNODEJSHLMocks mocks;
@@ -447,7 +447,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
         CNODEJSHLMocks mocks;
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, NULL);
+        auto result = NODEJS_HL_Create(validBrokerHandle, NULL);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -459,7 +459,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
     /*Tests_SRS_NODEJS_HL_13_012: [ NODEJS_HL_Create shall parse configuration as a JSON string. ]*/
     /*Tests_SRS_NODEJS_HL_13_013: [ NODEJS_HL_Create shall extract the value of the main_path property from the configuration JSON. ]*/
     /*Tests_SRS_NODEJS_HL_13_006: [ NODEJS_HL_Create shall extract the value of the args property from the configuration JSON. ]*/
-    /*Tests_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the bus handle and the config object. ]*/
+    /*Tests_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
     /*Tests_SRS_NODEJS_HL_13_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
     TEST_FUNCTION(NODEJS_HL_Create_happy_path_succeeds)
     {
@@ -481,14 +481,14 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)()));
-        STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBusHandle, IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBrokerHandle, IGNORED_PTR_ARG))
             .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -519,7 +519,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)()));
-        STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBusHandle, IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBrokerHandle, IGNORED_PTR_ARG))
             .IgnoreArgument(2)
             .SetFailReturn((MODULE_HANDLE)NULL);
 
@@ -527,7 +527,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .IgnoreArgument(1);
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -554,7 +554,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .SetFailReturn((const char *)NULL);
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -578,7 +578,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -597,7 +597,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -611,7 +611,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
     {
         ///arrage
         CNODEJSHLMocks mocks;
-        MODULE_HANDLE handle = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        MODULE_HANDLE handle = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)());
@@ -632,7 +632,7 @@ BEGIN_TEST_SUITE(nodejs_binding_hl_unittests)
     {
         ///arrage
         CNODEJSHLMocks mocks;
-        MODULE_HANDLE handle = NODEJS_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        MODULE_HANDLE handle = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)());

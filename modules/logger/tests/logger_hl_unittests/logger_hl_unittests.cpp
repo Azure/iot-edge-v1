@@ -235,7 +235,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE Logger_Create(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void Logger_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -403,7 +403,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&Logger_APIS);
 
-    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2( , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, broker, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
     MOCK_STATIC_METHOD_1(, void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
@@ -457,19 +457,19 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , struct tm*, gb_localtime, const tim
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CLoggerMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , void, Logger_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
 /*definitions of cached functions, initialized in TEST_FIUCNTION_INIT*/
 
-MODULE_HANDLE (*Logger_HL_Create)(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE (*Logger_HL_Create)(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void (*Logger_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*Logger_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
+static BROKER_HANDLE validBrokerHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
 #define VALID_CONFIG_STRING "{\"filename\":\"log.txt\"}"
 
@@ -511,8 +511,8 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
         }
     }
 
-    /*Tests_SRS_LOGGER_HL_02_001: [ If busHandle is NULL then Logger_HL_Create shall fail and return NULL. ]*/
-    TEST_FUNCTION(Logger_HL_Create_with_NULL_busHandle_fails)
+    /*Tests_SRS_LOGGER_HL_02_001: [ If broker is NULL then Logger_HL_Create shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_HL_Create_with_NULL_broker_fails)
     {
         ///arrage
         CLoggerMocks mocks;
@@ -534,7 +534,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
         CLoggerMocks mocks;
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, NULL);
+        auto result = Logger_HL_Create(validBrokerHandle, NULL);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -543,7 +543,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
         ///cleanup
     }
 
-    /*Tests_SRS_LOGGER_HL_02_005: [ Logger_HL_Create shall pass busHandle and the filename to Logger_Create. ]*/
+    /*Tests_SRS_LOGGER_HL_02_005: [ Logger_HL_Create shall pass broker and the filename to Logger_Create. ]*/
     /*Tests_SRS_LOGGER_HL_02_006: [ If Logger_Create succeeds then Logger_HL_Create shall succeed and return a non-NULL value. ]*/
     TEST_FUNCTION(Logger_HL_Create_happy_path_succeeds)
     {
@@ -561,11 +561,11 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(LOGGER_MODULE)())); /*this is finding the Logger's API*/
-        STRICT_EXPECTED_CALL(mocks, Logger_Create(validBusHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
+        STRICT_EXPECTED_CALL(mocks, Logger_Create(validBrokerHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
             .IgnoreArgument(2);
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -592,12 +592,12 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/
-        STRICT_EXPECTED_CALL(mocks, Logger_Create(validBusHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
+        STRICT_EXPECTED_CALL(mocks, Logger_Create(validBrokerHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
             .IgnoreArgument(2)
             .SetFailReturn((MODULE_HANDLE)NULL);
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -624,7 +624,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
             .SetFailReturn((const char*)NULL);
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -648,7 +648,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -667,7 +667,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        auto result = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -681,7 +681,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
     {
         ///arrage
         CLoggerMocks mocks;
-        MODULE_HANDLE handle = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        MODULE_HANDLE handle = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/
@@ -702,7 +702,7 @@ BEGIN_TEST_SUITE(logger_hl_unittests)
     {
         ///arrage
         CLoggerMocks mocks;
-        MODULE_HANDLE handle = Logger_HL_Create(validBusHandle, VALID_CONFIG_STRING);
+        MODULE_HANDLE handle = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/

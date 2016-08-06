@@ -15,7 +15,7 @@ namespace SetOfCppModules
 		Printer();
 
 		// Inherited via IGatewayModule
-		virtual void Create(MessageBus ^bus, IMapView<Platform::String^, Platform::String^>^ configuration);
+		virtual void Create(Broker ^broker, IMapView<Platform::String^, Platform::String^>^ configuration);
 		virtual void Destroy();
 		virtual void Receive(Message ^received_message);
 	};

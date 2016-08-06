@@ -1481,8 +1481,8 @@ public:
 		BASEIMPLEMENTATION::gballoc_free(ptr);
 	MOCK_VOID_METHOD_END()
 
-	//MessageBus Mocks
-	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+	//Broker Mocks
+	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK);
 };
 
@@ -1537,8 +1537,8 @@ extern "C"
 
 	DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
 
-	//MessageBus Mocks
-	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+	//Broker Mocks
+	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 }
 
@@ -1662,8 +1662,8 @@ BEGIN_TEST_SUITE(dotnet_unittests)
         }
     }
 	
-	/* Tests_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if bus is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_bus_is_Null)
+	/* Tests_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if broker is NULL. ] */
+	TEST_FUNCTION(DotNET_Create_returns_NULL_when_broker_is_Null)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -1782,7 +1782,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		bstr_t bstrCreateClientMethodName(L"Create");
 		variant_t emptyVariant(0);
@@ -2253,7 +2253,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayCreateVector_for_MessageBus_fails)
+	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayCreateVector_for_Broker_fails)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -2265,7 +2265,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2316,7 +2316,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 
 
 	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayPutElement_for_MessageBus_fails)
+	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayPutElement_for_Broker_fails)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -2328,7 +2328,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2387,7 +2387,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CreateInstance_3_for_MessageBus_fails)
+	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CreateInstance_3_for_Broker_fails)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -2399,7 +2399,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2446,7 +2446,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8)
 			.SetFailReturn((HRESULT)E_POINTER);
@@ -2474,7 +2474,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2521,7 +2521,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -2553,7 +2553,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2600,7 +2600,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -2634,7 +2634,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2681,7 +2681,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -2722,7 +2722,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 
 		mocks.ResetAllCalls();
@@ -2766,7 +2766,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -2807,7 +2807,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		bstr_t bstrCreateClientMethodName(L"Create");
 		variant_t emptyVariant(0);
@@ -2856,7 +2856,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -2896,8 +2896,8 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	/* Tests_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
 	/* Tests_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
 	/* Tests_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
-	/* Tests_SRS_DOTNET_04_013: [ A .NET Object conforming to the MessageBus interface defined shall be created: ] */
-	/* Tests_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the MessageBus object created and configuration->dotnet_module_args. ] */
+	/* Tests_SRS_DOTNET_04_013: [ A .NET Object conforming to the Broker interface defined shall be created: ] */
+	/* Tests_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
 	TEST_FUNCTION(DotNET_Create_succeed)
 	{
 		///arrage
@@ -2910,7 +2910,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
 		bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
 		bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(L"Microsoft.Azure.IoT.Gateway.MessageBus");
+		bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		bstr_t bstrCreateClientMethodName(L"Create");
 		variant_t emptyVariant(0);
@@ -2959,7 +2959,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayPutElement(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 			.IgnoreAllArguments();
 
-		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayMessageBusClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, CreateInstance_3(bstrAzureIoTGatewayBrokerClassName, true, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public), NULL, IGNORED_PTR_ARG, NULL, NULL, IGNORED_PTR_ARG))
 			.IgnoreArgument(5)
 			.IgnoreArgument(8);
 
@@ -3653,8 +3653,8 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_bus_is_NULL_return_false)
+	/* Tests_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if broker is NULL. ] */
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_broker_is_NULL_return_false)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3734,7 +3734,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_027: [ If Broker_Publish fails Module_DotNetHost_PublishMessage shall fail. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_MessageBus_Publish_fail)
+	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_Broker_Publish_fail)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3759,7 +3759,7 @@ BEGIN_TEST_SUITE(dotnet_unittests)
 	}
 
 	/* Tests_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
-	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing bus, sourceModule, message and size. ] */
+	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing broker, sourceModule, message and size. ] */
 	/* Tests_SRS_DOTNET_04_028: [If Broker_Publish succeeds Module_DotNetHost_PublishMessage shall succeed.] */
 	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_succeed)
 	{

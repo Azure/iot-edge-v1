@@ -20,7 +20,7 @@
 
 typedef struct E2E_MODULE_DATA_TAG
 {
-	BROKER_HANDLE       bus;
+	BROKER_HANDLE       broker;
     THREAD_HANDLE       e2eModulethread;
 	char*               fakeMacAddress;
 	char*               dataToSend;
@@ -93,7 +93,7 @@ static int e2e_module_worker(void * user_data)
 			}
 			else
 			{
-				if (Broker_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
+				if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
 				{
 					LogError("Failed to publish module data to the message broker.");
 				}
@@ -107,10 +107,10 @@ static int e2e_module_worker(void * user_data)
 }
 
 
-static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
     E2E_MODULE_DATA * result;
-    if (busHandle == NULL || configuration == NULL)
+    if (broker == NULL || configuration == NULL)
     {
 		LogError("invalid Fake E2E module args.");
         result = NULL;
@@ -129,7 +129,7 @@ static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE busHandle, const void* confi
 			int status;
 
 			/* save the message broker */
-			result->bus = busHandle;
+			result->broker = broker;
 
 			/* save fake MacAddress */
 			status = mallocAndStrcpy_s(&(result->fakeMacAddress), e2eModuleConfig->macAddress);

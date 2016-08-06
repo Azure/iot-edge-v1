@@ -80,14 +80,14 @@ public interface IGatewayModule {
     /**
      * The create method is called by the subclass constructor when the native 
      * Gateway creates the Module. The constructor
-     * should save both the {@code moduleAddr} and {@code bus} parameters.
+     * should save both the {@code moduleAddr} and {@code broker} parameters.
      *
      * @param moduleAddr The address of the native module pointer
-     * @param bus The {@link MessageBus} to which this Module belongs
+     * @param broker The {@link Broker} to which this Module belongs
      * @param configuration The configuration for this module represented as a JSON
      * string
      */
-    void create(long moduleAddr, MessageBus bus, String configuration);
+    void create(long moduleAddr, Broker broker, String configuration);
 
     /**
      * The destroy method is called on a {@link GatewayModule} before it is about 
@@ -133,11 +133,11 @@ gateway, it:
 -   Creates a JVM with the provided JVM configuration if this is the first Java
     module added to the gateway.
 
--   Constructs a `MessageBus` Java object using the `BROKER_HANDLE`.
+-   Constructs a `Broker` Java object using the `BROKER_HANDLE`.
 
 -   Finds the module’s class with the name specified by the `args.class_name`,
     invokes the constructor passing in the native `MODULE_HANDLE` address,
-    the `MessageBus` object and the JSON args string for that module, and 
+    the `Broker` object and the JSON args string for that module, and 
     creates the Java module.
 
 -   Gets a global reference to the newly created `GatewayModule` object to be
@@ -168,7 +168,7 @@ Communication **FROM** the Java module
 --------------------------------------
 
 In order to communicate **from** the Java module to the native gateway process,
-the `MessageBus` class must be used. The `MessageBus` class provides a method to
+the `Broker` class must be used. The `Broker` class provides a method to
 publish messages to the native message broker and loads a dynamic library that
 implements the functions for publishing to the native message broker. So, the 
 above diagram should look a bit more like this:

@@ -160,7 +160,7 @@ public:
     }
 };
 
-TYPED_MOCK_CLASS(CMessageBusMocks, CGlobalMock)
+TYPED_MOCK_CLASS(CBrokerMocks, CGlobalMock)
 {
 public:
 
@@ -493,45 +493,45 @@ public:
     MOCK_METHOD_END(const void*, result1)
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void*, gballoc_malloc, size_t, size);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, gballoc_free, void*, ptr);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, gballoc_malloc, size_t, size);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CMessageBusMocks, , LOCK_HANDLE, Lock_Init);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , LOCK_RESULT, Lock, LOCK_HANDLE, lock);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , LOCK_RESULT, Unlock, LOCK_HANDLE, lock);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , LOCK_RESULT, Lock_Deinit, LOCK_HANDLE, lock);
+DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , LOCK_HANDLE, Lock_Init);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LOCK_RESULT, Lock, LOCK_HANDLE, lock);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LOCK_RESULT, Unlock, LOCK_HANDLE, lock);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LOCK_RESULT, Lock_Deinit, LOCK_HANDLE, lock);
 
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, VECTOR_destroy, VECTOR_HANDLE, vector);
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , int, VECTOR_push_back, VECTOR_HANDLE, vector, const void*, elements, size_t, numElements);
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , void, VECTOR_erase, VECTOR_HANDLE, vector, void*, elements, size_t, numElements);
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , void*, VECTOR_element, VECTOR_HANDLE, vector, size_t, index);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void*, VECTOR_front, VECTOR_HANDLE, vector);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void*, VECTOR_back, VECTOR_HANDLE, vector);
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , void*, VECTOR_find_if, VECTOR_HANDLE, vector, PREDICATE_FUNCTION, pred, const void*, value);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , size_t, VECTOR_size, VECTOR_HANDLE, vector);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, VECTOR_destroy, VECTOR_HANDLE, vector);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , int, VECTOR_push_back, VECTOR_HANDLE, vector, const void*, elements, size_t, numElements);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , void, VECTOR_erase, VECTOR_HANDLE, vector, void*, elements, size_t, numElements);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , void*, VECTOR_element, VECTOR_HANDLE, vector, size_t, index);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, VECTOR_front, VECTOR_HANDLE, vector);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, VECTOR_back, VECTOR_HANDLE, vector);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , void*, VECTOR_find_if, VECTOR_HANDLE, vector, PREDICATE_FUNCTION, pred, const void*, value);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , size_t, VECTOR_size, VECTOR_HANDLE, vector);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CMessageBusMocks, , COND_HANDLE, Condition_Init);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , COND_RESULT, Condition_Post, COND_HANDLE, handle);
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , COND_RESULT, Condition_Wait, COND_HANDLE, handle, LOCK_HANDLE, lock, int, timeout_milliseconds);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, Condition_Deinit, COND_HANDLE, handle);
+DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , COND_HANDLE, Condition_Init);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , COND_RESULT, Condition_Post, COND_HANDLE, handle);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , COND_RESULT, Condition_Wait, COND_HANDLE, handle, LOCK_HANDLE, lock, int, timeout_milliseconds);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, Condition_Deinit, COND_HANDLE, handle);
 
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , THREADAPI_RESULT, ThreadAPI_Create, THREAD_HANDLE*, threadHandle, THREAD_START_FUNC, func, void*, arg);
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , THREADAPI_RESULT, ThreadAPI_Join, THREAD_HANDLE, threadHandle, int*, res);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , THREADAPI_RESULT, ThreadAPI_Create, THREAD_HANDLE*, threadHandle, THREAD_START_FUNC, func, void*, arg);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , THREADAPI_RESULT, ThreadAPI_Join, THREAD_HANDLE, threadHandle, int*, res);
 
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , MESSAGE_HANDLE, Message_Clone, MESSAGE_HANDLE, message);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , MESSAGE_HANDLE, Message_Clone, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
 
 // list.h
-DECLARE_GLOBAL_MOCK_METHOD_0(CMessageBusMocks, , LIST_HANDLE, list_create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , void, list_destroy, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item);
-DECLARE_GLOBAL_MOCK_METHOD_2(CMessageBusMocks, , int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_3(CMessageBusMocks, , LIST_ITEM_HANDLE, list_find, LIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context);
-DECLARE_GLOBAL_MOCK_METHOD_1(CMessageBusMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , LIST_HANDLE, list_create);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, list_destroy, LIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , LIST_ITEM_HANDLE, list_find, LIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
 
 
 BEGIN_TEST_SUITE(broker_uwp_unittests)
@@ -620,11 +620,11 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_MESSAGE_BUS_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]
-TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
+//Tests_SRS_BROKER_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]
+TEST_FUNCTION(Broker_AddModule_fails_with_null_broker)
 {
     ///arrange
-    CMessageBusMocks mocks;
+    CBrokerMocks mocks;
 
     MODULE fake_module {
         NULL
@@ -642,7 +642,7 @@ TEST_FUNCTION(MessageBus_AddModule_fails_with_null_bus)
 
 struct Condition_Wait_Callback_Input
 {
-    BROKER_HANDLE bus;
+    BROKER_HANDLE broker;
     MESSAGE_HANDLE message;
 };
 
@@ -665,7 +665,7 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
 {
     // publish a message on to the broker
     Condition_Wait_Callback_Input* input = (Condition_Wait_Callback_Input*)interceptArgs_for_Condition_Wait;
-    auto result = Broker_Publish(input->bus, NULL, input->message);
+    auto result = Broker_Publish(input->broker, NULL, input->message);
     ASSERT_ARE_EQUAL(BROKER_RESULT, BROKER_OK, result);
 
     // schedule module_publish_worker_calls_module_receive_Condition_Wait2 to be
@@ -675,18 +675,18 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
     return COND_OK;
 }
 
-// Tests_SRS_MESSAGE_BUS_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_MESSAGE_BUS_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
-// Tests_SRS_MESSAGE_BUS_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
-// Tests_SRS_MESSAGE_BUS_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
-// Tests_SRS_MESSAGE_BUS_13_069: [ The function shall dequeue a message from the module's message queue. ]
-// Tests_SRS_MESSAGE_BUS_13_091: [ The function shall unlock module_info->mq_lock. ]
-// Tests_SRS_MESSAGE_BUS_99_012: [ The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. ]
-// Tests_SRS_MESSAGE_BUS_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
-// Tests_SRS_MESSAGE_BUS_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_MESSAGE_BUS_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
-// Tests_SRS_MESSAGE_BUS_13_026: [ This function shall assign user_data to a local variable called module_info of type MESSAGE_BUS_MODULEINFO*. ]
-// Tests_SRS_MESSAGE_BUS_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
+// Tests_SRS_BROKER_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BROKER_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
+// Tests_SRS_BROKER_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
+// Tests_SRS_BROKER_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
+// Tests_SRS_BROKER_13_069: [ The function shall dequeue a message from the module's message queue. ]
+// Tests_SRS_BROKER_13_091: [ The function shall unlock module_info->mq_lock. ]
+// Tests_SRS_BROKER_99_012: [ The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. ]
+// Tests_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
+// Tests_SRS_BROKER_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BROKER_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
+// Tests_SRS_BROKER_13_026: [ This function shall assign user_data to a local variable called module_info of type BROKER_MODULEINFO*. ]
+// Tests_SRS_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
 TEST_FUNCTION(module_publish_worker_calls_module_receive)
 {
     /**
@@ -731,9 +731,9 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     *  [8] `module_publish_worker` then loops around and calls `Condition_Wait` again. And this
     *      time the `module_publish_worker_calls_module_receive_Condition_Wait2` function ends up
     *      being called. In this function our goal is to assign `1` to the `quit_worker`
-    *      variable in the module's `MESSAGE_BUS_MODULEINFO` struct. Since we don't have access to the
-    *      structs backing the message broker we use the global variables `MESSAGE_BUS_offsetof_modules` and
-    *      `MESSAGE_BUS_offsetof_quit_worker` provided by the message broker API to figure out the location where
+    *      variable in the module's `BROKER_MODULEINFO` struct. Since we don't have access to the
+    *      structs backing the message broker we use the global variables `BROKER_offsetof_modules` and
+    *      `BROKER_offsetof_quit_worker` provided by the message broker API to figure out the location where
     *      the `quit_worker` variable resides in memory and assign `1` to it.
     *
     *  [9] Since `quit_worker` is now `1`, `module_publish_worker` will exit its processing loop
@@ -742,15 +742,15 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     */
 
     ///arrange
-    CMessageBusMocks mocks;
-    auto bus = Broker_Create();
+    CBrokerMocks mocks;
+    auto broker = Broker_Create();
 
     // make ThreadAPI_Create mock call the callback function
     shouldThreadAPI_Create_invoke_callback = true;
 
     // we want to intercept Condition_Wait when it is called
     shouldIntercept_Condition_Wait = true;
-    Condition_Wait_Callback_Input input{ bus, NULL };
+    Condition_Wait_Callback_Input input{ broker, NULL };
     interceptArgs_for_Condition_Wait = (void*)&input;
     intercept_for_Condition_Wait = module_publish_worker_calls_module_receive_Condition_Wait;
 
@@ -835,7 +835,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
 
     ///act
-    auto result = Broker_AddModule(bus, &fake_module);
+    auto result = Broker_AddModule(broker, &fake_module);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
@@ -843,8 +843,8 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
 
     ///cleanup
     Message_Destroy(message);
-    Broker_RemoveModule(bus, &fake_module);
-    Broker_Destroy(bus);
+    Broker_RemoveModule(broker, &fake_module);
+    Broker_Destroy(broker);
 }
 
 END_TEST_SUITE(broker_uwp_unittests)

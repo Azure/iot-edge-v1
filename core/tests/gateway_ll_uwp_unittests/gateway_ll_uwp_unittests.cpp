@@ -47,14 +47,14 @@ namespace BASEIMPLEMENTATION
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
 
-static size_t currentMessageBus_AddModule_call;
-static size_t whenShallMessageBus_AddModule_fail;
-static size_t currentMessageBus_RemoveModule_call;
-static size_t whenShallMessageBus_RemoveModule_fail;
-static size_t currentMessageBus_Create_call;
-static size_t whenShallMessageBus_Create_fail;
-static size_t currentMessageBus_module_count;
-static size_t currentMessageBus_ref_count;
+static size_t currentBroker_AddModule_call;
+static size_t whenShallBroker_AddModule_fail;
+static size_t currentBroker_RemoveModule_call;
+static size_t whenShallBroker_RemoveModule_fail;
+static size_t currentBroker_Create_call;
+static size_t whenShallBroker_Create_fail;
+static size_t currentBroker_module_count;
+static size_t currentBroker_ref_count;
 
 static size_t currentModuleLoader_Load_call;
 static size_t whenShallModuleLoader_Load_fail;
@@ -81,7 +81,7 @@ static VECTOR_HANDLE dummyModules;
 TYPED_MOCK_CLASS(CGatewayUwpLLMocks, CGlobalMock)
 {
 public:
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration)
 		currentModule_Create_call++;
 	MODULE_HANDLE result1;
 	if (configuration != NULL && *((bool*)configuration) == false)
@@ -102,65 +102,65 @@ public:
 	MOCK_STATIC_METHOD_2(, void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
 		MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, bus)
-		if (currentMessageBus_ref_count > 0)
+	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, broker)
+		if (currentBroker_ref_count > 0)
 		{
-			--currentMessageBus_ref_count;
-			if (currentMessageBus_ref_count == 0)
+			--currentBroker_ref_count;
+			if (currentBroker_ref_count == 0)
 			{
-				BASEIMPLEMENTATION::gballoc_free(bus);
+				BASEIMPLEMENTATION::gballoc_free(broker);
 			}
 		}
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, Broker_IncRef, BROKER_HANDLE, bus)
-		++currentMessageBus_ref_count;
+	MOCK_STATIC_METHOD_1(, void, Broker_IncRef, BROKER_HANDLE, broker)
+		++currentBroker_ref_count;
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_0(, BROKER_HANDLE, Broker_Create)
 	BROKER_HANDLE result1;
-	currentMessageBus_Create_call++;
-	if (whenShallMessageBus_Create_fail >= 0 && whenShallMessageBus_Create_fail == currentMessageBus_Create_call)
+	currentBroker_Create_call++;
+	if (whenShallBroker_Create_fail >= 0 && whenShallBroker_Create_fail == currentBroker_Create_call)
 	{
 		result1 = NULL;
 	}
 	else
 	{
-		++currentMessageBus_ref_count;
+		++currentBroker_ref_count;
 		result1 = (BROKER_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	}
 	MOCK_METHOD_END(BROKER_HANDLE, result1);
 
-	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, bus)
-		if (currentMessageBus_ref_count > 0)
+	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, broker)
+		if (currentBroker_ref_count > 0)
 		{
-			--currentMessageBus_ref_count;
-			if (currentMessageBus_ref_count == 0)
+			--currentBroker_ref_count;
+			if (currentBroker_ref_count == 0)
 			{
-				BASEIMPLEMENTATION::gballoc_free(bus);
+				BASEIMPLEMENTATION::gballoc_free(broker);
 			}
 		}
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module)
-		currentMessageBus_AddModule_call++;
+		currentBroker_AddModule_call++;
 		BROKER_RESULT result1  = BROKER_ERROR;
 		if (handle != NULL && module != NULL)
 		{
-			if (whenShallMessageBus_AddModule_fail != currentMessageBus_AddModule_call)
+			if (whenShallBroker_AddModule_fail != currentBroker_AddModule_call)
 			{
-				++currentMessageBus_module_count;
+				++currentBroker_module_count;
 				result1 = BROKER_OK;
 			}
 		}
 	MOCK_METHOD_END(BROKER_RESULT, result1);
 
 	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module)
-		currentMessageBus_RemoveModule_call++;
+		currentBroker_RemoveModule_call++;
 		BROKER_RESULT result1 = BROKER_ERROR;
-		if (handle != NULL && module != NULL && currentMessageBus_module_count > 0 && whenShallMessageBus_RemoveModule_fail != currentMessageBus_RemoveModule_call)
+		if (handle != NULL && module != NULL && currentBroker_module_count > 0 && whenShallBroker_RemoveModule_fail != currentBroker_RemoveModule_call)
 		{
-			--currentMessageBus_module_count;
+			--currentBroker_module_count;
 			result1 = BROKER_OK;
 		}
 	MOCK_METHOD_END(BROKER_RESULT, result1);
@@ -269,16 +269,16 @@ public:
 
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayUwpLLMocks, , BROKER_HANDLE, Broker_Create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_Destroy, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayUwpLLMocks, , BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_IncRef, BROKER_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_DecRef, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_IncRef, BROKER_HANDLE, broker);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, Broker_DecRef, BROKER_HANDLE, broker);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayUwpLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
@@ -328,14 +328,14 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	currentmalloc_call = 0;
 	whenShallmalloc_fail = 0;
 
-	currentMessageBus_AddModule_call = 0;
-	whenShallMessageBus_AddModule_fail = 0;
-	currentMessageBus_RemoveModule_call = 0;
-	whenShallMessageBus_RemoveModule_fail = 0;
-	currentMessageBus_Create_call = 0;
-	whenShallMessageBus_Create_fail = 0;
-	currentMessageBus_module_count = 0;
-	currentMessageBus_ref_count = 0;
+	currentBroker_AddModule_call = 0;
+	whenShallBroker_AddModule_fail = 0;
+	currentBroker_RemoveModule_call = 0;
+	whenShallBroker_RemoveModule_fail = 0;
+	currentBroker_Create_call = 0;
+	whenShallBroker_Create_fail = 0;
+	currentBroker_module_count = 0;
+	currentBroker_ref_count = 0;
 
 	currentModuleLoader_Load_call = 0;
 	whenShallModuleLoader_Load_fail = 0;
@@ -367,8 +367,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	currentmalloc_call = 0;
 	whenShallmalloc_fail = 0;
 
-	currentMessageBus_Create_call = 0;
-	whenShallMessageBus_Create_fail = 0;
+	currentBroker_Create_call = 0;
+	whenShallBroker_Create_fail = 0;
 
 	delete dummyModule.module_instance;
 
@@ -382,7 +382,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	BROKER_HANDLE bus = Broker_Create();
+	BROKER_HANDLE broker = Broker_Create();
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -397,7 +397,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Success)
 		.IgnoreArgument(1);
 
 	//Act
-	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, broker);
 
 	//Assert
 	ASSERT_IS_NOT_NULL(gateway);
@@ -430,7 +430,7 @@ TEST_FUNCTION(Gateway_LL_UwpCreate_Creates_Handle_Malloc_Failure)
 }
 
 /*Tests_SRS_GATEWAY_LL_99_003: [ This function shall return `NULL` if a `NULL` `BROKER_HANDLE` is received. ]*/
-TEST_FUNCTION(Gateway_LL_UwpCreate_Null_MessageBus_Handle_Failure)
+TEST_FUNCTION(Gateway_LL_UwpCreate_Null_Broker_Handle_Failure)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
@@ -490,16 +490,16 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Does_Nothing_If_NULL)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus BROKER_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's bus BROKER_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_010: [ The function shall destroy the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_99_009: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
-TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success)
+TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Broker_Success)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	BROKER_HANDLE bus = Broker_Create();
-	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
+	BROKER_HANDLE broker = Broker_Create();
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, broker);
 	mocks.ResetAllCalls();
 
 	//Expectations
@@ -523,20 +523,20 @@ TEST_FUNCTION(Gateway_LL_UwpDestroy_Removes_All_Modules_And_Destroys_Bus_Success
 	mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
+/*Tests_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's broker cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+TEST_FUNCTION(Gateway_LL_UwpDestroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
 {
 	//Arrange
 	CGatewayUwpLLMocks mocks;
 
-	BROKER_HANDLE bus = Broker_Create();
-	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, bus);
+	BROKER_HANDLE broker = Broker_Create();
+	GATEWAY_HANDLE gateway = Gateway_LL_UwpCreate(dummyModules, broker);
 	mocks.ResetAllCalls();
 
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyModules));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyModules, 0));
-	whenShallMessageBus_RemoveModule_fail = 1;
+	whenShallBroker_RemoveModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);

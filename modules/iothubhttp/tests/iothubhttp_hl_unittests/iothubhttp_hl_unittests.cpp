@@ -40,7 +40,7 @@ namespace BASEIMPLEMENTATION
 
 
 /*forward declarations*/
-static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE busHandle, const void* configuration);
+static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 static void IoTHubHttp_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -80,7 +80,7 @@ public:
 	MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE))
 		MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&IoTHubHttp_GetAPIS_Impl);
 
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IoTHubHttp_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IoTHubHttp_Create, BROKER_HANDLE, broker, const void*, configuration)
 		MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
 	MOCK_STATIC_METHOD_1(, void, IoTHubHttp_Destroy, MODULE_HANDLE, moduleHandle)
@@ -142,7 +142,7 @@ public:
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CIoTHubHTTPHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPHLMocks, , MODULE_HANDLE, IoTHubHttp_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPHLMocks, , MODULE_HANDLE, IoTHubHttp_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPHLMocks, , void, IoTHubHttp_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPHLMocks, , void, IoTHubHttp_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
@@ -226,14 +226,14 @@ TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_fields)
 }
 
 //Tests_SRS_IOTHUBHTTP_HL_17_004: [ IoTHubHttp_HL_Create shall parse the configuration as a JSON string. ]
-//Tests_SRS_IOTHUBHTTP_HL_17_008: [IoTHubHttp_HL_Create shall invoke IoTHubHttp Module's create, using the busHandle, IotHubName, and IoTHubSuffix. ]
+//Tests_SRS_IOTHUBHTTP_HL_17_008: [IoTHubHttp_HL_Create shall invoke IoTHubHttp Module's create, using the broker, IotHubName, and IoTHubSuffix. ]
 //Tests_SRS_IOTHUBHTTP_HL_17_009: [ When the lower layer IoTHubHttp create succeeds, IoTHubHttp_HL_Create shall succeed and return a non-NULL value. 
 TEST_FUNCTION(IoTHubHttp_HL_Create_success)
 {
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
 	STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -243,13 +243,13 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_success)
 	STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)());
-	STRICT_EXPECTED_CALL(mocks, IoTHubHttp_Create(busHandle, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, IoTHubHttp_Create(broker, IGNORED_PTR_ARG))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NOT_NULL(result);
@@ -265,7 +265,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_ll_module_null_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
 	STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -275,14 +275,14 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_ll_module_null_returns_null)
 	STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)());
-	STRICT_EXPECTED_CALL(mocks, IoTHubHttp_Create(busHandle, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, IoTHubHttp_Create(broker, IGNORED_PTR_ARG))
 		.IgnoreArgument(2)
 		.SetFailReturn((MODULE_HANDLE)NULL);
 	STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -296,7 +296,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_IoTHubSuffix_not_found_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
 	STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -310,7 +310,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_IoTHubSuffix_not_found_returns_null)
 		.IgnoreArgument(1);
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -324,7 +324,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_IoTHubName_not_found_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
 	STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -336,7 +336,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_IoTHubName_not_found_returns_null)
 		.IgnoreArgument(1);
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -350,7 +350,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_get_object_null_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
 	STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -360,7 +360,7 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_get_object_null_returns_null)
 		.IgnoreArgument(1);
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -373,28 +373,28 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_parse_string_null_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * invalidJsonString = "calling it invalid has the same effect";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(mocks, json_parse_string(invalidJsonString))
 		.SetFailReturn((JSON_Value*)NULL);
 
 	///act
-	auto result = Module_Create(busHandle, invalidJsonString);
+	auto result = Module_Create(broker, invalidJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
 }
 
-//Tests_SRS_IOTHUBHTTP_HL_17_001: [If busHandle is NULL then IoTHubHttp_HL_Create shall fail and return NULL.]
-TEST_FUNCTION(IoTHubHttp_HL_Create_bus_handle_null_returns_null)
+//Tests_SRS_IOTHUBHTTP_HL_17_001: [If broker is NULL then IoTHubHttp_HL_Create shall fail and return NULL.]
+TEST_FUNCTION(IoTHubHttp_HL_Create_broker_handle_null_returns_null)
 {
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = NULL;
+	BROKER_HANDLE broker = NULL;
 
 	///act
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -406,10 +406,10 @@ TEST_FUNCTION(IoTHubHttp_HL_Create_config_null_returns_null)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * nullString = NULL;
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
 	///act
-	auto result = Module_Create(busHandle, nullString);
+	auto result = Module_Create(broker, nullString);
 	///assert
 
 	ASSERT_IS_NULL(result);
@@ -421,8 +421,8 @@ TEST_FUNCTION(IoTHubHttp_HL_Destroy_does_everything)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
-	auto result = Module_Create(busHandle, validJsonString);
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+	auto result = Module_Create(broker, validJsonString);
 	mocks.ResetAllCalls();
 
 	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)());
@@ -441,9 +441,9 @@ TEST_FUNCTION(IoTHubHttp_HL_Receive_does_everything)
 	///arrange
 	CIoTHubHTTPHLMocks mocks;
 	const char * validJsonString = "calling it valid makes it so";
-	BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 	MESSAGE_HANDLE messageHandle = (MESSAGE_HANDLE)0x42;
-	auto result = Module_Create(busHandle, validJsonString);
+	auto result = Module_Create(broker, validJsonString);
 	mocks.ResetAllCalls();
 
 	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)());

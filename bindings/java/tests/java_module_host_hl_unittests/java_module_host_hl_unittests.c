@@ -32,11 +32,11 @@ static bool malloc_will_fail = false;
 //=============================================================================
 
 //JavaModuleHost mocks
-MOCKABLE_FUNCTION(, MODULE_HANDLE, JavaModuleHost_Create, BROKER_HANDLE, bus, const void*, configuration);
-MODULE_HANDLE my_JavaModuleHost_Create(BROKER_HANDLE bus, const void* configuration)
+MOCKABLE_FUNCTION(, MODULE_HANDLE, JavaModuleHost_Create, BROKER_HANDLE, broker, const void*, configuration);
+MODULE_HANDLE my_JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	MODULE_HANDLE handle = NULL;
-	if (bus != NULL && configuration != NULL)
+	if (broker != NULL && configuration != NULL)
 	{
 		handle = (MODULE_HANDLE)malloc(1);
 	}
@@ -302,8 +302,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	TEST_MUTEX_RELEASE(g_testByTest);
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if bus is NULL or configuration is NULL.]*/
-TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_bus_param)
+/*Tests_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
+TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_broker_param)
 {
 	//Arrange
 
@@ -317,7 +317,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_bus_param)
 	//Cleanup
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if bus is NULL or configuration is NULL.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
 TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_configuration_param)
 {
 	//Arrange
@@ -335,13 +335,13 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_return_NULL_for_NULL_configuration_param)
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_003: [This function shall return NULL if configuration is not a valid JSON object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_004: [This function shall return NULL if configuration.args does not contain a field named class_name.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_005: [This function shall parse the configuration.args JSON object and initialize a new JAVA_MODULE_HOST_CONFIG setting default values to all missing fields.]*/
-/*Tests_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass bus and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_010: [This function shall return NULL if any underlying API call fails.]*/
 TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 {
 	//Arrange
-	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 
 	int result = 0;
@@ -396,7 +396,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 		.IgnoreArgument(2)
 		.SetFailReturn(-1);
 
-	STRICT_EXPECTED_CALL(JavaModuleHost_Create(bus, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(JavaModuleHost_Create(broker, IGNORED_PTR_ARG))
 		.IgnoreArgument(2)
 		.SetFailReturn(NULL);
 
@@ -412,7 +412,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 			umock_c_negative_tests_fail_call(i);
 
 			// act
-			MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
+			MODULE_HANDLE module = JavaModuleHost_HL_Create(broker, configuration);
 
 			// assert
 			ASSERT_ARE_EQUAL(void_ptr, NULL, module);
@@ -426,12 +426,12 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_API_failure_tests)
 }
 
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_005: [This function shall parse the configuration.args JSON object and initialize a new JAVA_MODULE_HOST_CONFIG setting default values to all missing fields.]*/
-/*Tests_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass bus and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
 TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 {
 	//Arrange
-	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
 
 	STRICT_EXPECTED_CALL(json_parse_string((const char*)configuration));
@@ -476,7 +476,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
-	STRICT_EXPECTED_CALL(JavaModuleHost_Create(bus, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(JavaModuleHost_Create(broker, IGNORED_PTR_ARG))
 		.IgnoreArgument(2);
 
 	STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
@@ -501,7 +501,7 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 		.IgnoreArgument(1);
 
 	// act
-	MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
+	MODULE_HANDLE module = JavaModuleHost_HL_Create(broker, configuration);
 
 	// Assert
 	ASSERT_IS_NOT_NULL(module);
@@ -515,9 +515,9 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 TEST_FUNCTION(JavaModuleHost_HL_Receive_LL_function_call_test)
 {
 	//Arrange
-	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
-	MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
+	MODULE_HANDLE module = JavaModuleHost_HL_Create(broker, configuration);
 	MESSAGE_HANDLE message = (MESSAGE_HANDLE)0x43;
 	umock_c_reset_all_calls();
 
@@ -539,9 +539,9 @@ TEST_FUNCTION(JavaModuleHost_HL_Receive_LL_function_call_test)
 TEST_FUNCTION(JavaModuleHostHL_Destroy_LL_function_call_test)
 {
 	//Arrange
-	BROKER_HANDLE bus = (BROKER_HANDLE)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 	const void* configuration = "{\"json\": \"string\"}";
-	MODULE_HANDLE module = JavaModuleHost_HL_Create(bus, configuration);
+	MODULE_HANDLE module = JavaModuleHost_HL_Create(broker, configuration);
 	umock_c_reset_all_calls();
 
 	STRICT_EXPECTED_CALL(JavaModuleHost_Destroy(module));

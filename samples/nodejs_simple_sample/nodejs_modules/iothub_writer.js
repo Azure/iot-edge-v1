@@ -31,8 +31,8 @@ class IotHubWriterModule
         this.connected = false;
     }
 
-    create(messageBus, configuration) {
-        this.messageBus = messageBus;
+    create(broker, configuration) {
+        this.broker = broker;
         this.configuration = configuration;
 
         if(this.configuration && this.configuration.connection_string) {

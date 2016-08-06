@@ -114,8 +114,8 @@ void my_Message_Destroy(MESSAGE_HANDLE message)
 	}
 }
 
-//MessageBus mocks
-MOCKABLE_FUNCTION(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+//Broker mocks
+MOCKABLE_FUNCTION(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 //JEnv function mocks
 MOCKABLE_FUNCTION(JNICALL, jclass, FindClass, JNIEnv*, env, const char*, name);
@@ -583,8 +583,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 //JavaModuleHost_Create tests
 //=============================================================================
 
-/*Tests_SRS_JAVA_MODULE_HOST_14_001: [This function shall return NULL if bus is NULL.]*/
-TEST_FUNCTION(JavaModuleHost_Create_with_NULL_bus_fails)
+/*Tests_SRS_JAVA_MODULE_HOST_14_001: [This function shall return NULL if broker is NULL.]*/
+TEST_FUNCTION(JavaModuleHost_Create_with_NULL_broker_fails)
 {
 	//Arrange
 
@@ -806,12 +806,12 @@ TEST_FUNCTION(JavaModuleHost_Create_API_failure_tests)
 		.IgnoreAllArguments()
 		.SetFailReturn(MANAGER_ERROR);
 
-	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, MESSAGE_BUS_CLASS_NAME))
+	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR))
+	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
@@ -898,7 +898,7 @@ TEST_FUNCTION(JavaModuleHost_Create_API_failure_tests)
 /*Tests_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_010: [If this is the first Java module to load, this function shall create the JVM using the JavaVMInitArgs through a call to JNI_CreateJavaVM and save the JavaVM and JNIEnv pointers in the JAVA_MODULE_HANDLE_DATA. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_012: [This function shall increment the count of modules in the JavaModuleHostManager. ]*/
-/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the MessageBus Java class, get the constructor, and create a MessageBus Java object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the Broker Java class, get the constructor, and create a Broker Java object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_015 :[This function shall find the user - defined Java module class using configuration->class_name, get the constructor, and create an instance of this module object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_018: [The function shall save a new global reference to the Java module object in JAVA_MODULE_HANDLE_DATA->module. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_030: [The function shall set the JavaVMInitArgs structures nOptions, version and JavaVMOption* options member variables]*/
@@ -980,12 +980,12 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
 	STRICT_EXPECTED_CALL(JavaModuleHostManager_Add(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, MESSAGE_BUS_CLASS_NAME))
+	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR))
+	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
@@ -1039,7 +1039,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
 /*Tests_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_010: [If this is the first Java module to load, this function shall create the JVM using the JavaVMInitArgs through a call to JNI_CreateJavaVM and save the JavaVM and JNIEnv pointers in the JAVA_MODULE_HANDLE_DATA. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_012: [This function shall increment the count of modules in the JavaModuleHostManager. ]*/
-/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the MessageBus Java class, get the constructor, and create a MessageBus Java object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the Broker Java class, get the constructor, and create a Broker Java object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_015 :[This function shall find the user - defined Java module class using configuration->class_name, get the constructor, and create an instance of this module object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_018: [The function shall save a new global reference to the Java module object in JAVA_MODULE_HANDLE_DATA->module. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_030: [The function shall set the JavaVMInitArgs structures nOptions, version and JavaVMOption* options member variables]*/
@@ -1186,12 +1186,12 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_additio
 	STRICT_EXPECTED_CALL(JavaModuleHostManager_Add(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, MESSAGE_BUS_CLASS_NAME))
+	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR))
+	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
@@ -1249,7 +1249,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_additio
 /*Tests_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_010: [If this is the first Java module to load, this function shall create the JVM using the JavaVMInitArgs through a call to JNI_CreateJavaVM and save the JavaVM and JNIEnv pointers in the JAVA_MODULE_HANDLE_DATA. ]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_012: [This function shall increment the count of modules in the JavaModuleHostManager. ]*/
-/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the MessageBus Java class, get the constructor, and create a MessageBus Java object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the Broker Java class, get the constructor, and create a Broker Java object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_015 :[This function shall find the user - defined Java module class using configuration->class_name, get the constructor, and create an instance of this module object.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_018: [The function shall save a new global reference to the Java module object in JAVA_MODULE_HANDLE_DATA->module. ]*/
 TEST_FUNCTION(JavaModuleHost_Create_allocates_structure_success)
@@ -1269,12 +1269,12 @@ TEST_FUNCTION(JavaModuleHost_Create_allocates_structure_success)
 	STRICT_EXPECTED_CALL(JavaModuleHostManager_Add(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, MESSAGE_BUS_CLASS_NAME))
+	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR))
+	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
@@ -1351,12 +1351,12 @@ TEST_FUNCTION(JavaModuleHost_Create_gets_previously_created_JVM_success)
 	STRICT_EXPECTED_CALL(JavaModuleHostManager_Add(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, MESSAGE_BUS_CLASS_NAME))
+	STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR))
+	STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
@@ -2287,22 +2287,22 @@ TEST_FUNCTION(JavaModuleHost_Destroy_CallVoidMethod_fails)
 }
 
 //=============================================================================
-//Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage tests
+//Java_com_microsoft_azure_gateway_core_Broker_publishMessage tests
 //=============================================================================
 
 /*Tests_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_026: [This function shall use the serialized message in a call to Message_Create.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the BROKER_HANDLE addressed by addr and return the value of this function call.]*/
-TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_success)
+TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_Broker_publishMessage_success)
 {
 	//Arrange
 	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	jbyteArray serialized_message = (jbyteArray)0x42;
-	jobject jMessageBus = (jobject)0x42;
-	jlong bus_address = (jlong)0x42;
-	BROKER_HANDLE bus = (BROKER_HANDLE)bus_address;
+	jobject jBroker = (jobject)0x42;
+	jlong broker_address = (jlong)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)broker_address;
 
 	STRICT_EXPECTED_CALL(GetArrayLength(global_env, serialized_message));
 
@@ -2318,7 +2318,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 	STRICT_EXPECTED_CALL(Message_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(Broker_Publish(bus, module, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(Broker_Publish(broker, module, IGNORED_PTR_ARG))
 		.IgnoreArgument(3);
 
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
@@ -2329,7 +2329,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 
 	//Act
 
-	jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, (jlong)module, serialized_message);
+	jint result = Java_com_microsoft_azure_gateway_core_Broker_publishMessage(global_env, jBroker, broker_address, (jlong)module, serialized_message);
 
 	//Assert
 	ASSERT_ARE_EQUAL(int32_t, JNI_OK, result);
@@ -2340,16 +2340,16 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_su
 }
 
 /*Tests_SRS_JAVA_MODULE_HOST_14_048: [ This function shall return a non-zero value if any underlying function call fails. ]*/
-TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_failure)
+TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_Broker_publishMessage_failure)
 {
 	//Arrange
 	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
 	jbyteArray serialized_message = (jbyteArray)0x42;
-	jobject jMessageBus = (jobject)0x42;
-	jlong bus_address = (jlong)0x42;
-	BROKER_HANDLE bus = (BROKER_HANDLE)bus_address;
+	jobject jBroker = (jobject)0x42;
+	jlong broker_address = (jlong)0x42;
+	BROKER_HANDLE broker = (BROKER_HANDLE)broker_address;
 
 	int init_result = 0;
 	init_result = umock_c_negative_tests_init();
@@ -2372,7 +2372,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 		.IgnoreAllArguments()
 		.SetFailReturn(NULL);
 
-	STRICT_EXPECTED_CALL(Broker_Publish(bus, module, IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(Broker_Publish(broker, module, IGNORED_PTR_ARG))
 		.IgnoreArgument(3)
 		.SetFailReturn(BROKER_ERROR);
 
@@ -2395,7 +2395,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage_fa
 			umock_c_negative_tests_reset();
 			umock_c_negative_tests_fail_call(i);
 
-			jint result = Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(global_env, jMessageBus, bus_address, (jlong)module, serialized_message);
+			jint result = Java_com_microsoft_azure_gateway_core_Broker_publishMessage(global_env, jBroker, broker_address, (jlong)module, serialized_message);
 
 			//Assert
 			ASSERT_ARE_NOT_EQUAL(int32_t, JNI_OK, result);

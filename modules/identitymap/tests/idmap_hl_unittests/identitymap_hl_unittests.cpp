@@ -58,7 +58,7 @@ namespace BASEIMPLEMENTATION
 
 
 /*forward declarations*/
-static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE busHandle, const void* configuration);
+static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees) resources of the module parameter*/
 static void IdentityMap_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -90,7 +90,7 @@ TYPED_MOCK_CLASS(CIdentitymapHlMocks, CGlobalMock)
 		MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE))
 			MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&IoTHubModuleHttp_GetAPIS_Impl);
 
-		MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+		MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, broker, const void*, configuration)
 			MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
 
 		MOCK_STATIC_METHOD_1(, void, IdentityMap_Destroy, MODULE_HANDLE, moduleHandle)
@@ -200,7 +200,7 @@ TYPED_MOCK_CLASS(CIdentitymapHlMocks, CGlobalMock)
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CIdentitymapHlMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE));
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapHlMocks, , void, IdentityMap_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , void, IdentityMap_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
@@ -281,16 +281,16 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Ablution
 	}
 
-	//Tests_SRS_IDMAP_HL_17_003: [ If busHandle is NULL then IdentityMap_HL_Create shall fail and return NULL. ]
-	TEST_FUNCTION(IdentityMap_HL_Create_Bus_Null)
+	//Tests_SRS_IDMAP_HL_17_003: [ If broker is NULL then IdentityMap_HL_Create shall fail and return NULL. ]
+	TEST_FUNCTION(IdentityMap_HL_Create_Broker_Null)
 	{
 		///Arrange
 		CIdentitymapHlMocks mocks;
-		BROKER_HANDLE bus = NULL;
+		BROKER_HANDLE broker = NULL;
 		unsigned char config;
 
 		///Act
-		auto n = Module_Create(bus, &config);
+		auto n = Module_Create(broker, &config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -304,11 +304,11 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		void * config = NULL;
 
 		///Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -328,7 +328,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -355,11 +355,11 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.IgnoreArgument(1)
 			.IgnoreArgument(2);
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
-		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(bus, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NOT_NULL(n);
@@ -376,7 +376,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -421,11 +421,11 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		}
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
-		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(bus, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NOT_NULL(n);
@@ -442,7 +442,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -469,12 +469,12 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.IgnoreArgument(1)
 			.IgnoreArgument(2);
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
-		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(bus, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2)
 			.SetFailReturn((MODULE_HANDLE)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -490,7 +490,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -519,7 +519,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn(__LINE__);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -534,7 +534,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -560,7 +560,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((const char*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -575,7 +575,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -599,7 +599,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((const char*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -614,7 +614,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -636,7 +636,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((const char*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -651,7 +651,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -671,7 +671,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((JSON_Object*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -686,7 +686,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -698,7 +698,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((VECTOR_HANDLE)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -713,7 +713,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -724,7 +724,7 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 			.SetFailReturn((JSON_Array*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -739,14 +739,14 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///Arrange
 		CIdentitymapHlMocks mocks;
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config))
 			.SetFailReturn((JSON_Value*)NULL);
 
 		//Act
-		auto n = Module_Create(bus, config);
+		auto n = Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -761,8 +761,8 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///arrange
 		CIdentitymapHlMocks mocks;
 		const char * validJsonString = "calling it valid makes it so";
-		BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
-		auto result = Module_Create(busHandle, validJsonString);
+		BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+		auto result = Module_Create(broker, validJsonString);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
@@ -782,9 +782,9 @@ BEGIN_TEST_SUITE(identitymap_hl_unittests)
 		///arrange
 		CIdentitymapHlMocks mocks;
 		const char * validJsonString = "calling it valid makes it so";
-		BROKER_HANDLE busHandle = (BROKER_HANDLE)0x42;
+		BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 		MESSAGE_HANDLE messageHandle = (MESSAGE_HANDLE)0x42;
-		auto result = Module_Create(busHandle, validJsonString);
+		auto result = Module_Create(broker, validJsonString);
 		mocks.ResetAllCalls();
 
 		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());

@@ -51,9 +51,9 @@ extern BROKER_HANDLE Broker_Create(void);
 *	@details	This function will simply increment the internal reference
 *				count of the provided #BROKER_HANDLE.
 *
-*	@param		bus		The #BROKER_HANDLE to be cloned.
+*	@param		broker  The #BROKER_HANDLE to be cloned.
 */
-extern void Broker_IncRef(BROKER_HANDLE bus);
+extern void Broker_IncRef(BROKER_HANDLE broker);
 
 /** @brief		Decrements the reference count of a message broker.
 *
@@ -61,9 +61,9 @@ extern void Broker_IncRef(BROKER_HANDLE bus);
 *				count of the provided #BROKER_HANDLE, destroying the message
 *				broker when the reference count reaches 0.
 *
-*	@param		bus		The #BROKER_HANDLE whose ref count will be decremented.
+*	@param		broker  The #BROKER_HANDLE whose ref count will be decremented.
 */
-extern void Broker_DecRef(BROKER_HANDLE bus);
+extern void Broker_DecRef(BROKER_HANDLE broker);
 
 /** @brief		Publishes a message to the message broker.
 *
@@ -71,7 +71,7 @@ extern void Broker_DecRef(BROKER_HANDLE bus);
 *				and modules connected to it, see
 *				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
-*	@param		bus		The #BROKER_HANDLE onto which the message will be
+*	@param		broker	The #BROKER_HANDLE onto which the message will be
 *						published.
 *	@param		source	The #MODULE_HANDLE from which the message will be
 *						published. The broker will not publish the message to this
@@ -81,37 +81,37 @@ extern void Broker_DecRef(BROKER_HANDLE bus);
 *
 *	@return		A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_Publish(BROKER_HANDLE bus, MODULE_HANDLE source, MESSAGE_HANDLE message);
+extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE_HANDLE message);
 
-/** @brief		Adds a module onto the message broker.
+/** @brief		Sends a message to the message broker.
 *
 *	@details	For details about threading with regard to the message broker
 *				and modules connected to it, see 
 *				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
-*	@param		bus				The #BROKER_HANDLE onto which the module will be 
+*	@param		broker          The #BROKER_HANDLE onto which the module will be 
 *								added.
 *	@param		module			The #MODULE for the module that will be added 
 *								to this message broker.
 *
 *	@return		A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE bus, const MODULE* module);
+extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module);
 
 /** @brief	Removes a module from the message broker.
 *
-*	@param	bus		The #BROKER_HANDLE from which the module will be removed.
+*	@param	broker	The #BROKER_HANDLE from which the module will be removed.
 *	@param	module	The #MODULE of the module to be removed.
 *
 *	@return	A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE bus, const MODULE* module);
+extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
 
 /** @brief Disposes of resources allocated by a message broker.
 *
-*	@param	bus		The #BROKER_HANDLE to be destroyed.
+*	@param	broker  The #BROKER_HANDLE to be destroyed.
 */
-extern void Broker_Destroy(BROKER_HANDLE bus);
+extern void Broker_Destroy(BROKER_HANDLE broker);
 
 
 // This variable is used only for unit testing purposes.

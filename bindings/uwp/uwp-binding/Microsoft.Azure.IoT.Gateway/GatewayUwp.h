@@ -11,7 +11,7 @@
 namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 
 	interface class IGatewayModule;
-	ref class MessageBus;
+	ref class Broker;
 
 	class InternalGatewayModule : public IInternalGatewayModule
 	{
@@ -21,7 +21,7 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		{
 		}
 
-		void Module_Create(BROKER_HANDLE busHandle, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
+		void Module_Create(BROKER_HANDLE broker, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ properties);
 		void Module_Destroy();
 		void Module_Receive(MESSAGE_HANDLE messageHandle);
 
@@ -39,7 +39,7 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 	private:
 		VECTOR_HANDLE modules_handle;
 		GATEWAY_HANDLE gateway_handle;
-		BROKER_HANDLE messagebus_handle;
+		BROKER_HANDLE broker_handle;
 
 		std::vector<std::unique_ptr<InternalGatewayModule>> gatewayModulesToDelete;
 

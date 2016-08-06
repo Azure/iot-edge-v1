@@ -30,7 +30,7 @@ typedef void* MODULE_HANDLE;
 /*a pointer to a well-known structure.*/
 
 /*this API creates a new Module. Configuration is a pointer given by the instantiator*/
-typedef MODULE_HANDLE (*pfModule_Create)(BROKER_HANDLE busHandle, const void* configuration);
+typedef MODULE_HANDLE (*pfModule_Create)(BROKER_HANDLE broker, const void* configuration);
 
 /*this destroys (frees resources) of the module parameter*/
 typedef void (*pfModule_Destroy)(MODULE_HANDLE moduleHandle);
@@ -70,7 +70,7 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
 
 ##Module_Create
 ```C
-static MODULE_HANDLE Module_Create(BROKER_HANDLE busHandle, const void* configuration);
+static MODULE_HANDLE Module_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 This function is to be implemented by the module creator. It receives the message broker 
 to which the module will publish its messages, and a pointer provided by the user

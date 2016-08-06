@@ -77,14 +77,14 @@ static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
 /*
  * @brief	Create an identity map HL module.
  */
-static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	MODULE_HANDLE *result;
-	if ((busHandle == NULL) || (configuration == NULL))
+	if ((broker == NULL) || (configuration == NULL))
 	{
-		/*Codes_SRS_IDMAP_HL_17_003: [ If busHandle is NULL then IdentityMap_HL_Create shall fail and return NULL. ]*/
+		/*Codes_SRS_IDMAP_HL_17_003: [ If broker is NULL then IdentityMap_HL_Create shall fail and return NULL. ]*/
 		/*Codes_SRS_IDMAP_HL_17_004: [ If configuration is NULL then IdentityMap_HL_Create shall fail and return NULL. ]*/
-		LogError("Invalid NULL parameter, busHandle=[%p] configuration=[%p]", busHandle, configuration);
+		LogError("Invalid NULL parameter, broker=[%p] configuration=[%p]", broker, configuration);
 		result = NULL;
 	}
 	else
@@ -142,7 +142,7 @@ static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE busHandle, const void* 
 						/*Codes_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message broker handle and the input vector. ]*/
 						/*Codes_SRS_IDMAP_HL_17_014: [ When the lower layer identity map module create succeeds, IdentityMap_HL_Create shall succeed and return a non-NULL value. ]*/
 						/*Codes_SRS_IDMAP_HL_17_015: [ If the lower layer identity map module create fails, IdentityMap_HL_Create shall fail and return NULL. ]*/
-						result = MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Create(busHandle, inputVector);
+						result = MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Create(broker, inputVector);
 					}
 					/*Codes_SRS_IDMAP_HL_17_016: [ IdentityMap_HL_Create shall release all data it allocated. ]*/
 					VECTOR_destroy(inputVector);

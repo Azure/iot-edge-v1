@@ -19,17 +19,17 @@ Creating a Java module is easy:
   ```java
   public class YourModule extends GatewayModule {
     /**
-     * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
+     * Constructs a {@link GatewayModule} from the provided address and {@link Broker}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
      * The {@code address} parameter must be passed to the super constructor but can be ignored by the module-implementor when writing a module implementation.
      * 
      * @param address       The address of the native module pointer
-     * @param bus           The {@link MessageBus} to which this module belongs
+     * @param broker        The {@link Broker} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public YourModule(long address, MessageBus bus, String configuration) {
-        super(address, bus, configuration);
+    public YourModule(long address, Broker broker, String configuration) {
+        super(address, broker, configuration);
     }
 
     @Override
@@ -46,7 +46,7 @@ Creating a Java module is easy:
   
 - **Publish messages**
 
-  Each module has its own ```MessageBus``` object. Calling the ```Module```s ```int publish(Message message)``` method will publish any message onto this ```MessageBus```.
+  Each module has its own ```Broker``` object. Calling the ```Module```s ```int publish(Message message)``` method will publish any message to this ```Broker```.
   
 - **JSON Configuration**
   

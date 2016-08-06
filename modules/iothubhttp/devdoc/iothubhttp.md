@@ -41,11 +41,11 @@ typedef struct IOTHUBHTTP_CONFIG_TAG
 
 ###IoTHubHttp_Create
 ```C
-MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new IoTHubHttp instance. configuration is a pointer to a `IOTHUBHTTP_CONFIG`.
 
-**SRS_IOTHUBHTTP_02_001: [**If `busHandle` is NULL then `IoTHubHttp_Create` shall fail and return NULL.**]**
+**SRS_IOTHUBHTTP_02_001: [**If `broker` is NULL then `IoTHubHttp_Create` shall fail and return NULL.**]**
 **SRS_IOTHUBHTTP_02_002: [**If `configuration` is NULL then `IoTHubHttp_Create` shall fail and return NULL.**]**
 **SRS_IOTHUBHTTP_02_003: [**If `configuration->IoTHubName` is NULL then `IoTHubHttp_Create` shall and return NULL.**]**
 **SRS_IOTHUBHTTP_02_004: [**If `configuration->IoTHubSuffix` is NULL then `IoTHubHttp_Create` shall fail and return NULL.**]**
@@ -64,7 +64,7 @@ IoTHubHttp shall name the triplet of deviceName, deviceKey and IOTHUB_CLIENT_HAN
 then `IoTHubHttp_Create` shall fail and return NULL.**]**
 **SRS_IOTHUBHTTP_02_028: [**`IoTHubHttp_Create` shall create a copy of `configuration->IoTHubName`.**]**
 **SRS_IOTHUBHTTP_02_029: [**`IoTHubHttp_Create` shall create a copy of `configuration->IoTHubSuffix`.**]**
-**SRS_IOTHUBHTTP_17_004: [** `IoTHubHttp_Create` shall store the busHandle. **]**
+**SRS_IOTHUBHTTP_17_004: [** `IoTHubHttp_Create` shall store the broker. **]**
 **SRS_IOTHUBHTTP_02_027: [**When `IoTHubHttp_Create` encounters an internal failure it shall fail and return NULL.**]**
 
 **SRS_IOTHUBHTTP_02_008: [**Otherwise, `IoTHubHttp_Create` shall return a non-NULL handle.**]**
@@ -130,7 +130,7 @@ IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB_MESSAG
 
 **SRS_IOTHUBHTTP_17_017: [** If the message fails to create, `IoTHubHttp_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. **]**
 
-**SRS_IOTHUBHTTP_17_018: [** `IoTHubHttp_ReceiveMessageCallback` shall call `Bus_Publish` with the new message and the `busHandle`. **]**
+**SRS_IOTHUBHTTP_17_018: [** `IoTHubHttp_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. **]**
 
 **SRS_IOTHUBHTTP_17_019: [** If the message fails to publish, `IoTHubHttp_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. **]**
 

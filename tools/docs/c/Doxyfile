@@ -847,8 +847,8 @@ EXCLUDE_PATTERNS       =
 # Other unused symbols are ignored as well.
 
 EXCLUDE_SYMBOLS        = *_VALUES \
-			 MESSAGE_BUS_RESULTStrings \
-			 MESSAGE_BUS_RESULT_FromString \
+			 BROKER_RESULTStrings \
+			 BROKER_RESULT_FromString \
 			 BROKER_offsetof_quit_worker \
 			 MODULE_EXPORT
 			 

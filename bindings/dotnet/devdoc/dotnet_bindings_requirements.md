@@ -23,7 +23,7 @@ typedef struct DOTNET_HOST_CONFIG_TAG
 
 typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 {
-    BROKER_HANDLE               bus;
+    BROKER_HANDLE               broker;
     ICLRMetaHost                *pMetaHost;
     ICLRRuntimeInfo             *pRuntimeInfo;
     ICorRuntimeHost             *pCorRuntimeHost;
@@ -33,13 +33,13 @@ typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 DotNET_Create
 -------------
 ```c
-MODULE_HANDLE DotNET_Create(BROKER_HANDLE bus, const void* configuration);
+MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new .NET module instance. The parameter `configuration` is a
 pointer to a `DOTNET_HOST_CONFIG` object.
 
 
-**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_DOTNET_04_001: [** `DotNET_Create` shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_DOTNET_04_002: [** `DotNET_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -61,13 +61,13 @@ pointer to a `DOTNET_HOST_CONFIG` object.
 
 **SRS_DOTNET_04_010: [** `DotNET_Create` shall save Client module Type and Azure IoT Gateway Assembly on `DOTNET_HOST_HANDLE_DATA`. **]**
 
-**SRS_DOTNET_04_013: [** A .NET Object conforming to the `MessageBus` interface defined shall be created: **]**
+**SRS_DOTNET_04_013: [** A .NET Object conforming to the `Broker` interface defined shall be created: **]**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
     {
         /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
-        public class MessageBus
+        public class Broker
         {
             /// <summary>
             ///     Publish a message to the message broker. 
@@ -79,7 +79,7 @@ pointer to a `DOTNET_HOST_CONFIG` object.
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `MessageBus` object created and `configuration->dotnet_module_args`. **]**
+**SRS_DOTNET_04_014: [** `DotNET_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `Broker` object created and `configuration->dotnet_module_args`. **]**
 
 
 DotNET_Receive
@@ -141,7 +141,7 @@ Module_DotNetHost_PublishMessage
 bool Module_DotNetHost_PublishMessage(BROKER_HANDLE , MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 ```
 
-**SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `bus` is NULL. **]**
+**SRS_DOTNET_04_022: [** `Module_DotNetHost_PublishMessage` shall return false if `broker` is NULL. **]**
 
 **SRS_DOTNET_04_029: [** `Module_DotNetHost_PublishMessage` shall return false if `sourceModule` is NULL.  **]**
 
@@ -151,7 +151,7 @@ bool Module_DotNetHost_PublishMessage(BROKER_HANDLE , MODULE_HANDLE sourceModule
 
 **SRS_DOTNET_04_025: [** If `Message_CreateFromByteArray` fails, `Module_DotNetHost_PublishMessage` shall fail. **]**
 
-**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `Broker_Publish` passing bus, sourceModule, message and size. **]**
+**SRS_DOTNET_04_026: [** `Module_DotNetHost_PublishMessage` shall call `Broker_Publish` passing broker, sourceModule, message and size. **]**
 
 **SRS_DOTNET_04_027: [** If `Broker_Publish` fails `Module_DotNetHost_PublishMessage` shall fail.  **]**
 

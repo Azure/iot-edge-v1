@@ -20,7 +20,7 @@ This is a layer written in UWP that wraps what is required to publish a given me
 For UWP Modules the following wrappers will be provided:
 1. `Message` - Object that represents a message
 
-2. `MessageBus` - Object that represents the message broker, to which messsages will be published
+2. `Broker` - Object that represents the message broker, to which messsages will be published
 
 3. `IGatewayModule` - interface that has to be implemented by the .NET Module
 
@@ -68,13 +68,13 @@ The high level design of these objects and interfaces is documented below:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-### MessageBus
+### Broker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
     {
         /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
-        public sealed class MessageBus
+        public sealed class Broker
         {
             public void Publish(Message message);
         }        
@@ -90,10 +90,10 @@ The high level design of these objects and interfaces is documented below:
             /// <summary>
             ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
-            /// <param name="bus">The broker to which this module will connect.</param>
+            /// <param name="broker">The broker to which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
-            void Create(MessageBus bus, IReadOnlyDictionary<string, string> properties);
+            void Create(Broker broker, IReadOnlyDictionary<string, string> properties);
             
             /// <summary>
             ///     Disposes of the resources allocated by/for this module.

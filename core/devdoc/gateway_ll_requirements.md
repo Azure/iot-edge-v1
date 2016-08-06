@@ -15,7 +15,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	VECTOR_HANDLE modules;
 
     /** @brief The message broker used by this gateway */
-    BROKER_HANDLE bus;
+    BROKER_HANDLE broker;    
 
 	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
@@ -212,7 +212,7 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 **SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the broker the `GATEWAY_HANDLE` will be destroyed. **]**
 
 ```
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE bus);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
 ```
 Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` struct and the message broker described by the `BROKER_HANDLE` to configure the modules on the message broker.
 
@@ -240,7 +240,7 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_14_037: [** If `GATEWAY_HANDLE_DATA`'s message broker cannot remove a module, the function shall log the error and continue removing modules from the `GATEWAY_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_26_003: [** If the Event System module is initialized, this function shall report `GATEWAY_DESTROYED` event. **]**
 
@@ -253,13 +253,13 @@ Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_99_006: [** If `gw` is `NULL` the function shall do nothing. **]**
 
-**SRS_GATEWAY_LL_99_007: [** The function shall detach modules from the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_007: [** The function shall detach modules from the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_99_008: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach a module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_008: [** If `GATEWAY_HANDLE_DATA`'s `broker` cannot detach a module, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_99_009: [** The function shall decrement the BROKER_HANDLE reference count. **]**
 
-**SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
+**SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
 ## Gateway_AddModule
 ```
@@ -279,9 +279,9 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_016: [** If the module creation is unsuccessful, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_017: [** The function shall attach the module to the `GATEWAY_HANDLE_DATA`'s `bus` using a call to `Broker_AddModule`. **]**
+**SRS_GATEWAY_LL_14_017: [** The function shall attach the module to the `GATEWAY_HANDLE_DATA`'s `broker` using a call to `Broker_AddModule`. **]**
 
-**SRS_GATEWAY_LL_14_039: [** The function shall increment the `BROKER_HANDLE` reference count if the `MODULE_HANDLE` was successfully linked to the `GATEWAY_HANDLE_DATA`'s `bus`. **]**
+**SRS_GATEWAY_LL_14_039: [** The function shall increment the `BROKER_HANDLE` reference count if the `MODULE_HANDLE` was successfully linked to the `GATEWAY_HANDLE_DATA`'s `broker`. **]**
 
 **SRS_GATEWAY_LL_14_018: [** If the function cannot attach the module to the message broker, the function shall return `NULL`. **]**
 
@@ -305,9 +305,9 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_14_023: [** The function shall locate the `MODULE_DATA` object in `GATEWAY_HANDLE_DATA`'s `modules` containing `module` and return if it cannot be found.  **]**
 
-**SRS_GATEWAY_LL_14_021: [** The function shall detach `module` from the `GATEWAY_HANDLE_DATA`'s `bus` `BROKER_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_021: [** The function shall detach `module` from the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `bus` cannot detach `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_022: [** If `GATEWAY_HANDLE_DATA`'s `broker` cannot detach `module`, the function shall log the error and continue unloading the module from the `GATEWAY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_038: [** The function shall decrement the `BROKER_HANDLE` reference count. **]**
 

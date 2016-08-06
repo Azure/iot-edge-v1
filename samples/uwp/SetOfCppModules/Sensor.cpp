@@ -12,12 +12,12 @@ Sensor::Sensor()
 {
 }
 
-void Sensor::Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration)
+void Sensor::Create(Microsoft::Azure::IoT::Gateway::Broker ^broker, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration)
 {
 	std::wstring formattedText = L"SetOfCppModules::Sensor::Create\r\n";
 	OutputDebugString(formattedText.c_str());
 	
-	create_async([bus]() {
+	create_async([broker]() {
 		wchar_t count[5];
 		int i = 0;
 		while (true)
@@ -32,7 +32,7 @@ void Sensor::Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Windows::Fo
 			properties->Insert("ReadingNumber", ref new Platform::String(count));
 
 			auto msg = ref new Microsoft::Azure::IoT::Gateway::Message(content, properties->GetView());
-			bus->Publish(msg);
+			broker->Publish(msg);
 		}
 	});
 }

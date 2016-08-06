@@ -46,13 +46,13 @@ using namespace nodejs_module;
 class MockModule
 {
 private:
-    BROKER_HANDLE m_bus;
+    BROKER_HANDLE m_broker;
     bool m_received_message;
     nodejs_module::Lock m_lock;
 
 public:
     MockModule() :
-        m_bus{ nullptr },
+        m_broker{ nullptr },
         m_received_message{ false }
     {}
 
@@ -68,10 +68,10 @@ public:
         m_received_message = false;
     }
 
-    void create(BROKER_HANDLE busHandle, const void* configuration)
+    void create(BROKER_HANDLE broker, const void* configuration)
     {
         LockGuard<MockModule> lock_guard{ *this };
-        m_bus = busHandle;
+        m_broker = broker;
     }
 
     void receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
@@ -109,7 +109,7 @@ public:
         config.source = buffer;
 
         MESSAGE_HANDLE message = Message_Create(&config);
-        Broker_Publish(m_bus, reinterpret_cast<MODULE_HANDLE>(this), message);
+        Broker_Publish(m_broker, reinterpret_cast<MODULE_HANDLE>(this), message);
         Message_Destroy(message);
         Map_Destroy(message_properties);
     }
@@ -117,11 +117,11 @@ public:
 
 MockModule g_mock_module;
 MODULE_HANDLE g_mock_module_handle = nullptr;
-BROKER_HANDLE g_message_bus = nullptr;
+BROKER_HANDLE g_broker = nullptr;
 
-MODULE_HANDLE MockModule_Create(BROKER_HANDLE busHandle, const void* configuration)
+MODULE_HANDLE MockModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
-    g_mock_module.create(busHandle, configuration);
+    g_mock_module.create(broker, configuration);
     return reinterpret_cast<MODULE_HANDLE>(&g_mock_module);
 }
 
@@ -298,13 +298,13 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         NODEJS_Destroy = Module_GetAPIS()->Module_Destroy;
         NODEJS_Receive = Module_GetAPIS()->Module_Receive;
 
-        g_message_bus = Broker_Create();
+        g_broker = Broker_Create();
 
-        g_mock_module_handle = MockModule_Create(g_message_bus, nullptr);
+        g_mock_module_handle = MockModule_Create(g_broker, nullptr);
         
         g_module.module_handle = g_mock_module_handle;
         g_module.module_apis = &g_fake_module_apis;
-        Broker_AddModule(g_message_bus, &g_module);
+        Broker_AddModule(g_broker, &g_module);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -324,9 +324,9 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
 
         ModulesManager::Get()->JoinNodeThread();
 
-        Broker_RemoveModule(g_message_bus, &g_module);
+        Broker_RemoveModule(g_broker, &g_module);
         MockModule_Destroy(g_mock_module_handle);
-        Broker_Destroy(g_message_bus);
+        Broker_Destroy(g_broker);
     }
 
     TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
@@ -363,7 +363,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_NOT_NULL(result->Module_Receive);
     }
 
-    TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_bus_handle)
+    TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_broker_handle)
     {
         ///arrrange
 
@@ -431,7 +431,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
     {
         ///arrrange
         const char* NOOP_JS_MODULE = "module.exports = { "   \
-            "create: function(messageBus, configuration) { "       \
+            "create: function(broker, configuration) { "       \
             "  console.log('create'); "                            \
             "  return true; "                                      \
             "}, "                                                  \
@@ -452,7 +452,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -475,14 +475,14 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* PUBLISH_JS_MODULE = ""                                      \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    messageBus: null,"                                             \
+            "    broker: null,"                                             \
             "    configuration: null,"                                          \
-            "    create: function (messageBus, configuration) {"                \
-            "        this.messageBus = messageBus;"                             \
+            "    create: function (broker, configuration) {"                \
+            "        this.broker = broker;"                             \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
             "            console.log('NodeJS module is publishing a message');" \
-            "            this.messageBus.publish({"                             \
+            "            this.broker.publish({"                             \
             "                properties: {"                                     \
             "                    'source': 'sensor'"                            \
             "                },"                                                \
@@ -510,12 +510,12 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
         MODULE module = {
             Module_GetAPIS(),
             result
         };
-        Broker_AddModule(g_message_bus, &module);
+        Broker_AddModule(g_broker, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -528,7 +528,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_mock_module.get_received_message() == true);
 
         ///cleanup
-        Broker_RemoveModule(g_message_bus, &module);
+        Broker_RemoveModule(g_broker, &module);
         NODEJS_Destroy(result);
     }
 
@@ -538,7 +538,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_CREATE_THROWS = ""                    \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    create: function (messageBus, configuration) {" \
+            "    create: function (broker, configuration) {" \
             "        throw 'whoops';"                            \
             "    },"                                             \
             "    receive: function(message) {"                   \
@@ -556,7 +556,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -579,7 +579,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    create: function (messageBus, configuration) {" \
+            "    create: function (broker, configuration) {" \
             "    },"                                             \
             "    receive: function(message) {"                   \
             "    },"                                             \
@@ -596,7 +596,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -619,7 +619,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    create: function (messageBus, configuration) {" \
+            "    create: function (broker, configuration) {" \
             "        return {};"                                 \
             "    },"                                             \
             "    receive: function(message) {"                   \
@@ -637,7 +637,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -660,7 +660,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    create: function (messageBus, configuration) {" \
+            "    create: function (broker, configuration) {" \
             "        return false;"                              \
             "    },"                                             \
             "    receive: function(message) {"                   \
@@ -678,7 +678,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -701,7 +701,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_INTERFACE_INVALID = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    foo: function (messageBus, configuration) {"    \
+            "    foo: function (broker, configuration) {"    \
             "        throw 'whoops';"                            \
             "    },"                                             \
             "    bar: function(message) {"                       \
@@ -719,7 +719,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         };
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -741,13 +741,13 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    messageBus: null,"                                             \
+            "    broker: null,"                                             \
             "    configuration: null,"                                          \
-            "    create: function (messageBus, configuration) {"                \
-            "        this.messageBus = messageBus;"                             \
+            "    create: function (broker, configuration) {"                \
+            "        this.broker = broker;"                             \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.messageBus.publish({});"                \
+            "            let res = this.broker.publish({});"                \
             "            _integrationTest1.notify(res);"                        \
             "        }, 1000);"                                                 \
             "        return true;"                                              \
@@ -776,7 +776,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         });
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -799,13 +799,13 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    messageBus: null,"                                             \
+            "    broker: null,"                                             \
             "    configuration: null,"                                          \
-            "    create: function (messageBus, configuration) {"                \
-            "        this.messageBus = messageBus;"                             \
+            "    create: function (broker, configuration) {"                \
+            "        this.broker = broker;"                             \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.messageBus.publish({"                   \
+            "            let res = this.broker.publish({"                   \
             "                properties: 'boo',"                                \
             "                content: new Uint8Array(["                         \
             "                    Math.random() * 50,"                           \
@@ -840,7 +840,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         });
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -863,13 +863,13 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    messageBus: null,"                                             \
+            "    broker: null,"                                             \
             "    configuration: null,"                                          \
-            "    create: function (messageBus, configuration) {"                \
-            "        this.messageBus = messageBus;"                             \
+            "    create: function (broker, configuration) {"                \
+            "        this.broker = broker;"                             \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.messageBus.publish({"                   \
+            "            let res = this.broker.publish({"                   \
             "                properties: {},"                                   \
             "                content: ''"                                       \
             "            });"                                                   \
@@ -901,7 +901,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         });
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -924,10 +924,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_RECEIVE_IS_CALLED = ""                   \
             "'use strict';"                                         \
             "module.exports = {"                                    \
-            "    messageBus: null,"                                 \
+            "    broker: null,"                                 \
             "    configuration: null,"                              \
-            "    create: function (messageBus, configuration) {"    \
-            "        this.messageBus = messageBus;"                 \
+            "    create: function (broker, configuration) {"    \
+            "        this.broker = broker;"                 \
             "        this.configuration = configuration;"           \
             "        setTimeout(() => {"                            \
             "            _mock_module1.publish_mock_message();"     \
@@ -978,12 +978,12 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         });
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
         MODULE module = {
             Module_GetAPIS(),
             result
         };
-        Broker_AddModule(g_message_bus, &module);
+        Broker_AddModule(g_broker, &module);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -997,7 +997,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
-        Broker_RemoveModule(g_message_bus, &module);
+        Broker_RemoveModule(g_broker, &module);
         NODEJS_Destroy(result);
     }
 
@@ -1007,10 +1007,10 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         const char* MODULE_DESTROY_IS_CALLED = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    messageBus: null,"                              \
+            "    broker: null,"                              \
             "    configuration: null,"                           \
-            "    create: function (messageBus, configuration) {" \
-            "        this.messageBus = messageBus;"              \
+            "    create: function (broker, configuration) {" \
+            "        this.broker = broker;"              \
             "        this.configuration = configuration;"        \
             "        return true;"                               \
             "    },"                                             \
@@ -1038,7 +1038,7 @@ BEGIN_TEST_SUITE(nodejs_binding_unittests)
         });
 
         ///act
-        auto result = NODEJS_Create(g_message_bus, &config);
+        auto result = NODEJS_Create(g_broker, &config);
 
         // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);

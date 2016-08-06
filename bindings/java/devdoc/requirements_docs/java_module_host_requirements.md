@@ -57,13 +57,13 @@ fields non-`NULL`. **]**
 
 ##JavaModuleHost_Create
 ```C
-static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE bus, const void* configuration);
+static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new Java Module Host instance. The parameter `configuration` is a
 pointer to a `JAVA_MODULE_HOST_CONFIG` structure.
 
-**SRS_JAVA_MODULE_HOST_14_001: [** This function shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_JAVA_MODULE_HOST_14_001: [** This function shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_JAVA_MODULE_HOST_14_002: [** This function shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -105,7 +105,7 @@ pointer to a `JAVA_MODULE_HOST_CONFIG` structure.
 
 **SRS_JAVA_MODULE_HOST_14_013: [** This function shall return `NULL` if a JVM could not be created or found. **]**
 
-**SRS_JAVA_MODULE_HOST_14_014: [** This function shall find the `MessageBus` Java class, get the constructor, and create a `MessageBus` Java object. **]**
+**SRS_JAVA_MODULE_HOST_14_014: [** This function shall find the `Broker` Java class, get the constructor, and create a `Broker` Java object. **]**
 
 **SRS_JAVA_MODULE_HOST_14_015: [** This function shall find the user-defined Java module class using `configuration->class_name`, get the constructor, and create an instance of this module object. **]**
 
@@ -161,7 +161,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 ##Broker_Publish
 ```C
-JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv *env, jobject MessageBus, jlong addr, jbyteArray message);
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv *env, jobject Broker, jlong addr, jbyteArray message);
 ```
 
 **SRS_JAVA_MODULE_HOST_14_025: [** This function shall convert the `jbyteArray message` into an `unsigned char` array. **]**

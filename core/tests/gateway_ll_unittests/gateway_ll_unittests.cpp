@@ -49,14 +49,14 @@ namespace BASEIMPLEMENTATION
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
 
-static size_t currentMessageBus_AddModule_call;
-static size_t whenShallMessageBus_AddModule_fail;
-static size_t currentMessageBus_RemoveModule_call;
-static size_t whenShallMessageBus_RemoveModule_fail;
-static size_t currentMessageBus_Create_call;
-static size_t whenShallMessageBus_Create_fail;
-static size_t currentMessageBus_module_count;
-static size_t currentMessageBus_ref_count;
+static size_t currentBroker_AddModule_call;
+static size_t whenShallBroker_AddModule_fail;
+static size_t currentBroker_RemoveModule_call;
+static size_t whenShallBroker_RemoveModule_fail;
+static size_t currentBroker_Create_call;
+static size_t whenShallBroker_Create_fail;
+static size_t currentBroker_module_count;
+static size_t currentBroker_ref_count;
 
 static size_t currentModuleLoader_Load_call;
 static size_t whenShallModuleLoader_Load_fail;
@@ -76,7 +76,7 @@ static MODULE_APIS dummyAPIs;
 TYPED_MOCK_CLASS(CGatewayLLMocks, CGlobalMock)
 {
 public:
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration)
 		currentModule_Create_call++;
 		MODULE_HANDLE result1;
 		if (configuration != NULL && *((bool*)configuration) == false)
@@ -97,65 +97,65 @@ public:
 	MOCK_STATIC_METHOD_2(, void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, bus)
-		if (currentMessageBus_ref_count > 0)
+	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, broker)
+		if (currentBroker_ref_count > 0)
 		{
-			--currentMessageBus_ref_count;
-			if (currentMessageBus_ref_count == 0)
+			--currentBroker_ref_count;
+			if (currentBroker_ref_count == 0)
 			{
-				BASEIMPLEMENTATION::gballoc_free(bus);
+				BASEIMPLEMENTATION::gballoc_free(broker);
 			}
 		}
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, void, Broker_IncRef, BROKER_HANDLE, bus)
-		++currentMessageBus_ref_count;
+	MOCK_STATIC_METHOD_1(, void, Broker_IncRef, BROKER_HANDLE, broker)
+		++currentBroker_ref_count;
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_0(, BROKER_HANDLE, Broker_Create)
 	BROKER_HANDLE result1;
-	currentMessageBus_Create_call++;
-	if (whenShallMessageBus_Create_fail >= 0 && whenShallMessageBus_Create_fail == currentMessageBus_Create_call)
+	currentBroker_Create_call++;
+	if (whenShallBroker_Create_fail >= 0 && whenShallBroker_Create_fail == currentBroker_Create_call)
 	{
 		result1 = NULL;
 	}
 	else
 	{
-		++currentMessageBus_ref_count;
+		++currentBroker_ref_count;
 		result1 = (BROKER_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	}
 	MOCK_METHOD_END(BROKER_HANDLE, result1);
 
-	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, bus)
-		if (currentMessageBus_ref_count > 0)
+	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, broker)
+		if (currentBroker_ref_count > 0)
 		{
-			--currentMessageBus_ref_count;
-			if (currentMessageBus_ref_count == 0)
+			--currentBroker_ref_count;
+			if (currentBroker_ref_count == 0)
 			{
-				BASEIMPLEMENTATION::gballoc_free(bus);
+				BASEIMPLEMENTATION::gballoc_free(broker);
 			}
 		}
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module)
-		currentMessageBus_AddModule_call++;
+		currentBroker_AddModule_call++;
 		BROKER_RESULT result1  = BROKER_ERROR;
 		if (handle != NULL && module != NULL)
 		{
-			if (whenShallMessageBus_AddModule_fail != currentMessageBus_AddModule_call)
+			if (whenShallBroker_AddModule_fail != currentBroker_AddModule_call)
 			{
-				++currentMessageBus_module_count;
+				++currentBroker_module_count;
 				result1 = BROKER_OK;
 			}
 		}
 	MOCK_METHOD_END(BROKER_RESULT, result1);
 
 	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module)
-		currentMessageBus_RemoveModule_call++;
+		currentBroker_RemoveModule_call++;
 		BROKER_RESULT result1 = BROKER_ERROR;
-		if (handle != NULL && module != NULL && currentMessageBus_module_count > 0 && whenShallMessageBus_RemoveModule_fail != currentMessageBus_RemoveModule_call)
+		if (handle != NULL && module != NULL && currentBroker_module_count > 0 && whenShallBroker_RemoveModule_fail != currentBroker_RemoveModule_call)
 		{
-			--currentMessageBus_module_count;
+			--currentBroker_module_count;
 			result1 = BROKER_OK;
 		}
 	MOCK_METHOD_END(BROKER_RESULT, result1);
@@ -268,16 +268,16 @@ public:
 
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , BROKER_HANDLE, Broker_Create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_Destroy, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_IncRef, BROKER_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_DecRef, BROKER_HANDLE, bus);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_IncRef, BROKER_HANDLE, broker);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_DecRef, BROKER_HANDLE, broker);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_APIS*, ModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
@@ -358,14 +358,14 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	currentmalloc_call = 0;
 	whenShallmalloc_fail = 0;
 
-	currentMessageBus_AddModule_call = 0;
-	whenShallMessageBus_AddModule_fail = 0;
-	currentMessageBus_RemoveModule_call = 0;
-	whenShallMessageBus_RemoveModule_fail = 0;
-	currentMessageBus_Create_call = 0;
-	whenShallMessageBus_Create_fail = 0;
-	currentMessageBus_module_count = 0;
-	currentMessageBus_ref_count = 0;
+	currentBroker_AddModule_call = 0;
+	whenShallBroker_AddModule_fail = 0;
+	currentBroker_RemoveModule_call = 0;
+	whenShallBroker_RemoveModule_fail = 0;
+	currentBroker_Create_call = 0;
+	whenShallBroker_Create_fail = 0;
+	currentBroker_module_count = 0;
+	currentBroker_ref_count = 0;
 
 	currentModuleLoader_Load_call = 0;
 	whenShallModuleLoader_Load_fail = 0;
@@ -407,8 +407,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	currentmalloc_call = 0;
 	whenShallmalloc_fail = 0;
 
-	currentMessageBus_Create_call = 0;
-	whenShallMessageBus_Create_fail = 0;
+	currentBroker_Create_call = 0;
+	whenShallBroker_Create_fail = 0;
 
 	BASEIMPLEMENTATION::VECTOR_destroy(dummyProps->gateway_modules);
 	free(dummyProps);
@@ -467,7 +467,7 @@ TEST_FUNCTION(Gateway_LL_Create_Creates_Handle_Malloc_Failure)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_004: [ This function shall return NULL if a BROKER_HANDLE cannot be created. ]*/
-TEST_FUNCTION(Gateway_LL_Create_Cannot_Create_MessageBus_Handle_Failure)
+TEST_FUNCTION(Gateway_LL_Create_Cannot_Create_Broker_Handle_Failure)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
@@ -475,7 +475,7 @@ TEST_FUNCTION(Gateway_LL_Create_Cannot_Create_MessageBus_Handle_Failure)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
-	whenShallMessageBus_Create_fail = 1;
+	whenShallBroker_Create_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_Create());
 	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -630,7 +630,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 
 	ASSERT_IS_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -639,7 +639,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 }
 
 /*Tests_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
-TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In_Props)
+TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
@@ -692,7 +692,7 @@ TEST_FUNCTION(Gateway_LL_Create_MessageBus_AddModule_Fails_To_Add_All_Modules_In
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
 		.IgnoreArgument(1);
-	whenShallMessageBus_AddModule_fail = 2;
+	whenShallBroker_AddModule_fail = 2;
 	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -829,7 +829,7 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 
 	ASSERT_IS_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -910,7 +910,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 
 	//Assert
 	ASSERT_IS_NOT_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 2, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 2, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -918,7 +918,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE message bus. ] */
+/*Tests_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE broker. ] */
 TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 {
 	//Arrange
@@ -1205,7 +1205,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_
 }
 
 /*Tests_SRS_GATEWAY_LL_14_028: [ The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules. ]*/
-/*Tests_SRS_GATEWAY_LL_14_006: [ The function shall destroy the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_006: [ The function shall destroy the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
 TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
 {
@@ -1297,7 +1297,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	Gateway_LL_Destroy(gateway);
 
 	//Assert
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 }
 
@@ -1365,11 +1365,11 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 
 /*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_14_017: [ The function shall attach the module to the GATEWAY_HANDLE_DATA's bus using a call to Broker_AddModule. ]*/
+/*Tests_SRS_GATEWAY_LL_14_017: [ The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
 /*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_032: [ The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message broker. ]*/
 /*Tests_SRS_GATEWAY_LL_14_019: [ The function shall return the newly created MODULE_HANDLE only if each API call returns successfully. ]*/
-/*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's broker. ]*/
 /*Tests_SRS_GATEWAY_LL_99_011: [ The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 {
@@ -1435,7 +1435,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Fails)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_015: [ The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_properties. ]*/
-/*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 {
 	//Arrange
@@ -1521,7 +1521,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_018: [ If the function cannot attach the module to the message broker, the function shall return NULL. ]*/
-TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
+TEST_FUNCTION(Gateway_LL_AddModule_Broker_AddModule_Fails)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
@@ -1539,7 +1539,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
-	whenShallMessageBus_AddModule_fail = 1;
+	whenShallBroker_AddModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1560,7 +1560,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_MessageBus_AddModule_Fails)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_030: [ If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed. ]*/
-/*Tests_SRS_GATEWAY_LL_14_039: [The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
+/*Tests_SRS_GATEWAY_LL_14_039: [The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's broker. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 {
 	//Arrange
@@ -1600,7 +1600,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
 	ASSERT_IS_NULL(handle);
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -1650,7 +1650,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Does_Nothing_If_Module_NULL)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_023: [ The function shall locate the MODULE_DATA object in GATEWAY_HANDLE_DATA's modules containing module and return if it cannot be found. ]*/
-/*Tests_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's bus BROKER_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
 /*Tests_SRS_GATEWAY_LL_14_025: [ The function shall unload MODULE_DATA's module_library_handle. ]*/
 /*Tests_SRS_GATEWAY_LL_14_026: [ The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
@@ -1714,9 +1714,9 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Failure)
 	Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's broker cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
-TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
+TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
@@ -1728,7 +1728,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_MessageBus_RemoveModule_Failure)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	whenShallMessageBus_RemoveModule_fail = 1;
+	whenShallBroker_RemoveModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);

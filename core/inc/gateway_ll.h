@@ -183,13 +183,13 @@ extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* e
 *	@param		modules   		#VECTOR_HANDLE structure containing
 *								specific modules.
 *
-*	@param		bus       		#BROKER_HANDLE structure containing
+*	@param		broker          #BROKER_HANDLE structure containing
 *								specific message broker instance.
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
 *				gateway or @c NULL on failure.
 */
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE bus);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
 
 /** @brief		Destroys the gateway and disposes of all associated data.
 *

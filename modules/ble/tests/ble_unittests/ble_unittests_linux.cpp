@@ -324,7 +324,7 @@ public:
         auto result2 = seq->run();
     MOCK_METHOD_END(BLEIO_SEQ_RESULT, result2)
     
-    MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+    MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
         auto result2 = BROKER_OK;
     MOCK_METHOD_END(BROKER_RESULT, result2)
     
@@ -554,7 +554,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , void, BLEIO_Seq_Destroy, BLEIO_SEQ_HAN
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , BLEIO_SEQ_RESULT, BLEIO_Seq_Run, BLEIO_SEQ_HANDLE, bleio_seq_handle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEMocks, , BLEIO_SEQ_RESULT, BLEIO_Seq_AddInstruction, BLEIO_SEQ_HANDLE, bleio_seq_handle, BLEIO_SEQ_INSTRUCTION*, instruction);
 
-DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , time_t, gb_time, time_t*, timer);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , struct tm*, gb_localtime, const time_t*, timer);
@@ -611,8 +611,8 @@ BEGIN_TEST_SUITE(ble_unittests)
         }
     }
 
-    /*Tests_SRS_BLE_13_001: [  BLE_Create  shall return  NULL  if  bus  is  NULL . ]*/
-    TEST_FUNCTION(BLE_Create_returns_NULL_when_bus_is_NULL)
+    /*Tests_SRS_BLE_13_001: [ BLE_Create shall return NULL if broker is NULL. ]*/
+    TEST_FUNCTION(BLE_Create_returns_NULL_when_broker_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -627,7 +627,7 @@ BEGIN_TEST_SUITE(ble_unittests)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_13_002: [  BLE_Create  shall return  NULL  if  configuration  is  NULL . ]*/
+    /*Tests_SRS_BLE_13_002: [ BLE_Create shall return NULL if configuration is NULL. ]*/
     TEST_FUNCTION(BLE_Create_returns_NULL_when_config_is_NULL)
     {
         ///arrange

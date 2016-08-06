@@ -12,7 +12,7 @@
 using namespace Windows::Foundation::Collections;
 using namespace Microsoft::Azure::IoT::Gateway;
 
-void MessageBus::Publish(Message ^message)
+void Broker::Publish(Message ^message)
 {
 	if (message == nullptr)
 	{
@@ -20,7 +20,7 @@ void MessageBus::Publish(Message ^message)
 	}
 
 	MESSAGE_HANDLE msg = message->MessageHandle;
-	if (Broker_Publish(message_bus_handle, module_handle, msg) != BROKER_OK)
+	if (Broker_Publish(broker_handle, module_handle, msg) != BROKER_OK)
 	{
 		throw ref new Platform::FailureException("Failed to publish message.");
 	}

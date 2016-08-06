@@ -23,7 +23,7 @@
 
 typedef struct IDENTITY_MAP_DATA_TAG
 {
-	BROKER_HANDLE busHandle;
+	BROKER_HANDLE broker;
 	size_t mappingSize;
 	IDENTITY_MAP_CONFIG * macToDevIdArray;
 	IDENTITY_MAP_CONFIG * devIdToMacArray;
@@ -232,12 +232,12 @@ static bool IdentityMap_ValidateConfig(const VECTOR_HANDLE mappingVector)
 /*
  * @brief	Create an identity map module.
  */
-static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	IDENTITY_MAP_DATA* result;
-	if (busHandle == NULL || configuration == NULL)
+	if (broker == NULL || configuration == NULL)
 	{
-		/*Codes_SRS_IDMAP_17_004: [If the busHandle is NULL, this function shall fail and return NULL.]*/
+		/*Codes_SRS_IDMAP_17_004: [If the broker is NULL, this function shall fail and return NULL.]*/
 		/*Codes_SRS_IDMAP_17_005: [If the configuration is NULL, this function shall fail and return NULL.]*/
 		LogError("invalid parameter (NULL).");
 		result = NULL;
@@ -328,7 +328,7 @@ static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE busHandle, const void* con
 							qsort(result->devIdToMacArray, mappingSize, sizeof(IDENTITY_MAP_CONFIG),
 								IdentityMapConfig_IdCompare);
 							result->mappingSize = mappingSize;
-							result->busHandle = busHandle;
+							result->broker = broker;
 						}
 					}
 				}
@@ -384,12 +384,12 @@ static void publish_with_new_properties(MAP_HANDLE newProperties, MESSAGE_HANDLE
 		}
 		else
 		{
-			BROKER_RESULT busStatus;
-			/*Codes_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with busHandle and new message.]*/
-			busStatus = Broker_Publish(idModule->busHandle, (MODULE_HANDLE)idModule, newMessage);
-			if (busStatus != BROKER_OK)
+			BROKER_RESULT brokerStatus;
+			/*Codes_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with broker and new message.]*/
+			brokerStatus = Broker_Publish(idModule->broker, (MODULE_HANDLE)idModule, newMessage);
+			if (brokerStatus != BROKER_OK)
 			{
-				LogError("Message broker publish failure: %s", ENUM_TO_STRING(BROKER_RESULT, busStatus));
+				LogError("Message broker publish failure: %s", ENUM_TO_STRING(BROKER_RESULT, brokerStatus));
 			}
 			Message_Destroy(newMessage);
 		}

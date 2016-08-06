@@ -4,20 +4,20 @@
  */
 
 import com.microsoft.azure.gateway.core.GatewayModule;
-import com.microsoft.azure.gateway.core.MessageBus;
+import com.microsoft.azure.gateway.core.Broker;
 import com.microsoft.azure.gateway.messaging.Message;
 
 public class Printer extends GatewayModule {
     /**
-     * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
+     * Constructs a {@link GatewayModule} from the provided address and {@link Broker}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
      * @param address       The address of the native module pointer
-     * @param bus           The {@link MessageBus} to which this module belongs
+     * @param broker        The {@link Broker} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public Printer(long address, MessageBus bus, String configuration) {
-        super(address, bus, configuration);
+    public Printer(long address, Broker broker, String configuration) {
+        super(address, broker, configuration);
     }
 
     @Override

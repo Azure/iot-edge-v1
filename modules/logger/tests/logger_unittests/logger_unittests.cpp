@@ -110,7 +110,7 @@ static LOGGER_CONFIG validConfig =
     LOGGING_TO_FILE,
     "a.txt"
 };
-static BROKER_HANDLE validBusHandle = (BROKER_HANDLE)0x1;
+static BROKER_HANDLE validBrokerHandle = (BROKER_HANDLE)0x1;
 
 static LOGGER_CONFIG invalidConfig_fileName =
 {
@@ -295,8 +295,8 @@ BEGIN_TEST_SUITE(logger_unittests)
         }
     }
 
-    /*Tests_SRS_LOGGER_02_001: [If busHandle is NULL then Logger_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(Logger_Create_with_NULL_busHandle_fails)
+    /*Tests_SRS_LOGGER_02_001: [If broker is NULL then Logger_Create shall fail and return NULL.]*/
+    TEST_FUNCTION(Logger_Create_with_NULL_broker_fails)
     {
         ///arrange
         CLoggerMocks mocks;
@@ -318,7 +318,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         CLoggerMocks mocks;
 
         ///act
-        auto result = Logger_Create(validBusHandle, NULL);
+        auto result = Logger_Create(validBrokerHandle, NULL);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -334,7 +334,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         CLoggerMocks mocks;
 
         ///act
-        auto result = Logger_Create(validBusHandle, &invalidConfig_selector);
+        auto result = Logger_Create(validBrokerHandle, &invalidConfig_selector);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -350,7 +350,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         CLoggerMocks mocks;
 
         ///act
-        auto result = Logger_Create(validBusHandle, &invalidConfig_fileName);
+        auto result = Logger_Create(validBrokerHandle, &invalidConfig_fileName);
 
         ///assert
         ASSERT_IS_NULL(result);
@@ -406,7 +406,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         it is captured by a weak verification in ASSERT*/
         
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NOT_NULL(handle);
@@ -469,7 +469,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         it is captured by a weak verification in ASSERT*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -526,7 +526,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn(__LINE__); /*The fseek function returns nonzero only for a request that cannot be satisfied.*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -579,7 +579,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn(0);
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -627,7 +627,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn((struct tm*)NULL); /*null pointer if the specified time cannot be converted to local time.*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -672,7 +672,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn((time_t)-1);
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -715,7 +715,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         /*here a call to fprintf happens ("[]"), it is captured by a weak verification in ASSERT*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -755,7 +755,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn(-1L);
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -791,7 +791,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetReturn(~0);/*The fseek function returns nonzero only for a request that cannot be satisfied*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -823,7 +823,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetFailReturn((FILE*)NULL);
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -846,7 +846,7 @@ BEGIN_TEST_SUITE(logger_unittests)
             .SetFailReturn((void*)NULL);
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NULL(handle);
@@ -897,7 +897,7 @@ BEGIN_TEST_SUITE(logger_unittests)
         it is captured by a weak verification in ASSERT*/
 
         ///act
-        auto handle = Logger_Create(validBusHandle, &validConfig);
+        auto handle = Logger_Create(validBrokerHandle, &validConfig);
 
         ///assert
         ASSERT_IS_NOT_NULL(handle);
@@ -931,7 +931,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
 
         ///act
@@ -951,7 +951,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1034,7 +1034,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1118,7 +1118,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1196,7 +1196,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1269,7 +1269,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1340,7 +1340,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1408,7 +1408,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1474,7 +1474,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1537,7 +1537,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1597,7 +1597,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1651,7 +1651,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1701,7 +1701,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1745,7 +1745,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1784,7 +1784,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1816,7 +1816,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1843,7 +1843,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 
@@ -1884,7 +1884,7 @@ BEGIN_TEST_SUITE(logger_unittests)
     {
         ///arrange
         CLoggerMocks mocks;
-        auto moduleHandle = Logger_Create(validBusHandle, &validConfig);
+        auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
         mocks.ResetAllCalls();
         mocks_ResetAllCounters();
 

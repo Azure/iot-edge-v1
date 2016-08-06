@@ -11,12 +11,12 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 	interface class IGatewayModule;
 	ref class Message;
 
-	public ref class MessageBus sealed
+	public ref class Broker sealed
 	{
 	internal:
-		MessageBus(BROKER_HANDLE handle, MODULE_HANDLE module_handle)
+		Broker(BROKER_HANDLE handle, MODULE_HANDLE module_handle)
 		{ 
-			this->message_bus_handle = handle;
+			this->broker_handle = handle;
 			this->module_handle = module_handle;
 		}
 
@@ -24,7 +24,7 @@ namespace Microsoft { namespace Azure { namespace IoT { namespace Gateway {
 		void Publish(Message ^message);
 
 	private:
-		BROKER_HANDLE message_bus_handle;
+		BROKER_HANDLE broker_handle;
 		MODULE_HANDLE module_handle;
 	};
 

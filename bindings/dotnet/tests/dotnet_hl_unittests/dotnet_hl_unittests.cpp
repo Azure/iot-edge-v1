@@ -273,7 +273,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE DotNET_Create(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void DotNET_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -382,9 +382,9 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&DOTNET_APIS);
 
-	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, broker, const void*, configuration)
 		MODULE_HANDLE result2 = NULL;
-		if (busHandle != NULL)
+		if (broker != NULL)
 		{
 			DOTNET_HOST_CONFIG *config = (DOTNET_HOST_CONFIG*)malloc(sizeof(DOTNET_HOST_CONFIG));
 			memcpy(config, configuration, sizeof(DOTNET_HOST_CONFIG));
@@ -423,7 +423,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , JSON_Object*, json_array_get_obje
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, DotNET_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , void, DotNET_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 DECLARE_GLOBAL_MOCK_METHOD_0(CDOTNETHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST));
@@ -464,8 +464,8 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
         }
     }
 
-    /* Tests_SRS_DOTNET_HL_04_001: [ If busHandle is NULL then DotNET_HL_Create shall fail and return NULL. ]  */
-    TEST_FUNCTION(dotnet_hl_Create_returns_NULL_when_bus_is_NULL)
+    /* Tests_SRS_DOTNET_HL_04_001: [ If broker is NULL then DotNET_HL_Create shall fail and return NULL. ]  */
+    TEST_FUNCTION(dotnet_hl_Create_returns_NULL_when_broker_is_NULL)
     {
         ///arrange
         CDOTNETHLMocks mocks;
@@ -626,7 +626,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass busHandle and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNET_Create. ]*/
+	/* Tests_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNET_Create. ]*/
 	/* Tests_SRS_DOTNET_HL_04_009: [ If DotNET_Create fails then DotNET_HL_Create shall fail and return NULL. ] */
 	TEST_FUNCTION(dotnet_hl_Create_Create_returns_NULL_Module_Create_fails)
 	{
@@ -664,7 +664,7 @@ BEGIN_TEST_SUITE(dotnet_hl_unittests)
 		///cleanup
 	}
 		
-	/* Tests_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass busHandle and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNET_Create. ]*/
+	/* Tests_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNET_Create. ]*/
 	/* Tests_SRS_DOTNET_HL_04_008: [ If DotNET_Create succeeds then DotNET_HL_Create shall succeed and return a non-NULL value. ] */
 	TEST_FUNCTION(DOTNET_HL_Create_succeeds)
 	{

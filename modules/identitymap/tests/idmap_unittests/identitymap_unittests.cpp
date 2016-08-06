@@ -110,7 +110,7 @@ public:
 #define VALID_VALUE			"value"
 static MAP_RESULT currentMapResult;
 
-static BROKER_RESULT currentMessageBusResult;
+static BROKER_RESULT currentBrokerResult;
 
 //CONSTMAP GetValue mocks
 static const char* macAddressProperties;
@@ -154,18 +154,18 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
 	MOCK_VOID_METHOD_END()
 
 
-	// MessageBus mocks
+	// Broker mocks
 	MOCK_STATIC_METHOD_0(, BROKER_HANDLE, Broker_Create)
-		BROKER_HANDLE busResult = (BROKER_HANDLE)(new RefCountObject());
-	MOCK_METHOD_END(BROKER_HANDLE, busResult)
+		BROKER_HANDLE brokerResult = (BROKER_HANDLE)(new RefCountObject());
+	MOCK_METHOD_END(BROKER_HANDLE, brokerResult)
 
-	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, bus)
-		((RefCountObject*)bus)->dec_ref();
+	MOCK_STATIC_METHOD_1(, void, Broker_Destroy, BROKER_HANDLE, broker)
+		((RefCountObject*)broker)->dec_ref();
 	MOCK_VOID_METHOD_END()
 
-	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
-		BROKER_RESULT busResult = currentMessageBusResult;
-	MOCK_METHOD_END(BROKER_RESULT, busResult)
+	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+		BROKER_RESULT brokerResult = currentBrokerResult;
+	MOCK_METHOD_END(BROKER_RESULT, brokerResult)
 
 	// ConstMap mocks
 	MOCK_STATIC_METHOD_1(, CONSTMAP_HANDLE, ConstMap_Create, MAP_HANDLE, sourceMap)
@@ -437,8 +437,8 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapMocks, , void*, gballoc_realloc, void*,
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, gballoc_free, void*, ptr);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CIdentitymapMocks, , BROKER_HANDLE, Broker_Create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, Broker_Destroy, BROKER_HANDLE, bus);
-DECLARE_GLOBAL_MOCK_METHOD_3(CIdentitymapMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, bus, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
+DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);
+DECLARE_GLOBAL_MOCK_METHOD_3(CIdentitymapMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Create, MAP_HANDLE, sourceMap);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
@@ -528,7 +528,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		whenShallConstMap_CloneWriteable_fail = 0;
 		currentMap_call = 0;
 		whenShallMap_fail = 0;
-		currentMessageBusResult = BROKER_OK;
+		currentBrokerResult = BROKER_OK;
 
 		testVector1 = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 		IDENTITY_MAP_CONFIG c1 =
@@ -584,17 +584,17 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 	}
 
-	/*Tests_SRS_IDMAP_17_004: [If the busHandle is NULL, this function shall fail and return NULL.]*/
-	TEST_FUNCTION(IdentityMap_Create_MessageBus_Null)
+	/*Tests_SRS_IDMAP_17_004: [If the broker is NULL, this function shall fail and return NULL.]*/
+	TEST_FUNCTION(IdentityMap_Create_Broker_Null)
 	{
 		///Arrange
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
-		BROKER_HANDLE bus = NULL;
+		BROKER_HANDLE broker = NULL;
 		unsigned char config;
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, &config);
+		auto n = theAPIS->Module_Create(broker, &config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -609,11 +609,11 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		void * config = NULL;
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, config);
+		auto n = theAPIS->Module_Create(broker, config);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -628,7 +628,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 
 		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -662,7 +662,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector1);
+		auto n = theAPIS->Module_Create(broker, testVector1);
 
 		///Assert
 		ASSERT_IS_NOT_NULL(n);
@@ -679,7 +679,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		mocks.ResetAllCalls();
@@ -688,7 +688,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -705,7 +705,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v1 = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 		IDENTITY_MAP_CONFIG c1 =
 		{
@@ -740,11 +740,11 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0)).IgnoreArgument(1);
 
 		///Act
-		auto n1 = theAPIS->Module_Create(bus, v1);
+		auto n1 = theAPIS->Module_Create(broker, v1);
 		ASSERT_IS_NULL(n1);
-		auto n2 = theAPIS->Module_Create(bus, v2);
+		auto n2 = theAPIS->Module_Create(broker, v2);
 		ASSERT_IS_NULL(n2);
-		auto n3 = theAPIS->Module_Create(bus, v3);
+		auto n3 = theAPIS->Module_Create(broker, v3);
 		ASSERT_IS_NULL(n3);
 
 		///Assert
@@ -763,7 +763,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v1 = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 		// wrong length
 		IDENTITY_MAP_CONFIG c1 =
@@ -781,7 +781,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n1 = theAPIS->Module_Create(bus, v1);
+		auto n1 = theAPIS->Module_Create(broker, v1);
 		ASSERT_IS_NULL(n1);
 
 
@@ -800,7 +800,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		VECTOR_HANDLE v2 = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 		// incorrect hexadecimal
@@ -820,7 +820,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 		///Act
 
-		auto n2 = theAPIS->Module_Create(bus, v2);
+		auto n2 = theAPIS->Module_Create(broker, v2);
 		ASSERT_IS_NULL(n2);
 
 
@@ -839,7 +839,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		VECTOR_HANDLE v3 = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 		// Valid character instead of dash
@@ -858,7 +858,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 		///Act
 
-		auto n3 = theAPIS->Module_Create(bus, v3);
+		auto n3 = theAPIS->Module_Create(broker, v3);
 		ASSERT_IS_NULL(n3);
 
 		///Assert
@@ -876,7 +876,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallmalloc_fail = 1;
 		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -887,7 +887,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector1);
+		auto n = theAPIS->Module_Create(broker, testVector1);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -903,7 +903,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallmalloc_fail = 2;
 
@@ -922,7 +922,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector1);
+		auto n = theAPIS->Module_Create(broker, testVector1);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -938,7 +938,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0)).IgnoreArgument(1);
@@ -959,7 +959,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector1);
+		auto n = theAPIS->Module_Create(broker, testVector1);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -974,7 +974,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallStrdup_fail =7;
 
@@ -1025,7 +1025,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1041,7 +1041,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallStrdup_fail = 10;
 
@@ -1102,7 +1102,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1118,7 +1118,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 
 		whenShallStrdup_fail = 8;
@@ -1172,7 +1172,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1187,7 +1187,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 
 		whenShallStrdup_fail = 11;
@@ -1251,7 +1251,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 			.IgnoreAllArguments();
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1268,7 +1268,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallStrdup_fail = 9;
 
@@ -1328,7 +1328,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1343,7 +1343,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
 		whenShallStrdup_fail = 12;
 
@@ -1413,7 +1413,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 
 
 		///Act
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		///Assert
 		ASSERT_IS_NULL(n);
@@ -1444,9 +1444,9 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Arrange
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
-		BROKER_HANDLE bus = Broker_Create();
+		BROKER_HANDLE broker = Broker_Create();
 
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		mocks.ResetAllCalls();
 
@@ -1478,7 +1478,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		mocks.AssertActualAndExpectedCalls();
 
 		///Ablution
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1508,8 +1508,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1532,7 +1532,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 	/*Tests_SRS_IDMAP_17_021: [If messageHandle properties does not contain "macAddress" property, then the function shall return.]*/
@@ -1543,8 +1543,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1573,7 +1573,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1585,8 +1585,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1623,7 +1623,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1635,8 +1635,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1673,7 +1673,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1686,8 +1686,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1724,7 +1724,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1736,8 +1736,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector1);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector1);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1773,7 +1773,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1785,8 +1785,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1822,7 +1822,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1834,8 +1834,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1874,7 +1874,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1886,8 +1886,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1930,7 +1930,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1942,8 +1942,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -1986,7 +1986,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -1998,8 +1998,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2042,7 +2042,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -2054,8 +2054,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2101,7 +2101,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -2113,8 +2113,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2167,20 +2167,20 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
-	/*Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with busHandle and new message.]*/
-	TEST_FUNCTION(IdentityMap_Receive_D2C_MessageBus_Publish_fail)
+	/*Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with broker and new message.]*/
+	TEST_FUNCTION(IdentityMap_Receive_D2C_Broker_Publish_fail)
 	{
 		///Arrange
 		CIdentitymapMocks mocks;
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = Broker_Create();
-		auto n = theAPIS->Module_Create(bus, testVector2);
+		BROKER_HANDLE broker = Broker_Create();
+		auto n = theAPIS->Module_Create(broker, testVector2);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2223,8 +2223,8 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, CONSTBUFFER_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
-		currentMessageBusResult = BROKER_ERROR;
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(bus, n, IGNORED_PTR_ARG))
+		currentBrokerResult = BROKER_ERROR;
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(broker, n, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 
 
@@ -2237,7 +2237,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		///Ablution
 		Message_Destroy(m);
 		theAPIS->Module_Destroy(n);
-		Broker_Destroy(bus);
+		Broker_Destroy(broker);
 
 	}
 
@@ -2249,7 +2249,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2270,7 +2270,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2329,7 +2329,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 	/*Tests_SRS_IDMAP_17_053: [ IdentityMap_Receive shall call Map_Delete to remove the "macAddress" property. ]*/
 	/*Tests_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.]*/
 	/*Tests_SRS_IDMAP_17_036: [IdentityMap_Receive shall create a new message by calling Message_Create with new map and cloned content.]*/
-	/*Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with busHandle and new message.]*/
+	/*Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with broker and new message.]*/
 	/*Tests_SRS_IDMAP_17_039: [IdentityMap_Receive will destroy all resources it created.]*/
 	TEST_FUNCTION(IdentityMap_Receive_D2C_Success)
 	{
@@ -2338,7 +2338,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2359,7 +2359,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2425,7 +2425,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 	//Tests_SRS_IDMAP_17_032: [IdentityMap_Receive shall call Map_AddOrUpdate with key of "source" and value of "mapping".]
 	//Tests_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.]
 	//Tests_SRS_IDMAP_17_036: [IdentityMap_Receive shall create a new message by calling Message_CreateFromBuffer with new map and cloned content.]
-	//Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with busHandle and new message.]
+	//Tests_SRS_IDMAP_17_038: [IdentityMap_Receive shall call Broker_Publish with broker and new message.]
 	TEST_FUNCTION(IdentityMap_Receive_C2D_Success)
 	{
 		///Arrange
@@ -2433,7 +2433,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2454,7 +2454,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2517,7 +2517,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2538,7 +2538,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2602,7 +2602,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2623,7 +2623,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2678,7 +2678,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2699,7 +2699,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2752,7 +2752,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2773,7 +2773,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2828,7 +2828,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2849,7 +2849,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2901,7 +2901,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2922,7 +2922,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -2971,7 +2971,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -2992,7 +2992,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -3035,7 +3035,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -3056,7 +3056,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -3097,7 +3097,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -3118,7 +3118,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -3158,7 +3158,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -3179,7 +3179,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);
@@ -3218,7 +3218,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		const MODULE_APIS* theAPIS = Module_GetAPIS();
 
 		unsigned char fake;
-		BROKER_HANDLE bus = (BROKER_HANDLE)&fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		VECTOR_HANDLE v = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
 
 		IDENTITY_MAP_CONFIG c1 = { "01:01:01:01:01:01", "Sensor1", "theKeyFor1" };
@@ -3239,7 +3239,7 @@ BEGIN_TEST_SUITE(identitymap_unittests)
 		VECTOR_push_back(v, &c7, 1);
 		VECTOR_push_back(v, &c8, 1);
 		VECTOR_push_back(v, &c9, 1);
-		auto n = theAPIS->Module_Create(bus, v);
+		auto n = theAPIS->Module_Create(broker, v);
 
 		MESSAGE_CONFIG cfg = { 1, &fake, (MAP_HANDLE)&fake };
 		auto m = Message_Create(&cfg);

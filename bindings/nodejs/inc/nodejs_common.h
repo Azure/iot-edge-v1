@@ -26,7 +26,7 @@ struct NODEJS_MODULE_HANDLE_DATA
 {
     NODEJS_MODULE_HANDLE_DATA()
         :
-        bus{ nullptr },
+        broker{ nullptr },
         on_module_start{ nullptr },
         module_id{ 0 },
         v8_isolate{ nullptr },
@@ -35,12 +35,12 @@ struct NODEJS_MODULE_HANDLE_DATA
     }
 
     NODEJS_MODULE_HANDLE_DATA(
-        BROKER_HANDLE message_bus,
+        BROKER_HANDLE broker,
         const char* path,
         const char* config,
         PFNMODULE_START module_start)
         :
-        bus{ message_bus },
+        broker{ broker },
         main_path{ path },
         configuration_json{ config == nullptr ? "" : config },
         on_module_start{ module_start },
@@ -52,7 +52,7 @@ struct NODEJS_MODULE_HANDLE_DATA
 
     NODEJS_MODULE_HANDLE_DATA(NODEJS_MODULE_HANDLE_DATA&& rhs)
     {
-        bus = rhs.bus;
+        broker = rhs.broker;
         main_path = rhs.main_path;
         configuration_json = rhs.configuration_json;
         v8_isolate = rhs.v8_isolate;
@@ -69,7 +69,7 @@ struct NODEJS_MODULE_HANDLE_DATA
 
     NODEJS_MODULE_HANDLE_DATA(const NODEJS_MODULE_HANDLE_DATA& rhs)
     {
-        bus = rhs.bus;
+        broker = rhs.broker;
         main_path = rhs.main_path;
         configuration_json = rhs.configuration_json;
         v8_isolate = rhs.v8_isolate;
@@ -85,7 +85,7 @@ struct NODEJS_MODULE_HANDLE_DATA
 
     NODEJS_MODULE_HANDLE_DATA(const NODEJS_MODULE_HANDLE_DATA& rhs, size_t module_id)
     {
-        bus = rhs.bus;
+        broker = rhs.broker;
         main_path = rhs.main_path;
         configuration_json = rhs.configuration_json;
         v8_isolate = rhs.v8_isolate;
@@ -121,7 +121,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_state = state;
     }
 
-    BROKER_HANDLE               bus;
+    BROKER_HANDLE               broker;
     std::string                 main_path;
     std::string                 configuration_json;
     v8::Isolate                 *v8_isolate;

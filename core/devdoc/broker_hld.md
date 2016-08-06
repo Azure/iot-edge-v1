@@ -80,7 +80,7 @@ Nanomsg sockets are considered thread-safe, which means we can avoid locking dur
 02: unsigned char* serial_message = Message_ToByteArray( msg, &size)
 03: void* nn_msg = nn_allocmsg(size, 0)
 04: memcpy(nn_msg, serial_message, size)
-05: int nbytes = nn_send(bus_data->publish_socket, nn_msg, NN_MSG, 0)
+05: int nbytes = nn_send(broker_data->publish_socket, nn_msg, NN_MSG, 0)
 06: free(serial_message)
 07: Message_Destroy(msg)
 ```
@@ -102,7 +102,7 @@ The `module_publish_worker` function is passed in a pointer to the relevant `MOD
 06:     Unlock module_info.socket_lock
 07:     if (nbytes > 0)
 08:     {
-09:         if (nbytes == MESSAGE_BUS_GUID_SIZE && (message == module_info->quit_message_guid )
+09:         if (nbytes == BROKER_GUID_SIZE && (message == module_info->quit_message_guid )
 10:         { 
 11:             should_continue = false
 12:         }
@@ -125,12 +125,12 @@ Why do we need the `socket_lock`?  Helgrind and drd found a race condition betwe
 
 ### Closing the Module Publish Worker
 
-When the MessageBus adds a module, it creates the `quit_message_guid` as a unique ID to send to the worker thread to signal the thread should close.  This guid is not serialized as a message object.
+When the Broker adds a module, it creates the `quit_message_guid` as a unique ID to send to the worker thread to signal the thread should close.  This guid is not serialized as a message object.
 
 The following is pseudo-code for stopping the Module Publish Worker thread:
 
 ```c
-01: nn_send(receive_socket, module_info->quit_message_guid, MESSAGE_BUS_GUID_SIZE, 0)
+01: nn_send(receive_socket, module_info->quit_message_guid, BROKER_GUID_SIZE, 0)
 02: Lock module_info.socket_lock
 03: nn_close(module_info->receive_socket)
 04: Unlock module_info.socket_lock

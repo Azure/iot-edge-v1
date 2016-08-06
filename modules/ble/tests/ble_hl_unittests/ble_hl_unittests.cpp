@@ -295,7 +295,7 @@ namespace BASEIMPLEMENTATION
 #include "parson.h"
 
 /*forward declarations*/
-MODULE_HANDLE BLE_Create(BROKER_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void BLE_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
@@ -447,7 +447,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE))
     MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&BLE_APIS);
 
-    MOCK_STATIC_METHOD_2(, MODULE_HANDLE, BLE_Create, BROKER_HANDLE, busHandle, const void*, configuration)
+    MOCK_STATIC_METHOD_2(, MODULE_HANDLE, BLE_Create, BROKER_HANDLE, broker, const void*, configuration)
         BLE_CONFIG *config = (BLE_CONFIG*)malloc(sizeof(BLE_CONFIG));
         memcpy(config, configuration, sizeof(BLE_CONFIG));
         MODULE_HANDLE result2 = (MODULE_HANDLE)config;
@@ -563,7 +563,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , JSON_Object*, json_array_get_object,
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, BROKER_HANDLE, busHandle, const void*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, BLE_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 DECLARE_GLOBAL_MOCK_METHOD_0(CBLEHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE));
@@ -628,8 +628,8 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
         }
     }
 
-    /*Tests_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the bus or configuration parameters are NULL. ]*/
-    TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_bus_is_NULL)
+    /*Tests_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the broker or configuration parameters are NULL. ]*/
+    TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_broker_is_NULL)
     {
         ///arrange
         CBLEHLMocks mocks;
@@ -644,7 +644,7 @@ BEGIN_TEST_SUITE(ble_hl_unittests)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the bus or configuration parameters are NULL. ]*/
+    /*Tests_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the broker or configuration parameters are NULL. ]*/
     TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_configuration_is_NULL)
     {
         ///arrange

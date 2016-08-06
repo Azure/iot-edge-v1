@@ -34,7 +34,7 @@ DEFINE_ENUM_STRINGS(BLEIO_SEQ_INSTRUCTION_TYPE, BLEIO_SEQ_INSTRUCTION_TYPE_VALUE
 
 typedef struct BLE_HANDLE_DATA_TAG
 {
-    BROKER_HANDLE       bus;
+    BROKER_HANDLE       broker;
     BLE_DEVICE_CONFIG   device_config;
     BLEIO_GATT_HANDLE   bleio_gatt;
     BLEIO_SEQ_HANDLE    bleio_seq;
@@ -100,17 +100,17 @@ static bool terminate_event_dispatcher(
 );
 #endif
 
-static MODULE_HANDLE BLE_Create(BROKER_HANDLE bus, const void* configuration)
+static MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration)
 {
     BLE_HANDLE_DATA* result;
     BLE_CONFIG* config = (BLE_CONFIG*)configuration;
 
-    /*Codes_SRS_BLE_13_001: [BLE_Create shall return NULL if bus is NULL.]*/
+    /*Codes_SRS_BLE_13_001: [BLE_Create shall return NULL if broker is NULL.]*/
     /*Codes_SRS_BLE_13_002: [BLE_Create shall return NULL if configuration is NULL.]*/
     /*Codes_SRS_BLE_13_003: [BLE_Create shall return NULL if configuration->instructions is NULL.]*/
     /*Codes_SRS_BLE_13_004: [BLE_Create shall return NULL if the configuration->instructions vector is empty(size is zero).]*/
     if (
-            bus == NULL ||
+            broker == NULL ||
             configuration == NULL ||
             config->instructions == NULL ||
             VECTOR_size(config->instructions) == 0
@@ -172,7 +172,7 @@ static MODULE_HANDLE BLE_Create(BROKER_HANDLE bus, const void* configuration)
                     }
                     else
                     {
-                        result->bus = bus;
+                        result->broker = broker;
                         memcpy(&(result->device_config), &(config->device_config), sizeof(result->device_config));
                         result->is_destroy_complete = false;
 
@@ -517,7 +517,7 @@ static void on_read_complete(
                             | source                  | This property will always have the value `bleTelemetry`.      |
 
                             ]*/
-                            if (Broker_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != BROKER_OK)
+                            if (Broker_Publish(handle_data->broker, (MODULE_HANDLE)handle_data, message) != BROKER_OK)
                             {
                                 LogError("Broker_Publish() failed");
                             }
