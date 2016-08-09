@@ -201,7 +201,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						{
 							if (properties->gateway_links != NULL)
 							{
-								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE broker. ] */
+								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE's broker. ] */
 								size_t entries_count = VECTOR_size(properties->gateway_links);
 
 								if (entries_count > 0)
@@ -422,7 +422,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 				const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
 
 				/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
-				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->bus, module_configuration);
+				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->broker, module_configuration);
 				/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
 				if (module_handle == NULL)
 				{
@@ -439,7 +439,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 
 				    /*Codes_SRS_GATEWAY_LL_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
 					/*Codes_SRS_GATEWAY_LL_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
-					if (Broker_AddModule(gateway_handle->bus, &module) != BROKER_OK)
+					if (Broker_AddModule(gateway_handle->broker, &module) != BROKER_OK)
 					{
 						module_result = NULL;
 						LogError("Failed to add module to the gateway's broker.");
@@ -447,7 +447,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 					else
 					{
 					    /*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
-						Broker_IncRef(gateway_handle->bus);
+						Broker_IncRef(gateway_handle->broker);
 						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully attached to the message broker.]*/
 						MODULE_DATA module_data =
 						{
@@ -458,9 +458,9 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
 						if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
 						{
-							Broker_DecRef(gateway_handle->bus);
+							Broker_DecRef(gateway_handle->broker);
 							module_result = NULL;
-							if (Broker_RemoveModule(gateway_handle->bus, &module) != BROKER_OK)
+							if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
 							{
 								LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
 							}
@@ -552,9 +552,9 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			VECTOR_destroy(gateway_handle->links);
 		}
 
-		if (gateway_handle->bus != NULL)
+		if (gateway_handle->broker != NULL)
 		{
-			/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `BROKER_HANDLE`. ]*/
+			/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `broker` `BROKER_HANDLE`. ]*/
 			Broker_Destroy(gateway_handle->broker);
 		}
 
@@ -624,7 +624,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 				}
 				else
 				{
-					//Todo: Add the link to message Bus, since it's already validated.
+					//Todo: Add the link to message broker, since it's already validated.
 					LINK_DATA link_data =
 					{
 						module_source_handle,
@@ -636,7 +636,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 					{
 						LogError("Unable to add LINK_DATA* to the gateway links vector.");
 						result = false;
-						//TODO: failed to add link to the links vector, remove it from Message Bus when we have this api.
+						//TODO: failed to add link to the links vector, remove it from Message broker when we have this api.
 					}
 					else
 					{
@@ -657,7 +657,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 
 static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data)
 {
-	//TODO: Remove Link from Message_bus, as soon as Message Bus API is in place.
+	//TODO: Remove Link from message broker, as soon as the Broker API is in place.
 	/*Codes_SRS_GATEWAY_LL_04_007: [The functional shall remove that LINK_DATA from GATEWAY_HANDLE_DATA's links. ]*/
 	VECTOR_erase(gateway_handle->links, link_data, 1);
 }

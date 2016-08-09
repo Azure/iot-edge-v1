@@ -736,7 +736,7 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 
 	ASSERT_IS_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -918,7 +918,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 }
 
 
-/*Tests_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE broker. ] */
+/*Tests_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE's broker. ] */
 TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 {
 	//Arrange
@@ -1008,7 +1008,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 
 	//Assert
 	ASSERT_IS_NOT_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 2, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 2, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -1102,7 +1102,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
 	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
 
 	ASSERT_IS_NULL(gateway);
-	ASSERT_ARE_EQUAL(size_t, 0, currentMessageBus_module_count);
+	ASSERT_ARE_EQUAL(size_t, 0, currentBroker_module_count);
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
@@ -1125,7 +1125,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Does_Nothing_If_NULL)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_037: [ If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing modules from the GATEWAY_HANDLE. ]*/
-TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_Fails)
+TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
 {
 	//Arrange
 	CGatewayLLMocks mocks;
@@ -1151,7 +1151,6 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_MessageBus_RemoveModule_
 		.IgnoreArgument(1); //Links
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-	whenShallMessageBus_RemoveModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);

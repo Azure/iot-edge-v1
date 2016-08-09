@@ -125,7 +125,7 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
-/** @brief		Adds a link to a gateway message Bus.
+/** @brief		Adds a link to a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be added.
 *
@@ -135,7 +135,7 @@ extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 */
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
-/** @brief		Remove a link from a gateway message Bus.
+/** @brief		Remove a link from a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be removed.
 *
@@ -145,18 +145,18 @@ extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* e
 
 #ifdef UWP_BINDING
 
-/** @brief		Creates a new gateway using the provided #MODULEs and #MESSAGE_BUS_HANDLE.
+/** @brief		Creates a new gateway using the provided #MODULEs and #BROKER_HANDLE.
 *
 *	@param		modules   		#VECTOR_HANDLE structure containing
 *								specific modules.
 *
-*	@param		bus       		#MESSAGE_BUS_HANDLE structure containing
-*								specific message bus.
+*	@param		broker     		#BROKER_HANDLE structure containing
+*								specific message broker.
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
 *				gateway or @c NULL on failure.
 */
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, broker);
 
 /** @brief		Destroys the gateway and disposes of all associated data.
 *
@@ -201,7 +201,7 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_04_004: [** If a module with the same `module_name` already exists, this function shall fail and the `GATEWAY_HANDLE` will be destroyed. **]**
 
-**SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE` message bus. **]**
+**SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE`'s broker. **]**
 
 **SRS_GATEWAY_LL_26_001: [** This function shall initialize attached Event System and report `GATEWAY_CREATED` event. **]**
 
@@ -343,7 +343,7 @@ extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 ```
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 ```
-Gateway_LL_AddLink adds a link to the gateway message bus using the provided `GATEWAY_LINK_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
+Gateway_LL_AddLink adds a link to the gateway's message broker using the provided `GATEWAY_LINK_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
 
 **SRS_GATEWAY_LL_04_008: [** If `gw` , `entryLink`, `entryLink->module_source` or `entryLink->module_source` is NULL the function shall return `GATEWAY_ADD_LINK_INVALID_ARG`. **]**
 
@@ -361,7 +361,7 @@ Gateway_LL_AddLink adds a link to the gateway message bus using the provided `GA
 ```
 extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 ```
-Gateway_RemoveLink will remove the specified `link` from the message bus.
+Gateway_RemoveLink will remove the specified `link` from the message broker.
 
 **SRS_GATEWAY_LL_04_005: [** If `gw` or `entryLink` is `NULL` the function shall return. **]**  
 

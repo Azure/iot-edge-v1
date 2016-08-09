@@ -158,7 +158,7 @@ extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type
 */
 extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 
-/** @brief		Adds a link to a gateway message Bus.
+/** @brief		Adds a link to a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be added.
 *
@@ -168,7 +168,7 @@ extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 */
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
-/** @brief		Remove a link from a gateway message Bus.
+/** @brief		Remove a link from a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be removed.
 *
