@@ -10,6 +10,14 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 REM -- C --
 cd %build-root%\tools
 
+REM -- Build first dotnet binding for End2End Test.
+call build_dotnet.cmd %*
+if errorlevel 1 goto :eof
+
 call build.cmd --run-e2e-tests --enable-dotnet-binding %*
+if errorlevel 1 goto :eof
+cd %build-root%
+
+call runBindingsEnd2EndTests.cmd %*
 if errorlevel 1 goto :eof
 cd %build-root%

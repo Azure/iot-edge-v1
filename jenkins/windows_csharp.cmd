@@ -10,9 +10,6 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 REM -- C --
 cd %build-root%\tools
 
-call build_dotnet.cmd %*
-if errorlevel 1 goto :eof
-
 call build_uwp.cmd --skip-unittests %*
 if errorlevel 1 goto :eof
 cd %build-root%
