@@ -160,6 +160,12 @@ public:
 		}
 	MOCK_METHOD_END(BROKER_RESULT, result1);
 
+	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_AddLink, BROKER_HANDLE, handle, const BROKER_LINK_DATA*, link)
+	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK)
+
+	MOCK_STATIC_METHOD_2(, BROKER_RESULT, Broker_RemoveLink, BROKER_HANDLE, handle, const BROKER_LINK_DATA*, link)
+	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK)
+
 	MOCK_STATIC_METHOD_1(, MODULE_LIBRARY_HANDLE, ModuleLoader_Load, const char*, moduleLibraryFileName)
 		currentModuleLoader_Load_call++;
 		MODULE_LIBRARY_HANDLE handle = NULL;
@@ -276,6 +282,8 @@ DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , BROKER_HANDLE, Broker_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_AddModule, BROKER_HANDLE, handle, const MODULE*, module);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_RemoveModule, BROKER_HANDLE, handle, const MODULE*, module);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_AddLink, BROKER_HANDLE, handle, const BROKER_LINK_DATA*, link);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , BROKER_RESULT, Broker_RemoveLink, BROKER_HANDLE, handle, const BROKER_LINK_DATA*, link);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_IncRef, BROKER_HANDLE, broker);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_DecRef, BROKER_HANDLE, broker);
 
@@ -411,6 +419,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	whenShallBroker_Create_fail = 0;
 
 	BASEIMPLEMENTATION::VECTOR_destroy(dummyProps->gateway_modules);
+	BASEIMPLEMENTATION::VECTOR_destroy(dummyProps->gateway_links);
 	free(dummyProps);
 }
 
@@ -998,6 +1007,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 		.IgnoreAllArguments(); //Check if Source Module exists.
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments(); //Check if Sink Module exists.
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1275,6 +1286,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1931,6 +1944,8 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_Finds_Link_Data_Success)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -2450,6 +2465,8 @@ TEST_FUNCTION(Gateway_LL_AddLink_Succeeds)
 		.IgnoreAllArguments();//Check Source Module.
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);

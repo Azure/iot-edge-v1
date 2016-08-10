@@ -69,6 +69,8 @@ extern void Broker_DecRef(BROKER_HANDLE broker);
 extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE_HANDLE message);
 extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module);
 extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
+extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const LINK_DATA* link);
+extern BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const LINK_DATA* link);
 extern void Broker_Destroy(BROKER_HANDLE broker);
 ```
 
@@ -109,7 +111,7 @@ typedef struct BROKER_HANDLE_DATA_TAG
 }BROKER_HANDLE_DATA;
 ```
 
-**SRS_BROKER_13_067: [** `Broker_Create` shall `malloc` a new instance of `BROKER_HANDLE_DATA` and return `NULL` if it fails. **]**
+**SRS_BROKER_13_067: [** `Broker_Create` shall `malloc` a new instance of `BROKER_HANDLE_DATA`. **]**
 
 **SRS_BROKER_13_007: [** `Broker_Create` shall initialize `BROKER_HANDLE_DATA::modules` with a valid `VECTOR_HANDLE`. **]**
 
@@ -134,27 +136,29 @@ Broker_Clone creates a clone of the message broker handle.
 
 **SRS_BROKER_13_109: [** Otherwise, `Broker_IncRef` shall increment the internal ref count. **]**
 
-## module_publish_worker
+## module_worker
 
 ```C
-static void module_publish_worker(void* user_data)
+static void module_worker(void* user_data)
 ```
 
 **SRS_BROKER_13_026: [** This function shall assign `user_data` to a local variable called `module_info` of type `BROKER_MODULEINFO*`. **]**
 
 **SRS_BROKER_13_089: [** This function shall acquire the lock on `module_info->socket_lock`. **]**
 
-**SRS_BROKER_02_004: [** If acquiring the lock fails, then module_publish_worker shall return. **]**
+**SRS_BROKER_02_004: [** If acquiring the lock fails, then `module_worker` shall return. **]**
 
 **SRS_BROKER_13_068: [** This function shall run a loop that keeps running until `module_info->quit_message_guid` is sent to the thread. **]**
 
 **SRS_BROKER_13_091: [** The function shall unlock `module_info->socket_lock`. **]**
 
-**SRS_BROKER_17_016: [** If releasing the lock fails, then module_publish_worker shall return. **]**
+**SRS_BROKER_17_016: [** If releasing the lock fails, then `module_worker` shall return. **]**
 
 **SRS_BROKER_17_005: [** For every iteration of the loop, the function shall wait on the `receive_socket` for messages. **]**
 
 **SRS_BROKER_17_006: [** An error on receiving a message shall terminate the loop. **]**
+
+**SRS_BROKER_17_024: [** The function shall strip off the topic from the message. **]**
 
 **SRS_BROKER_17_017: [** The function shall deserialize the message received. **]**
 
@@ -178,7 +182,7 @@ BROKER_RESULT Broker_Publish(
 );
 ```
 
-**SRS_BROKER_13_030: [** If `broker` or `message` is `NULL` the function shall return `BROKER_INVALIDARG`. **]**
+**SRS_BROKER_13_030: [** If `broker`, `source`, or `message` is `NULL` the function shall return `BROKER_INVALIDARG`. **]**
 
 **SRS_BROKER_17_022: [** `Broker_Publish` shall Lock the modules lock. **]**
 
@@ -186,7 +190,11 @@ BROKER_RESULT Broker_Publish(
 
 **SRS_BROKER_17_008: [** `Broker_Publish` shall serialize the `message`. **]**
 
-**SRS_BROKER_17_009: [** `Broker_Publish` shall allocate a nanomsg buffer and copy the serialized message into it. **]**
+**SRS_BROKER_17_025: [** `Broker_Publish` shall allocate a nanomsg buffer the size of the serialized message + `sizeof(MODULE_HANDLE)`.  **]**
+
+**SRS_BROKER_17_026: [** `Broker_Publish` shall copy `source` into the beginning of the nanomsg buffer. **]** 
+
+**SRS_BROKER_17_027: [** `Broker_Publish` shall serialize the `message` into the remainder of the nanomsg buffer. **]**
 
 **SRS_BROKER_17_010: [** `Broker_Publish` shall send a message on the `publish_socket`. **]**
 
@@ -216,7 +224,9 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
 
 **SRS_BROKER_17_020: [** The function shall create a unique ID used as a quit signal. **]**
 
-**SRS_BROKER_13_102: [** The function shall create a new thread for the module by calling `ThreadAPI_Create` using `module_publish_worker` as the thread callback and using the newly allocated `BROKER_MODULEINFO` object as the thread context. **]**
+**SRS_BROKER_17_028: [** The function shall subscribe `BROKER_MODULEINFO::receive_socket` to the quit signal GUID. **]**
+
+**SRS_BROKER_13_102: [** The function shall create a new thread for the module by calling `ThreadAPI_Create` using `module_worker` as the thread callback and using the newly allocated `BROKER_MODULEINFO` object as the thread context. **]**
 
 **SRS_BROKER_13_039: [** This function shall acquire the lock on `BROKER_HANDLE_DATA::modules_lock`. **]**
 
@@ -262,6 +272,50 @@ BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)
 **SRS_BROKER_13_057: [** The function shall free all members of the `BROKER_MODULEINFO` object. **]**
 
 **SRS_BROKER_13_053: [** This function shall return `BROKER_ERROR` if an underlying API call to the platform causes an error or `BROKER_OK` otherwise. **]**
+
+
+## Broker_AddLink
+```c
+extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const LINK_DATA* link);
+```
+
+Add a router link to the Broker.
+
+**SRS_BROKER_17_029: [** If `broker`, `link`, `link->module_source_handle` or `link->module_sink_handle` are NULL, `Broker_AddLink` shall return `BROKER_INVALIDARG`. **]**
+
+**SRS_BROKER_17_030: [** `Broker_AddLink` shall lock the `modules_lock`. **]** 
+
+**SRS_BROKER_17_031: [** `Broker_AddLink` shall find the `BROKER_HANDLE_DATA::module_info` for `link->module_sink_handle`. **]**
+
+**SRS_BROKER_17_041: [** `Broker_AddLink` shall find the `BROKER_HANDLE_DATA::module_info` for `link->module_source_handle`. **]**
+
+**SRS_BROKER_17_032: [** `Broker_AddLink` shall subscribe `module_info->receive_socket` to the `link->module_source_handle` module handle. **]** 
+
+**SRS_BROKER_17_033: [** `Broker_AddLink` shall unlock the `modules_lock`. **]** 
+
+**SRS_BROKER_17_034: [** Upon an error, `Broker_AddLink` shall return `BROKER_ADD_LINK_ERROR` **]** 
+
+
+## Broker_RemoveLink
+```c
+extern BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const LINK_DATA* link);
+```
+
+Remove a router link from the Broker.
+
+**SRS_BROKER_17_035: [** If `broker`, `link`, `link->module_source_handle` or `link->module_sink_handle` are NULL, `Broker_RemoveLink` shall return `BROKER_INVALIDARG`. **]** 
+
+**SRS_BROKER_17_036: [** `Broker_RemoveLink` shall lock the `modules_lock`. **]** 
+
+**SRS_BROKER_17_037: [** `Broker_RemoveLink` shall find the `module_info` for `link->module_sink_handle`. **]** 
+
+**SRS_BROKER_17_042: [** `Broker_RemoveLink` shall find the `module_info` for `link->module_source_handle`. **]**
+
+**SRS_BROKER_17_038: [** `Broker_RemoveLink` shall unsubscribe `module_info->receive_socket` from the `link->module_source_handle` module handle. **]** 
+
+**SRS_BROKER_17_039: [** `Broker_RemoveLink` shall unlock the `modules_lock`. **]**
+
+**SRS_BROKER_17_040: [** Upon an error, `Broker_RemoveLink` shall return `BROKER_REMOVE_LINK_ERROR`. **]** 
 
 ## Broker_Destroy
 

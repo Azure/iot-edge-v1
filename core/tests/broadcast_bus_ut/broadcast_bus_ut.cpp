@@ -634,9 +634,9 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_BROKER_13_001: [This API shall yield a BROKER_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]
-//Tests_SRS_BROKER_13_007: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]
-//Tests_SRS_BROKER_13_023: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]
+//Tests_SRS_BCAST_BROKER_13_001: [This API shall yield a BROKER_HANDLE representing the newly created message broker. This handle value shall not be equal to NULL when the API call is successful.]
+//Tests_SRS_BCAST_BROKER_13_007: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]
+//Tests_SRS_BCAST_BROKER_13_023: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules_lock with a valid LOCK_HANDLE.]
 TEST_FUNCTION(Broker_Create_succeeds)
 {
     ///arrange
@@ -658,8 +658,8 @@ TEST_FUNCTION(Broker_Create_succeeds)
     Broker_Destroy(r);
 }
 
-//Tests_SRS_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
-/*Tests_SRS_BROKER_13_067: [ Broker_Create shall malloc a new instance of BROKER_HANDLE_DATA and return NULL if it fails. ]*/
+//Tests_SRS_BCAST_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
+/*Tests_SRS_BCAST_BROKER_13_067: [ Broker_Create shall malloc a new instance of BROKER_HANDLE_DATA and return NULL if it fails. ]*/
 TEST_FUNCTION(Broker_Create_fails_when_malloc_fails)
 {
     ///arrange
@@ -679,7 +679,7 @@ TEST_FUNCTION(Broker_Create_fails_when_malloc_fails)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
+//Tests_SRS_BCAST_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
 TEST_FUNCTION(Broker_Create_fails_when_list_create_fails)
 {
     ///arrange
@@ -727,7 +727,7 @@ TEST_FUNCTION(Broker_Create_fails_when_Lock_Init_fails)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_99_013: [If `broker` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BCAST_BROKER_99_013: [If `broker` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(Broker_AddModule_fails_with_null_broker)
 {
     ///arrange
@@ -743,7 +743,7 @@ TEST_FUNCTION(Broker_AddModule_fails_with_null_broker)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_99_013: [If `broker` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BCAST_BROKER_99_013: [If `broker` or `module` is `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(Broker_AddModule_fails_with_null_module)
 {
     ///arrange
@@ -759,7 +759,7 @@ TEST_FUNCTION(Broker_AddModule_fails_with_null_module)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BCAST_BROKER_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(Broker_AddModule_fails_with_null_module_apis)
 {
     ///arrange
@@ -781,7 +781,7 @@ TEST_FUNCTION(Broker_AddModule_fails_with_null_module_apis)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BCAST_BROKER_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]
 TEST_FUNCTION(Broker_AddModule_fails_with_null_module_handle)
 {
     ///arrange
@@ -803,7 +803,7 @@ TEST_FUNCTION(Broker_AddModule_fails_with_null_module_handle)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_alloc_module_info_fails)
 {
     ///arrange
@@ -859,7 +859,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_VECTOR_create_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_Lock_Init_fails)
 {
     ///arrange
@@ -894,7 +894,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_Lock_Init_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_Condition_Init_fails)
 {
     ///arrange
@@ -932,7 +932,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_Condition_Init_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_list_add_fails)
 {
     ///arrange
@@ -978,7 +978,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_list_add_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_ThreadAPI_Create_fails)
 {
     ///arrange
@@ -1028,7 +1028,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_ThreadAPI_Create_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_fails_when_lock_on_modules_lock_fails)
 {
     ///arrange
@@ -1072,16 +1072,16 @@ TEST_FUNCTION(Broker_AddModule_fails_when_lock_on_modules_lock_fails)
 
 
 
-//Tests_SRS_BROKER_13_107 : [The function shall assign the module handle to BROKER_MODULEINFO::module.]
-//Tests_SRS_BROKER_13_098 : [The function shall initialize BROKER_MODULEINFO::mq with a valid vector handle.]
-//Tests_SRS_BROKER_13_099 : [The function shall initialize BROKER_MODULEINFO::mq_lock with a valid lock handle.]
-//Tests_SRS_BROKER_13_100 : [The function shall initialize BROKER_MODULEINFO::mq_cond with a valid condition handle.]
-//Tests_SRS_BROKER_13_101 : [ The function shall assign 0 to BROKER_MODULEINFO::quit_worker. ]
-//Tests_SRS_BROKER_13_102 : [The function shall create a new thread for the module by calling ThreadAPI_Create using module_publish_worker as the thread callback and using the newly allocated BROKER_MODULEINFO object as the thread context.]
-//Tests_SRS_BROKER_13_039 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
-//Tests_SRS_BROKER_13_045 : [Broker_AddModule shall append the new instance of BROKER_MODULEINFO to BROKER_HANDLE_DATA::modules.]
-//Tests_SRS_BROKER_13_046 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
-//Tests_SRS_BROKER_13_047 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_107 : [The function shall assign the module handle to BROKER_MODULEINFO::module.]
+//Tests_SRS_BCAST_BROKER_13_098 : [The function shall initialize BROKER_MODULEINFO::mq with a valid vector handle.]
+//Tests_SRS_BCAST_BROKER_13_099 : [The function shall initialize BROKER_MODULEINFO::mq_lock with a valid lock handle.]
+//Tests_SRS_BCAST_BROKER_13_100 : [The function shall initialize BROKER_MODULEINFO::mq_cond with a valid condition handle.]
+//Tests_SRS_BCAST_BROKER_13_101 : [ The function shall assign 0 to BROKER_MODULEINFO::quit_worker. ]
+//Tests_SRS_BCAST_BROKER_13_102 : [The function shall create a new thread for the module by calling ThreadAPI_Create using module_publish_worker as the thread callback and using the newly allocated BROKER_MODULEINFO object as the thread context.]
+//Tests_SRS_BCAST_BROKER_13_039 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_BCAST_BROKER_13_045 : [Broker_AddModule shall append the new instance of BROKER_MODULEINFO to BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_BCAST_BROKER_13_046 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_BCAST_BROKER_13_047 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_AddModule_succeeds)
 {
     ///arrange
@@ -1154,18 +1154,18 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
     return COND_OK;
 }
 
-// Tests_SRS_BROKER_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_BROKER_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
-// Tests_SRS_BROKER_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
-// Tests_SRS_BROKER_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
-// Tests_SRS_BROKER_13_069: [ The function shall dequeue a message from the module's message queue. ]
-// Tests_SRS_BROKER_13_091: [ The function shall unlock module_info->mq_lock. ]
-// Tests_SRS_BROKER_13_092: [ The function shall deliver the message to the module's callback function via module_info->module_apis. ]
-// Tests_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
-// Tests_SRS_BROKER_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_BROKER_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
-// Tests_SRS_BROKER_13_026: [ This function shall assign user_data to a local variable called module_info of type BROKER_MODULEINFO*. ]
-// Tests_SRS_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
+// Tests_SRS_BCAST_BROKER_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
+// Tests_SRS_BCAST_BROKER_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
+// Tests_SRS_BCAST_BROKER_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
+// Tests_SRS_BCAST_BROKER_13_069: [ The function shall dequeue a message from the module's message queue. ]
+// Tests_SRS_BCAST_BROKER_13_091: [ The function shall unlock module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_092: [ The function shall deliver the message to the module's callback function via module_info->module_apis. ]
+// Tests_SRS_BCAST_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
+// Tests_SRS_BCAST_BROKER_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
+// Tests_SRS_BCAST_BROKER_13_026: [ This function shall assign user_data to a local variable called module_info of type BROKER_MODULEINFO*. ]
+// Tests_SRS_BCAST_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
 TEST_FUNCTION(module_publish_worker_calls_module_receive)
 {
     /**
@@ -1327,7 +1327,7 @@ TEST_FUNCTION(module_publish_worker_calls_module_receive)
     Broker_Destroy(broker);
 }
 
-/*Tests_SRS_BROKER_02_004: [ If acquiring the lock fails, then module_publish_worker shall return. ]*/
+/*Tests_SRS_BCAST_BROKER_02_004: [ If acquiring the lock fails, then module_publish_worker shall return. ]*/
 TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
 {
     ///arrange
@@ -1381,7 +1381,7 @@ TEST_FUNCTION(module_publish_worker_fails_when_first_lock_fails)
 }
 
 
-// Tests_SRS_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
+// Tests_SRS_BCAST_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
 TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condition)
 {
     //This test follow the same guideline of test: module_publish_worker_calls_module_receive, with the exception that
@@ -1505,7 +1505,7 @@ TEST_FUNCTION(module_publish_worker_clean_message_queue_before_waiting_for_condi
 }
 
 
-//Tests_SRS_BROKER_13_048: [If broker or module is NULL the function shall return BROKER_INVALIDARG.]
+//Tests_SRS_BCAST_BROKER_13_048: [If broker or module is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(Broker_RemoveModule_fails_with_null_broker)
 {
     ///arrange
@@ -1521,7 +1521,7 @@ TEST_FUNCTION(Broker_RemoveModule_fails_with_null_broker)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_048: [If broker or module is NULL the function shall return BROKER_INVALIDARG.]
+//Tests_SRS_BCAST_BROKER_13_048: [If broker or module is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(Broker_RemoveModule_fails_with_null_module)
 {
     ///arrange
@@ -1537,7 +1537,7 @@ TEST_FUNCTION(Broker_RemoveModule_fails_with_null_module)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_RemoveModule_fails_when_Lock_fails)
 {
     ///arrange
@@ -1563,7 +1563,7 @@ TEST_FUNCTION(Broker_RemoveModule_fails_when_Lock_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_BCAST_BROKER_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
 TEST_FUNCTION(Broker_RemoveModule_fails_when_list_find_fails)
 {
     ///arrange
@@ -1594,8 +1594,8 @@ TEST_FUNCTION(Broker_RemoveModule_fails_when_list_find_fails)
     Broker_Destroy(broker);
 }
 
-/*Tests_SRS_BROKER_02_002: [ If locking fails, then terminating the thread shall not be attempted (signalling the condition and joining the thread). ]*/
-//Tests_SRS_BROKER_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
+/*Tests_SRS_BCAST_BROKER_02_002: [ If locking fails, then terminating the thread shall not be attempted (signalling the condition and joining the thread). ]*/
+//Tests_SRS_BCAST_BROKER_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
 TEST_FUNCTION(Broker_RemoveModule_fails_when_lock_mq_lock_fails)
 {
     {
@@ -1649,18 +1649,18 @@ TEST_FUNCTION(Broker_RemoveModule_fails_when_lock_mq_lock_fails)
         Broker_Destroy(broker);
     }
 }
-//Tests_SRS_BROKER_13_088 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
-//Tests_SRS_BROKER_13_049 : [Broker_RemoveModule shall perform a linear search for module in BROKER_HANDLE_DATA::modules.]
-//Tests_SRS_BROKER_13_050 : [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
-//Tests_SRS_BROKER_13_052 : [The function shall remove the module from BROKER_HANDLE_DATA::modules.]
-//Tests_SRS_BROKER_13_054 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
-/*Tests_SRS_BROKER_02_001: [ Broker_RemoveModule shall lock `BROKER_MODULEINFO::mq_lock`. ]*/
-/*Tests_SRS_BROKER_02_003: [ After signaling the condition, Broker_RemoveModule shall unlock BROKER_MODULEINFO::mq_lock. ]*/
-//Tests_SRS_BROKER_13_103 : [The function shall assign 1 to BROKER_MODULEINFO::quit_worker.]
-//Tests_SRS_BROKER_17_001: [The function shall signal BROKER_MODULEINFO::mq_cond to release module from waiting.]
-//Tests_SRS_BROKER_13_104 : [The function shall wait for the module's thread to exit by joining BROKER_MODULEINFO::thread via ThreadAPI_Join. ]
-//Tests_SRS_BROKER_13_057 : [The function shall free all members of the BROKER_MODULEINFO object.]
-//Tests_SRS_BROKER_13_053 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_088 : [This function shall acquire the lock on BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_BCAST_BROKER_13_049 : [Broker_RemoveModule shall perform a linear search for module in BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_BCAST_BROKER_13_050 : [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_BCAST_BROKER_13_052 : [The function shall remove the module from BROKER_HANDLE_DATA::modules.]
+//Tests_SRS_BCAST_BROKER_13_054 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
+/*Tests_SRS_BCAST_BROKER_02_001: [ Broker_RemoveModule shall lock `BROKER_MODULEINFO::mq_lock`. ]*/
+/*Tests_SRS_BCAST_BROKER_02_003: [ After signaling the condition, Broker_RemoveModule shall unlock BROKER_MODULEINFO::mq_lock. ]*/
+//Tests_SRS_BCAST_BROKER_13_103 : [The function shall assign 1 to BROKER_MODULEINFO::quit_worker.]
+//Tests_SRS_BCAST_BROKER_17_001: [The function shall signal BROKER_MODULEINFO::mq_cond to release module from waiting.]
+//Tests_SRS_BCAST_BROKER_13_104 : [The function shall wait for the module's thread to exit by joining BROKER_MODULEINFO::thread via ThreadAPI_Join. ]
+//Tests_SRS_BCAST_BROKER_13_057 : [The function shall free all members of the BROKER_MODULEINFO object.]
+//Tests_SRS_BCAST_BROKER_13_053 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_RemoveModule_succeeds)
 {
     ///arrange
@@ -1717,7 +1717,39 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds)
     Broker_Destroy(broker);
 }
 
-/*Tests_SRS_BROKER_13_056: [If BROKER_MODULEINFO::mq is not empty then this function shall call Message_Destroy on every message still left in the collection.]*/
+//Tests_SRS_BCAST_BROKER_17_003: [ Broker_AddLink shall return BROKER_OK. ]
+TEST_FUNCTION(Broker_AddLink_Returns_OK)
+{
+    ///arrange
+    CBrokerMocks mocks;
+
+    ///act
+    auto r1 = Broker_AddLink(NULL, NULL);
+
+    ///assert
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_OK);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+}
+
+//Tests_SRS_BCAST_BROKER_17_004: [ Broker_RemoveLink shall return BROKER_OK. ]
+TEST_FUNCTION(Broker_RemoveLink_Returns_OK)
+{
+    ///arrange
+    CBrokerMocks mocks;
+
+    ///act
+    auto r1 = Broker_RemoveLink(NULL, NULL);
+
+    ///assert
+    ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_OK);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+}
+
+/*Tests_SRS_BCAST_BROKER_13_056: [If BROKER_MODULEINFO::mq is not empty then this function shall call Message_Destroy on every message still left in the collection.]*/
 TEST_FUNCTION(Broker_RemoveModule_with_msg_succeeds)
 {
     ///arrange
@@ -1783,7 +1815,7 @@ TEST_FUNCTION(Broker_RemoveModule_with_msg_succeeds)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_108: [If broker is NULL then Broker_IncRef shall do nothing.]
+//Tests_SRS_BCAST_BROKER_13_108: [If broker is NULL then Broker_IncRef shall do nothing.]
 TEST_FUNCTION(Broker_IncRef_does_nothing_with_null_input)
 {
     ///arrange
@@ -1798,7 +1830,7 @@ TEST_FUNCTION(Broker_IncRef_does_nothing_with_null_input)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_109: [Otherwise, `Broker_IncRef` shall increment the internal ref count.]
+//Tests_SRS_BCAST_BROKER_13_109: [Otherwise, `Broker_IncRef` shall increment the internal ref count.]
 TEST_FUNCTION(Broker_IncRef_increments_ref_count_1)
 {
     ///arrange
@@ -1817,7 +1849,7 @@ TEST_FUNCTION(Broker_IncRef_increments_ref_count_1)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_111: [ Otherwise, Broker_Destroy shall decrement the internal ref count of the message. ]
+//Tests_SRS_BCAST_BROKER_13_111: [ Otherwise, Broker_Destroy shall decrement the internal ref count of the message. ]
 TEST_FUNCTION(Broker_IncRef_increments_ref_count_1_destroy)
 {
     ///arrange
@@ -1836,7 +1868,7 @@ TEST_FUNCTION(Broker_IncRef_increments_ref_count_1_destroy)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_058: [If broker is NULL the function shall do nothing.]
+//Tests_SRS_BCAST_BROKER_13_058: [If broker is NULL the function shall do nothing.]
 TEST_FUNCTION(Broker_Destroy_does_nothing_with_null_input)
 {
     ///arrange
@@ -1851,7 +1883,7 @@ TEST_FUNCTION(Broker_Destroy_does_nothing_with_null_input)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_058: [If broker is NULL the function shall do nothing.]
+//Tests_SRS_BCAST_BROKER_13_058: [If broker is NULL the function shall do nothing.]
 TEST_FUNCTION(Broker_DecRef_does_nothing_with_null_input)
 {
     ///arrange
@@ -1866,7 +1898,7 @@ TEST_FUNCTION(Broker_DecRef_does_nothing_with_null_input)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_112: [If the ref count is zero then the allocated resources are freed.]
+//Tests_SRS_BCAST_BROKER_13_112: [If the ref count is zero then the allocated resources are freed.]
 TEST_FUNCTION(Broker_Destroy_works)
 {
     ///arrange
@@ -1893,8 +1925,8 @@ TEST_FUNCTION(Broker_Destroy_works)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_112: [If the ref count is zero then the allocated resources are freed.]
-//Tests_SRS_BROKER_13_113: [ This function shall implement all the requirements of the Broker_Destroy API. ]
+//Tests_SRS_BCAST_BROKER_13_112: [If the ref count is zero then the allocated resources are freed.]
+//Tests_SRS_BCAST_BROKER_13_113: [ This function shall implement all the requirements of the Broker_Destroy API. ]
 TEST_FUNCTION(Broker_DecRef_works)
 {
     ///arrange
@@ -1921,7 +1953,7 @@ TEST_FUNCTION(Broker_DecRef_works)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]
+//Tests_SRS_BCAST_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(Broker_Publish_fails_with_null_broker)
 {
     ///arrange
@@ -1937,7 +1969,7 @@ TEST_FUNCTION(Broker_Publish_fails_with_null_broker)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]
+//Tests_SRS_BCAST_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]
 TEST_FUNCTION(Broker_Publish_fails_with_null_message)
 {
     ///arrange
@@ -1953,7 +1985,7 @@ TEST_FUNCTION(Broker_Publish_fails_with_null_message)
     ///cleanup
 }
 
-//Tests_SRS_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_fails_when_lock_on_modules_lock_fails)
 {
     ///arrange
@@ -1985,7 +2017,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_lock_on_modules_lock_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_fails_when_lock_on_module_mq_lock_fails)
 {
     ///arrange
@@ -2030,7 +2062,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_lock_on_module_mq_lock_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_fails_when_vector_push_back_fails)
 {
     ///arrange
@@ -2084,7 +2116,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_vector_push_back_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_fails_when_vector_condition_post_fails)
 {
     ///arrange
@@ -2138,14 +2170,14 @@ TEST_FUNCTION(Broker_Publish_fails_when_vector_condition_post_fails)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_13_031: [Broker_Publish shall acquire the lock BROKER_HANDLE_DATA::modules_lock.]
-//Tests_SRS_BROKER_13_032: [ Broker_Publish shall start a processing loop for every module in BROKER_HANDLE_DATA::modules. ]
-//Tests_SRS_BROKER_13_033 : [In the loop, the function shall first acquire the lock on BROKER_MODULEINFO::mq_lock.]
-//Tests_SRS_BROKER_13_034 : [The function shall then append message to BROKER_MODULEINFO::mq by calling Message_Clone and VECTOR_push_back.]
-//Tests_SRS_BROKER_13_035 : [The function shall then release BROKER_MODULEINFO::mq_lock.]
-//Tests_SRS_BROKER_13_096 : [The function shall then signal BROKER_MODULEINFO::mq_cond.]
-//Tests_SRS_BROKER_13_040 : [Broker_Publish shall release the lock BROKER_HANDLE_DATA::modules_lock after the loop.]
-//Tests_SRS_BROKER_13_037 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BCAST_BROKER_13_031: [Broker_Publish shall acquire the lock BROKER_HANDLE_DATA::modules_lock.]
+//Tests_SRS_BCAST_BROKER_13_032: [ Broker_Publish shall start a processing loop for every module in BROKER_HANDLE_DATA::modules. ]
+//Tests_SRS_BCAST_BROKER_13_033 : [In the loop, the function shall first acquire the lock on BROKER_MODULEINFO::mq_lock.]
+//Tests_SRS_BCAST_BROKER_13_034 : [The function shall then append message to BROKER_MODULEINFO::mq by calling Message_Clone and VECTOR_push_back.]
+//Tests_SRS_BCAST_BROKER_13_035 : [The function shall then release BROKER_MODULEINFO::mq_lock.]
+//Tests_SRS_BCAST_BROKER_13_096 : [The function shall then signal BROKER_MODULEINFO::mq_cond.]
+//Tests_SRS_BCAST_BROKER_13_040 : [Broker_Publish shall release the lock BROKER_HANDLE_DATA::modules_lock after the loop.]
+//Tests_SRS_BCAST_BROKER_13_037 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_succeeds)
 {
     ///arrange
@@ -2198,7 +2230,7 @@ TEST_FUNCTION(Broker_Publish_succeeds)
     Broker_Destroy(broker);
 }
 
-//Tests_SRS_BROKER_17_002: [ If source is not NULL, Broker_Publish shall not publish the message to the BROKER_MODULEINFO::module which matches source. ]
+//Tests_SRS_BCAST_BROKER_17_002: [ If source is not NULL, Broker_Publish shall not publish the message to the BROKER_MODULEINFO::module which matches source. ]
 TEST_FUNCTION(Broker_Publish_succeeds_skips_self)
 {
 	///arrange

@@ -29,10 +29,16 @@ extern "C"
 #include <stddef.h>
 #endif
 
+typedef struct BROKER_LINK_DATA_TAG {
+	MODULE_HANDLE module_source_handle;
+	MODULE_HANDLE module_sink_handle;
+} BROKER_LINK_DATA;
+
 #define BROKER_RESULT_VALUES \
     BROKER_OK, \
     BROKER_ERROR, \
     BROKER_ADD_LINK_ERROR, \
+	BROKER_REMOVE_LINK_ERROR, \
     BROKER_INVALIDARG
 
 /** @brief	Enumeration describing the result of ::Broker_Publish, 
@@ -83,7 +89,7 @@ extern void Broker_DecRef(BROKER_HANDLE broker);
 */
 extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE_HANDLE message);
 
-/** @brief		Sends a message to the message broker.
+/** @brief		Adds a module to the message broker.
 *
 *	@details	For details about threading with regard to the message broker
 *				and modules connected to it, see 
@@ -106,6 +112,30 @@ extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module
 *	@return	A #BROKER_RESULT describing the result of the function.
 */
 extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
+
+/** @brief		Adds a route to the message broker.
+*
+*	@details	For details about threading with regard to the message broker
+*				and modules connected to it, see
+*				<a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
+*
+*	@param		broker          The #BROKER_HANDLE onto which the module will be
+*								added.
+*	@param		route			The #BROKER_LINK_DATA for the route that will be added
+*								to this message broker.
+*
+*	@return		A #BROKER_RESULT describing the result of the function.
+*/
+extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
+
+/** @brief	Removes a route from the message broker.
+*
+*	@param	broker	The #BROKER_HANDLE from which the module will be removed.
+*	@param	route	The #BROKER_LINK_DATA of the module to be removed.
+*
+*	@return	A #BROKER_RESULT describing the result of the function.
+*/
+extern BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
 
 /** @brief Disposes of resources allocated by a message broker.
 *

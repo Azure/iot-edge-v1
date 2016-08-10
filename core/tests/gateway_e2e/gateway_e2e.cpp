@@ -179,6 +179,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		}
 		
 		GATEWAY_MODULES_ENTRY modules[3];
+		GATEWAY_LINK_ENTRY links[2];
 
 		modules[0].module_configuration = &iotHubConfig;
 		modules[0].module_name = "IoTHub";
@@ -193,11 +194,19 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		modules[2].module_name = "E2ETest";
 		modules[2].module_path = e2e_module_path();
 		
+		links[0].module_source = "E2ETest";
+		links[0].module_sink = GW_IDMAP_MODULE;
+
+		links[1].module_source = GW_IDMAP_MODULE;
+		links[1].module_sink = "IoTHub";
 		
 		GATEWAY_PROPERTIES m6GatewayProperties;
 		VECTOR_HANDLE gatewayProps = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+		VECTOR_HANDLE gatewayLinks = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
 
 		VECTOR_push_back(gatewayProps, &modules, 3);
+		VECTOR_push_back(gatewayLinks, &links, 2);
+
 
 
 		///act

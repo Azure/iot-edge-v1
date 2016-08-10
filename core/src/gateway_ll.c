@@ -43,9 +43,10 @@ typedef struct MODULE_DATA_TAG {
 } MODULE_DATA;
 
 #ifndef UWP_BINDING
+
 typedef struct LINK_DATA_TAG {
-	MODULE_HANDLE module_source_handle;
-	MODULE_HANDLE module_sink_handle;
+	MODULE_DATA* module_source;
+	MODULE_DATA* module_sink;
 } LINK_DATA;
 
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name);
@@ -507,7 +508,7 @@ static bool link_data_find(const void* element, const void* linkEntry)
 {
 	GATEWAY_LINK_ENTRY* link_entry_casted = (GATEWAY_LINK_ENTRY*)linkEntry;
 
-	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source_handle)->module_name, link_entry_casted->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink_handle)->module_name, link_entry_casted->module_sink) == 0);
+	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source)->module_name, link_entry_casted->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink)->module_name, link_entry_casted->module_sink) == 0);
 }
 
 static void gateway_destroy_internal(GATEWAY_HANDLE gw)
@@ -527,6 +528,17 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			gateway_handle->event_system = NULL;
 		}
 		
+		if (gateway_handle->links != NULL)
+		{
+			/*Codes_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
+			while (VECTOR_size(gateway_handle->links) > 0)
+			{
+				LINK_DATA* link_data = (LINK_DATA*)VECTOR_front(gateway_handle->links);
+				gateway_removelink_internal(gateway_handle, link_data);
+			}
+			VECTOR_destroy(gateway_handle->links);
+		}
+
 		if (gateway_handle->modules != NULL)
 		{
 			/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
@@ -539,17 +551,6 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			}
 
 			VECTOR_destroy(gateway_handle->modules);
-		}
-
-		if (gateway_handle->links != NULL)
-		{
-			/*Codes_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
-			while (VECTOR_size(gateway_handle->links) > 0)
-			{
-				LINK_DATA* link_data = (LINK_DATA*)VECTOR_front(gateway_handle->links);
-				gateway_removelink_internal(gateway_handle, link_data);
-			}
-			VECTOR_destroy(gateway_handle->links);
 		}
 
 		if (gateway_handle->broker != NULL)
@@ -624,23 +625,36 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 				}
 				else
 				{
-					//Todo: Add the link to message broker, since it's already validated.
-					LINK_DATA link_data =
+					BROKER_LINK_DATA broker_data =
 					{
-						module_source_handle,
-						module_sink_handle
+						module_source_handle->module,
+						module_sink_handle->module
 					};
-
-					/*Codes_SRS_GATEWAY_LL_04_012: [ This function shall add the entryLink to the gw->links ] */
-					if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
+					
+					if (Broker_AddLink(gateway_handle->broker, &broker_data) != BROKER_OK)
 					{
-						LogError("Unable to add LINK_DATA* to the gateway links vector.");
+						LogError("Unable to add link to Broker.");
 						result = false;
-						//TODO: failed to add link to the links vector, remove it from Message broker when we have this api.
 					}
 					else
 					{
-						result = true;
+						LINK_DATA link_data = 
+						{
+							module_source_handle,
+							module_sink_handle
+						};
+
+						/*Codes_SRS_GATEWAY_LL_04_012: [ This function shall add the entryLink to the gw->links ] */
+						if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
+						{
+							LogError("Unable to add LINK_DATA* to the gateway links vector.");
+							Broker_RemoveLink(gateway_handle->broker, &broker_data);
+							result = false;
+						}
+						else
+						{
+							result = true;
+						}
 					}
 				}
 			}
@@ -657,8 +671,15 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 
 static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data)
 {
-	//TODO: Remove Link from message broker, as soon as the Broker API is in place.
 	/*Codes_SRS_GATEWAY_LL_04_007: [The functional shall remove that LINK_DATA from GATEWAY_HANDLE_DATA's links. ]*/
+	BROKER_LINK_DATA broker_data =
+	{
+		link_data->module_source->module,
+		link_data->module_sink->module
+	};
+
+	Broker_RemoveLink(gateway_handle->broker, &broker_data);
+
 	VECTOR_erase(gateway_handle->links, link_data, 1);
 }
 #else

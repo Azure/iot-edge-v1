@@ -620,7 +620,8 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
     }
 }
 
-//Tests_SRS_BROKER_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BCAST_BROKER_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]
+//Tests_SRS_BROKER_99_015: [ If module_instance is NULL the function shall return BROKER_INVALIDARG. ]
 TEST_FUNCTION(Broker_AddModule_fails_with_null_broker)
 {
     ///arrange
@@ -675,18 +676,19 @@ static COND_RESULT module_publish_worker_calls_module_receive_Condition_Wait(voi
     return COND_OK;
 }
 
-// Tests_SRS_BROKER_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_BROKER_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
-// Tests_SRS_BROKER_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
-// Tests_SRS_BROKER_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
-// Tests_SRS_BROKER_13_069: [ The function shall dequeue a message from the module's message queue. ]
-// Tests_SRS_BROKER_13_091: [ The function shall unlock module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_089: [ This function shall acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_068: [ This function shall run a loop that keeps running while module_info->quit_worker is equal to 0. ]
+// Tests_SRS_BCAST_BROKER_13_071: [ For every iteration of the loop the function will first wait on module_info->mq_cond using module_info->mq_lock as the corresponding mutex to be used by the condition variable. ]
+// Tests_SRS_BCAST_BROKER_13_090: [ When module_info->mq_cond has been signaled this function shall kick off another loop predicated on module_info->quit_worker being equal to 0 and module_info->mq not being empty. This thread has the lock on module_info->mq_lock at this point. ]
+// Tests_SRS_BCAST_BROKER_13_069: [ The function shall dequeue a message from the module's message queue. ]
+// Tests_SRS_BCAST_BROKER_13_091: [ The function shall unlock module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_99_012: [ The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. ]
 // Tests_SRS_BROKER_99_012: [ The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. ]
-// Tests_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
-// Tests_SRS_BROKER_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
-// Tests_SRS_BROKER_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
-// Tests_SRS_BROKER_13_026: [ This function shall assign user_data to a local variable called module_info of type BROKER_MODULEINFO*. ]
-// Tests_SRS_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
+// Tests_SRS_BCAST_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
+// Tests_SRS_BCAST_BROKER_13_094: [ The function shall re-acquire the lock on module_info->mq_lock. ]
+// Tests_SRS_BCAST_BROKER_13_095: [ When the function exits the outer loop predicated on module_info->quit_worker being 0 it shall unlock module_info->mq_lock before exiting from the function. ]
+// Tests_SRS_BCAST_BROKER_13_026: [ This function shall assign user_data to a local variable called module_info of type BROKER_MODULEINFO*. ]
+// Tests_SRS_BCAST_BROKER_04_001: [** This function shall immediately start processing messages when `module->mq` is not empty without waiting on `module->mq_cond`.]
 TEST_FUNCTION(module_publish_worker_calls_module_receive)
 {
     /**

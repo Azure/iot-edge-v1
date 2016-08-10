@@ -209,13 +209,13 @@ void Broker_IncRef(BROKER_HANDLE broker)
 }
 
 /**
-* This is the worker function that runs for each module. The module_publish_worker
+* This is the worker function that runs for each module. The module_worker
 * function is passed in a pointer to the relevant MODULE_INFO object as it's
 * thread context parameter. The function's job is to basically wait on the
 * mq_cond condition variable and process messages in module.mq when the
 * condition is signaled.
 */
-static int module_publish_worker(void * user_data)
+static int module_worker(void * user_data)
 {
     /*Codes_SRS_BROKER_13_026: [This function shall assign `user_data` to a local variable called `module_info` of type `BROKER_MODULEINFO*`.]*/
     BROKER_MODULEINFO* module_info = (BROKER_MODULEINFO*)user_data;
@@ -226,7 +226,7 @@ static int module_publish_worker(void * user_data)
 		/*Codes_SRS_BROKER_13_089: [ This function shall acquire the lock on module_info->socket_lock. ]*/
 		if (Lock(module_info->socket_lock))
 		{
-			/*Codes_SRS_BROKER_02_004: [ If acquiring the lock fails, then module_publish_worker shall return. ]*/
+			/*Codes_SRS_BROKER_02_004: [ If acquiring the lock fails, then module_worker shall return. ]*/
 			LogError("unable to Lock");
 			should_continue = 0;
 			break;
@@ -240,7 +240,7 @@ static int module_publish_worker(void * user_data)
 		/*Codes_SRS_BROKER_13_091: [ The function shall unlock module_info->socket_lock. ]*/
 		if (Unlock(module_info->socket_lock) != LOCK_OK)
 		{
-			/*Codes_SRS_BROKER_17_016: [ If releasing the lock fails, then module_publish_worker shall return. ]*/
+			/*Codes_SRS_BROKER_17_016: [ If releasing the lock fails, then module_worker shall return. ]*/
 			should_continue = 0;
 			if (nbytes > 0)
 			{
@@ -266,8 +266,11 @@ static int module_publish_worker(void * user_data)
 			}
 			else
 			{
+				/*Codes_SRS_BROKER_17_024: [ The function shall strip off the topic from the message. ]*/
+				const unsigned char*buf_bytes = (const unsigned char*)buf;
+				buf_bytes += sizeof(MODULE_HANDLE);
 				/*Codes_SRS_BROKER_17_017: [ The function shall deserialize the message received. ]*/
-				MESSAGE_HANDLE msg = Message_CreateFromByteArray((const unsigned char*)buf, nbytes);
+				MESSAGE_HANDLE msg = Message_CreateFromByteArray(buf_bytes, nbytes - sizeof(MODULE_HANDLE));
 				/*Codes_SRS_BROKER_17_018: [ If the deserialization is not successful, the message loop shall continue. ]*/
 				if (msg != NULL)
 				{
@@ -388,9 +391,9 @@ static BROKER_RESULT start_module(BROKER_MODULEINFO* module_info, STRING_HANDLE 
 		}
 		else
 		{
-			/* We may want to subscribe to quit message guid, we may have to for topic subscriptions */
+			/* Codes_SRS_BROKER_17_028: [ The function shall subscribe BROKER_MODULEINFO::receive_socket to the quit signal GUID. ]*/
 			if (nn_setsockopt(
-				module_info->receive_socket, NN_SUB, NN_SUB_SUBSCRIBE, "", 0) < 0)
+				module_info->receive_socket, NN_SUB, NN_SUB_SUBSCRIBE, STRING_c_str(module_info->quit_message_guid), STRING_length(module_info->quit_message_guid)) < 0)
 			{
 				/*Codes_SRS_BROKER_13_047: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
 				LogError("nn_setsockopt failed");
@@ -400,10 +403,10 @@ static BROKER_RESULT start_module(BROKER_MODULEINFO* module_info, STRING_HANDLE 
 			}
 			else
 			{
-				/*Codes_SRS_BROKER_13_102: [The function shall create a new thread for the module by calling ThreadAPI_Create using module_publish_worker as the thread callback and using the newly allocated BROKER_MODULEINFO object as the thread context.*/
+				/*Codes_SRS_BROKER_13_102: [The function shall create a new thread for the module by calling ThreadAPI_Create using module_worker as the thread callback and using the newly allocated BROKER_MODULEINFO object as the thread context.*/
 				if (ThreadAPI_Create(
 					&(module_info->thread),
-					module_publish_worker,
+					module_worker,
 					(void*)module_info
 				) != THREADAPI_OK)
 				{
@@ -644,6 +647,150 @@ BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)
     return result;
 }
 
+BROKER_MODULEINFO* broker_locate_handle(BROKER_HANDLE_DATA* broker_data, MODULE_HANDLE handle)
+{
+	BROKER_MODULEINFO* result;
+	MODULE module;
+	module.module_apis = NULL;
+	module.module_handle = handle;
+
+	LIST_ITEM_HANDLE module_info_item = list_find(broker_data->modules, find_module_predicate, &module);
+	if (module_info_item == NULL)
+	{
+		result = NULL;
+	}
+	else
+	{
+		result = (BROKER_MODULEINFO*)list_item_get_value(module_info_item);
+	}
+	return result;
+}
+
+BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link)
+{
+	BROKER_RESULT result;
+	/*Codes_SRS_BROKER_17_029: [ If broker or link are NULL, Broker_AddLink shall return BROKER_INVALIDARG. ]*/
+	if (broker == NULL || link == NULL || link->module_sink_handle == NULL || link->module_source_handle == NULL)
+	{
+		LogError("Broker_AddLink, input is NULL.");
+		result = BROKER_INVALIDARG;
+	}
+	else
+	{
+		BROKER_HANDLE_DATA* broker_data = (BROKER_HANDLE_DATA*)broker;
+		/*Codes_SRS_BROKER_17_030: [ Broker_AddLink shall lock the modules_lock. ]*/
+		if (Lock(broker_data->modules_lock) != LOCK_OK)
+		{
+			/*Codes_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]*/
+			LogError("Broker_AddLink, Lock on broker_data->modules_lock failed");
+			result = BROKER_ADD_LINK_ERROR;
+		}
+		else
+		{
+			/*Codes_SRS_BROKER_17_031: [ Broker_AddLink shall find the BROKER_HANDLE_DATA::module_info for link->sink. ]*/
+			BROKER_MODULEINFO* module_info = broker_locate_handle(broker_data, link->module_sink_handle);
+
+			if (module_info == NULL)
+			{
+				/*Codes_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]*/
+				LogError("Link->sink is not attached to the broker");
+				result = BROKER_ADD_LINK_ERROR;
+			}
+			else
+			{
+				/*Codes_SRS_BROKER_17_041: [ Broker_AddLink shall find the BROKER_HANDLE_DATA::module_info for link->module_source_handle. ]*/
+				BROKER_MODULEINFO* source_module = broker_locate_handle(broker_data, link->module_source_handle);
+
+				if (source_module == NULL)
+				{
+					LogError("Link->source is not attached to the broker");
+					result = BROKER_ADD_LINK_ERROR;
+				}
+				else
+				{
+					/*Codes_SRS_BROKER_17_032: [ Broker_AddLink shall subscribe module_info->receive_socket to the link->source module handle. ]*/
+					if (nn_setsockopt(
+						module_info->receive_socket, NN_SUB, NN_SUB_SUBSCRIBE, &(link->module_source_handle), sizeof(MODULE_HANDLE)) < 0)
+					{
+						/*Codes_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]*/
+						LogError("Unable to make link in Broker");
+						result = BROKER_ADD_LINK_ERROR;
+					}
+					else
+					{
+						result = BROKER_OK;
+					}
+				}
+			}
+			/*Codes_SRS_BROKER_17_033: [ Broker_AddLink shall unlock the modules_lock. ]*/
+			Unlock(broker_data->modules_lock);
+		}
+	}
+	return result;
+}
+
+BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link)
+{
+	BROKER_RESULT result;
+	/*Codes_SRS_BROKER_17_035: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_RemoveLink shall return BROKER_INVALIDARG. ]*/
+	if (broker == NULL || link == NULL || link->module_sink_handle == NULL || link->module_source_handle == NULL)
+	{
+		LogError("Broker_AddLink, input is NULL.");
+		result = BROKER_INVALIDARG;
+	}
+	else
+	{
+		BROKER_HANDLE_DATA* broker_data = (BROKER_HANDLE_DATA*)broker;
+		/*Codes_SRS_BROKER_17_036: [ Broker_RemoveLink shall lock the modules_lock. ]*/
+		if (Lock(broker_data->modules_lock) != LOCK_OK)
+		{
+			/*Codes_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]*/
+			LogError("Broker_AddLink, Lock on broker_data->modules_lock failed");
+			result = BROKER_REMOVE_LINK_ERROR;
+		}
+		else
+		{
+			/*Codes_SRS_BROKER_17_037: [ Broker_RemoveLink shall find the module_info for link->module_sink_handle. ]*/
+			BROKER_MODULEINFO* module_info = broker_locate_handle(broker_data, link->module_sink_handle);
+
+			if (module_info == NULL)
+			{
+				/*Codes_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]*/
+				LogError("Link->sink is not attached to the broker");
+				result = BROKER_REMOVE_LINK_ERROR;
+			}
+			else
+			{
+				/*Codes_SRS_BROKER_17_042: [ Broker_RemoveLink shall find the module_info for link->module_source_handle. ]*/
+				BROKER_MODULEINFO* source_module_info = broker_locate_handle(broker_data, link->module_source_handle);
+				if (source_module_info == NULL)
+				{
+					LogError("Link->source is not attached to the broker");
+					result = BROKER_REMOVE_LINK_ERROR;
+				}
+				else
+				{
+					/*Codes_SRS_BROKER_17_038: [ Broker_RemoveLink shall unsubscribe module_info->receive_socket from the link->module_source_handle module handle. ]*/
+					if (nn_setsockopt(
+						module_info->receive_socket, NN_SUB, NN_SUB_UNSUBSCRIBE, &(link->module_source_handle), sizeof(MODULE_HANDLE)) < 0)
+					{
+						/*Codes_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]*/
+						LogError("Unable to make link in Broker");
+						result = BROKER_REMOVE_LINK_ERROR;
+					}
+					else
+					{
+						result = BROKER_OK;
+					}
+				}
+			}
+			/*Codes_SRS_BROKER_17_039: [ Broker_RemoveLink shall unlock the modules_lock. ]*/
+			Unlock(broker_data->modules_lock);
+		}
+	}
+	return result;
+}
+
 static void broker_decrement_ref(BROKER_HANDLE broker)
 {
     /*Codes_SRS_BROKER_13_058: [If `broker` is NULL the function shall do nothing.]*/
@@ -687,10 +834,10 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
 {
     BROKER_RESULT result;
     /*Codes_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]*/
-    if (broker == NULL || message == NULL)
+    if (broker == NULL || source == NULL || message == NULL)
     {
         result = BROKER_INVALIDARG;
-        LogError("Broker handle and/or message handle is NULL");
+        LogError("Broker handle, source, and/or message handle is NULL");
     }
     else
     {
@@ -705,6 +852,7 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
 		else
 		{
 			int32_t msg_size;
+			int32_t buf_size;
 			/*Codes_SRS_BROKER_17_007: [ Broker_Publish shall clone the message. ]*/
 			MESSAGE_HANDLE msg = Message_Clone(message);
 			/*Codes_SRS_BROKER_17_008: [ Broker_Publish shall serialize the message. ]*/
@@ -718,8 +866,9 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
 			}
 			else
 			{
-				/*Codes_SRS_BROKER_17_009: [ Broker_Publish shall allocate a nanomsg buffer and copy the serialized message into it. ]*/
-				void* nn_msg = nn_allocmsg(msg_size, 0);
+				/*Codes_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ]*/
+				buf_size = msg_size + sizeof(MODULE_HANDLE);
+				void* nn_msg = nn_allocmsg(buf_size, 0);
 				if (nn_msg == NULL)
 				{
 					/*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
@@ -728,11 +877,16 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
 				}
 				else
 				{
-					Message_ToByteArray(message, nn_msg, msg_size);
+					/*Codes_SRS_BROKER_17_026: [ Broker_Publish shall copy source into the beginning of the nanomsg buffer. ]*/
+					unsigned char *nn_msg_bytes = (unsigned char *)nn_msg;
+					memcpy(nn_msg_bytes, &source, sizeof(MODULE_HANDLE));
+					/*Codes_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ]*/
+					nn_msg_bytes += sizeof(MODULE_HANDLE);
+					Message_ToByteArray(message, nn_msg_bytes, msg_size);
 
 					/*Codes_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ]*/
 					int nbytes = nn_send(broker_data->publish_socket, &nn_msg, NN_MSG, 0);
-					if (nbytes != msg_size)
+					if (nbytes != buf_size)
 					{
 						/*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
 						LogError("unable to send a message [%p]", msg);

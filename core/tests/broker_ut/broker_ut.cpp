@@ -104,8 +104,11 @@ typedef struct LIST_INSTANCE_TAG
     LIST_ITEM_INSTANCE* head;
 } LIST_INSTANCE;
 
-static size_t current_list_index;
-static const void *fake_list[10];
+struct ListNode
+{
+	const void* item;
+	ListNode *next, *prev;
+};
 
 static int current_nn_socket_index;
 static void* nn_socket_memory[10];
@@ -389,13 +392,19 @@ public:
         }
         else
         {
-            result1 = (LIST_HANDLE)(new RefCountObject());
+            result1 = (LIST_HANDLE)new ListNode();
         }
     MOCK_METHOD_END(LIST_HANDLE, result1)
 
     MOCK_STATIC_METHOD_1(, void, list_destroy, LIST_HANDLE, list)
-        ((RefCountObject*)list)->dec_ref();
-    MOCK_VOID_METHOD_END()
+		ListNode *current = (ListNode*)list;
+		while (current != nullptr)
+		{
+			auto tmp = current;
+			current = current->next;
+			delete tmp;
+		}
+	MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_2(, LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item)
         LIST_ITEM_HANDLE result1;
@@ -413,8 +422,15 @@ public:
             }
             else
             {
-                fake_list[current_list_index++] = item;
-                result1 = (LIST_ITEM_HANDLE)item;
+				ListNode *new_item = new ListNode();
+				new_item->item = item;
+				ListNode *real_list = (ListNode*)list;
+				ListNode *ptr = real_list;
+				while (ptr->next != nullptr)
+					ptr = ptr->next;
+				ptr->next = new_item;
+				new_item->prev = ptr;
+				result1 = (LIST_ITEM_HANDLE)new_item;
             }
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
@@ -428,8 +444,12 @@ public:
         }
         else
         {
-            /* do I need anything more compicated here? */
-            result2 = 0;
+			ListNode *node = (ListNode*)item;
+			node->prev->next = node->next;
+			if (node->next != nullptr)
+				node->next->prev = node->prev;
+			delete node;
+			result = 0;
         }
 
     MOCK_METHOD_END(int, result2)
@@ -442,8 +462,9 @@ public:
         }
         else
         {
-            result1 = (LIST_ITEM_HANDLE)fake_list[0];
-        }
+			ListNode* my_result = NULL;
+			result1 = (LIST_ITEM_HANDLE)(((ListNode*)list)->next);
+		}
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
     MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle)
@@ -454,7 +475,7 @@ public:
         }
         else
         {
-            result1 = (LIST_ITEM_HANDLE)(fake_list[current_list_index]);
+            result1 = (LIST_ITEM_HANDLE)(((ListNode*)item_handle)->next);
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
@@ -472,21 +493,17 @@ public:
             {
                 result1 = NULL;
             }
-            else if ((void*)&fake_module == (void*)match_context)
-            {
-                result1 = (LIST_ITEM_HANDLE)fake_list[0];
-            }
             else
             {
-                result1 = NULL;
-                for (size_t i = 0; i < current_list_index; i++)
-                {
-                    if ((void*)fake_list[i] == (void*)match_context)
-                    {
-                        result1 = (LIST_ITEM_HANDLE)fake_list[i];
-                        break;
-                    }
-                }
+                result1 = (LIST_ITEM_HANDLE)(((ListNode*)list)->next);
+				while (result1)
+				{
+					if (match_function(result1, match_context))
+					{
+						break;
+					}
+					result1 = (LIST_ITEM_HANDLE)(((ListNode*)result1)->next);
+				}
             }
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
@@ -499,7 +516,7 @@ public:
         }
         else
         {
-            result1 = item_handle;
+            result1 = (LIST_ITEM_HANDLE)(((ListNode*)item_handle)->item);
         }
     MOCK_METHOD_END(const void*, result1)
 
@@ -519,6 +536,9 @@ public:
 	MOCK_STATIC_METHOD_1(, const char*, STRING_c_str, STRING_HANDLE, s)
 	MOCK_METHOD_END(const char*, BASEIMPLEMENTATION::STRING_c_str(s))
 
+	MOCK_STATIC_METHOD_1(, size_t, STRING_length, STRING_HANDLE, s)
+	MOCK_METHOD_END(size_t, BASEIMPLEMENTATION::STRING_length(s))
+
 	MOCK_STATIC_METHOD_2(, UNIQUEID_RESULT, UniqueId_Generate, char*, uid, size_t, bufferSize)
 		for (int i = 0; i < (int)bufferSize; i++) 
 		{ 
@@ -532,7 +552,7 @@ public:
 
 	MOCK_STATIC_METHOD_2(, void *, nn_allocmsg, size_t, size, int, type)
 	nn_current_msg_size = size;
-	MOCK_METHOD_END(void*, malloc(1))
+	MOCK_METHOD_END(void*, malloc(size))
 
 	MOCK_STATIC_METHOD_1(, int, nn_freemsg, void*, msg)
 	free(msg);
@@ -633,6 +653,8 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, STRING_delete, STRING_HANDLE,
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , STRING_HANDLE, STRING_construct, const char*, source)
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2)
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , const char*, STRING_c_str, STRING_HANDLE, s)
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , size_t, STRING_length, STRING_HANDLE, s)
+
 // unique id
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , UNIQUEID_RESULT, UniqueId_Generate, char*, uid, size_t, bufferSize)
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , void *, nn_allocmsg, size_t, size, int, type)
@@ -706,11 +728,6 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     currentThreadAPI_Create_call = 0;
     whenShallThreadAPI_Create_fail = 0;
 
-    current_list_index = 0;
-    for (int l = 0; l < 10; l++)
-    {
-        fake_list[l] = NULL;
-    }
 	current_nn_socket_index = 0;
 	for (int l = 0; l < 10; l++)
 	{
@@ -1495,7 +1512,11 @@ TEST_FUNCTION(Broker_AddModule_fails_when_nn_setSocketOpts_fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, "", 0))
+	STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, STRING_length(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, 36))
 		.IgnoreArgument(1)
 		.IgnoreArgument(4)
 		.SetFailReturn(-1);
@@ -1552,7 +1573,11 @@ TEST_FUNCTION(Broker_AddModule_fails_when_ThreadAPI_Create_fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, "", 0))
+	STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, STRING_length(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, 36))
 		.IgnoreArgument(1)
 		.IgnoreArgument(4);
 	STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
@@ -1584,6 +1609,7 @@ TEST_FUNCTION(Broker_AddModule_fails_when_ThreadAPI_Create_fails)
 //Tests_SRS_BROKER_13_045 : [Broker_AddModule shall append the new instance of BROKER_MODULEINFO to BROKER_HANDLE_DATA::modules.]
 //Tests_SRS_BROKER_13_046 : [This function shall release the lock on BROKER_HANDLE_DATA::modules_lock.]
 //Tests_SRS_BROKER_13_047 : [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
+//Tests_SRS_BROKER_17_028: [ The function shall subscribe BROKER_MODULEINFO::receive_socket to the quit signal GUID. ]
 TEST_FUNCTION(Broker_AddModule_succeeds)
 {
     ///arrange
@@ -1612,7 +1638,11 @@ TEST_FUNCTION(Broker_AddModule_succeeds)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, 0))
+	STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, STRING_length(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, 36))
 		.IgnoreArgument(1)
 		.IgnoreArgument(4);
     STRICT_EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1639,6 +1669,7 @@ TEST_FUNCTION(Broker_AddModule_succeeds)
 //Tests_SRS_BROKER_13_092: [ The function shall deliver the message to the module's callback function via module_info->module_apis. ]
 //Tests_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]
 //Tests_SRS_BROKER_17_019: [ The function shall free the buffer received on the receive_socket. ]
+//Tests_SRS_BROKER_17_024: [ The function shall strip off the topic from the message. ]
 TEST_FUNCTION(module_publish_worker_calls_receive_once_then_exits_on_quit_msg)
 {
 	CBrokerMocks mocks;
@@ -2006,6 +2037,8 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -2122,6 +2155,8 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_when_nn_send_fails)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2)
@@ -2174,6 +2209,8 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_Lock_fails)
 	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
@@ -2230,6 +2267,8 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_nn_close_fails)
 	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
@@ -2291,6 +2330,8 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_unlock_fails)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -2328,6 +2369,635 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_unlock_fails)
 	Broker_Destroy(broker);
 }
 
+//Tests_SRS_BROKER_17_029: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_AddLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_AddLink_null_broker_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = NULL;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_029: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_AddLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_AddLink_null_link_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_AddLink(broker, NULL);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_029: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_AddLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_AddLink_null_source_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		NULL,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_029: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_AddLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_AddLink_null_sink_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		NULL
+	};
+
+	///act
+	auto result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_030: [ Broker_AddLink shall lock the modules_lock. ]
+//Tests_SRS_BROKER_17_031: [ Broker_AddLink shall find the BROKER_HANDLE_DATA::module_info for link->module_sink_handle. ]
+//Tests_SRS_BROKER_17_041: [ Broker_AddLink shall find the BROKER_HANDLE_DATA::module_info for link->module_source_handle. ]
+//Tests_SRS_BROKER_17_032: [ Broker_AddLink shall subscribe module_info->receive_socket to the link->module_source_handle module handle. ]
+//Tests_SRS_BROKER_17_033: [ Broker_AddLink shall unlock the modules_lock. ]
+TEST_FUNCTION(Broker_AddLink_succeeds)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
+		.IgnoreArgument(1)
+		.IgnoreArgument(4);
+
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]
+TEST_FUNCTION(Broker_AddLink_fails_setsocketoption_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
+		.IgnoreArgument(1)
+		.IgnoreArgument(4)
+		.SetFailReturn(-1);
+
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ADD_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]
+TEST_FUNCTION(Broker_AddLink_fails_source_find_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetFailReturn((LIST_ITEM_HANDLE)NULL);
+
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ADD_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]
+TEST_FUNCTION(Broker_AddLink_fails_list_find_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetFailReturn((LIST_ITEM_HANDLE)NULL);
+
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ADD_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]
+TEST_FUNCTION(Broker_AddLink_fails_lock_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetFailReturn(LOCK_ERROR);
+
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	result = Broker_AddLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ADD_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_035: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_RemoveLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_RemoveLink_null_broker_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = NULL;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_035: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_RemoveLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_RemoveLink_null_link_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_RemoveLink(broker, NULL);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_035: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_RemoveLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_RemoveLink_null_source_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		NULL,
+		fake_module_handle
+	};
+
+	///act
+	auto result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_035: [ If broker, link, link->module_source_handle or link->module_sink_handle are NULL, Broker_RemoveLink shall return BROKER_INVALIDARG. ]
+TEST_FUNCTION(Broker_RemoveLink_null_sink_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		NULL
+	};
+
+	///act
+	auto result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+
+}
+
+//Tests_SRS_BROKER_17_036: [ Broker_RemoveLink shall lock the modules_lock. ]
+//Tests_SRS_BROKER_17_037: [ Broker_RemoveLink shall find the module_info for link->module_sink_handle. ]
+//Tests_SRS_BROKER_17_042: [ Broker_RemoveLink shall find the module_info for link->module_source_handle. ]
+//Tests_SRS_BROKER_17_038: [ Broker_RemoveLink shall unsubscribe module_info->receive_socket from the link->module_source_handle module handle. ]
+//Tests_SRS_BROKER_17_039: [ Broker_RemoveLink shall unlock the modules_lock. ]
+TEST_FUNCTION(Broker_RemoveLink_succeeds)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+	result = Broker_AddLink(broker, &bld);
+
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_UNSUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
+		.IgnoreArgument(1)
+		.IgnoreArgument(4);
+
+	///act
+	result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]
+TEST_FUNCTION(Broker_RemoveLink_fails_sockopt_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+	result = Broker_AddLink(broker, &bld);
+
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_UNSUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
+		.IgnoreArgument(1)
+		.IgnoreArgument(4)
+		.SetFailReturn(-1);
+
+	///act
+	result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_REMOVE_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+TEST_FUNCTION(Broker_RemoveLink_fails_source_find_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+	result = Broker_AddLink(broker, &bld);
+
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetFailReturn(nullptr);
+
+	///act
+	result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_REMOVE_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+
+//Tests_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]
+TEST_FUNCTION(Broker_RemoveLink_fails_list_find_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+	result = Broker_AddLink(broker, &bld);
+
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetFailReturn(nullptr);
+
+	///act
+	result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_REMOVE_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
+
+//Tests_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]
+TEST_FUNCTION(Broker_RemoveLink_fails_lock_fails)
+{
+	///arrange
+	CBrokerMocks mocks;
+	auto broker = Broker_Create();
+	auto result = Broker_AddModule(broker, &fake_module);
+	BROKER_LINK_DATA bld =
+	{
+		fake_module_handle,
+		fake_module_handle
+	};
+	result = Broker_AddLink(broker, &bld);
+
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetFailReturn(LOCK_ERROR);
+
+	///act
+	result = Broker_RemoveLink(broker, &bld);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_REMOVE_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+	Broker_RemoveModule(broker, &fake_module);
+	Broker_Destroy(broker);
+}
 
 //Tests_SRS_BROKER_13_108: [If broker is NULL then Broker_IncRef shall do nothing.]
 TEST_FUNCTION(Broker_IncRef_does_nothing_with_null_input)
@@ -2482,7 +3152,7 @@ TEST_FUNCTION(Broker_Publish_fails_with_null_broker)
     CBrokerMocks mocks;
 
     ///act
-    auto r1 = Broker_Publish(NULL, NULL, (MESSAGE_HANDLE)0x1);
+    auto r1 = Broker_Publish(NULL, fake_module_handle, (MESSAGE_HANDLE)0x1);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
@@ -2498,7 +3168,7 @@ TEST_FUNCTION(Broker_Publish_fails_with_null_message)
     CBrokerMocks mocks;
 
     ///act
-    auto r1 = Broker_Publish((BROKER_HANDLE)0x1, NULL, NULL);
+    auto r1 = Broker_Publish((BROKER_HANDLE)0x1, fake_module_handle, NULL);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
@@ -2507,6 +3177,21 @@ TEST_FUNCTION(Broker_Publish_fails_with_null_message)
     ///cleanup
 }
 
+//Tests_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]
+TEST_FUNCTION(Broker_Publish_fails_with_null_source)
+{
+	///arrange
+	CBrokerMocks mocks;
+
+	///act
+	auto r1 = Broker_Publish((BROKER_HANDLE)0x1, NULL, (MESSAGE_HANDLE)0x1);
+
+	///assert
+	ASSERT_ARE_EQUAL(BROKER_RESULT, r1, BROKER_INVALIDARG);
+	mocks.AssertActualAndExpectedCalls();
+
+	///cleanup
+}
 //Tests_SRS_BROKER_13_037: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
 TEST_FUNCTION(Broker_Publish_fails_when_Lock_fails)
 {
@@ -2530,7 +3215,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_Lock_fails)
 		.SetFailReturn(LOCK_ERROR);
 
 	///act
-	result = Broker_Publish(broker, NULL, message);
+	result = Broker_Publish(broker, fake_module_handle, message);
 
 	///assert
 	ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
@@ -2570,7 +3255,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_Message_ToByteArray_fails)
 		.SetFailReturn(-1);
 
     ///act
-    result = Broker_Publish(broker, NULL, message);
+    result = Broker_Publish(broker, fake_module_handle, message);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
@@ -2607,11 +3292,11 @@ TEST_FUNCTION(Broker_Publish_fails_when_allocmsg_fails)
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
 	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1 + sizeof(MODULE_HANDLE), 0))
 		.SetFailReturn(nullptr);
 
     ///act
-    result = Broker_Publish(broker, NULL, message);
+    result = Broker_Publish(broker, fake_module_handle, message);
 
     ///assert
     ASSERT_ARE_EQUAL(int, result, BROKER_ERROR);
@@ -2648,7 +3333,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_send_fails)
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
 	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1 + sizeof(MODULE_HANDLE), 0))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, nn_freemsg(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -2660,7 +3345,7 @@ TEST_FUNCTION(Broker_Publish_fails_when_send_fails)
 		.SetFailReturn((int)-1);
 
     ///act
-    result = Broker_Publish(broker, NULL, message);
+    result = Broker_Publish(broker, fake_module_handle, message);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
@@ -2675,7 +3360,9 @@ TEST_FUNCTION(Broker_Publish_fails_when_send_fails)
 //Tests_SRS_BROKER_17_022: [ Broker_Publish shall Lock the modules lock. ]
 //Tests_SRS_BROKER_17_007: [Broker_Publish shall clone the message.]
 //Tests_SRS_BROKER_17_008: [ Broker_Publish shall serialize the message. ]
-//Tests_SRS_BROKER_17_009: [ Broker_Publish shall allocate a nanomsg buffer and copy the serialized message into it. ]
+//Tests_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ]
+//Tests_SRS_BROKER_17_026: [ Broker_Publish shall copy source into the beginning of the nanomsg buffer. ]
+//Tests_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ]
 //Tests_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ]
 //Tests_SRS_BROKER_17_011: [ Broker_Publish shall free the serialized message data. ]
 //Tests_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ]
@@ -2705,7 +3392,7 @@ TEST_FUNCTION(Broker_Publish_succeeds)
 	STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
 	STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
 	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
-	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1, 0))
+	STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1+sizeof(MODULE_HANDLE), 0))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(2);
@@ -2715,7 +3402,7 @@ TEST_FUNCTION(Broker_Publish_succeeds)
 
 
     ///act
-    result = Broker_Publish(broker, NULL, message);
+    result = Broker_Publish(broker, fake_module_handle, message);
 
     ///assert
     ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);

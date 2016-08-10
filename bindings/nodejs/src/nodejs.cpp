@@ -44,19 +44,21 @@
 
 #define DESTROY_WAIT_TIME_IN_SECS   (5)
 
-#define NODE_LOAD_SCRIPT(ss, main_path, module_id)    ss <<       \
-    "(function() {"                                               \
-    "  try {"                                                     \
-    "    var path = require('path');"                             \
-    "    return gatewayHost.registerModule("                      \
-    "      require(path.resolve('" << (main_path) << "')), " <<   \
-           (module_id) <<                                         \
-    "    ); "                                                     \
-    "  } "                                                        \
-    "  catch(err) { "                                             \
-    "    console.error(`ERROR: ${err.toString()}`);"              \
-    "    return false;"                                           \
-    "  }"                                                         \
+#define NODE_LOAD_SCRIPT(ss, main_path, module_id)    ss <<                    \
+    "(function() {"                                                            \
+    "  try {"                                                                  \
+    "    var path = require('path');"                                          \
+    "    var main_path = path.resolve('" << (main_path) << "');" <<            \
+    "    delete require.cache[main_path]; " <<                                 \
+    "    return gatewayHost.registerModule("                                   \
+    "      require(main_path), " <<                                            \
+           (module_id) <<                                                      \
+    "    ); "                                                                  \
+    "  } "                                                                     \
+    "  catch(err) { "                                                          \
+    "    console.error(`ERROR: ${err.toString()}`);"                           \
+    "    return false;"                                                        \
+    "  }"                                                                      \
     "})();"
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
