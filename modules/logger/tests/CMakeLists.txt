@@ -4,5 +4,5 @@
 cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for logger tests folder
 
-add_subdirectory(logger_unittests)
-add_subdirectory(logger_hl_unittests)
+add_subdirectory(logger_hl_ut)
+add_subdirectory(logger_ut)

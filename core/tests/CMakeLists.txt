@@ -4,21 +4,21 @@
 cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for the core tests folder
 
-add_subdirectory(gwmessage_unittests)
-add_subdirectory(module_loader_unittests)
-add_subdirectory(dynamic_library_unittests)
-add_subdirectory(broadcast_bus_unittests)
-add_subdirectory(pubsub_bus_unittests)
-add_subdirectory(gateway_ll_unittests)
-add_subdirectory(event_system_unittests)
-add_subdirectory(gateway_unittests)
+add_subdirectory(broadcast_bus_ut)
+add_subdirectory(broker_ut)
+add_subdirectory(dynamic_library_ut)
+add_subdirectory(event_system_ut)
+add_subdirectory(gateway_ll_ut)
+add_subdirectory(gateway_ut)
+add_subdirectory(gwmessage_ut)
+add_subdirectory(module_loader_ut)
 
 if(WIN32)
-add_subdirectory(broker_uwp_unittests)
-add_subdirectory(gateway_ll_uwp_unittests)
+    add_subdirectory(broker_uwp_ut)
+    add_subdirectory(gateway_ll_uwp_ut)
 endif()
 
 if(${run_e2e_tests})
-    add_subdirectory(gw_e2etests)
+    add_subdirectory(gateway_e2e)
 endif()
 

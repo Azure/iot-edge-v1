@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8.11)
 # fail when run under "ctest". Also, Valgrind doesn't
 # pass with a garbage collected system like v8.
 if(WIN32)
-    add_subdirectory(nodejs_binding_integrationtests)
+    add_subdirectory(nodejs_int)
 endif()
 
-add_subdirectory(nodejs_binding_hl_unittests)
+add_subdirectory(nodejs_hl_ut)
