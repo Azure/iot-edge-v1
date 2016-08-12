@@ -544,7 +544,7 @@ public:
         }
         else
         {
-            result2 = BASEIMPLEMENTATION::gballoc_malloc(1);
+            result2 = (IOTHUB_MESSAGE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
         }
         
     MOCK_METHOD_END(IOTHUB_MESSAGE_HANDLE, result2);
