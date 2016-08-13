@@ -64,6 +64,8 @@ static int e2e_module_worker(void * user_data)
 	MESSAGE_CONFIG newMessageCfg;
 	MAP_HANDLE newProperties = Map_Create(NULL);
 
+	ThreadAPI_Sleep(500);
+
 	if (newProperties == NULL)
 	{
 		LogError("Failed to create message properties");

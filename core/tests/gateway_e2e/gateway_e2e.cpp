@@ -211,7 +211,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
 
 		///act
 		m6GatewayProperties.gateway_modules = gatewayProps;
-		m6GatewayProperties.gateway_links = NULL; //No Links for now. 
+		m6GatewayProperties.gateway_links = gatewayLinks; 
 		e2eGatewayInstance = Gateway_LL_Create(&m6GatewayProperties);
 
 
