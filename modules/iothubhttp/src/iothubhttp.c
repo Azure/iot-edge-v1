@@ -16,14 +16,14 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/strings.h"
 #include "messageproperties.h"
-#include "message_bus.h"
+#include "broker.h"
 
 typedef struct PERSONALITY_TAG
 {
     STRING_HANDLE deviceName;
     STRING_HANDLE deviceKey;
     IOTHUB_CLIENT_HANDLE iothubHandle;
-    MESSAGE_BUS_HANDLE busHandle;
+    BROKER_HANDLE broker;
 }PERSONALITY;
 
 typedef PERSONALITY* PERSONALITY_PTR;
@@ -34,7 +34,7 @@ typedef struct IOTHUBHTTP_HANDLE_DATA_TAG
     STRING_HANDLE IoTHubName;
     STRING_HANDLE IoTHubSuffix;
     TRANSPORT_HANDLE transportHandle;
-    MESSAGE_BUS_HANDLE busHandle;
+    BROKER_HANDLE broker;
 }IOTHUBHTTP_HANDLE_DATA;
 
 #define SOURCE "source"
@@ -42,21 +42,21 @@ typedef struct IOTHUBHTTP_HANDLE_DATA_TAG
 #define DEVICENAME "deviceName"
 #define DEVICEKEY "deviceKey"
 
-static MODULE_HANDLE IoTHubHttp_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configuration)
 {
     IOTHUBHTTP_HANDLE_DATA *result;
-    /*Codes_SRS_IOTHUBHTTP_02_001: [If busHandle is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
+    /*Codes_SRS_IOTHUBHTTP_02_001: [If broker is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
     /*Codes_SRS_IOTHUBHTTP_02_002: [If configuration is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
     /*Codes_SRS_IOTHUBHTTP_02_003: [If configuration->IoTHubName is NULL then IoTHubHttp_Create shall and return NULL.]*/
     /*Codes_SRS_IOTHUBHTTP_02_004: [If configuration->IoTHubSuffix is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
     if (
-        (busHandle == NULL) ||
+        (broker == NULL) ||
         (configuration == NULL) ||
         (((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName == NULL) ||
         (((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix == NULL)
         )
     {
-        LogError("invalid arg busHandle=%p, configuration=%p, IoTHubName=%s IoTHubSuffix=%s", busHandle, configuration, (configuration!=NULL)?((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName:"undefined behavior", (configuration != NULL) ? ((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix : "undefined behavior");
+        LogError("invalid arg broker=%p, configuration=%p, IoTHubName=%s IoTHubSuffix=%s", broker, configuration, (configuration!=NULL)?((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName:"undefined behavior", (configuration != NULL) ? ((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix : "undefined behavior");
         result = NULL;
     }
     else
@@ -112,8 +112,8 @@ static MODULE_HANDLE IoTHubHttp_Create(MESSAGE_BUS_HANDLE busHandle, const void*
                     }
                     else
                     {
-                        /*Codes_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the busHandle. ]*/
-                        result->busHandle = busHandle;
+                        /*Codes_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the broker. ]*/
+                        result->broker = broker;
                         /*Codes_SRS_IOTHUBHTTP_02_008: [Otherwise, IoTHubHttp_Create shall return a non-NULL handle.]*/
                     }
                 }
@@ -243,8 +243,8 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
 }
                         else
                         {
-                            /*Codes_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call MessageBus_Publish with the new message and the busHandle. ]*/
-                            if (MessageBus_Publish(personality->busHandle, NULL, gatewayMsg) != MESSAGE_BUS_OK)
+                            /*Codes_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]*/
+                            if (Broker_Publish(personality->broker, NULL, gatewayMsg) != BROKER_OK)
                             {
                                 /*Codes_SRS_IOTHUBHTTP_17_019: [ If the message fails to publish, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]*/
                                 LogError("Failed to publish gateway message");
@@ -322,7 +322,7 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
                 else
                 {
                     /*it is all fine*/
-                    result->busHandle = moduleHandleData->busHandle;
+                    result->broker = moduleHandleData->broker;
                 }
             }
         }

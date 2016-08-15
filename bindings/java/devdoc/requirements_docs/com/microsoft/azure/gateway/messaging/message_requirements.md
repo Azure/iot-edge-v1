@@ -2,7 +2,7 @@
 
 ## Overview
 
-A message to be used by the Java module implementer. A message will always be serialized before publishing to the native gateway message bus.
+A message to be used by the Java module implementer. A message will always be serialized before publishing to the native message broker.
 
 ## References
 

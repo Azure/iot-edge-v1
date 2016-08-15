@@ -12,7 +12,7 @@
 #include "messageproperties.h"
 
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "parson.h"
 
 static void SimulatedDevice_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
@@ -25,10 +25,10 @@ static void SimulatedDevice_HL_Destroy(MODULE_HANDLE moduleHandle)
 	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Destroy(moduleHandle);
 }
 
-static MODULE_HANDLE SimulatedDevice_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	MODULE_HANDLE result;
-    if (busHandle == NULL || configuration == NULL)
+    if (broker == NULL || configuration == NULL)
     {
 		LogError("invalid SIMULATED_DEVICE_HL module args.");
         result = NULL;
@@ -59,7 +59,7 @@ static MODULE_HANDLE SimulatedDevice_HL_Create(MESSAGE_BUS_HANDLE busHandle, con
                 }
                 else
                 {
-                    result = MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Create(busHandle, macAddress);
+                    result = MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Create(broker, macAddress);
                 }
             }
             json_value_free(json);

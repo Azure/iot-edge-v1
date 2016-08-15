@@ -11,7 +11,7 @@
 #include <stddef.h>
 
 #include "gateway_ll.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "module_loader.h"
 #include "internal/event_system.h"
 
@@ -19,8 +19,8 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
 	VECTOR_HANDLE modules;
 
-	/** @brief The message bus contained within this Gateway */
-	MESSAGE_BUS_HANDLE bus;
+	/** @brief The message broker contained within this Gateway */
+	BROKER_HANDLE broker;
 
 	/** @brief Handle for callback event system coupled with this Gateway */
 	EVENTSYSTEM_HANDLE event_system;
@@ -37,15 +37,16 @@ typedef struct MODULE_DATA_TAG {
 	/** @brief The MODULE_LIBRARY_HANDLE associated with 'module'*/
 	MODULE_LIBRARY_HANDLE module_library_handle;
 
-	/** @brief The MODULE_HANDLE of the same module that lives on the message bus.*/
+	/** @brief The MODULE_HANDLE of the same module that lives on the message broker.*/
 	MODULE_HANDLE module;
 
 } MODULE_DATA;
 
 #ifndef UWP_BINDING
+
 typedef struct LINK_DATA_TAG {
-	MODULE_HANDLE module_source_handle;
-	MODULE_HANDLE module_sink_handle;
+	MODULE_DATA* module_source;
+	MODULE_DATA* module_sink;
 } LINK_DATA;
 
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name);
@@ -139,14 +140,14 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 		/* For freeing up NULL ptrs in case of create failure */
 		memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
 
-		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new MESSAGE_BUS_HANDLE for the gateway representing this gateway's message bus. ]*/
-		gateway->bus = MessageBus_Create();
-		if (gateway->bus == NULL) 
+		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new BROKER_HANDLE for the gateway representing this gateway's message broker. ]*/
+		gateway->broker = Broker_Create();
+		if (gateway->broker == NULL) 
 		{
-			/*Codes_SRS_GATEWAY_LL_14_004: [This function shall return NULL if a MESSAGE_BUS_HANDLE cannot be created.]*/
+			/*Codes_SRS_GATEWAY_LL_14_004: [This function shall return NULL if a BROKER_HANDLE cannot be created.]*/
 			gateway_destroy_internal(gateway);
 			gateway = NULL;
-			LogError("Gateway_LL_Create(): MessageBus_Create() failed.");
+			LogError("Gateway_LL_Create(): Broker_Create() failed.");
 		}
 		else
 		{
@@ -155,7 +156,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 			if (gateway->modules == NULL)
 			{
 				/*Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
-				/*Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created MESSAGE_BUS_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ]*/
+				/*Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created BROKER_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ]*/
 				gateway_destroy_internal(gateway);
 				gateway = NULL;
 				LogError("Gateway_LL_Create(): VECTOR_create failed.");
@@ -174,7 +175,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 				{
 					if (properties != NULL && properties->gateway_modules != NULL)
 					{
-						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each GATEWAY_MODULES_ENTRY use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the GATEWAY_HANDLE message bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the gateway's message broker. ]*/
 						size_t entries_count = VECTOR_size(properties->gateway_modules);
 						if (entries_count > 0)
 						{
@@ -201,7 +202,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						{
 							if (properties->gateway_links != NULL)
 							{
-								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE message bus. ] */
+								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE's broker. ] */
 								size_t entries_count = VECTOR_size(properties->gateway_links);
 
 								if (entries_count > 0)
@@ -217,7 +218,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 										linkAdded = gateway_addlink_internal(gateway, entry);
 									}
 
-									/*Codes_SRS_GATEWAY_LL_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the MESSAGE_Bus the GATEWAY_HANDLE will be destroyed.]*/
+									/*Codes_SRS_GATEWAY_LL_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the broker the GATEWAY_HANDLE will be destroyed.]*/
 									if (!linkAdded)
 									{
 										LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink);
@@ -422,7 +423,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 				const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
 
 				/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
-				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->bus, module_configuration);
+				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->broker, module_configuration);
 				/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
 				if (module_handle == NULL)
 				{
@@ -437,32 +438,32 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 					module.module_apis = module_apis;
 					module.module_handle = module_handle;
 
-					/*Codes_SRS_GATEWAY_LL_14_017: [The function shall link the module to the GATEWAY_HANDLE_DATA's bus using a call to MessageBus_AddModule. ]*/
-					/*Codes_SRS_GATEWAY_LL_14_018: [If the message bus linking is unsuccessful, the function shall return NULL.]*/
-					if (MessageBus_AddModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
+				    /*Codes_SRS_GATEWAY_LL_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
+					/*Codes_SRS_GATEWAY_LL_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
+					if (Broker_AddModule(gateway_handle->broker, &module) != BROKER_OK)
 					{
 						module_result = NULL;
-						LogError("Failed to add module to the gateway bus.");
+						LogError("Failed to add module to the gateway's broker.");
 					}
 					else
 					{
-						/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
-						MessageBus_IncRef(gateway_handle->bus);
-						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containting the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message bus.]*/
+					    /*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
+						Broker_IncRef(gateway_handle->broker);
+						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully attached to the message broker.]*/
 						MODULE_DATA module_data =
 						{
 							module_name,
 							module_library_handle,
 							module_handle
 						};
-						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully linked to the message bus. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
 						if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
 						{
-							MessageBus_DecRef(gateway_handle->bus);
+							Broker_DecRef(gateway_handle->broker);
 							module_result = NULL;
-							if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
+							if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
 							{
-								LogError("Failed to remove module [%p] from the gateway message bus. This module will remain linked.", &module);
+								LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
 							}
 							LogError("Unable to add MODULE_DATA* to the gateway module vector.");
 						}
@@ -507,7 +508,7 @@ static bool link_data_find(const void* element, const void* linkEntry)
 {
 	GATEWAY_LINK_ENTRY* link_entry_casted = (GATEWAY_LINK_ENTRY*)linkEntry;
 
-	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source_handle)->module_name, link_entry_casted->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink_handle)->module_name, link_entry_casted->module_sink) == 0);
+	return (strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_source)->module_name, link_entry_casted->module_source) == 0 && strcmp(((MODULE_DATA*)((LINK_DATA*)element)->module_sink)->module_name, link_entry_casted->module_sink) == 0);
 }
 
 static void gateway_destroy_internal(GATEWAY_HANDLE gw)
@@ -527,20 +528,6 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			gateway_handle->event_system = NULL;
 		}
 		
-		if (gateway_handle->modules != NULL)
-		{
-			/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
-			while (VECTOR_size(gateway_handle->modules) > 0)
-			{
-				MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
-				//By design, there will be no NULL module_data pointers in the vector
-				/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-				gateway_removemodule_internal(gateway_handle, module_data);
-			}
-
-			VECTOR_destroy(gateway_handle->modules);
-		}
-
 		if (gateway_handle->links != NULL)
 		{
 			/*Codes_SRS_GATEWAY_LL_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
@@ -552,10 +539,24 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			VECTOR_destroy(gateway_handle->links);
 		}
 
-		if (gateway_handle->bus != NULL)
+		if (gateway_handle->modules != NULL)
 		{
-			/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
-			MessageBus_Destroy(gateway_handle->bus);
+			/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
+			while (VECTOR_size(gateway_handle->modules) > 0)
+			{
+				MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
+				//By design, there will be no NULL module_data pointers in the vector
+				/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing the modules from the GATEWAY_HANDLE. ]*/
+				gateway_removemodule_internal(gateway_handle, module_data);
+			}
+
+			VECTOR_destroy(gateway_handle->modules);
+		}
+
+		if (gateway_handle->broker != NULL)
+		{
+			/*Codes_SRS_GATEWAY_LL_14_006: [The function shall destroy the GATEWAY_HANDLE_DATA's `broker` `BROKER_HANDLE`. ]*/
+			Broker_Destroy(gateway_handle->broker);
 		}
 
 		free(gateway_handle);
@@ -572,14 +573,14 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 	module.module_apis = NULL;
 	module.module_handle = module_data->module;
 
-	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-	if (MessageBus_RemoveModule(gateway_handle->bus, &module) != MESSAGE_BUS_OK)
+	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
+	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's broker cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+	if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
 	{
-		LogError("Failed to remove module [%p] from the message bus. This module will remain linked to the message bus but will be removed from the gateway.", module_data->module);
+		LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module_data->module);
 	}
-	/*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
-	MessageBus_DecRef(gateway_handle->bus);
+	/*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
+	Broker_DecRef(gateway_handle->broker);
 	/*Codes_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
 	ModuleLoader_GetModuleAPIs(module_data->module_library_handle)->Module_Destroy(module_data->module);
 	/*Codes_SRS_GATEWAY_LL_14_025: [The function shall unload MODULE_DATA's module_library_handle. ]*/
@@ -624,23 +625,36 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 				}
 				else
 				{
-					//Todo: Add the link to message Bus, since it's already validated.
-					LINK_DATA link_data =
+					BROKER_LINK_DATA broker_data =
 					{
-						module_source_handle,
-						module_sink_handle
+						module_source_handle->module,
+						module_sink_handle->module
 					};
-
-					/*Codes_SRS_GATEWAY_LL_04_012: [ This function shall add the entryLink to the gw->links ] */
-					if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
+					
+					if (Broker_AddLink(gateway_handle->broker, &broker_data) != BROKER_OK)
 					{
-						LogError("Unable to add LINK_DATA* to the gateway links vector.");
+						LogError("Unable to add link to Broker.");
 						result = false;
-						//TODO: failed to add link to the links vector, remove it from Message Bus when we have this api.
 					}
 					else
 					{
-						result = true;
+						LINK_DATA link_data = 
+						{
+							module_source_handle,
+							module_sink_handle
+						};
+
+						/*Codes_SRS_GATEWAY_LL_04_012: [ This function shall add the entryLink to the gw->links ] */
+						if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
+						{
+							LogError("Unable to add LINK_DATA* to the gateway links vector.");
+							Broker_RemoveLink(gateway_handle->broker, &broker_data);
+							result = false;
+						}
+						else
+						{
+							result = true;
+						}
 					}
 				}
 			}
@@ -657,13 +671,20 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 
 static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data)
 {
-	//TODO: Remove Link from Message_bus, as soon as Message Bus API is in place.
 	/*Codes_SRS_GATEWAY_LL_04_007: [The functional shall remove that LINK_DATA from GATEWAY_HANDLE_DATA's links. ]*/
+	BROKER_LINK_DATA broker_data =
+	{
+		link_data->module_source->module,
+		link_data->module_sink->module
+	};
+
+	Broker_RemoveLink(gateway_handle->broker, &broker_data);
+
 	VECTOR_erase(gateway_handle->links, link_data, 1);
 }
 #else
 
-GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus)
+GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker)
 {
 	/*Codes_SRS_GATEWAY_LL_99_001: [This function shall create a `GATEWAY_HANDLE` representing the newly created gateway.]*/
 	GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
@@ -671,13 +692,13 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 	{
 		/* For now event system in UWP is not supported */
 		gateway->event_system = NULL;
-		gateway->bus = bus;
-		if (gateway->bus == NULL)
+		gateway->broker = broker;
+		if (gateway->broker == NULL)
 		{
-			/*Codes_SRS_GATEWAY_LL_99_003: [This function shall return `NULL` if a `NULL` `MESSAGE_BUS_HANDLE` is received.]*/
+			/*Codes_SRS_GATEWAY_LL_99_003: [This function shall return `NULL` if a `NULL` `BROKER_HANDLE` is received.]*/
 			free(gateway);
 			gateway = NULL;
-			LogError("Gateway_LL_UwpCreate(): bus must be non-NULL.");
+			LogError("Gateway_LL_UwpCreate(): broker must be non-NULL.");
 		}
 		else
 		{
@@ -696,17 +717,17 @@ GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HAN
 				for (size_t index = 0; index < entries_count; ++index)
 				{
 					MODULE* module = (MODULE*)VECTOR_element(gateway->modules, index);
-					auto result = MessageBus_AddModule(gateway->bus, module);
-					if (result != MESSAGE_BUS_OK)
+					auto result = Broker_AddModule(gateway->broker, module);
+					if (result != BROKER_OK)
 					{
 						free(gateway);
 						gateway = NULL;
-						LogError("Failed to add module to the gateway bus.");
+						LogError("Failed to attach module to the gateway's broker.");
 					}
 					else
 					{
-						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the MESSAGE_BUS_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's bus. ]*/
-						MessageBus_IncRef(gateway->bus);
+						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. ]*/
+						Broker_IncRef(gateway->broker);
 					}
 				}
 			}
@@ -735,18 +756,18 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 			MODULE* module = (MODULE*)VECTOR_element(gateway_handle->modules, index);
 
 			//By design, there will be no NULL module_data pointers in the vector
-			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall unlink module from the GATEWAY_HANDLE_DATA's bus MESSAGE_BUS_HANDLE. ]*/
-			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's bus cannot unlink module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-			if (MessageBus_RemoveModule(gateway_handle->bus, module) != MESSAGE_BUS_OK)
+			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
+			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's broker cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
+			if (Broker_RemoveModule(gateway_handle->broker, module) != BROKER_OK)
 			{
-				LogError("Failed to remove module [%p] from the message bus. This module will remain linked to the message bus but will be removed from the gateway.", module);
+				LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module);
 			}
-			/*Codes_SRS_GATEWAY_LL_99_009: [ The function shall decrement the MESSAGE_BUS_HANDLE reference count. ]*/
-			MessageBus_DecRef(gateway_handle->bus);
+			/*Codes_SRS_GATEWAY_LL_99_009: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
+			Broker_DecRef(gateway_handle->broker);
 		}
 
-		/*Codes_SRS_GATEWAY_LL_99_010: [The function shall destroy the GATEWAY_HANDLE_DATA's `bus` `MESSAGE_BUS_HANDLE`. ]*/
-		MessageBus_Destroy(gateway_handle->bus);
+		/*Codes_SRS_GATEWAY_LL_99_010: [The function shall destroy the GATEWAY_HANDLE_DATA's `broker` `BROKER_HANDLE`. ]*/
+		Broker_Destroy(gateway_handle->broker);
 
 		free(gateway_handle);
 	}

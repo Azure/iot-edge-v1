@@ -11,14 +11,14 @@
 #include "messageproperties.h"
 
 #include "module.h"
-#include "message_bus.h"
+#include "broker.h"
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {
-	MESSAGE_BUS_HANDLE	bus;
+	BROKER_HANDLE	    broker;
     THREAD_HANDLE       simulatedDeviceThread;
     const char *        fakeMacAddress;
-    unsigned int                 simulatedDeviceRunning : 1;
+    unsigned int        simulatedDeviceRunning : 1;
 } SIMULATEDDEVICE_DATA;
 
 static char msgText[1024];
@@ -100,7 +100,7 @@ static int simulated_device_worker(void * user_data)
 						}
 						else
 						{
-							if (MessageBus_Publish(module_data->bus, (MODULE_HANDLE)module_data, newMessage) != MESSAGE_BUS_OK)
+							if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
 							{
 								LogError("Failed to create new message");
 							}
@@ -120,10 +120,10 @@ static int simulated_device_worker(void * user_data)
 }
 
 
-static MODULE_HANDLE SimulatedDevice_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* configuration)
 {
     SIMULATEDDEVICE_DATA * result;
-    if (busHandle == NULL || configuration == NULL)
+    if (broker == NULL || configuration == NULL)
     {
 		LogError("invalid SIMULATED DEVICE module args.");
         result = NULL;
@@ -138,8 +138,8 @@ static MODULE_HANDLE SimulatedDevice_Create(MESSAGE_BUS_HANDLE busHandle, const 
         }
         else
         {
-			/* save the message bus */
-			result->bus = busHandle;
+			/* save the message broker */
+			result->broker = broker;
 			/* set module is running to true */
 			result->simulatedDeviceRunning = 1;
 			/* save fake MacAddress */

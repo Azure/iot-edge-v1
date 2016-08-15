@@ -114,17 +114,17 @@ static int append_logStartStop(FILE* fout, bool appendStart, bool isAbsoluteStar
     return result;
 }
 
-static MODULE_HANDLE Logger_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration)
 {
     LOGGER_HANDLE_DATA* result;
-    /*Codes_SRS_LOGGER_02_001: [If busHandle is NULL then Logger_Create shall fail and return NULL.]*/
+    /*Codes_SRS_LOGGER_02_001: [If broker is NULL then Logger_Create shall fail and return NULL.]*/
     /*Codes_SRS_LOGGER_02_002: [If configuration is NULL then Logger_Create shall fail and return NULL.]*/
     if (
-        (busHandle == NULL) ||
+        (broker == NULL) ||
         (configuration == NULL) 
         )
     {
-        LogError("invalid arg busHandle=%p configuration=%p", busHandle, configuration);
+        LogError("invalid arg broker=%p configuration=%p", broker, configuration);
         result = NULL;
     }
     else

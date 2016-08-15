@@ -19,7 +19,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "ble.h"
 #include "ble_printer.h"
 #include "messageproperties.h"
@@ -84,7 +84,7 @@ DIPATCH_ENTRY g_dispatch_entries[] =
 
 size_t g_dispatch_entries_length = sizeof(g_dispatch_entries) / sizeof(g_dispatch_entries[0]);
 
-MODULE_HANDLE BLEPrinter_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+MODULE_HANDLE BLEPrinter_Create(BROKER_HANDLE broker, const void* configuration)
 {
     return (MODULE_HANDLE)0x42;
 }

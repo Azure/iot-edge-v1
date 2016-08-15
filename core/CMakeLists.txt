@@ -1,4 +1,6 @@
-#this is CMakeLists.txt for the gateway core
+#Copyright (c) Microsoft. All rights reserved.
+#Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 cmake_minimum_required(VERSION 2.8.11)
 
 add_subdirectory(deps)
@@ -57,7 +59,7 @@ set(gateway_c_sources
 
 set(gateway_h_sources
     ./inc/message.h
-    ./inc/message_bus.h
+    ./inc/broker.h
     ./inc/module.h
     ./inc/internal/event_system.h
     ./inc/gateway_ll.h
@@ -67,11 +69,11 @@ set(gateway_h_sources
 )
 
 if (GW_BROKER_TYPE STREQUAL "PubSub")
-    set(gateway_c_sources ${gateway_c_sources} ./src/message_bus.c)
+    set(gateway_c_sources ${gateway_c_sources} ./src/broker.c)
 endif()
 
 if (GW_BROKER_TYPE STREQUAL "Broadcast")
-    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_message_bus.c)
+    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_broker.c)
 endif()
 
 include_directories(./inc)

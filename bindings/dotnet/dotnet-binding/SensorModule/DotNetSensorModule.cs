@@ -12,12 +12,12 @@ namespace SensorModule
 {
     public class DotNetSensorModule : IGatewayModule
     {
-        private MessageBus busToPublish;
+        private Broker broker;
         private string configuration;
 
-        public void Create(MessageBus bus, string configuration)
+        public void Create(Broker broker, string configuration)
         {
-            this.busToPublish = bus;
+            this.broker = broker;
             this.configuration = configuration;
 
             Thread oThread = new Thread(new ThreadStart(this.threadBody));
@@ -47,7 +47,7 @@ namespace SensorModule
 
                 Message messageToPublish = new Message("SensorData: " + n, thisIsMyProperty);
 
-                this.busToPublish.Publish(messageToPublish);
+                this.broker.Publish(messageToPublish);
 
                 //Publish a message every 5 seconds. 
                 Thread.Sleep(5000);

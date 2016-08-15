@@ -1,11 +1,11 @@
 'use strict';
 
 module.exports = {
-    messageBus: null,
+    broker: null,
     configuration: null,
 
-    create: function (messageBus, configuration) {
-        this.messageBus = messageBus;
+    create: function (broker, configuration) {
+        this.broker = broker;
         this.configuration = configuration;
 
         return true;

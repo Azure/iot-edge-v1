@@ -63,14 +63,14 @@ to a MODULE_APIS structure.**]**
 
 ## IdentityMap_HL_Create
 ```C
-MODULE_HANDLE IdentityMap_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 This function creates the identity map HL module. This module reads a JSON 
 array and converts this to a VECTOR of IDENTITY_MAP_CONFIG, as expected by
 the identity map module.  Finally, it calls the identity map module create
 function.
 
-**SRS_IDMAP_HL_17_003: [** If `busHandle` is NULL then
+**SRS_IDMAP_HL_17_003: [** If `broker` is NULL then
  `IdentityMap_HL_Create` shall fail and return NULL. **]**
 
 **SRS_IDMAP_HL_17_004: [** If `configuration` is NULL then
@@ -112,7 +112,7 @@ to the vector. **]**
 then `IdentityMap_HL_Create` shall fail and return NULL. **]** 
 
 **SRS_IDMAP_HL_17_013: [** `IdentityMap_HL_Create` shall invoke 
-identity map module's create, passing in the message bus handle and the input vector. 
+identity map module's create, passing in the message broker handle and the input vector. 
 **]**
 
 **SRS_IDMAP_HL_17_014: [** When the lower layer identity map module 

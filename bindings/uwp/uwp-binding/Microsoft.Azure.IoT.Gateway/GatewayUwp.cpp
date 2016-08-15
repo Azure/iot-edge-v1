@@ -4,15 +4,15 @@
 #include "pch.h"
 
 #include "GatewayUwp.h"
-#include "MessageBusUwp.h"
+#include "BrokerUwp.h"
 #include "MessageUwp.h"
 
 using namespace Windows::Foundation::Collections;
 using namespace Microsoft::Azure::IoT::Gateway;
 
-void InternalGatewayModule::Module_Create(MESSAGE_BUS_HANDLE busHandle, IMapView<Platform::String^, Platform::String^>^ properties)
+void InternalGatewayModule::Module_Create(BROKER_HANDLE broker, IMapView<Platform::String^, Platform::String^>^ properties)
 {
-	_moduleImpl->Create(ref new MessageBus(busHandle, (MODULE_HANDLE)this), properties);
+	_moduleImpl->Create(ref new Broker(broker, (MODULE_HANDLE)this), properties);
 }
 void InternalGatewayModule::Module_Destroy()
 {
@@ -35,10 +35,10 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, 
 		throw ref new Platform::InvalidArgumentException("properties must be non-null.");
 	}
 
-	messagebus_handle = MessageBus_Create();
-	if (messagebus_handle == nullptr)
+	broker_handle = Broker_Create();
+	if (broker_handle == nullptr)
 	{
-		throw ref new Platform::FailureException("Failed to create MessageBus.");
+		throw ref new Platform::FailureException("Failed to create Broker.");
 	}
 
 	modules_handle = VECTOR_create(sizeof(MODULE));
@@ -50,7 +50,7 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, 
 	for (auto mod : modules)
 	{
 		auto imod = std::make_unique<InternalGatewayModule>(mod);
-		imod->Module_Create(messagebus_handle, properties);
+		imod->Module_Create(broker_handle, properties);
 
 		MODULE module;
 		module.module_instance = imod.get();
@@ -64,7 +64,7 @@ Gateway::Gateway(IVector<IGatewayModule^>^ modules, IMapView<Platform::String^, 
 		gatewayModulesToDelete.push_back(std::move(imod));
 	}
 
-	gateway_handle = Gateway_LL_UwpCreate(modules_handle, messagebus_handle);
+	gateway_handle = Gateway_LL_UwpCreate(modules_handle, broker_handle);
 	if (gateway_handle == nullptr)
 	{
 		throw ref new Platform::FailureException("Failed to create Gateway.");

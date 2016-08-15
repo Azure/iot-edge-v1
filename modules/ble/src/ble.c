@@ -23,7 +23,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
 #include "messageproperties.h"
@@ -34,7 +34,7 @@ DEFINE_ENUM_STRINGS(BLEIO_SEQ_INSTRUCTION_TYPE, BLEIO_SEQ_INSTRUCTION_TYPE_VALUE
 
 typedef struct BLE_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE  bus;
+    BROKER_HANDLE       broker;
     BLE_DEVICE_CONFIG   device_config;
     BLEIO_GATT_HANDLE   bleio_gatt;
     BLEIO_SEQ_HANDLE    bleio_seq;
@@ -100,17 +100,17 @@ static bool terminate_event_dispatcher(
 );
 #endif
 
-static MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration)
 {
     BLE_HANDLE_DATA* result;
     BLE_CONFIG* config = (BLE_CONFIG*)configuration;
 
-    /*Codes_SRS_BLE_13_001: [BLE_Create shall return NULL if bus is NULL.]*/
+    /*Codes_SRS_BLE_13_001: [BLE_Create shall return NULL if broker is NULL.]*/
     /*Codes_SRS_BLE_13_002: [BLE_Create shall return NULL if configuration is NULL.]*/
     /*Codes_SRS_BLE_13_003: [BLE_Create shall return NULL if configuration->instructions is NULL.]*/
     /*Codes_SRS_BLE_13_004: [BLE_Create shall return NULL if the configuration->instructions vector is empty(size is zero).]*/
     if (
-            bus == NULL ||
+            broker == NULL ||
             configuration == NULL ||
             config->instructions == NULL ||
             VECTOR_size(config->instructions) == 0
@@ -172,7 +172,7 @@ static MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE bus, const void* configuratio
                     }
                     else
                     {
-                        result->bus = bus;
+                        result->broker = broker;
                         memcpy(&(result->device_config), &(config->device_config), sizeof(result->device_config));
                         result->is_destroy_complete = false;
 
@@ -507,17 +507,19 @@ static void on_read_complete(
                         }
                         else
                         {
-                            /*Codes_SRS_BLE_13_019: [BLE_Create shall handle the ON_BLEIO_SEQ_READ_COMPLETE callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the bus with the buffer that was read as the content of the message along with the following properties:
+                            /*Codes_SRS_BLE_13_019: [BLE_Create shall handle the ON_BLEIO_SEQ_READ_COMPLETE callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message broker with the buffer that was read as the content of the message along with the following properties:
 
-                                | Property Name           | Description                                                   |
-                                |-------------------------|---------------------------------------------------------------|
-                                | ble_controller_index    | The index of the bluetooth radio hardware on the device.      |
-                                | mac_address             | MAC address of the BLE device from which the data was read.   |
-                                | timestamp               | Timestamp indicating when the data was read.                  |
+                            | Property Name           | Description                                                   |
+                            |-------------------------|---------------------------------------------------------------|
+                            | ble_controller_index    | The index of the bluetooth radio hardware on the device.      |
+                            | mac_address             | MAC address of the BLE device from which the data was read.   |
+                            | timestamp               | Timestamp indicating when the data was read.                  |
+                            | source                  | This property will always have the value `bleTelemetry`.      |
+
                             ]*/
-                            if (MessageBus_Publish(handle_data->bus, (MODULE_HANDLE)handle_data, message) != MESSAGE_BUS_OK)
+                            if (Broker_Publish(handle_data->broker, (MODULE_HANDLE)handle_data, message) != BROKER_OK)
                             {
-                                LogError("MessageBus_Publish() failed");
+                                LogError("Broker_Publish() failed");
                             }
 
                             Message_Destroy(message);

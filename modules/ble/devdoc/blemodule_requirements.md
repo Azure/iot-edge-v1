@@ -51,7 +51,7 @@ typedef struct BLE_CONFIG_TAG
 
 typedef struct BLE_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE  bus;
+    BROKER_HANDLE       broker;
     BLE_DEVICE_CONFIG   device_config;
     BLEIO_GATT_HANDLE   bleio_gatt;
     BLEIO_SEQ_HANDLE    bleio_seq;
@@ -60,12 +60,12 @@ typedef struct BLE_HANDLE_DATA_TAG
 
 ## BLE_Create
 ```c
-MODULE_HANDLE BLE_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new BLE module instance. The parameter `configuration` is a pointer to a `BLE_CONFIG` object.
 
-**SRS_BLE_13_001: [** `BLE_Create` shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_BLE_13_001: [** `BLE_Create` shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_BLE_13_002: [** `BLE_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -89,7 +89,7 @@ Creates a new BLE module instance. The parameter `configuration` is a pointer to
 
 **SRS_BLE_13_014: [** If the asynchronous call to `BLEIO_gatt_connect` is successful then the `BLEIO_Seq_Run` function shall be called on the `bleio_seq` field from `BLE_HANDLE_DATA`. **]**
 
-**SRS_BLE_13_019: [** `BLE_Create` shall handle the `ON_BLEIO_SEQ_READ_COMPLETE` callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message bus with the buffer that was read as the content of the message along with the following properties:
+**SRS_BLE_13_019: [** `BLE_Create` shall handle the `ON_BLEIO_SEQ_READ_COMPLETE` callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message broker with the buffer that was read as the content of the message along with the following properties:
 
 >| Property Name           | Description                                                   |
 >|-------------------------|---------------------------------------------------------------|

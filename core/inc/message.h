@@ -4,8 +4,8 @@
 /** @file		message.h
 *
 *	@brief		Defines structures and function prototypes for creating, 
-*				inspecting and disposing off messages published on to the 
-*				message bus.
+*				inspecting and disposing of messages published to the 
+*				message broker.
 *
 *	@details	A message essentially has two components:
 *					- Properties represented as key/value pairs where both the

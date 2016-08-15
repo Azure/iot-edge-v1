@@ -6,9 +6,9 @@
 ## Overview
 This is the API to create a gateway message. 
 Messages, once created, should be considered immutable by the consuming user code. 
-Modules create messages. Modules publish the said messages to the message bus. 
-The message bus feeds the messages to the consumers. 
-Messages on the message bus have a bag of properties (name, value) and an opaque array of bytes that is the message content.
+Modules create messages and publish them to the message broker. 
+The message broker routes messages to other modules. 
+Messages have a bag of properties (name, value) and an opaque array of bytes that is the message content.
 
 The creation of the message is considered finished at the moment when the message is transferred from the producer to the consumer.
 

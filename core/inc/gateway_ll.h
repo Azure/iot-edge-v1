@@ -158,7 +158,7 @@ extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type
 */
 extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 
-/** @brief		Adds a link to a gateway message Bus.
+/** @brief		Adds a link to a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be added.
 *
@@ -168,7 +168,7 @@ extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 */
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
-/** @brief		Remove a link from a gateway message Bus.
+/** @brief		Remove a link from a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be removed.
 *
@@ -178,18 +178,18 @@ extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* e
 
 #ifdef UWP_BINDING
 
-/** @brief		Creates a new gateway using the provided #MODULEs and #MESSAGE_BUS_HANDLE.
+/** @brief		Creates a new gateway using the provided #MODULEs and #BROKER_HANDLE.
 *
 *	@param		modules   		#VECTOR_HANDLE structure containing
 *								specific modules.
 *
-*	@param		bus       		#MESSAGE_BUS_HANDLE structure containing
-*								specific message bus.
+*	@param		broker          #BROKER_HANDLE structure containing
+*								specific message broker instance.
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
 *				gateway or @c NULL on failure.
 */
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, MESSAGE_BUS_HANDLE bus);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
 
 /** @brief		Destroys the gateway and disposes of all associated data.
 *

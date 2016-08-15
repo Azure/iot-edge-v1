@@ -10,7 +10,7 @@ The sample contains:
 
 1. A printer module (C#) that interprets telemetry from sensor and prints it's content and properties into Console.
 2. A sensor module (C#) that publishes random data to the gateway.
-3. A logger module for producing message bus diagnostics.
+3. A logger module for producing message broker diagnostics.
 
 Other resources:
 *[getting started doc](getting_started.md)
@@ -37,7 +37,7 @@ At this point, gateways containing .NET modules are only supported on Windows De
 To build .NET Modules you should build solution here (../bindings/dotnet/dotnet-binding/dotnet-binding.sln).
 Today the Solution has: 
 1. Microsoft.Azure.IoT.Gateway ==> DLL you shall reference on your module project.
-2. Microsoft.Azure.IoT.Gateway.Test ==> Unit tests for the implementation of Message and MessageBus Classes.
+2. Microsoft.Azure.IoT.Gateway.Test ==> Unit tests for the implementation of Message and Broker Classes.
 3. PrinterModule ==> .NET(C#) Module that output to the console content received by Sensor Module.
 4. Sensor Module ==> .NET(C#) Module that publishes Simulated Sensor data to the gateway.
 
@@ -113,16 +113,11 @@ using Microsoft.Azure.IoT.Gateway;
 
 namespace PrinterModule
 {
-    private MessageBus busToPublish;
-    private string configuration;
-
     public class DotNetPrinterModule : IGatewayModule
     {
-        private MessageBus busToPublish;
         private string configuration;
-        public void Create(MessageBus bus, string configuration)
+        public void Create(Broker broker, string configuration)
         {
-            this.busToPublish = bus;
             this.configuration = configuration;
         }
 

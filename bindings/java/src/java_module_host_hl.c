@@ -15,13 +15,13 @@
 
 static int parse_jvm_options_internal(JAVA_MODULE_HOST_CONFIG* config, JSON_Object* obj);
 
-static MODULE_HANDLE JavaModuleHost_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	MODULE_HANDLE result;
-	if (bus == NULL || configuration == NULL)
+	if (broker == NULL || configuration == NULL)
 	{
-		/*Codes_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if bus is NULL or configuration is NULL.]*/
-		LogError("Invalid input (bus = %p, configuration = %p).", bus, configuration);
+		/*Codes_SRS_JAVA_MODULE_HOST_HL_14_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
+		LogError("Invalid input (broker = %p, configuration = %p).", broker, configuration);
 		result = NULL;
 	}
 	else
@@ -62,8 +62,8 @@ static MODULE_HANDLE JavaModuleHost_HL_Create(MESSAGE_BUS_HANDLE bus, const void
 					}
 					else
 					{
-						/*Codes_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass bus and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
-						result = MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)()->Module_Create(bus, &config);
+						/*Codes_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+						result = MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)()->Module_Create(broker, &config);
 
 						/*Codes_SRS_JAVA_MODULE_HOST_HL_14_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
 						if (result == NULL)

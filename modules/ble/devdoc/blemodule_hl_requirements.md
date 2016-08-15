@@ -8,7 +8,7 @@
 
 This module is a *passthrough* implementation that simply wraps the BLE Module code by providing an easy to use JSON based configuration interface. It de-serializes the JSON into a `BLE_CONFIG` instance and passes control to the underlying implementation. This module shall also accept cloud to device messages and transform cloud messages into a structure understood by the BLE module.
 
-### Receiving messages on the message bus
+### Receiving messages on the message broker
 The module identifies the messages that it needs to process by the following 
 properties that must exist:
 
@@ -28,7 +28,7 @@ The message content is a JSON object of the format:
 
 ## BLE_HL_Create
 ```c
-MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configuration)
 ```
 
 Creates a new BLE Module HL instance. `configuration` is a `const char*` that contains a JSON string that's typically passed through via the high level Gateway API `Gateway_Create_From_JSON`. The JSON object should conform to the following structure:
@@ -96,7 +96,7 @@ Creates a new BLE Module HL instance. `configuration` is a `const char*` that co
 }
 ```
 
-**SRS_BLE_HL_13_001: [** `BLE_HL_Create` shall return `NULL` if the `bus` or `configuration` parameters are `NULL`. **]**
+**SRS_BLE_HL_13_001: [** `BLE_HL_Create` shall return `NULL` if the `broker` or `configuration` parameters are `NULL`. **]**
 
 **SRS_BLE_HL_13_002: [** `BLE_HL_Create` shall return `NULL` if any of the underlying platform calls fail. **]**
 

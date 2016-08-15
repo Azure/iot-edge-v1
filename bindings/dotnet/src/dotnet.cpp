@@ -33,7 +33,7 @@
 
 #define DEFAULT_CLR_VERSION L"v4.0.30319"
 #define AZUREIOTGATEWAYASSEMBLYNAME L"Microsoft.Azure.IoT.Gateway"
-#define AZUREIOTGATEWAY_MESSAGEBUS_CLASSNAME L"Microsoft.Azure.IoT.Gateway.MessageBus"
+#define AZUREIOTGATEWAY_BROKER_CLASSNAME L"Microsoft.Azure.IoT.Gateway.Broker"
 #define AZUREIOTGATEWAY_MESSAGE_CLASSNAME L"Microsoft.Azure.IoT.Gateway.Message"
 
 
@@ -52,7 +52,7 @@ struct DOTNET_HOST_HANDLE_DATA
 
 	};
 
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               broker;
 
 	variant_t                   vtClientModuleObject;
 	CComPtr<ICLRMetaHost>       spMetaHost;
@@ -65,26 +65,26 @@ private:
 	DOTNET_HOST_HANDLE_DATA& operator=(const DOTNET_HOST_HANDLE_DATA&);
 };
 
-bool buildMessageBusObject(long long  busHandle, long long  moduleHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayMessageBusObject)
+bool buildBrokerObject(long long  brokerHandle, long long  moduleHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayBrokerObject)
 {
-	SAFEARRAY *psaAzureIoTGatewayMessageBusConstructorArgs = NULL;
+	SAFEARRAY *psaAzureIoTGatewayBrokerConstructorArgs = NULL;
 	bool returnResult = false;
 
 	try
 	{
 		LONG index = 0;
 		HRESULT hr;
-		variant_t msgBus(busHandle);
+		variant_t broker(brokerHandle);
 		variant_t module(moduleHandle);
-		bstr_t bstrAzureIoTGatewayMessageBusClassName(AZUREIOTGATEWAY_MESSAGEBUS_CLASSNAME);
+		bstr_t bstrAzureIoTGatewayBrokerClassName(AZUREIOTGATEWAY_BROKER_CLASSNAME);
 
-		psaAzureIoTGatewayMessageBusConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2);
-		if (psaAzureIoTGatewayMessageBusConstructorArgs == NULL)
+		psaAzureIoTGatewayBrokerConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2);
+		if (psaAzureIoTGatewayBrokerConstructorArgs == NULL)
 		{
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Failed to create Safe Array. ");
 		}
-		else if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayMessageBusConstructorArgs, &index, &msgBus)))
+		else if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayBrokerConstructorArgs, &index, &broker)))
 		{
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
@@ -92,24 +92,24 @@ bool buildMessageBusObject(long long  busHandle, long long  moduleHandle, _Assem
 		else
 		{
 			index = 1;
-			if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayMessageBusConstructorArgs, &index, &module)))
+			if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayBrokerConstructorArgs, &index, &module)))
 			{
 				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 				LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
 			}
-			/* Codes_SRS_DOTNET_04_013: [ A .NET Object conforming to the MessageBus interface defined shall be created: ] */
+			/* Codes_SRS_DOTNET_04_013: [ A .NET Object conforming to the Broker interface defined shall be created: ] */
 			else if (FAILED(hr = spAzureIoTGatewayAssembly->CreateInstance_3(
-				bstrAzureIoTGatewayMessageBusClassName,
+				bstrAzureIoTGatewayBrokerClassName,
 				true,
 				static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public),
 				NULL,
-				psaAzureIoTGatewayMessageBusConstructorArgs,
+				psaAzureIoTGatewayBrokerConstructorArgs,
 				NULL,
 				NULL,
-				vtAzureIoTGatewayMessageBusObject)))
+				vtAzureIoTGatewayBrokerObject)))
 			{
 				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-				LogError("Creating an instance of Message Bus failed with hr 0x%08lx\n", hr);
+				LogError("Creating an instance of the message broker failed with hr 0x%08lx\n", hr);
 			}
 			else
 			{
@@ -122,9 +122,9 @@ bool buildMessageBusObject(long long  busHandle, long long  moduleHandle, _Assem
 		LogError("Exception Thrown. Message: %s ", e.ErrorMessage());
 	}
 
-	if (psaAzureIoTGatewayMessageBusConstructorArgs)
+	if (psaAzureIoTGatewayBrokerConstructorArgs)
 	{
-		SafeArrayDestroy(psaAzureIoTGatewayMessageBusConstructorArgs);
+		SafeArrayDestroy(psaAzureIoTGatewayBrokerConstructorArgs);
 	}
 
 	return returnResult;
@@ -186,7 +186,7 @@ bool createCLRInstancesGetInterfacesAndStarting(ICLRMetaHost** pMetaHost, ICLRRu
 	return returnResult;
 }
 
-bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtAzureIoTGatewayMessageBusObject, _Type* pClientModuleType, variant_t* vtClientModuleObject)
+bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtAzureIoTGatewayBrokerObject, _Type* pClientModuleType, variant_t* vtClientModuleObject)
 {
 	SAFEARRAY *psaClientModuleCreateArgs = NULL;
 	bool returnResult = false;
@@ -204,7 +204,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Failed to create Safe Array. ");
 		}
-		else if (FAILED(hr = SafeArrayPutElement(psaClientModuleCreateArgs, &index, vtAzureIoTGatewayMessageBusObject)))
+		else if (FAILED(hr = SafeArrayPutElement(psaClientModuleCreateArgs, &index, vtAzureIoTGatewayBrokerObject)))
 		{
 			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
@@ -217,7 +217,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 				LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
 			}
-			/* Codes_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the MessageBus object created and configuration->dotnet_module_args. ] */
+			/* Codes_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
 			else if (FAILED(hr = pClientModuleType->InvokeMember_3(
 				bstrCreateClientMethodName,
 				static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
@@ -248,20 +248,20 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 	return returnResult;
 }
 
-static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	DOTNET_HOST_HANDLE_DATA* out = NULL;
 
 	try
 	{
 		if (
-			(busHandle == NULL) ||
+			(broker == NULL) ||
 			(configuration == NULL)
 			)
 		{
-			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if bus is NULL. ] */
+			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if broker is NULL. ] */
 			/* Codes_SRS_DOTNET_04_002: [ DotNET_Create shall return NULL if configuration is NULL. ] */
-			LogError("invalid arg busHandle=%p, configuration=%p", busHandle, configuration);
+			LogError("invalid arg broker=%p, configuration=%p", broker, configuration);
 		}
 		else
 		{
@@ -290,7 +290,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 				_AssemblyPtr spClientModuleAssembly;
 				bstr_t bstrClientModuleClassName(dotNetConfig->dotnet_module_entry_class);
 				bstr_t bstrAzureIoTGatewayAssemblyName(AZUREIOTGATEWAYASSEMBLYNAME);
-				variant_t vtAzureIoTGatewayMessageBusObject;
+				variant_t vtAzureIoTGatewayBrokerObject;
 				try
 				{
 					/* Codes_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
@@ -305,7 +305,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 				if (out != NULL)
 				{
 					/* Codes_SRS_DOTNET_04_007: [ DotNET_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
-					out->bus = busHandle;
+					out->broker = broker;
 
 					/* Codes_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
 					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
@@ -338,9 +338,9 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 						delete out;
 						out = NULL;
 					}
-					else if (!buildMessageBusObject((long long)out->bus, (long long)out, out->spAzureIoTGatewayAssembly, &vtAzureIoTGatewayMessageBusObject))
+					else if (!buildBrokerObject((long long)out->broker, (long long)out, out->spAzureIoTGatewayAssembly, &vtAzureIoTGatewayBrokerObject))
 					{
-						LogError("Failed to build Message Bus Object.");
+						LogError("Failed to build the message broker object.");
 						delete out;
 						out = NULL;
 					}
@@ -353,7 +353,7 @@ static MODULE_HANDLE DotNET_Create(MESSAGE_BUS_HANDLE busHandle, const void* con
 						delete out;
 						out = NULL;
 					}
-					else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayMessageBusObject, out->spClientModuleType, &out->vtClientModuleObject))
+					else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayBrokerObject, out->spClientModuleType, &out->vtClientModuleObject))
 					{
 						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Failed to invoke Create Method");
@@ -566,33 +566,33 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 	}
 }
 
-MODULE_EXPORT bool Module_DotNetHost_PublishMessage(MESSAGE_BUS_HANDLE bus, MODULE_HANDLE sourceModule, const unsigned char* source, int32_t size)
+MODULE_EXPORT bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
 {
 	bool returnValue = false;
 	MESSAGE_HANDLE messageToPublish = NULL;
 
-	if (bus == NULL || sourceModule == NULL || source == NULL || size < 0)
+	if (broker == NULL || sourceModule == NULL || message == NULL || size < 0)
 	{
-		/* Codes_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if bus is NULL. ] */
+		/* Codes_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if broker is NULL. ] */
 		/* Codes_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
-		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if source is NULL, or size if lower than 0. ] */
-		LogError("invalid arg bus=%p, sourceModule=%p", bus, sourceModule);
+		/* Codes_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if message is NULL, or size if lower than 0. ] */
+		LogError("invalid arg broker=%p, sourceModule=%p", broker, sourceModule);
 	}
-	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from source and size by invoking Message_CreateFromByteArray. ] */
-	else if((messageToPublish = Message_CreateFromByteArray(source, size)) == NULL)
+	/* Codes_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
+	else if((messageToPublish = Message_CreateFromByteArray(message, size)) == NULL)
 	{
 		/* Codes_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
 		LogError("Error trying to create message from Byte Array");
 	}
-	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call MessageBus_Publish passing bus, sourceModule, byte array and msgHandle. ] */
-	else if (MessageBus_Publish(bus, sourceModule, messageToPublish) != MESSAGE_BUS_OK)
+	/* Codes_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing broker, sourceModule, message and size. ] */
+	else if (Broker_Publish(broker, sourceModule, messageToPublish) != BROKER_OK)
 	{
-		/* Codes_SRS_DOTNET_04_027: [ If MessageBus_Publish fail Module_DotNetHost_PublishMessage shall fail. ] */
-		LogError("Error trying to publish message on MessageBus.");
+		/* Codes_SRS_DOTNET_04_027: [ If Broker_Publish fails Module_DotNetHost_PublishMessage shall fail. ] */
+		LogError("Error trying to publish message on Broker.");
 	}
 	else
 	{
-		/* Codes_SRS_DOTNET_04_028: [If MessageBus_Publish succeed Module_DotNetHost_PublishMessage shall succeed.] */
+		/* Codes_SRS_DOTNET_04_028: [If Broker_Publish succeeds Module_DotNetHost_PublishMessage shall succeed.] */
 		returnValue = true;
 	}
 

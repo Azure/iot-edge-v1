@@ -12,7 +12,7 @@ namespace SetOfCsModules
 {
     public sealed class Sensor : IGatewayModule
     {
-        public void Create(MessageBus bus, IReadOnlyDictionary<string, string> configuration)
+        public void Create(Broker broker, IReadOnlyDictionary<string, string> configuration)
         {
             System.Diagnostics.Debug.WriteLine("SetOfCsModules.Module1.Create");
 
@@ -26,7 +26,7 @@ namespace SetOfCsModules
 
                     var props = new Dictionary<string, string>();
                     props.Add("ReadingNumber", i.ToString());
-                    bus.Publish(new Microsoft.Azure.IoT.Gateway.Message("SetOfCsModules.Sensor reading", props));
+                    broker.Publish(new Microsoft.Azure.IoT.Gateway.Message("SetOfCsModules.Sensor reading", props));
                 }
             }).Start();
         }

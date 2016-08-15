@@ -79,7 +79,7 @@ Creating your own module
     {
         public sealed class Module : IGatewayModule
         {
-            public void Create(MessageBus bus, IReadOnlyDictionary<string, string> configuration)
+            public void Create(Broker broker, IReadOnlyDictionary<string, string> configuration)
             {
                 System.Diagnostics.Debug.WriteLine("MyNewModule.Module.Create");
             }

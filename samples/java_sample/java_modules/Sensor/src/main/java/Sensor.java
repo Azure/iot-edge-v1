@@ -4,7 +4,7 @@
  */
 
 import com.microsoft.azure.gateway.core.GatewayModule;
-import com.microsoft.azure.gateway.core.MessageBus;
+import com.microsoft.azure.gateway.core.Broker;
 import com.microsoft.azure.gateway.messaging.Message;
 
 import java.io.IOException;
@@ -15,15 +15,15 @@ public class Sensor extends GatewayModule {
     private boolean threadStop;
 
     /**
-     * Constructs a {@link GatewayModule} from the provided address and {@link MessageBus}. A {@link GatewayModule} should always call this super
+     * Constructs a {@link GatewayModule} from the provided address and {@link Broker}. A {@link GatewayModule} should always call this super
      * constructor before any module-specific constructor code.
      *
      * @param address       The address of the native module pointer
-     * @param bus           The {@link MessageBus} to which this module belongs
+     * @param broker        The {@link Broker} to which this module belongs
      * @param configuration The module-specific configuration
      */
-    public Sensor(long address, MessageBus bus, String configuration) {
-        super(address, bus, configuration);
+    public Sensor(long address, Broker broker, String configuration) {
+        super(address, broker, configuration);
         this.threadStop = false;
 
         new Thread(() -> {

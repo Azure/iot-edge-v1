@@ -40,7 +40,7 @@ and `Module_Receive` fields.
 
 ## SimulatedDevice_HL_Create
 ```C
-MODULE_HANDLE SimulatedDevice_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 This function creates the SIMULATED DEVICE HL module. This module reads a JSON 
 object and passes the macAddress to the underlying SIMULATED DEVICE module's _Create.

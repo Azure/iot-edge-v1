@@ -19,7 +19,7 @@ typedef void(*PFNMODULE_START)(NODEJS_MODULE_HANDLE_DATA* handle_data);
 
 struct NODEJS_MODULE_HANDLE_DATA
 {
-    MESSAGE_BUS_HANDLE          bus;
+    BROKER_HANDLE               broker;
     std::string                 main_path;
     std::string                 configuration_json;
     v8::Isolate                 *v8_isolate;
@@ -32,13 +32,13 @@ struct NODEJS_MODULE_HANDLE_DATA
 NODEJS_Create
 -------------
 ```c
-MODULE_HANDLE NodeJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE NodeJS_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new Node JS module instance. The parameter `configuration` is a
 pointer to a `NODEJS_MODULE_CONFIG` object.
 
-**SRS_NODEJS_13_001: [** `NodeJS_Create` shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_NODEJS_13_001: [** `NodeJS_Create` shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_NODEJS_13_002: [** `NodeJS_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -80,14 +80,14 @@ gatewayHost.registerModule(require(js_main_path));
 **SRS_NODEJS_13_016: [** When the native implementation of `GatewayModuleHost.registerModule` is invoked it shall do nothing if the parameter is an object but does not conform to the following interface:
 ```ts
 interface GatewayModule {
-    create: (messageBus: MessageBus, configuration: any) => boolean;
+    create: (broker: Broker, configuration: any) => boolean;
     receive: (message: Message) => void;
     destroy: () => void;
 }
 ```
 **]**
 
-**SRS_NODEJS_13_017: [** A JavaScript object conforming to the `MessageBus` interface defined shall be created:
+**SRS_NODEJS_13_017: [** A JavaScript object conforming to the `Broker` interface defined shall be created:
 ```ts
 interface StringMap {
     [key: string]: string;
@@ -98,13 +98,13 @@ interface Message {
     content: Uint8Array;
 }
 
-interface MessageBus {
+interface Broker {
     publish: (message: Message) => boolean;
 }
 ```
  **]**
  
- **SRS_NODEJS_13_018: [** The `GatewayModule.create` method shall be invoked passing the `MessageBus` instance and a parsed instance of the configuration JSON string. **]**
+ **SRS_NODEJS_13_018: [** The `GatewayModule.create` method shall be invoked passing the `Broker` instance and a parsed instance of the configuration JSON string. **]**
 
 NODEJS_Receive
 ---------------
@@ -133,17 +133,17 @@ interface Message {
 
 **SRS_NODEJS_13_023: [** `NodeJS_Receive` shall invoke `GatewayModule.receive` passing the newly constructed `Message` instance. **]**
 
-MessageBus.publish
+Broker.publish
 ------------------
 ```c
-void message_bus_publish(const v8::FunctionCallbackInfo<Value>& info);
+void broker_publish(const v8::FunctionCallbackInfo<Value>& info);
 ```
 
-**SRS_NODEJS_13_027: [** `message_bus_publish` shall set the return value to `false` if the arguments count is less than 1. **]**
+**SRS_NODEJS_13_027: [** `broker_publish` shall set the return value to `false` if the arguments count is less than 1. **]**
 
-**SRS_NODEJS_13_028: [** `message_bus_publish` shall set the return value to `false` if the first argument is not a JS object. **]**
+**SRS_NODEJS_13_028: [** `broker_publish` shall set the return value to `false` if the first argument is not a JS object. **]**
 
-**SRS_NODEJS_13_029: [** `message_bus_publish` shall set the return value to `false` if the first argument is an object whose shape does not conform to the following interface:
+**SRS_NODEJS_13_029: [** `broker_publish` shall set the return value to `false` if the first argument is an object whose shape does not conform to the following interface:
 ```ts
 interface StringMap {
     [key: string]: string;
@@ -156,15 +156,15 @@ interface Message {
 ```
 **]**
 
-**SRS_NODEJS_13_031: [** `message_bus_publish` shall set the return value to `false` if any underlying platform call fails. **]**
+**SRS_NODEJS_13_031: [** `broker_publish` shall set the return value to `false` if any underlying platform call fails. **]**
 
-**SRS_NODEJS_13_030: [** `message_bus_publish` shall construct and initialize a `MESSAGE_HANDLE` from the first argument. **]**
+**SRS_NODEJS_13_030: [** `broker_publish` shall construct and initialize a `MESSAGE_HANDLE` from the first argument. **]**
 
-**SRS_NODEJS_13_032: [** `message_bus_publish` shall call `MessageBus_Publish` passing the newly constructed `MESSAGE_HANDLE`. **]**
+**SRS_NODEJS_13_032: [** `broker_publish` shall call `Broker_Publish` passing the newly constructed `MESSAGE_HANDLE`. **]**
 
-**SRS_NODEJS_13_033: [** `message_bus_publish` shall set the return value to `true` or `false` depending on the status of the `MessageBus_Publish` call. **]**
+**SRS_NODEJS_13_033: [** `broker_publish` shall set the return value to `true` or `false` depending on the status of the `Broker_Publish` call. **]**
 
-**SRS_NODEJS_13_034: [** `message_bus_publish` shall destroy the `MESSAGE_HANDLE`. **]**
+**SRS_NODEJS_13_034: [** `broker_publish` shall destroy the `MESSAGE_HANDLE`. **]**
 
 NODEJS_Destroy
 --------------

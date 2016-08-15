@@ -13,7 +13,7 @@ implemented by the module-creator will be called by the gateway when necessary.
 ## Exposed API
 ```java
 public abstract class GatewayModule {
-    protected GatewayModule(long address, MessageBus bus, String configuration);
+    protected GatewayModule(long address, Broker broker, String configuration);
     abstract void receive(Message message);
     abstract void destroy();
 }
@@ -21,12 +21,12 @@ public abstract class GatewayModule {
 
 ## Module
 ```java
-public GatewayModule(long address, MessageBus bus, String configuration);
+public GatewayModule(long address, Broker broker, String configuration);
 ```
-**SRS_JAVA_GATEWAY_MODULE_14_001: [** The constructor shall save `address`, `bus`, 
+**SRS_JAVA_GATEWAY_MODULE_14_001: [** The constructor shall save `address`, `broker`, 
 and `configuration` into class variables. **]**
 
-**SRS_JAVA_GATEWAY_MODULE_14_002: [** If `address` or `bus` is `null` the constructor 
+**SRS_JAVA_GATEWAY_MODULE_14_002: [** If `address` or `broker` is `null` the constructor 
 shall throw an IllegalArgumentException. **]**
 
 When extending this abstract class, the module-creator must create their own 

@@ -34,14 +34,14 @@ namespace Microsoft.Azure.IoT.Gateway.Test
         private class TestModule : IGatewayModule
         {
             public IReadOnlyDictionary<string, string> config;
-            public MessageBus bus;
+            public Broker broker;
             public Message msg;
             public int create, receive;
 
             public TestModule()
             {
                 config = null;
-                bus = null;
+                broker = null;
                 msg = null;
                 create = 0;
                 receive = 0;
@@ -52,10 +52,10 @@ namespace Microsoft.Azure.IoT.Gateway.Test
 
             }
 
-            public void Create(MessageBus bus, IReadOnlyDictionary<string, string> configuration)
+            public void Create(Broker broker, IReadOnlyDictionary<string, string> configuration)
             {
                 this.create++;
-                this.bus = bus;
+                this.broker = broker;
                 this.config = configuration;
             }
 
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             if (create > 0)
             {
                 Assert.AreEqual(configProps, testModule.config);
-                Assert.IsNotNull(testModule.bus);
+                Assert.IsNotNull(testModule.broker);
             }
 
             if (receive > 0)
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.IoT.Gateway.Test
             msgProps.Add("high", "low");
             var msg = new Message("hi", msgProps);
 
-            testModule1.bus.Publish(msg);
+            testModule1.broker.Publish(msg);
 
             // ensure that testModule1 doesn't see its own message
             ValidateTestModuleState(testModule1, 1, 0, configProps, null, null);

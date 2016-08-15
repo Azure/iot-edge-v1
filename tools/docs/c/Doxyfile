@@ -775,7 +775,7 @@ INPUT                  = mainpage.dox \
                          ../../../core/inc/gateway.h \
 			 ../../../core/inc/gateway_ll.h \
 			 ../../../core/inc/message.h \
-			 ../../../core/inc/message_bus.h \
+			 ../../../core/inc/broker.h \
 			 ../../../core/inc/module.h \
 
 # This tag can be used to specify the character encoding of the source files
@@ -847,9 +847,9 @@ EXCLUDE_PATTERNS       =
 # Other unused symbols are ignored as well.
 
 EXCLUDE_SYMBOLS        = *_VALUES \
-			 MESSAGE_BUS_RESULTStrings \
-			 MESSAGE_BUS_RESULT_FromString \
-			 BUS_offsetof_quit_worker \
+			 BROKER_RESULTStrings \
+			 BROKER_RESULT_FromString \
+			 BROKER_offsetof_quit_worker \
 			 MODULE_EXPORT
 			 
 

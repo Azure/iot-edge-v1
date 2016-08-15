@@ -1,9 +1,8 @@
 # Module Requirements
 
 ##Overview
-This is the documentation for a module participant to the message bus. 
-Every module needs to implement the same interface. The implementation of a module is module specific, however,
-all modules have the same interface.
+This is the documentation for a module that communicates with other modules through a message broker. 
+Every module needs to implement the same interface. However, the implementation is module-specific.
 
 ##References
 
@@ -13,7 +12,7 @@ all modules have the same interface.
 #define MODULE_H
 
 #include "macro_utils.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "message.h"
 
 #ifdef __cplusplus
@@ -21,18 +20,17 @@ extern "C"
 {
 #endif
 
-/*this is the interface that every module on the message bus needs to implement*/
-/*a module can only belong to 1 message bus*/
-/*1 message bus can have (obviously) many modules on it*/
+/*This is the interface that every gateway module needs to implement.*/
+/*A module can be associated with one message broker.*/
+/*A message broker can have many modules associated with it.*/
 
 typedef void* MODULE_HANDLE;
 
-/*a module is a pointer to a structure containing several function pointers*/
-/*by convention, every module library exports a function that returns a pointer to that kind of structure*/
-/*that function is called Module_GetAPIs*/
+/*Every module library exports a function (Module_GetAPIs) that returns*/
+/*a pointer to a well-known structure.*/
 
 /*this API creates a new Module. Configuration is a pointer given by the instantiator*/
-typedef MODULE_HANDLE (*pfModule_Create)(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+typedef MODULE_HANDLE (*pfModule_Create)(BROKER_HANDLE broker, const void* configuration);
 
 /*this destroys (frees resources) of the module parameter*/
 typedef void (*pfModule_Destroy)(MODULE_HANDLE moduleHandle);
@@ -72,11 +70,11 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
 
 ##Module_Create
 ```C
-static MODULE_HANDLE Module_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+static MODULE_HANDLE Module_Create(BROKER_HANDLE broker, const void* configuration);
 ```
-This function is to be implemented by the module creator. The function receives the MESSAGE 
-BUS onto which the module will publish its messages, and a pointer provided by the user
-containing configuration information (usually information needed by the module to start)
+This function is to be implemented by the module creator. It receives the message broker 
+to which the module will publish its messages, and a pointer provided by the user
+containing configuration information (usually information needed by the module to start).
 
 The function returns a non-`NULL` value when it succeeds, known as the module handle. 
 If the function fails internally, it should return `NULL`.

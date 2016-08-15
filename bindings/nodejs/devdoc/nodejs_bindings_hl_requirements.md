@@ -18,7 +18,7 @@ to the underlying implementation.
 NODEJS_HL_Create
 ----------------
 ```c
-MODULE_HANDLE NODEJS_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE NODEJS_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new Node JS module HL instance. `configuration` is a pointer to a
@@ -40,7 +40,7 @@ The JSON should conform to the following structure:
 }
 ```
 
-**SRS_NODEJS_HL_13_001: [** `NODEJS_HL_Create` shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_NODEJS_HL_13_001: [** `NODEJS_HL_Create` shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_NODEJS_HL_13_002: [** `NODEJS_HL_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -56,7 +56,7 @@ The JSON should conform to the following structure:
 
 **SRS_NODEJS_HL_13_006: [** `NODEJS_HL_Create` shall extract the value of the `args` property from the configuration JSON. **]**
 
-**SRS_NODEJS_HL_13_005: [** `NODEJS_HL_Create` shall populate a `NODEJS_MODULE_CONFIG` object with the values of the `main_path` and `args` properties and invoke `NODEJS_Create` passing the `bus` handle the config object. **]**
+**SRS_NODEJS_HL_13_005: [** `NODEJS_HL_Create` shall populate a `NODEJS_MODULE_CONFIG` object with the values of the `main_path` and `args` properties and invoke `NODEJS_Create` passing the `broker` handle and the config object. **]**
 
 **SRS_NODEJS_HL_13_007: [** If `NODEJS_Create` succeeds then a valid `MODULE_HANDLE` shall be returned. **]**
 

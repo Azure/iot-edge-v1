@@ -12,7 +12,7 @@ Printer::Printer()
 {
 }
 
-void Printer::Create(Microsoft::Azure::IoT::Gateway::MessageBus ^bus, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration)
+void Printer::Create(Microsoft::Azure::IoT::Gateway::Broker ^broker, Windows::Foundation::Collections::IMapView<Platform::String^, Platform::String^>^ configuration)
 {
 	std::wstring formattedText = L"SetOfCppModules::Printer::Create\r\n";
 	OutputDebugString(formattedText.c_str());

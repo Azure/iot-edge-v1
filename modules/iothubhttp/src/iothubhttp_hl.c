@@ -15,14 +15,14 @@
 #define SUFFIX "IoTHubSuffix"
 #define HUBNAME "IoTHubName"
 
-static MODULE_HANDLE IoTHubHttp_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE IoTHubHttp_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
     MODULE_HANDLE *result;
-    if ((busHandle == NULL) || (configuration == NULL))
+    if ((broker == NULL) || (configuration == NULL))
     {
-        /*Codes_SRS_IOTHUBHTTP_HL_17_001: [If busHandle is NULL then IoTHubHttp_HL_Create shall fail and return NULL.]*/
+        /*Codes_SRS_IOTHUBHTTP_HL_17_001: [If broker is NULL then IoTHubHttp_HL_Create shall fail and return NULL.]*/
         /*Codes_SRS_IOTHUBHTTP_HL_17_002: [If configuration is NULL then IoTHubHttp_HL_Create shall fail and return NULL.]*/
-        LogError("Invalid NULL parameter, busHandle=[%p] configuration=[%p]", busHandle, configuration);
+        LogError("Invalid NULL parameter, broker=[%p] configuration=[%p]", broker, configuration);
         result = NULL;
     }
     else
@@ -62,13 +62,13 @@ static MODULE_HANDLE IoTHubHttp_HL_Create(MESSAGE_BUS_HANDLE busHandle, const vo
                 }
                 else
                 {
-                    /*Codes_SRS_IOTHUBHTTP_HL_17_008: [ IoTHubHttp_HL_Create shall invoke iothubhttp Module's create, using the busHandle, IotHubName, and IoTHubSuffix. ]*/
+                    /*Codes_SRS_IOTHUBHTTP_HL_17_008: [ IoTHubHttp_HL_Create shall invoke iothubhttp Module's create, using the broker, IotHubName, and IoTHubSuffix. ]*/
                     IOTHUBHTTP_CONFIG llConfiguration;
                     llConfiguration.IoTHubName = IoTHubName;
                     llConfiguration.IoTHubSuffix = IoTHubSuffix;
                     /*Codes_SRS_IOTHUBHTTP_HL_17_009: [ When the lower layer IoTHubHttp create succeeds, IoTHubHttp_HL_Create shall succeed and return a non-NULL value. ]*/
                     /*Codes_SRS_IOTHUBHTTP_HL_17_010: [ If the lower layer IoTHubHttp create fails, IoTHubHttp_HL_Create shall fail and return NULL. ]*/
-                    result = MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)()->Module_Create(busHandle, &llConfiguration);
+                    result = MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)()->Module_Create(broker, &llConfiguration);
                 }
             }
             json_value_free(json);

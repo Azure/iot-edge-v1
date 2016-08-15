@@ -16,17 +16,17 @@
 
 #include "parson.h"
 
-static MODULE_HANDLE DotNET_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE DotNET_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	MODULE_HANDLE result;
-	/* Codes_SRS_DOTNET_HL_04_001: [ If busHandle is NULL then DotNET_HL_Create shall fail and return NULL. ]  */
+	/* Codes_SRS_DOTNET_HL_04_001: [ If broker is NULL then DotNET_HL_Create shall fail and return NULL. ]  */
 	/* Codes_SRS_DOTNET_HL_04_002: [ If configuration is NULL then DotNET_HL_Create shall fail and return NULL. ] */
 	if (
-		(busHandle == NULL) ||
+		(broker == NULL) ||
 		(configuration == NULL)
 		)
 	{
-		LogError("NULL parameter detected bus=%p configuration=%p", busHandle, configuration);
+		LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
 		result = NULL;
 	}
 	else
@@ -81,8 +81,8 @@ static MODULE_HANDLE DotNET_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* 
 								dotNet_config.dotnet_module_entry_class = dotnet_module_entry_class_string;
 								dotNet_config.dotnet_module_args = dotnet_module_args_string;
 
-								/* Codes_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass busHandle and const char* configuration (dotnet_module_path, dotnet_module_entry_class and dotnet_module_args as string) to DotNET_Create. ] */
-								result = MODULE_STATIC_GETAPIS(DOTNET_HOST)()->Module_Create(busHandle, (const void*)&dotNet_config);
+								/* Codes_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass broker and const char* configuration (dotnet_module_path, dotnet_module_entry_class and dotnet_module_args as string) to DotNET_Create. ] */
+								result = MODULE_STATIC_GETAPIS(DOTNET_HOST)()->Module_Create(broker, (const void*)&dotNet_config);
 
 								/* Codes_SRS_DOTNET_HL_04_008: [ If DotNET_Create succeeds then DotNET_HL_Create shall succeed and return a non-NULL value. ] */
 								if (result == NULL)

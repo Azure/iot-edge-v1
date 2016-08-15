@@ -91,12 +91,12 @@ loop it turns out that there is an active isolate on the current thread at that
 time. Once we have a reference to the `Isolate` we are able to access pretty
 much everything else in the V8 API. Here's an example code snippet that shows
 the introduction of a new object called `gateway_host` into the global context.
-`gateway_host` has one method called `get_message_bus` which simply prints a
+`gateway_host` has one method called `get_message_broker` which simply prints a
 message on the console. Error checks have been omitted for brevity:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
-static void get_message_bus(const FunctionCallbackInfo<Value>& info) {
-    printf("get_message_bus\n");
+static void get_message_broker(const FunctionCallbackInfo<Value>& info) {
+    printf("get_message_broker\n");
 }
 
 static void on_idle(uv_idle_t* handle) {
@@ -120,10 +120,10 @@ static void on_idle(uv_idle_t* handle) {
         Local<ObjectTemplate> gateway_host_template = ObjectTemplate::New(isolate);
         
         // add a member method to the object template and have it call the
-        // get_message_bus function defined above when invoked
+        // get_message_broker function defined above when invoked
         gateway_host_template->Set(
-            String::NewFromUtf8(isolate, "get_message_bus"),
-            FunctionTemplate::New(isolate, get_message_bus)
+            String::NewFromUtf8(isolate, "get_message_broker"),
+            FunctionTemplate::New(isolate, get_message_broker)
         );
         
         // create a new object instance from the template
@@ -142,7 +142,7 @@ static void on_idle(uv_idle_t* handle) {
         // run a piece JS code that calls our code
         Local<String> source = String::NewFromUtf8(
             isolate,
-            "gateway_host.get_message_bus();",
+            "gateway_host.get_message_broker();",
             NewStringType::kNormal).ToLocalChecked();
         Local<Script> script = Script::Compile(context, source).ToLocalChecked();
         script->Run(context);
@@ -224,8 +224,8 @@ interface StringMap {
 }
 
 /**
- * A message object that can be published on to a message bus or
- * is received from a message bus.
+ * A message object that can be published to a message broker or
+ * is received from a message broker.
  */
 interface Message {
     properties: StringMap;
@@ -233,9 +233,9 @@ interface Message {
 }
 
 /**
- * A message bus object.
+ * A message broker object.
  */
-interface MessageBus {
+interface Broker {
     publish: (message: Message) => boolean;
 }
 
@@ -246,7 +246,7 @@ interface MessageBus {
  * gateway module.
  */
 interface GatewayModule {
-    create: (messageBus: MessageBus, configuration: any) => boolean;
+    create: (broker: Broker, configuration: any) => boolean;
     receive: (message: Message) => void;
     destroy: () => void;
 }
@@ -273,7 +273,7 @@ following actions:
     loop.
 
 -   When the *libuv* idle handler is invoked, it creates an instance of a proxy
-    object for the Message Bus (conforming to the `MessageBus` interface defined
+    object for the message broker (conforming to the `Broker` interface defined
     above).
 
 -   If this is the first time that a Node JS module is being loaded, then it
@@ -294,7 +294,7 @@ following actions:
 -   The `registerModule` call results in control shifting back to native code
     which now has a handle to the JavaScript object that implements
     `GatewayModule`. The module then proceeds to invoke `GatewayModule.create`
-    passing the handle to the `MessageBus` object and the configuration that it
+    passing the handle to the `Broker` object and the configuration that it
     has read from the module’s configuration
 
 ### Module\_Receive
@@ -308,14 +308,14 @@ constructs an object that implements the `Message` interface and invokes
 The call to `Module_Destroy` is simply forwarded on to `GatewayModule.destroy`.
 It then removes the module reference from it’s internal list of modules.
 
-### Publishing of messages to the bus
+### Publishing of messages to the broker
 
 Whenever the code running on the JavaScript side of the equation publishes a new
-message on to the message bus, it will first construct an object that implements
-the `Message` interface and invoke `MessageBus.publish` at which point control
+message to the message broker, it will first construct an object that implements
+the `Message` interface and invoke `Broker.publish` at which point control
 shifts to the native code where the implementation proceeds to construct a
 `MESSAGE_HANDLE` from the JavaScript message object. Once the `MESSAGE_HANDLE`
-has been initialized it calls `MessageBus_Publish`.
+has been initialized it calls `Broker_Publish`.
 
 Another implementation option could be to have the JavaScript code serialize the
 message into a byte array according to the requirements of the

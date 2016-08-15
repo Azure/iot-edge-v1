@@ -28,12 +28,12 @@ create function to  interpret the serialized JSON module arguments.
 
 ###IoTHubHttp_HL_Create
 ```C
-MODULE_HANDLE IoTHubHttp_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IoTHubHttp_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new IoTHubHttp_HL instance. `configuration` is a pointer to a char* 
 of the serialzed JSON object, as supplied by `Gateway_Create_From_JSON`.
 
-**SRS_IOTHUBHTTP_HL_17_001: [**If `busHandle` is NULL then `IoTHubHttp_HL_Create` 
+**SRS_IOTHUBHTTP_HL_17_001: [**If `broker` is NULL then `IoTHubHttp_HL_Create` 
 shall fail and return NULL.**]**
  
 **SRS_IOTHUBHTTP_HL_17_002: [**If `configuration` is NULL then 
@@ -51,7 +51,7 @@ NULL. **]**
 
 **SRS_IOTHUBHTTP_HL_17_007: [** If the JSON object does not contain a value named "IoTHubSuffix" then `IoTHubHttp_HL_Create` shall fail and return NULL. **]**
 
-**SRS_IOTHUBHTTP_HL_17_008: [** `IoTHubHttp_HL_Create` shall invoke the IoTHubHttp Module's create, using the busHandle, IotHubName, and IoTHubSuffix. **]**
+**SRS_IOTHUBHTTP_HL_17_008: [** `IoTHubHttp_HL_Create` shall invoke the IoTHubHttp Module's create, using the broker, IotHubName, and IoTHubSuffix. **]**
 
 **SRS_IOTHUBHTTP_HL_17_009: [** When the lower layer IoTHubHttp create succeeds, `IoTHubHttp_HL_Create` shall succeed and return a non-NULL value. **]**
 

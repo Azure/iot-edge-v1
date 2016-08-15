@@ -8,7 +8,7 @@
  *
  * \section features_sec Features
  *
- * - Provides a message bus with dynamically loadable modules 
+ * - Provides a message broker with dynamically loadable modules 
  * - Utility to load modules using a JSON configuration file
  * - BLE module (Linux only) supporting reading, writing and polling based on GATT characteristics
  * - IoTHub module supporting multiplexing device connections to Azure IoTHub.

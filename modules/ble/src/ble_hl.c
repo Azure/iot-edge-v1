@@ -28,7 +28,7 @@
 
 typedef struct BLE_HL_HANDLE_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE      bus;
+    BROKER_HANDLE           broker;
     STRING_HANDLE           mac_address;
     MODULE_HANDLE           module_handle;
 }BLE_HL_HANDLE_DATA;
@@ -40,17 +40,17 @@ static bool parse_write(JSON_Object* instr, BLEIO_SEQ_INSTRUCTION_TYPE type, BLE
 static void free_instruction(BLE_INSTRUCTION* instr);
 static void free_instructions(VECTOR_HANDLE instructions);
 
-static MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
     BLE_HL_HANDLE_DATA* result;
 
-    /*Codes_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the bus or configuration parameters are NULL. ]*/
+    /*Codes_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the broker or configuration parameters are NULL. ]*/
     if(
-        (bus == NULL) ||
+        (broker == NULL) ||
         (configuration == NULL)
       )
     {
-        LogError("NULL parameter detected bus=%p configuration=%p", bus, configuration);
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
         result = NULL;
     }
     else
@@ -149,7 +149,7 @@ static MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configura
 
                                             /*Codes_SRS_BLE_HL_13_014: [ BLE_HL_Create shall call the underlying module's 'create' function. ]*/
                                             result->module_handle = MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Create(
-                                                bus, (const void*)&ble_config
+                                                broker, (const void*)&ble_config
                                                 );
                                             if (result->module_handle == NULL)
                                             {
@@ -164,7 +164,7 @@ static MODULE_HANDLE BLE_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configura
                                             else
                                             {
                                                 /*Codes_SRS_BLE_HL_13_023: [ BLE_HL_Create shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
-                                                result->bus = bus;
+                                                result->broker = broker;
                                             }
                                         }
                                     }
@@ -453,7 +453,7 @@ static void BLE_HL_Destroy(MODULE_HANDLE module)
     }
 }
 
-static bool recognize_bus_message(BLE_HL_HANDLE_DATA* handle_data, CONSTMAP_HANDLE properties)
+static bool recognize_message(BLE_HL_HANDLE_DATA* handle_data, CONSTMAP_HANDLE properties)
 {
     bool result;
     const char * message_mac = ConstMap_GetValue(properties, GW_MAC_ADDRESS_PROPERTY);
@@ -538,7 +538,7 @@ static void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
         CONSTMAP_HANDLE properties = Message_GetProperties(message_handle);
         if (properties != NULL)
         {
-            if (recognize_bus_message(handle_data, properties) == true)
+            if (recognize_message(handle_data, properties) == true)
             {
                 const CONSTBUFFER * message_content = Message_GetContent(message_handle);
                 if (message_content != NULL)

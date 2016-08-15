@@ -14,18 +14,18 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 
-static MODULE_HANDLE Logger_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration)
+static MODULE_HANDLE Logger_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
     
     MODULE_HANDLE result;
-    /*Codes_SRS_LOGGER_HL_02_001: [ If busHandle is NULL then Logger_HL_Create shall fail and return NULL. ]*/
+    /*Codes_SRS_LOGGER_HL_02_001: [ If broker is NULL then Logger_HL_Create shall fail and return NULL. ]*/
     /*Codes_SRS_LOGGER_HL_02_003: [ If configuration is NULL then Logger_HL_Create shall fail and return NULL. ]*/
     if(
-        (busHandle == NULL) ||
+        (broker == NULL) ||
         (configuration == NULL)
     )
     { 
-        LogError("NULL parameter detected busHandle=%p configuration=%p", busHandle, configuration);
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
         result = NULL;
     }
     else
@@ -62,8 +62,8 @@ static MODULE_HANDLE Logger_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* 
                     config.selector = LOGGING_TO_FILE;
                     config.selectee.loggerConfigFile.name = fileNameValue;
                     
-                    /*Codes_SRS_LOGGER_HL_02_005: [ Logger_HL_Create shall pass busHandle and the filename to Logger_Create. ]*/
-                    result = MODULE_STATIC_GETAPIS(LOGGER_MODULE)()->Module_Create(busHandle, &config);
+                    /*Codes_SRS_LOGGER_HL_02_005: [ Logger_HL_Create shall pass broker and the filename to Logger_Create. ]*/
+                    result = MODULE_STATIC_GETAPIS(LOGGER_MODULE)()->Module_Create(broker, &config);
 
                     if (result == NULL)
                     {

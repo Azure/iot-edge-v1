@@ -17,7 +17,7 @@ This module is just a passthrough to .NET Host Module in all aspects except for 
 DotNET_HL_Create
 -------------
 ```c
-MODULE_HANDLE DotNET_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+MODULE_HANDLE DotNET_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new dotNET HOST Module HL instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_Create_From_JSON`.
 By convention in the json object should contain 
@@ -46,7 +46,7 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
 }```
 
 
-**SRS_DOTNET_HL_04_001: [** If `busHandle` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
+**SRS_DOTNET_HL_04_001: [** If `broker` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
 
 **SRS_DOTNET_HL_04_002: [** If `configuration` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
 
@@ -58,7 +58,7 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
 
 **SRS_DOTNET_HL_04_006: [** If the JSON object does not contain a value named "dotnet_module_args" then `DotNET_HL_Create` shall fail and return NULL. **]**
 
-**SRS_DOTNET_HL_04_007: [** `DotNET_HL_Create` shall pass `busHandle` and `const void* configuration` ( with `DOTNET_HOST_CONFIG`) to `DotNET_Create`. **]**
+**SRS_DOTNET_HL_04_007: [** `DotNET_HL_Create` shall pass `broker` and `const void* configuration` ( with `DOTNET_HOST_CONFIG`) to `DotNET_Create`. **]**
 
 **SRS_DOTNET_HL_04_008: [** If `DotNET_Create` succeeds then `DotNET_HL_Create` shall succeed and return a non-NULL value. **]**
 

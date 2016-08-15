@@ -224,19 +224,19 @@
     <ClInclude Include="..\..\..\..\core\inc\gateway.h" />
     <ClInclude Include="..\..\..\..\core\inc\gateway_ll.h" />
     <ClInclude Include="..\..\..\..\core\inc\message.h" />
-    <ClInclude Include="..\..\..\..\core\inc\message_bus.h" />
+    <ClInclude Include="..\..\..\..\core\inc\broker.h" />
     <ClInclude Include="..\..\..\..\core\inc\module.h" />
     <ClInclude Include="..\..\..\..\core\inc\module_config_resources.h" />
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
     <ClInclude Include="MessageUwp.h" />
-    <ClInclude Include="MessageBusUwp.h" />
+    <ClInclude Include="BrokerUwp.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GatewayUwp.cpp" />
     <ClCompile Include="MessageUwp.cpp" />
-    <ClCompile Include="MessageBusUwp.cpp" />
+    <ClCompile Include="BrokerUwp.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -245,7 +245,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\core\src\broadcast_message_bus.c">
+    <ClCompile Include="..\..\..\..\core\src\broadcast_broker.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>

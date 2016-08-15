@@ -22,7 +22,7 @@ The **.NET Module Host** is a C module that
 
 2. Brokers calls **to** the .NET Module (create, destroy, receive).
 
-3. Brokers calls **from** the .NET Module (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `MessageBus_Publish`);
+3. Brokers calls **from** the .NET Module (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `Broker_Publish`);
 
 ###JSON Configuration
 
@@ -85,11 +85,11 @@ This is going to be a layer written in .NET that will wrap a method in our host 
 For .NET Modules the following wrappers will be provided:
 1. `Message` - Object that represents a message;
 
-2. `MessageBus` - Object that represents the bus, which will be used to publish messages on to the bus;
+2. `Broker` - Object that represents the broker, which passes messages between modules;
 
 3. `IGatewayModule` - interface that has to be implemented by the .NET Module; 
 
-4. `nativeDotNetHostWrapper` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the .NET User, it will be called by the MessageBus Class when the user calls Publish.
+4. `nativeDotNetHostWrapper` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the .NET User, it will be called by the Broker Class when the user calls Publish.
 
 The high level design of these objects and interfaces is documented below:
 
@@ -98,7 +98,7 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents a message passed between modules. </summary>
         public class Message
         {
             public byte[] Content { set; get; };
@@ -119,18 +119,18 @@ The high level design of these objects and interfaces is documented below:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-### MessageBus
+### Broker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
-        public class MessageBus
+        /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
+        public class Broker
         {
             /// <summary>
-            ///     Publish a message into the gateway message bus. 
+            ///     Publish a message to the message broker. 
             /// </summary>
-            /// <param name="message">Object representing the message to be published into the bus.</param>
+            /// <param name="message">Object representing the message to be published to the broker.</param>
             /// <returns></returns>
             public void Publish(Message message);
         }        
@@ -144,12 +144,12 @@ The high level design of these objects and interfaces is documented below:
     public interface IGatewayModule
     {
             /// <summary>
-            ///     Creates a module using the specified configuration connecting to the specified message bus.
+            ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
-            /// <param name="bus">The bus onto which this module will connect.</param>
+            /// <param name="broker">The broker to which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
-            void Create(MessageBus bus, string configuration);
+            void Create(Broker broker, string configuration);
             
             /// <summary>
             ///     Disposes of the resources allocated by/for this module.

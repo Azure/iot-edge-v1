@@ -33,7 +33,7 @@
 
 #include "module.h"
 #include "message.h"
-#include "message_bus.h"
+#include "broker.h"
 #include "messageproperties.h"
 
 #include "nodejs_common.h"
@@ -44,36 +44,38 @@
 
 #define DESTROY_WAIT_TIME_IN_SECS   (5)
 
-#define NODE_LOAD_SCRIPT(ss, main_path, module_id)    ss <<       \
-    "(function() {"                                               \
-    "  try {"                                                     \
-    "    var path = require('path');"                             \
-    "    return gatewayHost.registerModule("                      \
-    "      require(path.resolve('" << (main_path) << "')), " <<   \
-           (module_id) <<                                         \
-    "    ); "                                                     \
-    "  } "                                                        \
-    "  catch(err) { "                                             \
-    "    console.error(`ERROR: ${err.toString()}`);"              \
-    "    return false;"                                           \
-    "  }"                                                         \
+#define NODE_LOAD_SCRIPT(ss, main_path, module_id)    ss <<                    \
+    "(function() {"                                                            \
+    "  try {"                                                                  \
+    "    var path = require('path');"                                          \
+    "    var main_path = path.resolve('" << (main_path) << "');" <<            \
+    "    delete require.cache[main_path]; " <<                                 \
+    "    return gatewayHost.registerModule("                                   \
+    "      require(main_path), " <<                                            \
+           (module_id) <<                                                      \
+    "    ); "                                                                  \
+    "  } "                                                                     \
+    "  catch(err) { "                                                          \
+    "    console.error(`ERROR: ${err.toString()}`);"                           \
+    "    return false;"                                                        \
+    "  }"                                                                      \
     "})();"
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
-static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
+static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
 
-static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration)
 {
     MODULE_HANDLE result;
     const NODEJS_MODULE_CONFIG* module_config = reinterpret_cast<const NODEJS_MODULE_CONFIG*>(configuration);
     JSON_Value* json = nullptr;
 
-    /*Codes_SRS_NODEJS_13_001: [ NodeJS_Create shall return NULL if bus is NULL. ]*/
+    /*Codes_SRS_NODEJS_13_001: [ NodeJS_Create shall return NULL if broker is NULL. ]*/
     /*Codes_SRS_NODEJS_13_002: [ NodeJS_Create shall return NULL if configuration is NULL. ]*/
     /*Codes_SRS_NODEJS_13_019: [ NodeJS_Create shall return NULL if configuration->configuration_json is not valid JSON. ]*/
     /*Codes_SRS_NODEJS_13_003: [ NodeJS_Create shall return NULL if configuration->main_path is NULL. ]*/
     /*Codes_SRS_NODEJS_13_013: [ NodeJS_Create shall return NULL if configuration->main_path is an invalid file system path. ]*/
-    if (validate_input(bus, module_config, &json) == false)
+    if (validate_input(broker, module_config, &json) == false)
     {
         result = NULL;
     }
@@ -91,7 +93,7 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
             /*Codes_SRS_NODEJS_13_006: [ NodeJS_Create shall allocate memory for an instance of the NODEJS_MODULE_HANDLE_DATA structure and use that as the backing structure for the module handle. ]*/
             NODEJS_MODULE_HANDLE_DATA handle_data_input
             {
-                bus,
+                broker,
                 module_config->main_path,
                 module_config->configuration_json,
                 on_module_start
@@ -129,13 +131,13 @@ static MODULE_HANDLE NODEJS_Create(MESSAGE_BUS_HANDLE bus, const void* configura
     return result;
 }
 
-static bool validate_input(MESSAGE_BUS_HANDLE bus, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
+static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
 {
     bool result;
 
-    if (bus == NULL || module_config == NULL)
+    if (broker == NULL || module_config == NULL)
     {
-        LogError("bus and/or configuration is NULL");
+        LogError("broker and/or configuration is NULL");
         result = false;
     }
     else if (module_config->main_path == NULL)
@@ -458,7 +460,7 @@ static unsigned char* copy_contents(
     return result;
 }
 
-static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void broker_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     // this MUST NOT be NULL
     auto isolate = info.GetIsolate();
@@ -476,11 +478,11 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
             validate_message(isolate, context, info[0]) == false
        )
     {
-        LogError("message_bus_publish was called with invalid parameters");
+        LogError("broker_publish was called with invalid parameters");
 
-        /*Codes_SRS_NODEJS_13_027: [ message_bus_publish shall set the return value to false if the arguments count is less than 1. ]*/
-        /*Codes_SRS_NODEJS_13_028: [ message_bus_publish shall set the return value to false if the first argument is not a JS object. ]*/
-        /*Codes_SRS_NODEJS_13_029: [ message_bus_publish shall set the return value to false if the first argument is an object whose shape does not conform to the following interface:
+        /*Codes_SRS_NODEJS_13_027: [ broker_publish shall set the return value to false if the arguments count is less than 1. ]*/
+        /*Codes_SRS_NODEJS_13_028: [ broker_publish shall set the return value to false if the first argument is not a JS object. ]*/
+        /*Codes_SRS_NODEJS_13_029: [ broker_publish shall set the return value to false if the first argument is an object whose shape does not conform to the following interface:
             interface StringMap {
                 [key: string]: string;
             }
@@ -498,7 +500,7 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
         auto module_id_value = this_object->GetInternalField(0);
         if (module_id_value.IsEmpty() == true)
         {
-            LogError("message_bus_publish() was called with an unexpected object as the 'this' variable");
+            LogError("broker_publish() was called with an unexpected object as the 'this' variable");
             info.GetReturnValue().Set(false);
         }
         else
@@ -516,7 +518,7 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
                 MAP_HANDLE message_properties = Map_Create(NULL);
                 if (message_properties == NULL)
                 {
-                    /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
+                    /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
                     LogError("Map_Create() failed");
                     info.GetReturnValue().Set(false);
                 }
@@ -525,7 +527,7 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
                     auto message_obj = info[0]->ToObject();
                     if (copy_properties_from_message(isolate, context, message_obj, message_properties) == false)
                     {
-                        /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
+                        /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
                         LogError("An error occurred when copying properties to the message handle");
                         info.GetReturnValue().Set(false);
                     }
@@ -546,30 +548,30 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
                             message_config.source = nullptr;
                         }
 
-                        /*Codes_SRS_NODEJS_13_030: [ message_bus_publish shall construct and initialize a MESSAGE_HANDLE from the first argument. ]*/
+                        /*Codes_SRS_NODEJS_13_030: [ broker_publish shall construct and initialize a MESSAGE_HANDLE from the first argument. ]*/
                         MESSAGE_HANDLE message = Message_Create(&message_config);
                         if (message == NULL)
                         {
-                            /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
+                            /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
                             LogError("Message_Create() failed");
                             info.GetReturnValue().Set(false);
                         }
                         else
                         {
-                            /*Codes_SRS_NODEJS_13_032: [ message_bus_publish shall call MessageBus_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
-                            if (MessageBus_Publish(handle_data.bus, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != MESSAGE_BUS_OK)
+                            /*Codes_SRS_NODEJS_13_032: [ broker_publish shall call Broker_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
+                            if (Broker_Publish(handle_data.broker, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != BROKER_OK)
                             {
-                                /*Codes_SRS_NODEJS_13_031: [ message_bus_publish shall set the return value to false if any underlying platform call fails. ]*/
-                                LogError("MessageBus_Publish() failed");
+                                /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
+                                LogError("Broker_Publish() failed");
                                 info.GetReturnValue().Set(false);
                             }
                             else
                             {
-                                /*Codes_SRS_NODEJS_13_033: [ message_bus_publish shall set the return value to true or false depending on the status of the MessageBus_Publish call. ]*/
+                                /*Codes_SRS_NODEJS_13_033: [ broker_publish shall set the return value to true or false depending on the status of the Broker_Publish call. ]*/
                                 info.GetReturnValue().Set(true);
                             }
 
-                            /*Codes_SRS_NODEJS_13_034: [ message_bus_publish shall destroy the MESSAGE_HANDLE. ]*/
+                            /*Codes_SRS_NODEJS_13_034: [ broker_publish shall destroy the MESSAGE_HANDLE. ]*/
                             Message_Destroy(message);
                         }
 
@@ -583,26 +585,26 @@ static void message_bus_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 }
 
-static v8::Local<v8::Object> create_message_bus(v8::Isolate* isolate, v8::Local<v8::Context> context)
+static v8::Local<v8::Object> create_message_broker(v8::Isolate* isolate, v8::Local<v8::Context> context)
 {
     // this is an 'empty' object by default
     v8::Local<v8::Object> result;
 
-    auto message_bus_template = nodejs_module::NodeJSUtils::CreateObjectTemplateWithMethod("publish", message_bus_publish);
-    if (message_bus_template.IsEmpty() == true)
+    auto broker_template = nodejs_module::NodeJSUtils::CreateObjectTemplateWithMethod("publish", broker_publish);
+    if (broker_template.IsEmpty() == true)
     {
-        LogError("Could not instantiate an object template for the message bus");
+        LogError("Could not instantiate an object template for the message broker");
     }
     else
     {
-        auto mbt = message_bus_template.Get(isolate);
+        auto mbt = broker_template.Get(isolate);
 
         // add a placeholder for an internal field where we will store the module identifier
         mbt->SetInternalFieldCount(1);
 
         // create a new instance of the template
         result = mbt->NewInstance(context).ToLocalChecked();
-        message_bus_template.Reset();
+        broker_template.Reset();
     }
 
     return result;
@@ -635,7 +637,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
 
         /*Codes_SRS_NODEJS_13_016: [ When the native implementation of GatewayModuleHost.registerModule is invoked it shall do nothing if the parameter is an object but does not conform to the following interface:
             interface GatewayModule {
-                create: (messageBus: MessageBus, configuration: any) => boolean;
+                create: (broker: Broker, configuration: any) => boolean;
                 receive: (message: Message) => void;
                 destroy: () => void;
             }
@@ -647,7 +649,7 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         else
         {
-            /*Codes_SRS_NODEJS_13_017: [ A JavaScript object conforming to the MessageBus interface defined shall be created:
+            /*Codes_SRS_NODEJS_13_017: [ A JavaScript object conforming to the Broker interface defined shall be created:
                 interface StringMap {
                     [key: string]: string;
                 }
@@ -657,14 +659,14 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                     content: Uint8Array;
                 }
 
-                interface MessageBus {
+                interface Broker {
                     publish: (message: Message) => boolean;
                 }
             */
-            auto message_bus = create_message_bus(isolate, context);
-            if (message_bus.IsEmpty())
+            auto broker = create_message_broker(isolate, context);
+            if (broker.IsEmpty())
             {
-                LogError("Could not instantiate a message bus object");
+                LogError("Could not instantiate a message broker object");
                 info.GetReturnValue().Set(false);
             }
             else
@@ -674,8 +676,8 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                 auto module_id = info[1]->ToNumber()->Uint32Value();
                 NODEJS_MODULE_HANDLE_DATA& handle_data = nodejs_module::ModulesManager::Get()->GetModuleFromId(module_id);
 
-                // save the module id in the message bus object so we can retrieve this
-                // from the message_bus_publish function
+                // save the module id in the message broker object so we can retrieve it
+                // from the broker_publish function
                 auto module_id_value = v8::Uint32::NewFromUnsigned(isolate, module_id);
                 if (module_id_value.IsEmpty() == true)
                 {
@@ -684,13 +686,13 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                 }
                 else
                 {
-                    message_bus->SetInternalField(0, module_id_value);
+                    broker->SetInternalField(0, module_id_value);
 
                     // save the gateway object reference in the handle; this will be freed
                     // from NODEJS_Destroy
                     handle_data.module_object.Reset(isolate, gateway);
 
-                    // invoke the 'create' method on 'gateway' passing the message bus
+                    // invoke the 'create' method on 'gateway' passing the message broker
                     auto create_method_name = v8::String::NewFromUtf8(isolate, "create");
                     if (create_method_name.IsEmpty() == true)
                     {
@@ -721,8 +723,8 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                             auto create_method_value = gateway->Get(context, create_method_name).ToLocalChecked();
                             auto create_method = create_method_value.As<v8::Function>();
 
-                            /*Codes_SRS_NODEJS_13_018: [ The GatewayModule.create method shall be invoked passing the MessageBus instance and a parsed instance of the configuration JSON string. ]*/
-                            v8::Local<v8::Value> argv[] = { message_bus, config_json };
+                            /*Codes_SRS_NODEJS_13_018: [ The GatewayModule.create method shall be invoked passing the Broker instance and a parsed instance of the configuration JSON string. ]*/
+                            v8::Local<v8::Value> argv[] = { broker, config_json };
                             auto maybe_result = create_method->Call(context, gateway, 2, argv);
                             if (maybe_result.IsEmpty())
                             {

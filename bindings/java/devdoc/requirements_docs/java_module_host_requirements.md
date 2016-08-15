@@ -7,7 +7,7 @@ Java. This module will broker communication to and from the native gateway as
 well as manage the lifetime of the Java Virtual Machine. Please read the [high
 level design](./java_binding_hld.md) document for more design details. This 
 module will be built as a dynamic library and loaded by the Java class using
-`System.loadLibrary(...)` in order to publish messages to the bus. The path 
+`System.loadLibrary(...)` in order to publish messages to the broker. The path 
 to the .dll or .so must be included in `library_path` of the configuration for 
 the java module host, or be part of the default library path.
 
@@ -57,13 +57,13 @@ fields non-`NULL`. **]**
 
 ##JavaModuleHost_Create
 ```C
-static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new Java Module Host instance. The parameter `configuration` is a
 pointer to a `JAVA_MODULE_HOST_CONFIG` structure.
 
-**SRS_JAVA_MODULE_HOST_14_001: [** This function shall return `NULL` if `bus` is `NULL`. **]**
+**SRS_JAVA_MODULE_HOST_14_001: [** This function shall return `NULL` if `broker` is `NULL`. **]**
 
 **SRS_JAVA_MODULE_HOST_14_002: [** This function shall return `NULL` if `configuration` is `NULL`. **]**
 
@@ -105,7 +105,7 @@ pointer to a `JAVA_MODULE_HOST_CONFIG` structure.
 
 **SRS_JAVA_MODULE_HOST_14_013: [** This function shall return `NULL` if a JVM could not be created or found. **]**
 
-**SRS_JAVA_MODULE_HOST_14_014: [** This function shall find the `MessageBus` Java class, get the constructor, and create a `MessageBus` Java object. **]**
+**SRS_JAVA_MODULE_HOST_14_014: [** This function shall find the `Broker` Java class, get the constructor, and create a `Broker` Java object. **]**
 
 **SRS_JAVA_MODULE_HOST_14_015: [** This function shall find the user-defined Java module class using `configuration->class_name`, get the constructor, and create an instance of this module object. **]**
 
@@ -159,15 +159,15 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 **SRS_JAVA_MODULE_HOST_14_047: [** This function shall exit if any underlying function fails. **]**
 
-##MessageBus_Publish
+##Broker_Publish
 ```C
-JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv *env, jobject MessageBus, jlong addr, jbyteArray message);
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv *env, jobject Broker, jlong addr, jbyteArray message);
 ```
 
 **SRS_JAVA_MODULE_HOST_14_025: [** This function shall convert the `jbyteArray message` into an `unsigned char` array. **]**
 
 **SRS_JAVA_MODULE_HOST_14_026: [** This function shall use the serialized message in a call to `Message_Create`. **]**
 
-**SRS_JAVA_MODULE_HOST_14_027: [** This function shall publish the message to the `MESSAGE_BUS_HANDLE` addressed by `addr` and return the value of this function call. **]**
+**SRS_JAVA_MODULE_HOST_14_027: [** This function shall publish the message to the `BROKER_HANDLE` addressed by `addr` and return the value of this function call. **]**
 
 **SRS_JAVA_MODULE_HOST_14_048: [**  This function shall return a non-zero value if any underlying function call fails. **]**

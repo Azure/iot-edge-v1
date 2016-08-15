@@ -18,13 +18,13 @@ UWP Wrappers and objects
 
 This is a layer written in UWP that wraps what is required to publish a given message. 
 For UWP Modules the following wrappers will be provided:
-1. `Message` - Object that represents a message;
+1. `Message` - Object that represents a message
 
-2. `MessageBus` - Object that represents the bus, which will be used to publish messages on to the bus;
+2. `Broker` - Object that represents the message broker, to which messsages will be published
 
-3. `IGatewayModule` - interface that has to be implemented by the .NET Module; 
+3. `IGatewayModule` - interface that has to be implemented by the .NET Module
 
-4. `Gateway` - Object that represents the gateway, which will be used to construct the gateway;
+4. `Gateway` - Object that represents the gateway, which will be used to construct the gateway
 
 The high level design of these objects and interfaces is documented below:
 
@@ -47,7 +47,7 @@ The high level design of these objects and interfaces is documented below:
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents a message on the message bus. </summary>
+        /// <summary> Object that represents a message passed between modules. </summary>
         public sealed class Message
         {
 			// There are limitations to UWP and overloading ... these static CreateMessage
@@ -68,13 +68,13 @@ The high level design of these objects and interfaces is documented below:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-### MessageBus
+### Broker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
     namespace Microsoft.Azure.IoT.Gateway
     {
-        /// <summary> Object that represents the bus, to where a messsage is going to be published </summary>
-        public sealed class MessageBus
+        /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
+        public sealed class Broker
         {
             public void Publish(Message message);
         }        
@@ -88,12 +88,12 @@ The high level design of these objects and interfaces is documented below:
     public interface IGatewayModule
     {
             /// <summary>
-            ///     Creates a module using the specified configuration connecting to the specified message bus.
+            ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
-            /// <param name="bus">The bus onto which this module will connect.</param>
+            /// <param name="broker">The broker to which this module will connect.</param>
             /// <param name="configuration">A string with user-defined configuration for this module.</param>
             /// <returns></returns>
-            void Create(MessageBus bus, IReadOnlyDictionary<string, string> properties);
+            void Create(Broker broker, IReadOnlyDictionary<string, string> properties);
             
             /// <summary>
             ///     Disposes of the resources allocated by/for this module.

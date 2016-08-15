@@ -31,11 +31,11 @@ typedef struct LOGGER_CONFIG_TAG
 
 ###Logger_Create
 ```c
-MODULE_HANDLE Logger_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new LOGGER instance. `configuration` is a pointer to a `LOGGER_CONFIG`.
 
-**SRS_LOGGER_02_001: [**If busHandle is NULL then Logger_Create shall fail and return NULL.**]**
+**SRS_LOGGER_02_001: [**If broker is NULL then Logger_Create shall fail and return NULL.**]**
 **SRS_LOGGER_02_002: [**If configuration is NULL then Logger_Create shall fail and return NULL.**]**
 **SRS_LOGGER_02_003: [**If configuration->selector has a value different than `LOGGING_TO_FILE` then Logger_Create shall fail and return NULL.**]**
 **SRS_LOGGER_02_004: [**If configuration->selectee.loggerConfigFile.name is NULL then Logger_Create shall fail and return NULL.**]**

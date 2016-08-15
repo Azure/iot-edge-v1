@@ -22,7 +22,7 @@ The following functions are the implementation of those APIs.
 
 ##JavaModuleHost_HL_Create
 ```C
-static MODULE_HANDLE JavaModuleHost_HL_Create(MESSAGE_BUS_HANDLE bus, const void* configuration);
+static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 Creates a new Java Module Host instance. The parameter `configuration` is a pointer to a `const char*` that contains a JSON object supplied by `Gateway_Create_From_JSON`.
@@ -75,7 +75,7 @@ The JVM options to be used when creating the JVM. Specify the version, debug opt
 * verbose: false
 * additional_options: NONE
 
-**SRS_JAVA_MODULE_HOST_HL_14_002: [** This function shall return `NULL` if `bus` is `NULL` or `configuration` is `NULL`. **]**
+**SRS_JAVA_MODULE_HOST_HL_14_002: [** This function shall return `NULL` if `broker` is `NULL` or `configuration` is `NULL`. **]**
 
 **SRS_JAVA_MODULE_HOST_HL_14_003: [** This function shall return `NULL` if `configuration` is not a valid JSON object. **]**
 
@@ -83,7 +83,7 @@ The JVM options to be used when creating the JVM. Specify the version, debug opt
 
 **SRS_JAVA_MODULE_HOST_HL_14_005: [** This function shall parse the `configuration.args` JSON object and initialize a new `JAVA_MODULE_HOST_CONFIG` setting default values to all missing fields. **]**
 
-**SRS_JAVA_MODULE_HOST_HL_14_006: [** This function shall pass `bus` and the newly created `JAVA_MODULE_HOST_CONFIG` structure to `JavaModuleHost_Create`. **]**
+**SRS_JAVA_MODULE_HOST_HL_14_006: [** This function shall pass `broker` and the newly created `JAVA_MODULE_HOST_CONFIG` structure to `JavaModuleHost_Create`. **]**
 
 **SRS_JAVA_MODULE_HOST_HL_14_007: [** This function shall fail or succeed after this function call and return the value from this function call. **]**
 

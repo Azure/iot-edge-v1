@@ -92,7 +92,7 @@ The following functions are the implementation of those APIs.
 
 ##IdentityMap_Create
 ```C
-MODULE_HANDLE IdentityMap_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
 This function creates the identity map module.  This module expects a `VECTOR_HANDLE` 
@@ -100,7 +100,7 @@ of `IDENTITY_MAP_CONFIG`, which contains a triplet of canonical form MAC
 address, device ID and device key. The MAC address will be treated as the key for the MAC address to device array, and the deviceName will be treated as the key for the device to MAC address array.
 
 **SRS_IDMAP_17_003: [**Upon success, this function shall return a valid pointer to a `MODULE_HANDLE`.**]**
-**SRS_IDMAP_17_004: [**If the `busHandle` is `NULL`, this function shall fail and return `NULL`.**]**
+**SRS_IDMAP_17_004: [**If the `broker` is `NULL`, this function shall fail and return `NULL`.**]**
 **SRS_IDMAP_17_005: [**If the configuration is `NULL`, this function shall fail and return `NULL`.**]**
 **SRS_IDMAP_17_041: [**If the configuration has no vector elements, this function shall fail and return `NULL`.**]**
 **SRS_IDMAP_17_019: [**If any `macAddress`, `deviceId` or `deviceKey` are `NULL`, this function shall fail and return `NULL`.**]**
@@ -113,14 +113,14 @@ The valid module handle will be a pointer to the structure:
 ```C
 typedef struct IDENTITY_MAP_DATA_TAG
 {
-    MESSAGE_BUS_HANDLE busHandle;
+    BROKER_HANDLE broker;
     size_t mappingSize;
     IDENTITY_MAP_CONFIG * macToDeviceArray;
     IDENTITY_MAP_CONFIG * deviceToMacArray;    
 } IDENTITY_MAP_DATA;
 ```    
 
-Where `busHandle` is the message bus passed in as input, `mappingSize` is the number of 
+Where `broker` is the message broker passed in as input, `mappingSize` is the number of 
 elements in the vector `configuration`, and the `macToDeviceArray` and `deviceToMacArray` are the sorted lists 
 of mapping triplets. 
 
@@ -175,7 +175,7 @@ message in pseudocode is as follows:
 21: If there is a new message to publish,
 22:         Clone original mesage content.
 23:         Create a new message from MAP and original message content.
-24:         Publish new message on busHandle
+24:         Publish new message on broker
 25:         Destroy all resources created
 ```
 
@@ -226,5 +226,5 @@ Upon recognition of a C2D or D2C message, then a new message shall be published.
 **SRS_IDMAP_17_035: [**If cloning message content fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**   
 **SRS_IDMAP_17_036: [**`IdentityMap_Receive` shall create a new message by calling `Message_CreateFromBuffer` with new map and cloned content.**]**   
 **SRS_IDMAP_17_037: [**If creating new message fails, `IdentityMap_Receive` shall deallocate all resources and return.**]**   
-**SRS_IDMAP_17_038: [**`IdentityMap_Receive` shall call `MessageBus_Publish` with `busHandle` and new message.**]**   
+**SRS_IDMAP_17_038: [**`IdentityMap_Receive` shall call `Broker_Publish` with `broker` and new message.**]**   
 **SRS_IDMAP_17_039: [**`IdentityMap_Receive` will destroy all resources it created.**]**   

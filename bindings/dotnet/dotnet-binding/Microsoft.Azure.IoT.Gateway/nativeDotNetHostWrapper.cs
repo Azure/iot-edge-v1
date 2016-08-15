@@ -17,24 +17,24 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <summary>
         ///      Module_DotNetHost wrapper for publishing a message.
         /// </summary>
-        /// <param name="messageBus">Address to the message Bus.</param>
-        /// <param name="sourceModule">Address from the Source Module (Native created)</param>
-        /// <param name="source">Message Content in Byte Array.</param>
-        /// <param name="size">Size of data that is going to be published.</param>
+        /// <param name="broker">Handle to the message broker.</param>
+        /// <param name="sourceModule">Handle to the (native) source module.</param>
+        /// <param name="source">Message content as a byte array.</param>
+        /// <param name="size">Size of the byte array.</param>
         /// <returns></returns>
         [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool Module_DotNetHost_PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source, Int32 size);
+        public static extern bool Module_DotNetHost_PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message, Int32 size);
 
         /// <summary>
-        ///    Publishes a message to a given Message Bus.
+        ///    Publishes a message to a given message broker.
         /// </summary>
-        /// <param name="messageBus">Address to the message Bus.</param>
-        /// <param name="sourceModule">Address from the Source Module (Native created)</param>
-        /// <param name="source">Message Content in Byte Array.</param>
+        /// <param name="broker">Handle to the message broker.</param>
+        /// <param name="sourceModule">Handle to the (native) source module.</param>
+        /// <param name="source">Message content as a byte array.</param>
         /// <returns></returns>
-        virtual public bool PublishMessage(IntPtr messageBus, IntPtr sourceModule, byte[] source)
+        virtual public bool PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message)
         {
-            return Module_DotNetHost_PublishMessage(messageBus, sourceModule, source, source.Length);
+            return Module_DotNetHost_PublishMessage(broker, sourceModule, message, message.Length);
         }
     }
 }

@@ -18,7 +18,7 @@ This module is just a passthrough to LOGGER MODULE in all aspects except for cre
 
 ###Logger_HL_Create
 ```c
-MODULE_HANDLE Logger_HL_Create(MESSAGE_BUS_HANDLE busHandle, const void* configuration);
+MODULE_HANDLE Logger_HL_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 Creates a new LOGGER MODULE HL instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_Create_From_JSON`.
 By convention in the json object should contain 
@@ -47,11 +47,11 @@ the file deviceCloudUploadGatewaylog.txt
 
 
 
-**SRS_LOGGER_HL_02_001: [** If `busHandle` is NULL then `Logger_HL_Create` shall fail and return NULL. **]**
+**SRS_LOGGER_HL_02_001: [** If `broker` is NULL then `Logger_HL_Create` shall fail and return NULL. **]**
 **SRS_LOGGER_HL_02_003: [** If `configuration` is NULL then `Logger_HL_Create` shall fail and return NULL. **]**
 **SRS_LOGGER_HL_02_011: [** If configuration is not a JSON object, then `Logger_HL_Create` shall fail and return NULL. **]**
 **SRS_LOGGER_HL_02_012: [** If the JSON object does not contain a value named "filename" then `Logger_HL_Create` shall fail and return NULL. **]**
-**SRS_LOGGER_HL_02_005: [** `Logger_HL_Create` shall pass `busHandle` and the filename to `Logger_Create`. **]**
+**SRS_LOGGER_HL_02_005: [** `Logger_HL_Create` shall pass `broker` and the filename to `Logger_Create`. **]**
 **SRS_LOGGER_HL_02_006: [** If `Logger_Create` succeeds then `Logger_HL_Create` shall succeed and return a non-NULL value. **]**
 **SRS_LOGGER_HL_02_007: [** If `Logger_Create` fails then `Logger_HL_Create` shall fail and return NULL. **]**
     

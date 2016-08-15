@@ -51,7 +51,7 @@ typedef signed char jbyte;
 
 #endif //UNDER_TEST
 
-#include "message_bus_proxy.h"
+#include "broker_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
 #include "azure_c_shared_utility/xlogging.h"
@@ -86,14 +86,14 @@ static void deinit_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE options_st
 static jobject NewObjectInternal(JNIEnv* env, jclass clazz, jmethodID methodID, int args_count, ...);
 static void CallVoidMethodInternal(JNIEnv* env, jobject obj, jmethodID methodID, int args_count, ...);
 
-static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* configuration)
+static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	JAVA_MODULE_HANDLE_DATA* result;
-	if(bus == NULL || configuration == NULL)
+	if(broker == NULL || configuration == NULL)
 	{
-		/*Codes_SRS_JAVA_MODULE_HOST_14_001: [This function shall return NULL if bus is NULL.]*/
+		/*Codes_SRS_JAVA_MODULE_HOST_14_001: [This function shall return NULL if broker is NULL.]*/
 		/*Codes_SRS_JAVA_MODULE_HOST_14_002: [This function shall return NULL if configuration is NULL.]*/
-		LogError("Invalid input (bus = %p, configuration = %p).", bus, configuration);
+		LogError("Invalid input (broker = %p, configuration = %p).", broker, configuration);
 		result = NULL;
 	}
 	else
@@ -151,14 +151,14 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 						}
 						else
 						{
-							/*Codes_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the MessageBus Java class, get the constructor, and create a MessageBus Java object.]*/
-							jclass jMessageBus_class = JNIFunc(result->env, FindClass, MESSAGE_BUS_CLASS_NAME);
+							/*Codes_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the Broker Java class, get the constructor, and create a Broker Java object.]*/
+							jclass jBroker_class = JNIFunc(result->env, FindClass, BROKER_CLASS_NAME);
 							jthrowable exception = JNIFunc(result->env, ExceptionOccurred);
-							if (jMessageBus_class == NULL || exception)
+							if (jBroker_class == NULL || exception)
 							{
 								/*Codes_SRS_JAVA_MODULE_HOST_14_016: [This function shall return NULL if any returned jclass, jmethodID, or jobject is NULL.]*/
 								/*Codes_SRS_JAVA_MODULE_HOST_14_017: [This function shall return NULL if any JNI function fails.]*/
-								LogError("Could not find class (%s).", MESSAGE_BUS_CLASS_NAME);
+								LogError("Could not find class (%s).", BROKER_CLASS_NAME);
 								JNIFunc(result->env, ExceptionDescribe);
 								JNIFunc(result->env, ExceptionClear);
 								destroy_module_internal(result, true);
@@ -166,13 +166,13 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 							}
 							else
 							{
-								jmethodID jMessageBus_constructor = JNIFunc(result->env, GetMethodID, jMessageBus_class, CONSTRUCTOR_METHOD_NAME, MESSAGE_BUS_CONSTRUCTOR_DESCRIPTOR);
+								jmethodID jBroker_constructor = JNIFunc(result->env, GetMethodID, jBroker_class, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR);
 								exception = JNIFunc(result->env, ExceptionOccurred);
-								if (jMessageBus_constructor == NULL || exception)
+								if (jBroker_constructor == NULL || exception)
 								{
 									/*Codes_SRS_JAVA_MODULE_HOST_14_016: [This function shall return NULL if any returned jclass, jmethodID, or jobject is NULL.]*/
 									/*Codes_SRS_JAVA_MODULE_HOST_14_017: [This function shall return NULL if any JNI function fails.]*/
-									LogError("Failed to find the %s constructor.", MESSAGE_BUS_CLASS_NAME);
+									LogError("Failed to find the %s constructor.", BROKER_CLASS_NAME);
 									JNIFunc(result->env, ExceptionDescribe);
 									JNIFunc(result->env, ExceptionClear);
 									destroy_module_internal(result, true);
@@ -180,13 +180,13 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 								}
 								else
 								{
-									jobject jMessageBus_object = NewObjectInternal(result->env, jMessageBus_class, jMessageBus_constructor, 1, (jlong)bus);
+									jobject jBroker_object = NewObjectInternal(result->env, jBroker_class, jBroker_constructor, 1, (jlong)broker);
 									exception = JNIFunc(result->env, ExceptionOccurred);
-									if (jMessageBus_object == NULL || exception)
+									if (jBroker_object == NULL || exception)
 									{
 										/*Codes_SRS_JAVA_MODULE_HOST_14_016: [This function shall return NULL if any returned jclass, jmethodID, or jobject is NULL.]*/
 										/*Codes_SRS_JAVA_MODULE_HOST_14_017: [This function shall return NULL if any JNI function fails.]*/
-										LogError("Failed to create the %s object.", MESSAGE_BUS_CLASS_NAME);
+										LogError("Failed to create the %s object.", BROKER_CLASS_NAME);
 										JNIFunc(result->env, ExceptionDescribe);
 										JNIFunc(result->env, ExceptionClear);
 										destroy_module_internal(result, true);
@@ -237,7 +237,7 @@ static MODULE_HANDLE JavaModuleHost_Create(MESSAGE_BUS_HANDLE bus, const void* c
 												}
 												else
 												{
-													jobject jModule_object = NewObjectInternal(result->env, jModule_class, jModule_constructor, 3, (jlong)result, jMessageBus_object, jModule_configuration);
+													jobject jModule_object = NewObjectInternal(result->env, jModule_class, jModule_constructor, 3, (jlong)result, jBroker_object, jModule_configuration);
 													exception = JNIFunc(result->env, ExceptionOccurred);
 													if (jModule_object == NULL || exception)
 													{
@@ -438,12 +438,12 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 }
 
-JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishMessage(JNIEnv* env, jobject jMessageBus, jlong bus_address, jlong module_address, jbyteArray serialized_message)
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_14_048: [This function shall return a non - zero value if any underlying function call fails.]*/
-	MESSAGE_BUS_RESULT result = MESSAGE_BUS_ERROR;
+	BROKER_RESULT result = BROKER_ERROR;
 
-	MESSAGE_BUS_HANDLE bus = (MESSAGE_BUS_HANDLE)bus_address;
+	BROKER_HANDLE broker = (BROKER_HANDLE)broker_address;
 	MODULE_HANDLE module = (MODULE_HANDLE)module_address;
 
 	size_t length = JNIFunc(env, GetArrayLength, serialized_message);
@@ -480,8 +480,8 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_MessageBus_publishM
 				}
 				else
 				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the MESSAGE_BUS_HANDLE addressed by addr and return the value of this function call.]*/
-					result = MessageBus_Publish(bus, module, message);
+					/*Codes_SRS_JAVA_MODULE_HOST_14_027: [This function shall publish the message to the BROKER_HANDLE addressed by addr and return the value of this function call.]*/
+					result = Broker_Publish(broker, module, message);
 
 					//Cleanup
 					Message_Destroy(message);
