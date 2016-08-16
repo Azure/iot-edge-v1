@@ -44,7 +44,7 @@ add_library(simulated_device MODULE ${simulated_device_sources}  ${simulated_dev
 target_link_libraries(simulated_device gateway)
 
 #this builds the simulated_device static library
-add_library(simulated_device_static  ${simulated_device_static_sources} ${simulated_device_static_headers})
+add_library(simulated_device_static STATIC ${simulated_device_static_sources} ${simulated_device_static_headers})
 target_compile_definitions(simulated_device_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(simulated_device_static gateway)
 
@@ -53,7 +53,7 @@ add_library(simulated_device_hl MODULE ${simulated_device_hl_sources} ${simulate
 target_link_libraries(simulated_device_hl simulated_device_static gateway)
 
 #this builds the simulated_device static library (by default it uses simulated_device module linked statically)
-add_library(simulated_device_hl_static ${simulated_device_hl_static_sources} ${simulated_device_hl_static_headers})
+add_library(simulated_device_hl_static STATIC ${simulated_device_hl_static_sources} ${simulated_device_hl_static_headers})
 target_compile_definitions(simulated_device_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(simulated_device_hl_static simulated_device_static gateway)
 

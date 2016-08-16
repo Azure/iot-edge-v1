@@ -44,7 +44,7 @@ add_library(identity_map MODULE ${identity_map_sources}  ${identity_map_headers}
 target_link_libraries(identity_map gateway)
 
 #this builds the identity_map static library
-add_library(identity_map_static  ${identity_map_static_sources} ${identity_map_static_headers})
+add_library(identity_map_static STATIC ${identity_map_static_sources} ${identity_map_static_headers})
 target_compile_definitions(identity_map_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(identity_map_static gateway)
 
@@ -53,7 +53,7 @@ add_library(identity_map_hl MODULE ${identity_map_hl_sources} ${identity_map_hl_
 target_link_libraries(identity_map_hl identity_map_static gateway)
 
 #this builds the identity_map hl static library (by default it uses identity_map module linked statically)
-add_library(identity_map_hl_static ${identity_map_hl_static_sources} ${identity_map_hl_static_headers})
+add_library(identity_map_hl_static STATIC ${identity_map_hl_static_sources} ${identity_map_hl_static_headers})
 target_compile_definitions(identity_map_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(identity_map_hl_static identity_map_static gateway)
 

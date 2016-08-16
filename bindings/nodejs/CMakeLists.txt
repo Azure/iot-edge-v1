@@ -127,7 +127,7 @@ add_pic_flag(nodejs_binding)
 target_include_directories(nodejs_binding PUBLIC $ENV{NODE_INCLUDE})
 
 # build nodejs_binding as a static library
-add_library(nodejs_binding_static ${nodejs_static_sources} ${nodejs_static_headers})
+add_library(nodejs_binding_static STATIC ${nodejs_static_sources} ${nodejs_static_headers})
 target_compile_definitions(nodejs_binding_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(nodejs_binding_static ${LIBS})
 linkSharedUtil(nodejs_binding_static)
@@ -142,7 +142,7 @@ add_pic_flag(nodejs_binding_hl)
 target_include_directories(nodejs_binding_hl PUBLIC $ENV{NODE_INCLUDE})
 
 #this builds the nodejs_binding_hl static library
-add_library(nodejs_binding_hl_static ${nodejs_hl_static_sources} ${nodejs_hl_static_headers})
+add_library(nodejs_binding_hl_static STATIC ${nodejs_hl_static_sources} ${nodejs_hl_static_headers})
 target_compile_definitions(nodejs_binding_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(nodejs_binding_hl_static nodejs_binding_static ${LIBS})
 linkSharedUtil(nodejs_binding_hl_static)

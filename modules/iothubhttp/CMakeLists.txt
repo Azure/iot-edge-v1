@@ -36,7 +36,7 @@ target_link_libraries(iothubhttp
 )
 
 #this builds the IoTHubHTTP static library
-add_library(iothubhttp_static
+add_library(iothubhttp_static STATIC
     ${iothubhttp_sources}
     ${iothubhttp_headers}
 )
@@ -57,7 +57,7 @@ target_link_libraries(iothubhttp_hl
 )
 
 #this builds the IoTHubHTTP_HL static library (by default it uses IoTHub Module linked statically)
-add_library(iothubhttp_hl_static
+add_library(iothubhttp_hl_static STATIC
     ${iothubhttp_hl_sources}
     ${iothubhttp_hl_headers}
 )
