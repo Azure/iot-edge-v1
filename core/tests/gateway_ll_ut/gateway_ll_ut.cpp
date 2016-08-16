@@ -232,6 +232,10 @@ public:
 		auto element = BASEIMPLEMENTATION::VECTOR_front(handle);
 	MOCK_METHOD_END(void*, element);
 
+	MOCK_STATIC_METHOD_1(, void*, VECTOR_back, const VECTOR_HANDLE, handle)
+		auto element = BASEIMPLEMENTATION::VECTOR_back(handle);
+	MOCK_METHOD_END(void*, element);
+
 	MOCK_STATIC_METHOD_1(, size_t, VECTOR_size, const VECTOR_HANDLE, handle)
 		auto size = BASEIMPLEMENTATION::VECTOR_size(handle);
 	MOCK_METHOD_END(size_t, size);
@@ -302,6 +306,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , int, VECTOR_push_back, VECTOR_HA
 DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, VECTOR_erase, VECTOR_HANDLE, handle, void*, elements, size_t, index);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void*, VECTOR_element, const VECTOR_HANDLE, handle, size_t, index);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void*, VECTOR_front, const VECTOR_HANDLE, handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void*, VECTOR_back, const VECTOR_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , size_t, VECTOR_size, const VECTOR_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void*, VECTOR_find_if, const VECTOR_HANDLE, handle, PREDICATE_FUNCTION, pred, const void*, value);
 
@@ -532,6 +537,43 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_Create_Fails)
 	//Nothing to cleanup
 }
 
+TEST_FUNCTION(Gateway_LL_Create_VECTOR_Create2_Fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(mocks, Broker_Create());
+
+	whenShallVECTOR_create_fail = 2;
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+
+	//Act
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(NULL);
+
+	//Assert
+	ASSERT_IS_NULL(gateway);
+
+	//Cleanup
+	//Nothing to cleanup
+}
 TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
 {
 	//Arrange
@@ -574,6 +616,10 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Adding module 2 (Failure)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
@@ -605,6 +651,8 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 
 	//Removing previous module in Gateway_LL_Destroy()
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -690,6 +738,10 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Adding module 2 (Failure)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
@@ -711,6 +763,8 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 
 	//Removing previous module in Gateway_LL_Destroy()
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -797,6 +851,10 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Adding module 2 (Failure)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
@@ -804,6 +862,8 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 		.IgnoreAllArguments();
 
 	//Removing previous module
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -890,6 +950,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Adding module 2 (Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
@@ -909,6 +973,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_links)); //Links
 
@@ -976,6 +1044,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Adding module 2 (Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
@@ -995,6 +1067,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_links)); //Links
 
@@ -1067,6 +1143,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(dummyProps->gateway_links)); //Links
 
@@ -1079,6 +1159,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
 
 
 	//Removing previous module
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -1179,6 +1261,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1196,6 +1280,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
@@ -1245,6 +1331,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1262,6 +1350,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
@@ -1375,6 +1465,28 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_Null_Params)
 	Gateway_LL_Destroy(gw);
 }
 
+//Tests_SRS_GATEWAY_LL_17_001: [ This function shall not accept "*" as a module name. ]
+TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_star_module_name)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	mocks.ResetAllCalls();
+
+	//Act
+	GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules);
+	entry->module_name = "*";
+	MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+
+	//Assert
+	ASSERT_IS_NULL(handle2);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
 /*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_017: [ The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
@@ -1408,6 +1520,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Act
 	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
@@ -1480,6 +1596,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	//Act
 	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, &entry);
@@ -1600,7 +1720,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.IgnoreArgument(2);
+		.IgnoreArgument(2)
+		.SetReturn(BROKER_ERROR);
 	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
@@ -1678,6 +1799,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
@@ -1740,6 +1863,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	whenShallBroker_RemoveModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -1910,6 +2035,55 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_NonExistingSinkModule_Find_Link_Data_Failure
 	Gateway_LL_Destroy(gw);
 }
 
+TEST_FUNCTION(Gateway_LL_RemoveLink_NonExistingSinkModule_Find_star_Link_Data_Failure)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module2",
+		DUMMY_LIBRARY_PATH,
+		NULL
+	};
+
+	const char * dm2 = "dummy module2";
+	GATEWAY_LINK_ENTRY dummyLink = {
+		"*",
+		dm2
+	};
+
+	MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, &dummyEntry2);
+
+	Gateway_LL_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
+
+	mocks.ResetAllCalls();
+
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	whenShallVECTOR_find_if_fail = currentVECTOR_find_if_call + 2;
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	//Act
+	Gateway_LL_RemoveLink(gw, &dummyLink);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
 /*Tests_SRS_GATEWAY_LL_04_006: [ The function shall locate the LINK_DATA object in GATEWAY_HANDLE_DATA's links containing link and return if it cannot be found. ]*/
 /*Tests_SRS_GATEWAY_LL_04_007: [ The functional shall remove that LINK_DATA from GATEWAY_HANDLE_DATA's links. ]*/
 TEST_FUNCTION(Gateway_LL_RemoveLink_Finds_Link_Data_Success)
@@ -1942,8 +2116,9 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_Finds_Link_Data_Success)
 	mocks.ResetAllCalls();
 
 	//Expectations
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink2))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
@@ -2326,8 +2501,9 @@ TEST_FUNCTION(Gateway_LL_AddLink_DuplicatedLink_Fail)
 	mocks.ResetAllCalls();
 
 	//Act
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &duplicatedLink))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 
 	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &duplicatedLink);
 
@@ -2358,8 +2534,9 @@ TEST_FUNCTION(Gateway_LL_AddLink_NonExistingSourceModule_Fail)
 		"dummy module 2"
 	};
 
+	const char* nem = "NonExisting";
 	GATEWAY_LINK_ENTRY nonExistingModuleLink = {
-		"NonExisting",
+		nem,
 		"dummy module 2"
 	};
 
@@ -2370,10 +2547,12 @@ TEST_FUNCTION(Gateway_LL_AddLink_NonExistingSourceModule_Fail)
 	mocks.ResetAllCalls();
 
 	//Act
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();//Check link
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();//Check Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &nonExistingModuleLink))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, nem))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 
 	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &nonExistingModuleLink);
 
@@ -2399,14 +2578,16 @@ TEST_FUNCTION(Gateway_LL_AddLink_NonExistingSinkModule_Fail)
 		NULL
 	};
 
+	const char * nem = "NonExisting";
+	const char * dm2 = "dummy module 2";
 	GATEWAY_LINK_ENTRY dummyLink = {
 		"dummy module",
-		"dummy module 2"
+		dm2
 	};
 
 	GATEWAY_LINK_ENTRY nonExistingModuleLink = {
-		"dummy module 2",
-		"NonExisting"
+		dm2,
+		nem
 	};
 
 	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
@@ -2416,12 +2597,15 @@ TEST_FUNCTION(Gateway_LL_AddLink_NonExistingSinkModule_Fail)
 	mocks.ResetAllCalls();
 
 	//Act
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();//Check link
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();//Check Source Module.
-	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &nonExistingModuleLink))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, dm2))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);//Check Source Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, nem))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);//Check Sink Module.
 
 	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &nonExistingModuleLink);
 
@@ -2481,5 +2665,1060 @@ TEST_FUNCTION(Gateway_LL_AddLink_Succeeds)
 	//Cleanup
 	Gateway_LL_Destroy(gateway);
 }
+
+TEST_FUNCTION(Gateway_LL_AddLink_pushback_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink = {
+		"dummy module",
+		"dummy module 2"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Act
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Source Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.SetFailReturn(100);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_AddLink_broker_add_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink = {
+		"dummy module",
+		"dummy module 2"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Act
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Source Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_ADD_LINK_ERROR);
+
+
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_AddLink_star_2nd_addbroker_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module 3"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink1);
+
+	mocks.ResetAllCalls();
+
+	//Act
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2); // Add link to links vector
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1); // for each module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_ADD_LINK_ERROR);
+
+	//Remove link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1); // for each module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	result = Gateway_LL_AddLink(gateway, &dummyLink2);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_AddLink_star_2nd_add_push_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module 3"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink1);
+
+	mocks.ResetAllCalls();
+
+	//Act
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();//Check Sink Module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.SetFailReturn(1); // Add link to links vector
+
+	result = Gateway_LL_AddLink(gateway, &dummyLink2);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+//Tests_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]
+TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_with_star_links)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_IncRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// 2nd broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+
+	//Act
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gateway, &dummyEntry3);
+
+	//Assert
+	ASSERT_IS_NOT_NULL(handle);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+//Tests_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]
+TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_addLink_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x3.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_IncRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// 2nd broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_ADD_LINK_ERROR);
+
+	// tear down the star link for each module
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1); // for each module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// and remove the rest.
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.SetFailReturn(BROKER_ERROR);
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	//Act
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gateway, &dummyEntry3);
+
+	//Assert
+	ASSERT_IS_NULL(handle);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+//Tests_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]
+TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_find_fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x3.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_IncRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// 2nd broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(nullptr);
+
+
+	// tear down broadcast link.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// and remove the rest.
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	//Act
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gateway, &dummyEntry3);
+
+	//Assert
+	ASSERT_IS_NULL(handle);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_002: [ The gateway shall accept a link with a source of "*" and a sink of a valid module. ]
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+//Tests_SRS_GATEWAY_LL_17_004: [ The gateway shall accept a link containing "*" as entryLink->module_source, and a valid module name as a entryLink->module_sink. ]
+//Tests_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]
+TEST_FUNCTION(Gateway_LL_AddLink_star_success)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x3.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink2))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "dummy module"))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+
+	///Act
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink2);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_SUCCESS, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+//Tests_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]
+}
+
+//Tests_SRS_GATEWAY_LL_17_004: [ The gateway shall accept a link containing "*" as entryLink->module_source, and a valid module name as a entryLink->module_sink. ]
+TEST_FUNCTION(Gateway_LL_AddLink_star_no_sink)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x3.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	const char * dm4 = "dummy module 4";
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		dm4
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink2))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, dm4))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	///Act
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink2);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+TEST_FUNCTION(Gateway_LL_AddLink_star_failure_to_add)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x3.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink2))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.IgnoreArgument(3);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_ADD_LINK_ERROR);
+
+	//Remove link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1); // for each module.
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	///Act
+	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink2);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
+
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	auto module_handle = Gateway_LL_AddModule(gateway, &dummyEntry3);
+
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, module_handle))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// 2nd broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	// and the rest of the remove...
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(module_handle))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	//Act
+	Gateway_LL_RemoveModule(gateway, module_handle);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links_has_errors)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Add another entry to the properties
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	auto module_handle = Gateway_LL_AddModule(gateway, &dummyEntry3);
+
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, module_handle))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(nullptr);
+	// 2nd broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
+	// and the rest of the remove...
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(module_handle))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	//Act
+	Gateway_LL_RemoveModule(gateway, module_handle);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+TEST_FUNCTION(Gateway_LL_RemoveLink_star_link_success)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+	GATEWAY_LINK_ENTRY dummyLink3 = {
+		"dummy module 2",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink2))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "dummy module"))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	// 1st broadcast link
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	//Act
+	Gateway_LL_RemoveLink(gateway, &dummyLink2);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+//Tests_SRS_GATEWAY_LL_17_003: [ The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. ]
+TEST_FUNCTION(Gateway_LL_RemoveLink_nostar_link_success)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyEntry2 = {
+		"dummy module 2",
+		"x2.dll",
+		NULL
+	};
+	GATEWAY_MODULES_ENTRY dummyEntry3 = {
+		"dummy module 3",
+		"x2.dll",
+		NULL
+	};
+
+	GATEWAY_LINK_ENTRY dummyLink1 = {
+		"*",
+		"dummy module 2"
+	};
+	GATEWAY_LINK_ENTRY dummyLink2 = {
+		"*",
+		"dummy module"
+	};
+	GATEWAY_LINK_ENTRY dummyLink3 = {
+		"dummy module 2",
+		"dummy module"
+	};
+
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry3, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink2, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink1, 1);
+	BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink3, 1);
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &dummyLink3))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	//Act
+	Gateway_LL_RemoveLink(gateway, &dummyLink3);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
 
 END_TEST_SUITE(gateway_ll_ut)

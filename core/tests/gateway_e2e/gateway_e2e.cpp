@@ -225,6 +225,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
 
 		VECTOR_destroy(e2eModuleMappingVector);
 		VECTOR_destroy(gatewayProps);
+		VECTOR_destroy(gatewayLinks);
 
 		platform_deinit();
 		platform_init();
