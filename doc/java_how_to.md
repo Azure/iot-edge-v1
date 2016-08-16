@@ -129,6 +129,8 @@ If using cmake and msbuild or make:
   - Create a new directory from the root of the repository called 'build'
   - ```cd build```
   - ```cmake -Denable_java_binding=ON ../```
+  - If your JDK arch is different to ***amd64*** (e.g. i386) you can specify an arch using the ```JDK_ARCH``` variable in your ```cmake``` command:
+  - ```-DJDK_ARCH={jdk_arch}```
   - If using msbuild on Windows: ```msbuild /m /p:Configuration=[Debug | Release] /p:Platform=Win32 azure_iot_gateway_sdk.sln```
   - If using make on Linux: ```make```
   
