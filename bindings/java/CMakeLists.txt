@@ -94,7 +94,7 @@ add_library(java_module_host MODULE ${java_module_host_headers} ${java_module_ho
 target_link_libraries(java_module_host ${LIBS})
 
 #this build the java_module_host static library
-add_library(java_module_host_static ${java_module_host_static_headers} ${java_module_host_static_sources})
+add_library(java_module_host_static STATIC ${java_module_host_static_headers} ${java_module_host_static_sources})
 target_compile_definitions(java_module_host_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(java_module_host_static ${LIBS})
 
@@ -103,7 +103,7 @@ add_library(java_module_host_hl MODULE ${java_module_host_hl_headers} ${java_mod
 target_link_libraries(java_module_host_hl java_module_host_static ${LIBS})
 
 #this builds the java_module_host_hl static library (by default it uses the java_module_host linked statically)
-add_library(java_module_host_hl_static ${java_module_host_hl_static_headers} ${java_module_host_hl_static_sources})
+add_library(java_module_host_hl_static STATIC ${java_module_host_hl_static_headers} ${java_module_host_hl_static_sources})
 target_compile_definitions(java_module_host_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(java_module_host_hl_static java_module_host_static ${LIBS})
 

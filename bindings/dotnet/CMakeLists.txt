@@ -45,7 +45,7 @@ add_library(dotnet MODULE ${dotnet_sources}  ${dotnet_headers})
 target_link_libraries(dotnet gateway mscoree)
 
 #this builds the dotnet static library
-add_library(dotnet_static  ${dotnet_static_sources} ${dotnet_static_headers})
+add_library(dotnet_static STATIC ${dotnet_static_sources} ${dotnet_static_headers})
 target_compile_definitions(dotnet_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(dotnet_static gateway mscoree)
 
@@ -54,7 +54,7 @@ add_library(dotnet_hl MODULE ${dotnet_hl_sources} ${dotnet_hl_headers})
 target_link_libraries(dotnet_hl dotnet_static gateway mscoree)
 
 #this builds the dotnet static library (by default it uses dotnet module linked statically)
-add_library(dotnet_hl_static ${dotnet_hl_static_sources} ${dotnet_hl_static_headers})
+add_library(dotnet_hl_static STATIC ${dotnet_hl_static_sources} ${dotnet_hl_static_headers})
 target_compile_definitions(dotnet_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(dotnet_hl_static dotnet_static gateway mscoree)
 
