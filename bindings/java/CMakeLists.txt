@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for java binding
 
-# Check if the environment variables NODE_INCLUDE and NODE_LIB exist
+# Check if the environment variable JAVA_HOME exists
 if(
     (NOT (DEFINED ENV{JAVA_HOME}))
   )
