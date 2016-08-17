@@ -12,11 +12,15 @@ if(
                       "JAVA_HOME to point to the location of the JDK.")
 endif()
 
-# Check if the variable JDK_ARCH exists and if not set it to 'amd64' by default
+# Check if the local or environment variable JDK_ARCH exists and if not set it to 'amd64' by default
 if(
     (NOT (DEFINED JDK_ARCH))
   )
-  set( JDK_ARCH amd64 )
+  if( DEFINED ENV{JDK_ARCH} )
+    set( JDK_ARCH $ENV{JDK_ARCH} )
+  else()
+    set( JDK_ARCH amd64 )
+  endif()
 endif()
 
 set(java_module_host_manager_sources
