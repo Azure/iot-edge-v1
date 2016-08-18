@@ -33,5 +33,10 @@
         "filename": "<<path to log file>>"
       }
     }
+  ],
+  "links" : [
+    { "source" : "*", "sink" : "Logger" },
+    { "source" : "node_sensor", "sink" : "iothub_writer" },
+    { "source" : "node_sensor", "sink" : "node_printer" }
   ]
 }

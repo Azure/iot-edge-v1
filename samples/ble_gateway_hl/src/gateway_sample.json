@@ -81,5 +81,13 @@
         "filename": "<</path/to/log-file.log>>"
       }
     }
+  ],
+  "links" : [
+    {"source" : "*", "sink" : "Logger" },
+    {"source" : "SensorTag", "sink" : "mapping" },
+    {"source" : "SensorTag", "sink" : "BLE Printer" },
+    {"source" : "mapping", "sink" : "IoTHub" },
+    {"source" : "IoTHub", "sink" : "mapping" },
+    {"source" : "mapping", "sink" : "SensorTag" }
   ]
 }

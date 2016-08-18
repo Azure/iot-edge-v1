@@ -1,7 +1,7 @@
 {
   "modules": [
     {
-      "module name": "java_module_host",
+      "module name": "java_printer",
       "module path": "../../bindings/java/libjava_module_host_hl.so",
       "args": {
         "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.0-SNAPSHOT-with-deps.jar:../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.0-SNAPSHOT-with-deps.jar",
@@ -20,7 +20,7 @@
       }
     },
     {
-      "module name": "java_module_host",
+      "module name": "java_sensor",
       "module path": "../../bindings/java/libjava_module_host_hl.so",
       "args": {
         "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.0-SNAPSHOT-with-deps.jar;../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.0-SNAPSHOT-with-deps.jar",
@@ -43,5 +43,9 @@
       "module path": "../../modules/logger/liblogger_hl.so",
       "args": { "filename": "log.txt" }
     }
+  ],
+  "links" : [
+    { "source" : "*", "sink" : "logger_hl" },
+    { "source" : "java_sensor", "sink" : "java_printer" }
   ]
 }

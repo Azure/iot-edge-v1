@@ -43,7 +43,9 @@ A module publishes a message to the broker via the `Broker_Publish` function. Th
 
 ![](./media/messages_1.png)
 
-Today we have 2 ways of filtering the message. First is by passing a set of links to the broker, so the broker knows the source and sink for each module. The Second is by the module filtering its properties. A module should only act upon a message if the message is intended for it. This message filtering is what effectively creates a message pipeline.
+###Message routing and filtering
+
+Today we have 2 ways of directing the message to the correct modules. First is by passing a set of links to the broker, so the broker knows the source and sink for each module. Second is by the module filtering its properties. A module should only act upon a message if the message is intended for it. The links and this message filtering is what effectively creates a message pipeline.
 
 This is enough background to actually start discussing the Hello World sample.
 
@@ -264,10 +266,12 @@ The JSON file specifying the modules to be loaded is quite simple. It contains a
 - `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
 
 The JSON file also contain the links that is going to be passed to the broker.
-- `source` - a module name from the list of modules described on the `modules` that will produce data to the next `sink` tag on JSON File 
-- `sink` - a module name from the list of modules described on the `modules` JSON that will consume messages described on the previous `source` 
+- `source` - a module name from the list of modules described on the `modules` that will produce data to the next `sink` tag on JSON File. 
+- `sink` - a module name from the list of modules described on the `modules` JSON that will consume messages described on the previous `source`.
 
-On the sample copied below you can see that every message procuded by module `hello_world` will be consumed by module `logger`.
+The `source` may be set to "\*", indicating that messages from any module will be received by `sink`.
+
+On the sample copied below you can see that every message produced by module `hello_world` will be consumed by module `logger`. 
 
 The JSON below is the code from one of the JSON files (hello_world_lin.json)[(../samples/hello_world/src/hello_world_lin.json) used to configure the Hello World sample. There are a couple things to note:
 
