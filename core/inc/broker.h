@@ -30,15 +30,15 @@ extern "C"
 #endif
 
 typedef struct BROKER_LINK_DATA_TAG {
-	MODULE_HANDLE module_source_handle;
-	MODULE_HANDLE module_sink_handle;
+    MODULE_HANDLE module_source_handle;
+    MODULE_HANDLE module_sink_handle;
 } BROKER_LINK_DATA;
 
 #define BROKER_RESULT_VALUES \
     BROKER_OK, \
     BROKER_ERROR, \
     BROKER_ADD_LINK_ERROR, \
-	BROKER_REMOVE_LINK_ERROR, \
+    BROKER_REMOVE_LINK_ERROR, \
     BROKER_INVALIDARG
 
 /** @brief	Enumeration describing the result of ::Broker_Publish, 

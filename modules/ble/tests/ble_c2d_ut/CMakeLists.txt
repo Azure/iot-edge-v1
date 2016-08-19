@@ -4,16 +4,16 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 compileAsC99()
-set(theseTestsName ble_hl_ut)
+set(theseTestsName ble_c2d_ut)
 
 set(${theseTestsName}_cpp_files
     ${theseTestsName}.cpp
 )
 
-set(ble_hl_test_sources
+set(ble_c2d_test_sources
     ../../src/ble_utils.c
     ../../src/ble_instr_utils.c
-    ../../src/ble_hl.c
+    ../../src/ble_c2d.c
 )
 
 if(LINUX)
@@ -22,10 +22,10 @@ if(LINUX)
     set(LIBS ${GIOUNIX_LIBRARIES})
 endif()
 
-set(ble_hl_test_headers
+set(ble_c2d_test_headers
     ../../inc/ble_utils.h
     ../../inc/ble_instr_utils.h
-    ../../inc/ble_hl.h
+    ../../inc/ble_c2d.h
 )
 
 include_directories(
@@ -35,11 +35,11 @@ include_directories(
 )
 
 set(${theseTestsName}_c_files
-    ${ble_hl_test_sources}
+    ${ble_c2d_test_sources}
 )
 
 set(${theseTestsName}_h_files
-    ${ble_hl_test_headers}
+    ${ble_c2d_test_headers}
 )
 
 build_test_artifacts(${theseTestsName} ON ${LIBS})

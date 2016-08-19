@@ -14,6 +14,7 @@
 #include "ble.h"
 #include "ble_hl.h"
 #include "ble_utils.h"
+#include "ble_instr_utils.h"
 
 #include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
@@ -26,23 +27,9 @@
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/map.h"
 
-typedef struct BLE_HL_HANDLE_DATA_TAG
-{
-    BROKER_HANDLE           broker;
-    STRING_HANDLE           mac_address;
-    MODULE_HANDLE           module_handle;
-}BLE_HL_HANDLE_DATA;
-
-static bool parse_instruction(const char* type, JSON_Object* instr, BLE_INSTRUCTION* ble_instr, size_t index);
-static VECTOR_HANDLE parse_instructions(JSON_Array* instructions);
-static bool parse_read_periodic(JSON_Object* instr, BLE_INSTRUCTION* ble_instr);
-static bool parse_write(JSON_Object* instr, BLEIO_SEQ_INSTRUCTION_TYPE type, BLE_INSTRUCTION* ble_instr, size_t index);
-static void free_instruction(BLE_INSTRUCTION* instr);
-static void free_instructions(VECTOR_HANDLE instructions);
-
 static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
-    BLE_HL_HANDLE_DATA* result;
+    MODULE_HANDLE result;
 
     /*Codes_SRS_BLE_HL_13_001: [ BLE_HL_Create shall return NULL if the broker or configuration parameters are NULL. ]*/
     if(
@@ -123,50 +110,19 @@ static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configurati
                                 }
                                 else
                                 {
-                                    result = (BLE_HL_HANDLE_DATA*)malloc(sizeof(BLE_HL_HANDLE_DATA));
+                                    ble_config.device_config.ble_controller_index = controller_index;
+                                    ble_config.instructions = ble_instructions;
+
+                                    /*Codes_SRS_BLE_HL_13_014: [ BLE_HL_Create shall call the underlying module's 'create' function. ]*/
+                                    result = MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Create(
+                                        broker, (const void*)&ble_config
+                                    );
                                     if (result == NULL)
                                     {
-                                        /*Codes_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
-                                        LogError("malloc failed");
+                                        /*Codes_SRS_BLE_HL_13_022: [ BLE_HL_Create shall return NULL if calling the underlying module's create function fails. ]*/
+                                        LogError("Unable to create BLE low level module");
                                         free_instructions(ble_instructions);
                                         VECTOR_destroy(ble_instructions);
-                                    }
-                                    else
-                                    {
-                                        result->mac_address = STRING_construct(mac_address);
-                                        if (result->mac_address == NULL)
-                                        {
-                                            LogError("STRING_create failed");
-                                            free_instructions(ble_instructions);
-                                            VECTOR_destroy(ble_instructions);
-                                            free(result);
-                                            result = NULL;
-                                        }
-                                        else
-                                        {
-                                            ble_config.device_config.ble_controller_index = controller_index;
-                                            ble_config.instructions = ble_instructions;
-
-                                            /*Codes_SRS_BLE_HL_13_014: [ BLE_HL_Create shall call the underlying module's 'create' function. ]*/
-                                            result->module_handle = MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Create(
-                                                broker, (const void*)&ble_config
-                                                );
-                                            if (result->module_handle == NULL)
-                                            {
-                                                /*Codes_SRS_BLE_HL_13_022: [ BLE_HL_Create shall return NULL if calling the underlying module's create function fails. ]*/
-                                                LogError("Unable to create BLE low level module");
-                                                free_instructions(ble_instructions);
-                                                VECTOR_destroy(ble_instructions);
-                                                STRING_delete(result->mac_address);
-                                                free(result);
-                                                result = NULL;
-                                            }
-                                            else
-                                            {
-                                                /*Codes_SRS_BLE_HL_13_023: [ BLE_HL_Create shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
-                                                result->broker = broker;
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -178,261 +134,7 @@ static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configurati
         }
     }
     
-    return (MODULE_HANDLE)result;
-}
-
-static void free_instruction(BLE_INSTRUCTION* instr)
-{
-    // free string handle for the characteristic uuid
-    if(instr->characteristic_uuid != NULL)
-    {
-        STRING_delete(instr->characteristic_uuid);
-    }
-
-    // free write buffer
-    if(
-        (
-            instr->instruction_type == WRITE_AT_INIT ||
-            instr->instruction_type == WRITE_ONCE ||
-            instr->instruction_type == WRITE_AT_EXIT
-        )
-        &&
-        (
-            instr->data.buffer != NULL
-        )
-      )
-    {
-        BUFFER_delete(instr->data.buffer);
-    }
-}
-
-static void free_instructions(VECTOR_HANDLE instructions)
-{
-    size_t len = VECTOR_size(instructions);
-    for(size_t i = 0; i < len; ++i)
-    {
-        BLE_INSTRUCTION* instr = (BLE_INSTRUCTION*)VECTOR_element(instructions, i);
-        free_instruction(instr);
-    }
-}
-
-static bool parse_read_periodic(
-    JSON_Object* instr,
-    BLE_INSTRUCTION* ble_instr
-)
-{
-    ble_instr->instruction_type = READ_PERIODIC;
-    ble_instr->data.interval_in_ms = (uint32_t)json_object_get_number(instr, "interval_in_ms");
-    return ble_instr->data.interval_in_ms > 0;
-}
-
-static bool parse_write(
-    JSON_Object* instr,
-    BLEIO_SEQ_INSTRUCTION_TYPE type,
-    BLE_INSTRUCTION* ble_instr,
-    size_t index
-)
-{
-    bool result;
-    ble_instr->instruction_type = type;
-    const char* base64_encoded_data = json_object_get_string(instr, "data");
-    if(base64_encoded_data == NULL)
-    {
-        /*Codes_SRS_BLE_HL_13_011: [ BLE_HL_Create shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/
-        LogError("json_value_get_string returned NULL for the property 'data' while processing instruction %zu", index);
-        result = false;
-    }
-    else
-    {
-        ble_instr->data.buffer = Base64_Decoder(base64_encoded_data);
-        if(ble_instr->data.buffer == NULL)
-        {
-            /*Codes_SRS_BLE_HL_13_012: [ BLE_HL_Create shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/
-            LogError("Base64_Decoder returned NULL for the property 'data' while processing instruction %zu", index);
-            result = false;
-        }
-        else
-        {
-            result = true;
-        }
-    }
-
-    return result;
-}
-
-static bool parse_instruction(
-    const char* type,
-    JSON_Object* instr,
-    BLE_INSTRUCTION* ble_instr,
-    size_t index
-)
-{
-    bool result;
-    if(strcmp(type, "read_once") == 0)
-    {
-        ble_instr->instruction_type = READ_ONCE;
-        result = true;
-    }
-    else if(strcmp(type, "read_periodic") == 0)
-    {
-        if(parse_read_periodic(instr, ble_instr) == false)
-        {
-            /*Codes_SRS_BLE_HL_13_010: [ BLE_HL_Create shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/
-            LogError("parse_read_periodic returned false while processing instruction %zu", index);
-            result = false;
-        }
-        else
-        {
-            result = true;
-        }
-    }
-    else if(strcmp(type, "write_at_init") == 0)
-    {
-        if(parse_write(instr, WRITE_AT_INIT, ble_instr, index) == false)
-        {
-            LogError("parse_write returned false while processing instruction %zu", index);
-            result = false;
-        }
-        else
-        {
-            result = true;
-        }
-    }
-    else if (strcmp(type, "write_once") == 0)
-    {
-        if (parse_write(instr, WRITE_ONCE, ble_instr, index) == false)
-        {
-            LogError("parse_write returned false while processing instruction %zu", index);
-            result = false;
-        }
-        else
-        {
-            result = true;
-        }
-    }
-    else if(strcmp(type, "write_at_exit") == 0)
-    {
-        if(parse_write(instr, WRITE_AT_EXIT, ble_instr, index) == false)
-        {
-            LogError("parse_write returned false while processing instruction %zu", index);
-            result = false;
-        }
-        else
-        {
-            result = true;
-        }
-    }
-    else
-    {
-        /*Codes_SRS_BLE_HL_13_021: [ BLE_HL_Create shall return NULL if a given instruction's type property is unrecognized. ]*/
-        LogError("Unknown instruction type '%s' encountered for instruction number %zu", type, index);
-        result = false;
-    }
-    
-    return result;
-}
-
-static VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
-{
-    VECTOR_HANDLE result;
-    size_t count = json_array_get_count(instructions);
-    if (count == 0)
-    {
-        /*Codes_SRS_BLE_HL_13_020: [ BLE_HL_Create shall return NULL if the instructions array length is equal to zero. ]*/
-        LogError("json_array_get_count returned zero");
-        result = NULL;
-    }
-    else
-    {
-        result = VECTOR_create(sizeof(BLE_INSTRUCTION));
-        if (result != NULL)
-        {
-            for (size_t i = 0; i < count; ++i)
-            {
-                JSON_Object* instr = json_array_get_object(instructions, i);
-                if (instr == NULL)
-                {
-                    /*Codes_SRS_BLE_HL_13_007: [ BLE_HL_Create shall return NULL if each instruction is not an object. ]*/
-                    LogError("json_array_get_object returned NULL for instruction number %zu", i);
-                    free_instructions(result);
-                    VECTOR_destroy(result);
-                    result = NULL;
-                    break;
-                }
-                else
-                {
-                    const char* type = json_object_get_string(instr, "type");
-                    if (type == NULL)
-                    {
-                        /*Codes_SRS_BLE_HL_13_008: [ BLE_HL_Create shall return NULL if a given instruction does not have a type property. ]*/
-                        LogError("json_object_get_string returned NULL for the property 'type' for instruction number %zu", i);
-                        free_instructions(result);
-                        VECTOR_destroy(result);
-                        result = NULL;
-                        break;
-                    }
-                    else
-                    {
-                        const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
-                        if (characteristic_uuid == NULL)
-                        {
-                            /*Codes_SRS_BLE_HL_13_009: [ BLE_HL_Create shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
-                            LogError("json_object_get_string returned NULL for the property 'characteristic_uuid' for instruction number %zu", i);
-                            free_instructions(result);
-                            VECTOR_destroy(result);
-                            result = NULL;
-                            break;
-                        }
-                        else
-                        {
-                            BLE_INSTRUCTION ble_instr = { 0 };
-                            ble_instr.characteristic_uuid = STRING_construct(characteristic_uuid);
-                            if (ble_instr.characteristic_uuid == NULL)
-                            {
-                                /*Codes_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
-                                LogError("STRING_construct returned NULL while processing instruction %zu", i);
-                                free_instructions(result);
-                                VECTOR_destroy(result);
-                                result = NULL;
-                                break;
-                            }
-                            else
-                            {
-                                if (parse_instruction(type, instr, &ble_instr, i) == false)
-                                {
-                                    LogError("parse_instruction returned false while processing instruction %zu", i);
-                                    STRING_delete(ble_instr.characteristic_uuid);
-                                    free_instructions(result);
-                                    VECTOR_destroy(result);
-                                    result = NULL;
-                                    break;
-                                }
-                                else
-                                {
-                                    // if we get here then we have a valid instruction
-                                    if (VECTOR_push_back(result, &ble_instr, 1) != 0)
-                                    {
-                                        /*Codes_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
-                                        LogError("VECTOR_push_back returned a non-zero value while processing instruction %zu", i);
-                                        free_instruction(&ble_instr);
-                                        free_instructions(result);
-                                        VECTOR_destroy(result);
-                                        result = NULL;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            LogError("VECTOR_create returned NULL");
-        }
-    }
-    
+    /*Codes_SRS_BLE_HL_13_023: [ BLE_HL_Create shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
     return result;
 }
 
@@ -441,10 +143,7 @@ static void BLE_HL_Destroy(MODULE_HANDLE module)
     if(module != NULL)
     {
         /*Codes_SRS_BLE_HL_13_015: [ BLE_HL_Destroy shall destroy all used resources. ]*/
-        BLE_HL_HANDLE_DATA* handle_data = (BLE_HL_HANDLE_DATA*)module;
-        MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Destroy(handle_data->module_handle);
-        STRING_delete(handle_data->mac_address);
-        free(handle_data);
+        MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Destroy(module);
     }
     else
     {
@@ -453,173 +152,19 @@ static void BLE_HL_Destroy(MODULE_HANDLE module)
     }
 }
 
-static bool recognize_message(BLE_HL_HANDLE_DATA* handle_data, CONSTMAP_HANDLE properties)
-{
-    bool result;
-    const char * message_mac = ConstMap_GetValue(properties, GW_MAC_ADDRESS_PROPERTY);
-    if (message_mac != NULL && (strcmp(message_mac, STRING_c_str(handle_data->mac_address)) == 0))
-    {
-        const char * message_source = ConstMap_GetValue(properties, GW_SOURCE_PROPERTY);
-        if ((message_source != NULL) && (strcmp(message_source, GW_IDMAP_MODULE) == 0))
-        {
-            result = true; /* recognized */
-        }
-        else
-        {
-            /*Codes_SRS_BLE_HL_17_004: [ If messageHandle properties does not contain "source" property, then this function shall return. ]*/
-            /*Codes_SRS_BLE_HL_17_005: [ If the source of the message properties is not "mapping", then this function shall return. ]*/
-            result = false; /* unrecognized */
-        }
-    }
-    else
-    {
-        /*Codes_SRS_BLE_HL_17_003: [ If macAddress of the message property does not match this module's MAC address, then this function shall return. ]*/
-        /*Codes_SRS_BLE_HL_17_002: [ If messageHandle properties does not contain "macAddress" property, then this function shall return. ]*/
-        result = false; /* unrecognized */
-    }
-    return result;
-}
-
-static int forward_new_message(BLE_HL_HANDLE_DATA* handle_data, CONSTMAP_HANDLE properties, BLE_INSTRUCTION* ble_instr)
-{
-    int result;
-    /*Codes_SRS_BLE_HL_17_018: [ BLE_HL_Receive shall call ConstMap_CloneWriteable on the message properties. ]*/
-    MAP_HANDLE new_message_props = ConstMap_CloneWriteable(properties);
-    if (new_message_props != NULL)
-    {
-        /*Codes_SRS_BLE_HL_17_020: [ BLE_HL_Receive shall call Map_AddOrUpdate with key of "source" and value of "BLE". ]*/
-        if (Map_AddOrUpdate(new_message_props, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND) == MAP_OK)
-        {
-            MESSAGE_CONFIG cfg;
-            cfg.size = sizeof(BLE_INSTRUCTION);
-            cfg.source = (const unsigned char *)ble_instr;
-            cfg.sourceProperties = new_message_props;
-            /*Codes_SRS_BLE_HL_17_023: [ BLE_HL_Receive shall create a new message by calling Message_Create with new map and BLE_INSTRUCTION as the buffer. ]*/
-            MESSAGE_HANDLE new_message_handle = Message_Create(&cfg);
-            if (new_message_handle != NULL)
-            {
-                /*Codes_SRS_BLE_HL_13_018: [ BLE_HL_Receive shall forward new message to the underlying module. ]*/
-                MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Receive(handle_data->module_handle, new_message_handle);
-                Message_Destroy(new_message_handle);
-                result = 0;
-            }
-            else
-            {
-                /*Codes_SRS_BLE_HL_17_024: [ If creating new message fails, BLE_HL_Receive shall deallocate all resources and return. ]*/
-                LogError("Forward message creation failed");
-                result = __LINE__;
-            }
-        }
-        else
-        {
-            LogError("Unable to set properties");
-            result = __LINE__;
-        }
-        Map_Destroy(new_message_props);
-    }
-    else
-    {
-        /*Codes_SRS_BLE_HL_17_019: [ If ConstMap_CloneWriteable fails, BLE_HL_Receive shall return. ]*/
-        LogError("Unable to get writeable properties");
-        result = __LINE__;
-    }
-    return result;
-}
-
 static void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 {
     /*Codes_SRS_BLE_HL_13_016: [ BLE_HL_Receive shall do nothing if module is NULL. ]*/
     /*Codes_SRS_BLE_HL_17_001: [ BLE_HL_Receive shall do nothing if message_handle is NULL. ]*/
     if(module != NULL && message_handle != NULL)
     {
-        /*Codes_SRS_BLE_HL_13_018: [ BLE_HL_Receive shall forward the call to the underlying module. ]*/
-        BLE_HL_HANDLE_DATA* handle_data = (BLE_HL_HANDLE_DATA*)module;
-
-        CONSTMAP_HANDLE properties = Message_GetProperties(message_handle);
-        if (properties != NULL)
-        {
-            if (recognize_message(handle_data, properties) == true)
-            {
-                const CONSTBUFFER * message_content = Message_GetContent(message_handle);
-                if (message_content != NULL)
-                {
-                    /*Codes_SRS_BLE_HL_17_006: [ BLE_HL_Receive shall parse the message contents as a JSON object. ]*/
-                    /*Codes_SRS_BLE_HL_17_007: [ If the message contents do not parse, then BLE_HL_Receive shall return. ]*/
-                    JSON_Value* json = json_parse_string((const char*)(message_content->buffer));
-                    if (json != NULL)
-                    {
-                        JSON_Object* instr = json_value_get_object(json);
-                        if (instr != NULL)
-                        {
-                            const char* type = json_object_get_string(instr, "type");
-                            if (type != NULL)
-                            {
-                                /*Codes_SRS_BLE_HL_17_008: [ BLE_HL_Receive shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". ]*/
-                                const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
-                                if (characteristic_uuid != NULL)
-                                {
-                                    BLE_INSTRUCTION ble_instr = { 0 };
-                                    /*Codes_SRS_BLE_HL_17_012: [ BLE_HL_Receive shall create a STRING_HANDLE from the characteristic_uuid data field. ]*/
-                                    /*Codes_SRS_BLE_HL_17_016: [ BLE_HL_Receive shall set characteristic_uuid to the created STRING. ]*/
-                                    ble_instr.characteristic_uuid = STRING_construct(characteristic_uuid);
-                                    if (ble_instr.characteristic_uuid != NULL)
-                                    {
-                                        /*Codes_SRS_BLE_HL_17_014: [ BLE_HL_Receive shall parse the json object to fill in a new BLE_INSTRUCTION. ]*/
-                                        if (parse_instruction(type, instr, &ble_instr, 0) == true)
-                                        {
-                                            if (forward_new_message(handle_data, properties, &ble_instr) != 0)
-                                            {
-                                                free_instruction(&ble_instr);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            /*Codes_SRS_BLE_HL_17_026: [ If the json object does not parse, BLE_HL_Receive shall return. ]*/
-                                            /*Codes_SRS_BLE_HL_17_008: [ BLE_HL_Receive shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". ]*/
-                                            LogError("Not a valid BLE instruction");
-                                            free_instruction(&ble_instr);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /*Codes_SRS_BLE_HL_17_013: [ If the string creation fails, BLE_HL_Receive shall return. ]*/
-                                        LogError("Characteristic uuid string creation failed.");
-                                    }
-                                }
-                                else
-                                {
-                                    LogError("Characteristic uuid not found");
-                                }
-                            }
-                            else
-                            {
-                                LogError("BLE Instruction type not found");
-                            }
-                        }
-                        else
-                        {
-                            LogError("JSON Object expected, not received.");
-                        }
-                        json_value_free(json);
-                    }
-                    else
-                    {
-                        LogError("JSON parsing failed");
-                    }
-                }
-                else
-                {
-                    LogError("No Message Content");
-                }
-            }
-            /*Codes_SRS_BLE_HL_17_025: [ BLE_HL_Receive shall free all resources created. ]*/
-            ConstMap_Destroy(properties);
-        }
+        /*Codes_SRS_BLE_HL_13_024: [ BLE_HL_Receive shall pass the received parameters to the underlying BLE module's receive function. ]*/
+        MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Receive(module, message_handle);
     }
     else
     {
         /*Codes_SRS_BLE_HL_13_016: [ BLE_HL_Receive shall do nothing if module is NULL. ]*/
-        LogError("'module' is NULL");
+        LogError("'module' and/or 'message_handle' is NULL");
     }
 }
 

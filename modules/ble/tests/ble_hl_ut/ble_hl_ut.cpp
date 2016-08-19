@@ -453,8 +453,7 @@ public:
         MODULE_HANDLE result2 = (MODULE_HANDLE)config;
     MOCK_METHOD_END(MODULE_HANDLE, result2);
 
-    MOCK_STATIC_METHOD_1(, void, BLE_Destroy, MODULE_HANDLE, moduleHandle);
-    {
+    MOCK_STATIC_METHOD_1(, void, BLE_Destroy, MODULE_HANDLE, moduleHandle)
         if(moduleHandle != NULL)
         {
             BLE_CONFIG* config = (BLE_CONFIG*)moduleHandle;
@@ -491,10 +490,9 @@ public:
 
             free(config);
         }
-    }
     MOCK_VOID_METHOD_END()
 
-        MOCK_STATIC_METHOD_2(, void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
+    MOCK_STATIC_METHOD_2(, void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
         if (moduleHandle != NULL)
         {
             BLE_CONFIG* config = (BLE_CONFIG*)moduleHandle;
@@ -511,44 +509,41 @@ public:
                 }
             }
         }
-
     MOCK_VOID_METHOD_END()
 
-        // Message 
-
-        MOCK_STATIC_METHOD_1(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
+    // Message
+    MOCK_STATIC_METHOD_1(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
         gMessageSize = cfg->size;
         gMessageSource = cfg->source;
-        MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
+    MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
 
-        MOCK_STATIC_METHOD_1(, CONSTMAP_HANDLE, Message_GetProperties, MESSAGE_HANDLE, message)
-        MOCK_METHOD_END(CONSTMAP_HANDLE, (CONSTMAP_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
+    MOCK_STATIC_METHOD_1(, CONSTMAP_HANDLE, Message_GetProperties, MESSAGE_HANDLE, message)
+    MOCK_METHOD_END(CONSTMAP_HANDLE, (CONSTMAP_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
 
-        MOCK_STATIC_METHOD_1(, const CONSTBUFFER*, Message_GetContent, MESSAGE_HANDLE, message)
-        MOCK_METHOD_END(const CONSTBUFFER*, (const CONSTBUFFER*)NULL);
+    MOCK_STATIC_METHOD_1(, const CONSTBUFFER*, Message_GetContent, MESSAGE_HANDLE, message)
+    MOCK_METHOD_END(const CONSTBUFFER*, (const CONSTBUFFER*)NULL);
 
-        MOCK_STATIC_METHOD_1(, void, Message_Destroy, MESSAGE_HANDLE, message)
-            BASEIMPLEMENTATION::gballoc_free(message);
-        MOCK_VOID_METHOD_END()
+    MOCK_STATIC_METHOD_1(, void, Message_Destroy, MESSAGE_HANDLE, message)
+        BASEIMPLEMENTATION::gballoc_free(message);
+    MOCK_VOID_METHOD_END()
 
-        // CONSTMAP
+    // CONSTMAP
+    MOCK_STATIC_METHOD_1(, MAP_HANDLE, ConstMap_CloneWriteable, CONSTMAP_HANDLE, handle)
+    MOCK_METHOD_END(MAP_HANDLE, (MAP_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
 
-        MOCK_STATIC_METHOD_1(, MAP_HANDLE, ConstMap_CloneWriteable, CONSTMAP_HANDLE, handle)
-        MOCK_METHOD_END(MAP_HANDLE, (MAP_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1))
+    MOCK_STATIC_METHOD_2(, const char*, ConstMap_GetValue, CONSTMAP_HANDLE, handle, const char*, key)
+    MOCK_METHOD_END(const char*, (const char*)NULL)
 
-        MOCK_STATIC_METHOD_2(, const char*, ConstMap_GetValue, CONSTMAP_HANDLE, handle, const char*, key)
-        MOCK_METHOD_END(const char*, (const char*)NULL)
+    MOCK_STATIC_METHOD_1(, void, ConstMap_Destroy, CONSTMAP_HANDLE, handle)
+        BASEIMPLEMENTATION::gballoc_free(handle);
+    MOCK_VOID_METHOD_END()
 
-        MOCK_STATIC_METHOD_1(, void, ConstMap_Destroy, CONSTMAP_HANDLE, handle)
-            BASEIMPLEMENTATION::gballoc_free(handle);
-        MOCK_VOID_METHOD_END()
+    //MAP
+    MOCK_STATIC_METHOD_3(, MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value)
+    MOCK_METHOD_END(MAP_RESULT, MAP_OK)
 
-        //MAP
-        MOCK_STATIC_METHOD_3(, MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value)
-        MOCK_METHOD_END(MAP_RESULT, MAP_OK)
-
-        MOCK_STATIC_METHOD_1(, void, Map_Destroy, MAP_HANDLE, handle)
-        MOCK_VOID_METHOD_END()
+    MOCK_STATIC_METHOD_1(, void, Map_Destroy, MAP_HANDLE, handle)
+    MOCK_VOID_METHOD_END()
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , JSON_Value*, json_parse_string, const char *, filename);
@@ -1554,92 +1549,11 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_malloc_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((void*)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLE_INSTRUCTION)))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_number(IGNORED_PTR_ARG, "controller_index"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "device_mac_address"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "instructions"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-        STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-
-        ///act
-        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
     /*Tests_SRS_BLE_HL_13_022: [ BLE_HL_Create shall return NULL if calling the underlying module's create function fails. ]*/
     TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_low_level_module_create_fails)
     {
         ///arrange
         CBLEHLMocks mocks;
-
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
 
@@ -1708,81 +1622,6 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///cleanup
     }
 
-    TEST_FUNCTION(BLE_HL_Create_returns_NULL_when_macAddr_string_create_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLE_INSTRUCTION)))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((STRING_HANDLE)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_number(IGNORED_PTR_ARG, "controller_index"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "device_mac_address"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "instructions"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-        STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-
-        ///act
-        auto result = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-
-    }
     /*Tests_SRS_BLE_HL_13_014: [ BLE_HL_Create shall call the underlying module's 'create' function. ]*/
     /*Tests_SRS_BLE_HL_13_023: [ BLE_HL_Create shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
     TEST_FUNCTION(BLE_HL_Create_succeeds)
@@ -1790,17 +1629,10 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///arrange
         CBLEHLMocks mocks;
 
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
-
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
 
         STRICT_EXPECTED_CALL(mocks, BLE_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
             .IgnoreArgument(2);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
 
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLE_INSTRUCTION)))
             .IgnoreArgument(1);
@@ -1887,9 +1719,6 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
@@ -1897,16 +1726,12 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
 
-        STRICT_EXPECTED_CALL(mocks, BLE_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, BLE_Destroy(module));
 
         ///act
         BLE_HL_Destroy(module);
@@ -1917,14 +1742,7 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_HL_13_018: [ BLE_HL_Receive shall forward the call to the underlying module. ]*/
-    //Tests_SRS_BLE_HL_17_006: [ BLE_HL_Receive shall parse the message contents as a JSON object. ]
-    //Tests_SRS_BLE_HL_17_016: [ BLE_HL_Receive shall set characteristic_uuid to the created STRING. ]
-    //Tests_SRS_BLE_HL_17_014: [ BLE_HL_Receive shall parse the json object to fill in a new BLE_INSTRUCTION. ]
-    //Tests_SRS_BLE_HL_17_018: [ BLE_HL_Receive shall call ConstMap_CloneWriteable on the message properties. ]
-    //Tests_SRS_BLE_HL_17_020: [ BLE_HL_Receive shall call Map_AddOrUpdate with key of "source" and value of "BLE". ]
-    //Tests_SRS_BLE_HL_17_023: [ BLE_HL_Receive shall create a new message by calling Message_Create with new map and BLE_INSTRUCTION as the buffer. ]
-    //Tests_SRS_BLE_HL_17_025: [ BLE_HL_Receive shall free all resources created. ]
+    /*Tests_SRS_BLE_HL_13_024: [ BLE_HL_Receive shall pass the received parameters to the underlying BLE module's receive function. ]*/
     TEST_FUNCTION(BLE_HL_Receive_forwards_call)
     {
         ///arrange
@@ -1933,804 +1751,14 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         CONSTBUFFER messageBuffer;
         messageBuffer.buffer = &fake;
         messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
 
         auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((MAP_HANDLE)0x42);
-        STRICT_EXPECTED_CALL(mocks, Map_Destroy((MAP_HANDLE)0x42));
-
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
-        STRICT_EXPECTED_CALL(mocks, BLE_Receive(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_024: [ If creating new message fails, BLE_HL_Receive shall deallocate all resources and return. ]
-    TEST_FUNCTION(BLE_HL_Receive_message_create_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((MAP_HANDLE)0x42);
-        STRICT_EXPECTED_CALL(mocks, Map_Destroy((MAP_HANDLE)0x42));
-
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((MESSAGE_HANDLE)NULL);
-
-
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    TEST_FUNCTION(BLE_HL_Receive_map_update_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((MAP_HANDLE)0x42);
-        STRICT_EXPECTED_CALL(mocks, Map_Destroy((MAP_HANDLE)0x42));
-
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_COMMAND))
-            .IgnoreArgument(1)
-            .SetFailReturn(MAP_ERROR);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_019: [ If ConstMap_CloneWriteable fails, BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_constmap_clonewriteable_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((MAP_HANDLE)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_008: [ BLE_HL_Receive shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". ]
-    //Tests_SRS_BLE_HL_17_026: [ If the json object does not parse, BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_parse_instruction_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "data"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, Base64_Decoder(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((BUFFER_HANDLE)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_012: [ BLE_HL_Receive shall create a STRING_HANDLE from the characteristic_uuid data field. ]
-    //Tests_SRS_BLE_HL_17_013: [ If the string creation fails, BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_uuid_construction_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn("F000AA02-0451-4000-B000-000000000000");
-        STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((STRING_HANDLE)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_008: [ BLE_HL_Receive shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". ]
-    TEST_FUNCTION(BLE_HL_Receive_uuid_not_found)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn("write_once");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "characteristic_uuid"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_008: [ BLE_HL_Receive shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". ]
-    TEST_FUNCTION(BLE_HL_Receive_type_returns_null)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*) NULL);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_007: [ If the message contents do not parse, then BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_json_value_get_object_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((JSON_Object*)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_007: [ If the message contents do not parse, then BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_json_parse_string_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)&messageBuffer);
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((JSON_Value*)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_007: [ If the message contents do not parse, then BLE_HL_Receive shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_message_no_content_fails)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)GW_IDMAP_MODULE);
-        STRICT_EXPECTED_CALL(mocks, Message_GetContent(fakeMessage))
-            .SetReturn((const CONSTBUFFER *)NULL);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_005: [ If the source of the message properties is not "mapping", then this function shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_message_source_not_mapping)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:CC:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_SOURCE_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"BLE");
-
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_003: [ If macAddress of the message property does not match this module's MAC address, then this function shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_message_wrong_mac_address)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage));
-        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, GW_MAC_ADDRESS_PROPERTY))
-            .IgnoreArgument(1)
-            .SetReturn((const char *)"AA:BB:DD:DD:EE:FF");
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        ///act
-        BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        BLE_HL_Destroy(module);
-    }
-
-    //Tests_SRS_BLE_HL_17_002: [ If messageHandle properties does not contain "macAddress" property, then this function shall return. ]
-    //Tests_SRS_BLE_HL_17_004: [ If messageHandle properties does not contain "source" property, then this function shall return. ]
-    TEST_FUNCTION(BLE_HL_Receive_message_no_properties)
-    {
-        ///arrange
-        CBLEHLMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
-
-        auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
-        mocks.ResetAllCalls();
-
-        MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
-        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(fakeMessage))
-            .SetFailReturn((CONSTMAP_HANDLE)NULL);
+        STRICT_EXPECTED_CALL(mocks, BLE_Receive(module, (MESSAGE_HANDLE)0x42));
 
         ///act
         BLE_HL_Receive(module, (MESSAGE_HANDLE)0x42);
@@ -2762,13 +1790,6 @@ BEGIN_TEST_SUITE(ble_hl_ut)
     {
         ///arrange
         CBLEHLMocks mocks;
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
-            .IgnoreArgument(1)
-            .SetReturn((const char*)"write_at_init");
-        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetReturn((size_t)1);
 
         auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
         mocks.ResetAllCalls();
