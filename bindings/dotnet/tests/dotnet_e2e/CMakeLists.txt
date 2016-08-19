@@ -6,6 +6,9 @@ cmake_minimum_required(VERSION 2.8.11)
 compileAsC99()
 set(theseTestsName dotnet_e2e)
 
+
+
+
 set(${theseTestsName}_cpp_files
     ${theseTestsName}.cpp
 )
@@ -32,7 +35,6 @@ if(TARGET ${theseTestsName}_exe)
 	)	
 	install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	install_managed_dotnet_binding_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	install_managed_dotnet_e2etest_binding_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-    install_dotnet_host_hl_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+	install_managed_dotnet_e2etest_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	install_dotnet_host_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 endif()

@@ -27,7 +27,6 @@ namespace E2ETestModule
 
         public void Destroy()
         {
-            Console.WriteLine("This is C# Sensor Module Destroy!");
         }
 
         public void Receive(Message received_message)
@@ -44,22 +43,26 @@ namespace E2ETestModule
 
         public void threadBody()
         {
-            int msgCounter = 0;
-            while (true)
+            //Just publish a message if this is a Sender.
+            if(String.Compare(configuration,"Sender", true) == 0)
             {
-                Dictionary<string, string> thisIsMyProperty = new Dictionary<string, string>();
-                thisIsMyProperty.Add("source", "DotNetE2ETestmodule");
-                thisIsMyProperty.Add("MsgType", "Request");
-                thisIsMyProperty.Add("ModuleId", configuration);
+                int msgCounter = 0;
+                while (true)
+                {
+                    Dictionary<string, string> thisIsMyProperty = new Dictionary<string, string>();
+                    thisIsMyProperty.Add("source", "DotNetE2ETestmodule");
+                    thisIsMyProperty.Add("MsgType", "Request");
+                    thisIsMyProperty.Add("ModuleId", configuration);
 
-                Message messageToPublish = new Message("SensorData: " + msgCounter, thisIsMyProperty);
+                    Message messageToPublish = new Message("SensorData: " + msgCounter, thisIsMyProperty);
 
-                this.broker.Publish(messageToPublish);
+                    this.broker.Publish(messageToPublish);
 
-                //Publish a message every 1 seconds. 
-                Thread.Sleep(1000);
-                msgCounter++;
-            }
+                    //Publish a message every 1 seconds. 
+                    Thread.Sleep(1000);
+                    msgCounter++;
+                }
+            }                
         }
     }
 }

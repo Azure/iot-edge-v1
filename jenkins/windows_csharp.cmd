@@ -7,7 +7,7 @@ set build-root=%~dp0..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
-REM -- C --
+REM -- C# --
 cd %build-root%\tools
 
 call build_uwp.cmd --skip-unittests %*

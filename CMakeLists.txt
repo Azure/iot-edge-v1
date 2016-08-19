@@ -178,8 +178,10 @@ function(install_broker whatIsBuilding whatIsBuildingLocation)
 endfunction(install_broker)
 
 set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
-set(dotnet_e2etest_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
-set(dotnet_host_hl_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet_hl.dll CACHE INTERNAL "The location of dotnet_hl.dll" FORCE)
+
+set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
+
+
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
 
 function(install_managed_dotnet_binding_binaries whatIsBuilding whatIsBuildingLocation)
@@ -189,27 +191,20 @@ function(install_managed_dotnet_binding_binaries whatIsBuilding whatIsBuildingLo
           ${whatIsBuildingLocation})
 endfunction(install_managed_dotnet_binding_binaries)
 
-function(install_managed_dotnet_e2etest_binding_binaries whatIsBuilding whatIsBuildingLocation)
+function(install_managed_dotnet_e2etest_module_binaries whatIsBuilding whatIsBuildingLocation)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          ${dotnet_e2etest_binding_dll}
+          ${dotnet_e2etest_module_dll}
           ${whatIsBuildingLocation})
-endfunction(install_managed_dotnet_binding_binaries)
+endfunction(install_managed_dotnet_e2etest_module_binaries)
 
-
-function(install_dotnet_host_hl_module_binaries whatIsBuilding whatIsBuildingLocation)
-  add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          ${dotnet_host_hl_binding_dll}
-          ${whatIsBuildingLocation})
-endfunction(install_managed_dotnet_binding_binaries)
 
 function(install_dotnet_host_module_binaries whatIsBuilding whatIsBuildingLocation)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           ${dotnet_host_binding_dll}
           ${whatIsBuildingLocation})
-endfunction(install_managed_dotnet_binding_binaries)
+endfunction(install_dotnet_host_module_binaries)
 
 
 

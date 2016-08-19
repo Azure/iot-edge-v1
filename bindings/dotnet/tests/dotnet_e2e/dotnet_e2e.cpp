@@ -25,8 +25,8 @@ DEFINE_MICROMOCK_ENUM_TO_STRING(BROKER_RESULT, BROKER_RESULT_VALUES);
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-static bool messageReceivedFromSender = false;
-static bool messageReceivedFromReceiver = false;
+static bool messageRequestReceived = false;
+static bool messageReplyReceived = false;
 
 typedef struct GATEWAY_HANDLE_DATA_TAG {
 	/** @brief Vector of MODULE_DATA modules that the Gateway must track */
@@ -53,16 +53,16 @@ static void E2EModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE message
 	{
 		CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
 
-		const char * moduleId = ConstMap_GetValue(properties, "ModuleId");
+		const char * messageType = ConstMap_GetValue(properties, "MsgType");
 
 
-		if (strcmp(moduleId, "Sender") == 0)
+		if (strcmp(messageType, "Reply") == 0)
 		{
-			messageReceivedFromSender = true;
+			messageReplyReceived = true;
 		}
-		else if (strcmp(moduleId, "Receiver") == 0)
+		else if (strcmp(messageType, "Request") == 0)
 		{
-			messageReceivedFromReceiver = true;
+			messageRequestReceived = true;
 		}
 
 		ConstMap_Destroy(properties);
@@ -184,8 +184,8 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
 	ThreadAPI_Sleep(5000); //Modules are configured to send a message every second, so waitig 5 seconds has to be enough.
 
-	ASSERT_IS_TRUE(messageReceivedFromSender);
-	ASSERT_IS_TRUE(messageReceivedFromReceiver);
+	ASSERT_IS_TRUE(messageRequestReceived);
+	ASSERT_IS_TRUE(messageReplyReceived);
 
 
 	//Cleanup
