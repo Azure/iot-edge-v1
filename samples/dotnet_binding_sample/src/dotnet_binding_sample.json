@@ -25,6 +25,17 @@
             }
         }
 
+    ],
+    "links": 
+    [
+      {
+        "source": "dotnet_sensor_module",
+        "sink": "dotnet_printer_module"
+      },
+      {
+        "source": "dotnet_sensor_module",
+        "sink": "logger_hl"
+      }
     ]
 }
 
