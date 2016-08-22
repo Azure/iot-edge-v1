@@ -293,6 +293,11 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTR
 		{
 			LogError("Gateway_LL_AddModule(): Unable to add module '%s'.", entry->module_name);
 		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_LL_26_011: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
+		}
 	}
 	else
 	{
@@ -316,6 +321,8 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 		if (module_data != NULL)
 		{
 			gateway_removemodule_internal(gateway_handle, module_data);
+			/*Codes_SRS_GATEWAY_LL_26_012: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
 		}
 		else
 		{

@@ -301,6 +301,8 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
 
+**SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
+
 ## Gateway_RemoveModule
 ```
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
@@ -322,6 +324,8 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 **SRS_GATEWAY_LL_14_025: [** The function shall unload `MODULE_DATA`'s `library_handle`. **]**
 
 **SRS_GATEWAY_LL_14_026: [** The function shall remove that `MODULE_DATA` from `GATEWAY_HANDLE_DATA`'s `modules`. **]**
+
+**SRS_GATEWAY_LL_26_012: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. **]**
 
 ## Gateway_AddEventCallback
 ```
