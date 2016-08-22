@@ -83,9 +83,12 @@ if %build-clean%==1 (
 call :build-a-solution "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
 
+rem --Built Any Platform for Unit Test.
+call :build-a-solution "%build-root%\bindings\dotnet\dotnet-binding\dotnet-binding.sln" %build-config% "Any CPU"
+
 rem ------------------
 rem -- run unit tests
-call  mstest /testcontainer:"%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-platform%\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll"
+call  mstest /testcontainer:"%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll"
 if not !errorlevel!==0 exit /b !errorlevel!
 rem ------------------
 
