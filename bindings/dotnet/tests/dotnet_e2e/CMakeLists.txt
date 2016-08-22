@@ -24,7 +24,6 @@ include_directories(../../../../modules/common)
 #setting #defines
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-else()
 endif()
 
 set(sharedutil_include_directories ${MICROMOCK_INC_FOLDER} ${TESTRUNNERSWITCHER_INC_FOLDER} ${CTEST_INC_FOLDER} ${SAL_INC_FOLDER} ${SHARED_UTIL_INC_FOLDER} ${SHARED_UTIL_SRC_FOLDER})
