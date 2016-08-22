@@ -55,6 +55,7 @@ static void E2EModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE message
 
 		const char * messageType = ConstMap_GetValue(properties, "MsgType");
 
+		ASSERT_IS_NOT_NULL(messageType);
 
 		if (strcmp(messageType, "Reply") == 0)
 		{
