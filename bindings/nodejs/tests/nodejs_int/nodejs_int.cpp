@@ -516,6 +516,12 @@ BEGIN_TEST_SUITE(nodejs_int)
             result
         };
         Broker_AddModule(g_broker, &module);
+		BROKER_LINK_DATA broker_data =
+		{
+			result,
+			g_module.module_handle
+		};
+		Broker_AddLink(g_broker, &broker_data);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
@@ -984,6 +990,12 @@ BEGIN_TEST_SUITE(nodejs_int)
             result
         };
         Broker_AddModule(g_broker, &module);
+		BROKER_LINK_DATA broker_data =
+		{
+			g_module.module_handle,
+			result
+		};
+		Broker_AddLink(g_broker, &broker_data);
 
         ///assert
         ASSERT_IS_NOT_NULL(result);

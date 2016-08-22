@@ -187,6 +187,8 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_14_004: [** This function shall return `NULL` if a `BROKER_HANDLE` cannot be created. **]**
 
+**SRS_GATEWAY_LL_17_001: [** This function shall not accept "*" as a module name. **]**
+
 **SRS_GATEWAY_LL_14_033: [** The function shall create a vector to store each `MODULE_DATA`. **]**
 
 **SRS_GATEWAY_LL_04_001: [** The function shall create a vector to store each `LINK_DATA` **]**
@@ -200,6 +202,10 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 **SRS_GATEWAY_LL_14_036: [** If any `MODULE_HANDLE` is unable to be created from a `GATEWAY_MODULES_ENTRY` the `GATEWAY_HANDLE` will be destroyed. **]**
 
 **SRS_GATEWAY_LL_04_004: [** If a module with the same `module_name` already exists, this function shall fail and the `GATEWAY_HANDLE` will be destroyed. **]**
+
+**SRS_GATEWAY_LL_17_002: [** The gateway shall accept a link with a source of "*" and a sink of a valid module. **]**
+
+**SRS_GATEWAY_LL_17_003: [** The gateway shall treat a source of "*" as link to the sink module from every other module in gateway. **]**
 
 **SRS_GATEWAY_LL_04_002: [** The function shall use each `GATEWAY_LINK_ENTRY` of `GATEWAY_PROPERTIES`'s `gateway_links` to add a `LINK` to `GATEWAY_HANDLE`'s broker. **]**
 
@@ -350,6 +356,8 @@ Gateway_LL_AddLink adds a link to the gateway's message broker using the provide
 **SRS_GATEWAY_LL_04_009: [** This function shall check if a given link already exists.  **]**
 
 **SRS_GATEWAY_LL_04_010: [** If the entryLink already exists it the function shall return `GATEWAY_ADD_LINK_ERROR` **]**
+
+**SRS_GATEWAY_LL_17_004: [** The gateway shall accept a link containing "*" as `entryLink->module_source`, and a valid module name as a `entryLink->module_sink`. **]** **SRS_GATEWAY_LL_17_005: [** For this link, the sink shall receive all messages publish by other modules. **]**
 
 **SRS_GATEWAY_LL_04_011: [** If the module referenced by the `entryLink->module_source` or `entryLink->module_sink` doesn't exists this function shall return `GATEWAY_ADD_LINK_ERROR` **]**
 

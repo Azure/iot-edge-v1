@@ -16,7 +16,7 @@
     [
         {
             "source": "hello_world",
-            "sink": "logger"
+            "sink": "logger_hl"
         }
     ]
 }
