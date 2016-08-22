@@ -6,25 +6,7 @@
 
 ## Overview
 
-This module is a *passthrough* implementation that simply wraps the BLE Module code by providing an easy to use JSON based configuration interface. It de-serializes the JSON into a `BLE_CONFIG` instance and passes control to the underlying implementation. This module shall also accept cloud to device messages and transform cloud messages into a structure understood by the BLE module.
-
-### Receiving messages on the message broker
-The module identifies the messages that it needs to process by the following 
-properties that must exist:
-
->| PropertyName | Description                                                                  |
->|--------------|------------------------------------------------------------------------------|
->| macAddress   | The MAC address of a sensor, in canonical form                               |
->| source       | The source property shall be set to "mapping"                                |
-
-The message content is a JSON object of the format:
-```json
-{
-    "type": "write_once",
-    "characteristic_uuid": "<GATT characteristic to read from/write to>",
-    "data": "<base64 value>"
-}
-```
+This module is a *passthrough* implementation that simply wraps the BLE Module code by providing an easy to use JSON based configuration interface. It de-serializes the JSON into a `BLE_CONFIG` instance and passes control to the underlying implementation.
 
 ## BLE_HL_Create
 ```c
@@ -150,43 +132,7 @@ void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 
 **SRS_BLE_HL_17_001: [** `BLE_HL_Receive` shall do nothing if `message_handle` is `NULL`. **]**
 
-**SRS_BLE_HL_17_002: [** If `messageHandle` properties does not contain "macAddress" property, then this function shall return. **]**
-
-**SRS_BLE_HL_17_003: [** If `macAddress` of the message property does not match this module's MAC address, then this function shall return. **]**
-
-**SRS_BLE_HL_17_004: [** If `messageHandle` properties does not contain "source" property, then this function shall return. **]**
-
-**SRS_BLE_HL_17_005: [** If the `source` of the message properties is not "mapping", then this function shall return. **]**
-
-**SRS_BLE_HL_17_006: [** `BLE_HL_Receive` shall parse the message contents as a JSON object. **]**
-
-**SRS_BLE_HL_17_007: [** If the message contents do not parse, then `BLE_HL_Receive` shall return. **]**
-
-**SRS_BLE_HL_17_008: [** `BLE_HL_Receive` shall return if the JSON object does not contain the following fields: "type", "characteristic_uuid", and "data". **]**
-
-**SRS_BLE_HL_17_012: [** `BLE_HL_Receive` shall create a `STRING_HANDLE` from the characteristic_uuid data field. **]**
-
-**SRS_BLE_HL_17_013: [** If the string creation fails, `BLE_HL_Receive` shall return. **]**
-
-**SRS_BLE_HL_17_014: [** `BLE_HL_Receive` shall parse the json object to fill in a new BLE_INSTRUCTION. **]**
-
-**SRS_BLE_HL_17_026: [** If the json object does not parse, `BLE_HL_Receive` shall return. **]**
-
-**SRS_BLE_HL_17_016: [** `BLE_HL_Receive` shall set characteristic_uuid to the created STRING. **]**
-
-**SRS_BLE_HL_17_018: [** `BLE_HL_Receive` shall call `ConstMap_CloneWriteable` on the message properties. **]**
-
-**SRS_BLE_HL_17_019: [** If `ConstMap_CloneWriteable` fails, `BLE_HL_Receive` shall return. **]**
-
-**SRS_BLE_HL_17_020: [** `BLE_HL_Receive` shall call `Map_AddOrUpdate` with key of "source" and value of "BLE". **]**
-
-**SRS_BLE_HL_17_023: [** `BLE_HL_Receive` shall create a new message by calling `Message_Create` with new map and BLE_INSTRUCTION as the buffer. **]**
-
-**SRS_BLE_HL_17_024: [** If creating new message fails, `BLE_HL_Receive` shall deallocate all resources and return. **]**
-
-**SRS_BLE_HL_13_018: [** `BLE_HL_Receive` shall forward new message to the underlying module. **]**
-
-**SRS_BLE_HL_17_025: [** `BLE_HL_Receive` shall free all resources created. **]**
+**SRS_BLE_HL_13_024: [** `BLE_HL_Receive` shall pass the received parameters to the underlying BLE module's receive function. **]**
 
 ## Module_GetAPIs
 ```c

@@ -79,18 +79,38 @@ set(ble_static_headers
 
 set(ble_hl_sources
     ./src/ble_hl.c
+    ./src/ble_instr_utils.c
+)
+
+set(ble_c2d_sources
+    ./src/ble_c2d.c
+    ./src/ble_instr_utils.c
 )
 
 set(ble_hl_headers
     ./inc/ble_hl.h
+    ./inc/ble_instr_utils.h
+)
+
+set(ble_c2d_headers
+    ./inc/ble_c2d.h
+    ./inc/ble_instr_utils.h
 )
 
 set(ble_hl_static_sources
     ${ble_hl_sources}
 )
 
+set(ble_c2d_static_sources
+    ${ble_c2d_sources}
+)
+
 set(ble_hl_static_headers
     ${ble_hl_headers}
+)
+
+set(ble_c2d_static_headers
+    ${ble_c2d_headers}
 )
 
 include_directories(
@@ -116,11 +136,22 @@ add_library(ble_hl MODULE ${ble_hl_sources} ${ble_hl_headers})
 target_link_libraries(ble_hl ble_static ${LIBS})
 linkSharedUtil(ble_hl)
 
+# build ble C2D as a dynamic library
+add_library(ble_c2d MODULE ${ble_c2d_sources} ${ble_c2d_headers})
+target_link_libraries(ble_c2d ${LIBS})
+linkSharedUtil(ble_c2d)
+
 # build ble HL as a static library
 add_library(ble_hl_static STATIC ${ble_hl_static_sources} ${ble_hl_static_headers})
 target_compile_definitions(ble_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(ble_hl_static ble_static ${LIBS} iothub_service_client)
 linkSharedUtil(ble_hl_static)
+
+# build ble C2D as a static library
+add_library(ble_c2d_static STATIC ${ble_c2d_static_sources} ${ble_c2d_static_headers})
+target_compile_definitions(ble_c2d_static PRIVATE BUILD_MODULE_TYPE_STATIC)
+target_link_libraries(ble_c2d_static ${LIBS} iothub_service_client)
+linkSharedUtil(ble_c2d_static)
 
 add_module_to_solution(ble)
 
