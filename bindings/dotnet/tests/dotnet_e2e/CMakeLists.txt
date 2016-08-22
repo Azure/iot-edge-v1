@@ -33,8 +33,12 @@ if(TARGET ${theseTestsName}_exe)
 	target_link_libraries(${theseTestsName}_exe
 		gateway
 	)	
+    add_dependencies(${theseTestsName}_exe dotnet)
+        
 	install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	install_managed_dotnet_binding_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	install_managed_dotnet_e2etest_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	install_dotnet_host_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+    
+
 endif()

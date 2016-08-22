@@ -85,7 +85,7 @@ if not !errorlevel!==0 exit /b !errorlevel!
 
 rem ------------------
 rem -- run unit tests
-call  mstest /testcontainer:"%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll"
+call  mstest /testcontainer:"%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-platform%\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll"
 if not !errorlevel!==0 exit /b !errorlevel!
 rem ------------------
 

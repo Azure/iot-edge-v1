@@ -177,10 +177,9 @@ function(install_broker whatIsBuilding whatIsBuildingLocation)
   endif()
 endfunction(install_broker)
 
-set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
+set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/$(arch)/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
 
-set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
-
+set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/$(arch)/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
 
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
 
