@@ -4,12 +4,23 @@
 cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for java binding
 
-# Check if the environment variables NODE_INCLUDE and NODE_LIB exist
+# Check if the environment variable JAVA_HOME exists
 if(
     (NOT (DEFINED ENV{JAVA_HOME}))
   )
   message(FATAL_ERROR "Environment variable JAVA_HOME is not defined. Please define "
                       "JAVA_HOME to point to the location of the JDK.")
+endif()
+
+# Check if the local or environment variable JDK_ARCH exists and if not set it to 'amd64' by default
+if(
+    (NOT (DEFINED JDK_ARCH))
+  )
+  if( DEFINED ENV{JDK_ARCH} )
+    set( JDK_ARCH $ENV{JDK_ARCH} )
+  else()
+    set( JDK_ARCH amd64 )
+  endif()
 endif()
 
 set(java_module_host_manager_sources
@@ -75,10 +86,10 @@ elseif(LINUX)
         $ENV{JAVA_HOME}/include/linux
     )
     set(java_link_dirs
-        $ENV{JAVA_HOME}/jre/lib/amd64/server
+        $ENV{JAVA_HOME}/jre/lib/${JDK_ARCH}/server
     )
     set(java_libs
-        $ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so
+        $ENV{JAVA_HOME}/jre/lib/${JDK_ARCH}/server/libjvm.so
     )
 endif()
 
