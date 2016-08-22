@@ -45,9 +45,9 @@ if(TARGET ${theseTestsName}_exe)
     add_dependencies(${theseTestsName}_exe dotnet)
         
 	install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	install_managed_dotnet_binding_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	install_managed_dotnet_e2etest_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	install_dotnet_host_module_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_managed_binding_dll} )
+	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_e2etest_module_dll} )
+	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_host_binding_dll} )
     
 
 endif()
