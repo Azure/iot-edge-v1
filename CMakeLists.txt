@@ -181,6 +181,12 @@ set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/do
 
 set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/$(arch)/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
 
+set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/$(arch)/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
+
+set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/$(arch)/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+
+
+
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
 
 function(install_managed_dotnet_binding_binaries whatIsBuilding whatIsBuildingLocation)
@@ -197,6 +203,19 @@ function(install_managed_dotnet_e2etest_module_binaries whatIsBuilding whatIsBui
           ${whatIsBuildingLocation})
 endfunction(install_managed_dotnet_e2etest_module_binaries)
 
+function(install_managed_dotnet_sensor_module_binaries whatIsBuilding whatIsBuildingLocation)
+  add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${dotnet_sensor_module_dll}
+          ${whatIsBuildingLocation})
+endfunction(install_managed_dotnet_sensor_module_binaries)
+
+function(install_managed_dotnet_printer_module_binaries whatIsBuilding whatIsBuildingLocation)
+  add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${dotnet_printer_module_dll}
+          ${whatIsBuildingLocation})
+endfunction(install_managed_dotnet_printer_module_binaries)
 
 function(install_dotnet_host_module_binaries whatIsBuilding whatIsBuildingLocation)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
