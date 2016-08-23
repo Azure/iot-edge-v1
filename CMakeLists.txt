@@ -179,21 +179,21 @@ endfunction(install_broker)
 
 
 if(${ARCHITECTURE} STREQUAL "x86_64")
-set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x64/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
+   set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x64/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
 
-set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/x64/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
+   set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/x64/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
 
-set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/x64/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
+   set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/x64/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
 
-set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x64/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+   set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x64/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
 elseif(${ARCHITECTURE} STREQUAL "x86")
-set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x86/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
+   set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x86/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
 
-set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/x86/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
+   set(dotnet_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/E2ETestModule/bin/x86/$(Configuration)/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll (windows)" FORCE)
 
-set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/x86/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
+   set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/x86/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
 
-set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x86/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+   set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x86/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
 endif()
 
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
