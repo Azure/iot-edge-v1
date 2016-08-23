@@ -265,11 +265,11 @@ The JSON file specifying the modules to be loaded is quite simple. It contains a
 - `module path` – the path to the library containing the module. For Linux this will be a .so while on Windows this will be a .dll file
 - `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
 
-The JSON file also contain the links that is going to be passed to the broker.
-- `source` - a module name from the list of modules described on the `modules` that will produce data to the next `sink` tag on JSON File. 
-- `sink` - a module name from the list of modules described on the `modules` JSON that will consume messages described on the previous `source`.
+The JSON file also contains the links that are going to be passed to the broker. A link has two proerties:
+- `source` - a module name from the `modules` section, or "\*".  
+- `sink` - a module name from the `modules` section.
 
-The `source` may be set to "\*", indicating that messages from any module will be received by `sink`.
+Each link defines a message route and direction. Messages from module `source` are to be delivered to the module `sink`. The `source` may be set to "\*", indicating that messages from any module will be received by `sink`.
 
 On the sample copied below you can see that every message produced by module `hello_world` will be consumed by module `logger`. 
 
