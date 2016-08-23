@@ -1524,6 +1524,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 
 	//Act
 	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
@@ -1599,6 +1601,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1);
 
 	//Act
@@ -1814,6 +1818,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 	
 
 	//Act
@@ -1880,6 +1886,9 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	// Well it IS removed from the gateway even if still linked to broker. I think this scenario should report the event
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 
 	//Act
 	Gateway_LL_RemoveModule(gw, handle);
@@ -2974,6 +2983,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_with_star_links)
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 
 
 	//Act
@@ -3498,6 +3509,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 
 	//Act
 	Gateway_LL_RemoveModule(gateway, module_handle);
@@ -3578,6 +3591,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links_has_errors)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
 
 	//Act
 	Gateway_LL_RemoveModule(gateway, module_handle);
@@ -3720,5 +3735,61 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_nostar_link_success)
 	Gateway_LL_Destroy(gateway);
 }
 
+/*Tests_SRS_GATEWAY_LL_26_011: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. ]*/
+TEST_FUNCTION(Gateway_LL_AddModule_Reports_On_Success)
+{
+	// Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyModule = {
+		"dummy module",
+		"x.dll",
+		NULL
+	};
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(NULL);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	// Implementation doesn't matter as long as the report event is called
+	mocks.SetIgnoreUnexpectedCalls(true);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
+
+	//Act
+	Gateway_LL_AddModule(gateway, &dummyModule);
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_012: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. ]*/
+TEST_FUNCTION(Gateway_LL_RemoveModule_Reports_On_Success)
+{
+	// Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_MODULES_ENTRY dummyModule = {
+		"dummy module",
+		"x.dll",
+		NULL
+	};
+
+	GATEWAY_HANDLE gateway = Gateway_LL_Create(NULL);
+	MODULE_HANDLE module_h = Gateway_LL_AddModule(gateway, &dummyModule);
+	mocks.ResetAllCalls();
+
+	//Expectations
+	// Implementation doesn't matter as long as the report event is called
+	mocks.SetIgnoreUnexpectedCalls(true);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1);
+
+	//Act
+	Gateway_LL_RemoveModule(gateway, module_h);
+
+	//Cleanup
+	Gateway_LL_Destroy(gateway);
+}
 
 END_TEST_SUITE(gateway_ll_ut)
