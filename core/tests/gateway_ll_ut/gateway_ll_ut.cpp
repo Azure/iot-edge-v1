@@ -276,6 +276,9 @@ public:
 		BASEIMPLEMENTATION::gballoc_free(ptr);
 	MOCK_VOID_METHOD_END()
 
+	MOCK_STATIC_METHOD_2(, void*, gballoc_calloc, size_t, num, size_t, size)
+	MOCK_METHOD_END(void*, BASEIMPLEMENTATION::gballoc_calloc(num, size))
+
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
@@ -314,6 +317,7 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void*, VECTOR_find_if, const VEC
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void*, gballoc_realloc, void*, ptr, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, gballoc_free, void*, ptr)
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void*, gballoc_calloc, size_t, num, size_t, size)
 
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
@@ -2313,9 +2317,9 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_NULL_Gateway)
 	// Empty! No callbacks should happen at all
 
 	// Act
-	Gateway_AddEventCallback(NULL, GATEWAY_CREATED, NULL);
-	Gateway_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL);
-	Gateway_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc);
 
 	// Assert
 	ASSERT_ARE_EQUAL(int, sampleCallbackFuncCallCount, 0);
@@ -2331,15 +2335,18 @@ TEST_FUNCTION(Gateway_LL_GetModuleList_Basic)
 	mocks.ResetAllCalls();
 
 	// Expect
-	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
-	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
-	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
-	EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, gballoc_calloc(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 
 	// Act
-	VECTOR_HANDLE modules = Gateway_GetModuleList(gw);
+	VECTOR_HANDLE modules = Gateway_LL_GetModuleList(gw);
 
 	// Assert
 	ASSERT_IS_NOT_NULL(modules);
@@ -2354,7 +2361,7 @@ TEST_FUNCTION(Gateway_LL_GetModuleList_Basic)
 	mocks.AssertActualAndExpectedCalls();
 
 	// Cleanup
-	VECTOR_destroy(modules);
+	Gateway_LL_DestroyModuleList(modules);
 	Gateway_LL_Destroy(gw);
 	mocks.ResetAllCalls();
 }
@@ -2369,7 +2376,7 @@ TEST_FUNCTION(Gateway_LL_GetModuleList_NULL_Gateway)
 	// Empty
 
 	// Act
-	VECTOR_HANDLE vector = Gateway_GetModuleList(NULL);
+	VECTOR_HANDLE vector = Gateway_LL_GetModuleList(NULL);
 
 	// Assert
 	ASSERT_IS_NULL(vector);
@@ -2387,9 +2394,10 @@ TEST_FUNCTION(Gateway_LL_GetModuleList_Vector_Create_Fail)
 	// Expectations
 	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
 		.SetFailReturn((VECTOR_HANDLE)NULL);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
 
 	// Act
-	VECTOR_HANDLE vector = Gateway_GetModuleList(gw);
+	VECTOR_HANDLE vector = Gateway_LL_GetModuleList(gw);
 
 	// Assert
 	ASSERT_IS_NULL(vector);
@@ -2410,19 +2418,16 @@ TEST_FUNCTION(Gateway_LL_GetModuleList_push_back_fail)
 	// Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULE_INFO)));
 	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
-	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2)
+	EXPECTED_CALL(mocks, gballoc_calloc(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 		.SetFailReturn(1);
 	// destroy after fail
 	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG));
-	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(1);
 
 	// Act
-	VECTOR_HANDLE vector = Gateway_GetModuleList(gw);
+	VECTOR_HANDLE vector = Gateway_LL_GetModuleList(gw);
 
 	// Assert
 	ASSERT_IS_NULL(vector);
@@ -2444,7 +2449,7 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_Forwards)
 		.IgnoreArgument(1);
 
 	// Act
-	Gateway_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc);
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();
@@ -3790,6 +3795,518 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Reports_On_Success)
 
 	//Cleanup
 	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_013: [ For each module returned this function shall provide a snapshot copy vector of link sources for that module. ]*/
+TEST_FUNCTION(Gateway_LL_GetModuleList_Links_basic_tree)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	// Using only for implemenation instead of checking calls
+	mocks.SetIgnoreUnexpectedCalls(true);
+
+	const size_t module_count = 3;
+	const size_t link_count = 2;
+
+	PREDICATE_FUNCTION search_lambda = [](const void *info, const void *searched) { return strcmp(((const GATEWAY_MODULE_INFO*)info)->module_name, (const char*)searched) == 0; };
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_2",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_3",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{"module_1", "module_2"},
+		{"module_1", "module_3"}
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+	auto module_1 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_1");
+	auto module_2 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_2");
+	auto module_3 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_3");
+
+	// Assert
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(modules), module_count);
+	ASSERT_IS_NOT_NULL(module_1);
+	ASSERT_IS_NOT_NULL(module_2);
+	ASSERT_IS_NOT_NULL(module_3);
+	ASSERT_IS_NOT_NULL(module_1->module_sources);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_1->module_sources), 0);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_2->module_sources), 1);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_3->module_sources), 1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_2->module_sources, 0)) == module_1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_3->module_sources, 0)) == module_1);
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_DestroyModuleList(modules);
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_013: [ For each module returned this function shall provide a snapshot copy vector of link sources for that module. ]*/
+TEST_FUNCTION(Gateway_LL_GetModuleList_links_cycle)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	// Using only for implemenation instead of checking calls
+	mocks.SetIgnoreUnexpectedCalls(true);
+
+	const size_t module_count = 3;
+	const size_t link_count = 3;
+
+	PREDICATE_FUNCTION search_lambda = [](const void *info, const void *searched) { return strcmp(((const GATEWAY_MODULE_INFO*)info)->module_name, (const char*)searched) == 0; };
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_2",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_3",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_2" },
+		{ "module_2", "module_3" },
+		{ "module_3", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+	auto module_1 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_1");
+	auto module_2 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_2");
+	auto module_3 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_3");
+
+	// Assert
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(modules), module_count);
+	ASSERT_IS_NOT_NULL(module_1);
+	ASSERT_IS_NOT_NULL(module_2);
+	ASSERT_IS_NOT_NULL(module_3);
+	ASSERT_IS_NOT_NULL(module_1->module_sources);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_1->module_sources), 1);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_2->module_sources), 1);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_3->module_sources), 1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_2->module_sources, 0)) == module_1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_3->module_sources, 0)) == module_2);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_1->module_sources, 0)) == module_3);
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_DestroyModuleList(modules);
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_013: [ For each module returned this function shall provide a snapshot copy vector of link sources for that module. ]*/
+TEST_FUNCTION(Gateway_LL_GetModuleList_links_to_itself)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	// Using only for implemenation instead of checking calls
+	mocks.SetIgnoreUnexpectedCalls(true);
+
+	const size_t module_count = 1;
+	const size_t link_count = 1;
+
+	PREDICATE_FUNCTION search_lambda = [](const void *info, const void *searched) { return strcmp(((const GATEWAY_MODULE_INFO*)info)->module_name, (const char*)searched) == 0; };
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+	auto module_1 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_1");
+
+	// Assert
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(modules), module_count);
+	ASSERT_IS_NOT_NULL(module_1);
+	ASSERT_IS_NOT_NULL(module_1->module_sources);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_1->module_sources), 1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_1->module_sources, 0)) == module_1);
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_DestroyModuleList(modules);
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_013: [ For each module returned this function shall provide a snapshot copy vector of link sources for that module. ]*/
+TEST_FUNCTION(Gateway_LL_GetModuleList_no_modules)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	// Using only for implemenation instead of checking calls
+	mocks.SetIgnoreUnexpectedCalls(true);
+
+	auto gateway = Gateway_LL_Create(NULL);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+
+	// Assert
+	ASSERT_IS_NOT_NULL(modules);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(modules), 0);
+
+	// Cleanup
+	Gateway_LL_DestroyModuleList(modules);
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_014: [ For each module returned that has '*' as a link source this function shall provide NULL vector pointer as it's sources vector. ]*/
+TEST_FUNCTION(Gateway_LL_GetModuleList_links_star)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	// Using only for implemenation instead of checking calls
+	mocks.SetIgnoreUnexpectedCalls(true);
+
+	const size_t module_count = 2;
+	const size_t link_count = 2;
+
+	PREDICATE_FUNCTION search_lambda = [](const void *info, const void *searched) { return strcmp(((const GATEWAY_MODULE_INFO*)info)->module_name, (const char*)searched) == 0; };
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_2",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "*", "module_1" },
+		{ "module_1", "module_2" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+	auto module_1 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_1");
+	auto module_2 = (GATEWAY_MODULE_INFO*)VECTOR_find_if(modules, search_lambda, "module_2");
+
+	// Assert
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(modules), module_count);
+	ASSERT_IS_NOT_NULL(module_1);
+	ASSERT_IS_NOT_NULL(module_2);
+	ASSERT_IS_NULL(module_1->module_sources);
+	ASSERT_ARE_EQUAL(size_t, VECTOR_size(module_2->module_sources), 1);
+	ASSERT_IS_TRUE(*(GATEWAY_MODULE_INFO**)(VECTOR_element(module_2->module_sources, 0)) == module_1);
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_DestroyModuleList(modules);
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_GetModuleList_calloc_fail)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	const size_t module_count = 1;
+	const size_t link_count = 1;
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_calloc(IGNORED_NUM_ARG, IGNORED_NUM_ARG))
+		.SetFailReturn((void*)NULL);
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG));
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+
+	// Assert
+	ASSERT_IS_NULL(modules);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_modules_sources_vector_create_fail)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	const size_t module_count = 1;
+	const size_t link_count = 1;
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, gballoc_calloc(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULE_INFO*)))
+		.SetFailReturn((VECTOR_HANDLE)NULL);
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+
+	// Assert
+	ASSERT_IS_NULL(modules);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_GetModuleList_link_push_back_fail)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	const size_t module_count = 1;
+	const size_t link_count = 1;
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, gballoc_calloc(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.ExpectedTimesExactly(3);
+	EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.SetFailReturn(1);
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+
+	//Act
+	auto modules = Gateway_LL_GetModuleList(gateway);
+
+	// Assert
+	ASSERT_IS_NULL(modules);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_011: [ This function shall destroy the `module_sources` list of each `GATEWAY_MODULE_INFO` ]*/
+/*Tests_SRS_GATEWAY_LL_26_012: [ This function shall destroy the list of `GATEWAY_MODULE_INFO` ]*/
+TEST_FUNCTION(Gateway_LL_DestroyModuleList_basic)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	const size_t module_count = 2;
+	const size_t link_count = 4;
+
+	GATEWAY_MODULES_ENTRY module_entries[] = {
+		{
+			"module_1",
+			"x.dll",
+			NULL
+		},
+		{
+			"module_2",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY link_entries[] = {
+		{ "module_1", "module_1" },
+		{ "module_2", "module_2" },
+		{ "module_1", "module_2" },
+		{ "module_2", "module_1" }
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, module_entries, module_count);
+	VECTOR_push_back(props.gateway_links, link_entries, link_count);
+
+	auto gateway = Gateway_LL_Create(&props);
+	auto modules = Gateway_LL_GetModuleList(gateway);
+	mocks.ResetAllCalls();
+
+	// Expect
+	EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(3);
+
+	// Act
+	Gateway_LL_DestroyModuleList(modules);
+
+	// Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_DestroyModuleList_null)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Expect
+	STRICT_EXPECTED_CALL(mocks, VECTOR_front(NULL));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(NULL));
+	STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(NULL));
+
+	//Act
+	Gateway_LL_DestroyModuleList(NULL);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
 }
 
 END_TEST_SUITE(gateway_ll_ut)

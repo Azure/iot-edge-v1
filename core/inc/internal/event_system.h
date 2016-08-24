@@ -17,10 +17,14 @@ extern "C"
 
 typedef struct EVENTSYSTEM_DATA* EVENTSYSTEM_HANDLE;
 
+#ifndef UWP_BINDING
+
 extern EVENTSYSTEM_HANDLE EventSystem_Init(void);
 extern void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
 extern void EventSystem_ReportEvent(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type);
 extern void EventSystem_Destroy(EVENTSYSTEM_HANDLE event_system);
+
+#endif
 
 #ifdef __cplusplus
 }

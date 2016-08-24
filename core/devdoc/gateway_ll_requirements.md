@@ -24,6 +24,19 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 ## Exposed API
 ```
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+/** @file		gateway_ll.h
+*	@brief		Library that allows a user to create and configure a gateway.
+*
+*	@details	Gateway LL is the lower level library that allows a developer to 
+*				create, configure, and manage a gateway. The library provides a 
+*				mechanism for creating and destroying a gateway, as well as 
+*				adding and removing modules. Developers looking for the high
+*				level library should see gateway.h.
+*/
+
 #ifndef GATEWAY_LL_H
 #define GATEWAY_LL_H
 
@@ -86,7 +99,40 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 	VECTOR_HANDLE gateway_links;
 } GATEWAY_PROPERTIES;
 
+/** @brief Struct representing current information about a single module */
+typedef struct GATEWAY_MODULE_INFO_TAG
+{
+	/** @brief The (possibly @c NULL) name of the module */
+	const char* module_name;
+	/** A vector of pointers to @c GATEWAY_MODULE_INFO that this module will receive data from
+	 * (link sources, this one being the sink). If the handle == NULL it means that this module 
+	 * receives data from all other modules. */
+	VECTOR_HANDLE module_sources;
+} GATEWAY_MODULE_INFO;
 
+/** @brief  Enum representing different gateway events that have support for callbacks. */
+typedef enum GATEWAY_EVENT_TAG
+{
+	GATEWAY_CREATED = 0,
+	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
+	 * VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
+	 * and be later cleaned-up automatically.
+	 */
+	GATEWAY_MODULE_LIST_CHANGED,
+	GATEWAY_DESTROYED,
+	/* @brief  Not an actual event, used to keep track of count of different events */
+	GATEWAY_EVENTS_COUNT
+} GATEWAY_EVENT;
+
+/** @brief Context that is provided to the callback.
+ * The context is shared between all the callbacks for a current event and cleaned up afterwards.
+ * See #GATEWAY_EVENT for specific contexts for each event.
+ * If the event doesn't provide a context, NULL will be passed instead.
+ */
+typedef void* GATEWAY_EVENT_CTX;
+
+/** @brief	Function pointer that can be registered and will be called for gateway events */
+typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
 *
@@ -125,6 +171,29 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
+/** @brief  Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
+*
+*   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
+*   @param  event_type Enum stating on which event should the callback be called
+*   @param  callback   Pointer to a function that will be called when the event happens
+*/
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+
+/** @brief Returns a snapshot copy of information about running modules
+*   Since this function allocates new memory for the snapshot, the vector handle should be 
+*   later destroyed with @c Gateway_DestroyModuleList.
+*
+*   @param gw          Pointer to a #GATEWAY_HANDLE from which the module list should be snapshoted
+*
+*   @return            A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO. NULL if function errored.
+*/
+extern VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw);
+
+/** @brief Destroys the list returned by @c Gateway_LL_GetModuleList
+*   @param module_list	A vector handle as returned from @c Gateway_LL_GetModuleList
+*/
+extern void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list);
+
 /** @brief		Adds a link to a gateway message broker.
 *
 *	@param		gw		    Pointer to a #GATEWAY_HANDLE from which link is going to be added.
@@ -150,13 +219,13 @@ extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* e
 *	@param		modules   		#VECTOR_HANDLE structure containing
 *								specific modules.
 *
-*	@param		broker     		#BROKER_HANDLE structure containing
-*								specific message broker.
+*	@param		broker          #BROKER_HANDLE structure containing
+*								specific message broker instance.
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
 *				gateway or @c NULL on failure.
 */
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, broker);
+extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
 
 /** @brief		Destroys the gateway and disposes of all associated data.
 *
@@ -173,7 +242,7 @@ extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
 #endif // GATEWAY_LL_H
 ```
 
-## Gateway_Create
+## Gateway_LL_Create
 ```
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 ```
@@ -217,6 +286,7 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_04_003: [** If any `GATEWAY_LINK_ENTRY` is unable to be added to the broker the `GATEWAY_HANDLE` will be destroyed. **]**
 
+## Gateway_LL_UwpCreate
 ```
 extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
 ```
@@ -232,7 +302,7 @@ Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` 
 
 **SRS_GATEWAY_LL_99_005: [** The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. **]**
 
-## Gateway_Destroy
+## Gateway_LL_Destroy
 ```
 extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 ```
@@ -267,7 +337,7 @@ Gateway_LL_UwpDestroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_LL_99_010: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
-## Gateway_AddModule
+## Gateway_LL_AddModule
 ```
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
 ```
@@ -303,7 +373,7 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
 
-## Gateway_RemoveModule
+## Gateway_LL_RemoveModule
 ```
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 ```
@@ -327,27 +397,39 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_26_012: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. **]**
 
-## Gateway_AddEventCallback
+## Gateway_LL_AddEventCallback
 ```
-extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
 ```
-Gateway_AddEventCallback registers callback function to listen to some kind of `GATEWAY_EVENT`.
+Gateway_LL_AddEventCallback registers callback function to listen to some kind of `GATEWAY_EVENT`.
 When the event happens the callback will be put in a queue and executed in a seperate callback thread in First-In-First-Out order of registration for that event
 Also see `event_system_requirements.md` file for further requirements.
 
 **SRS_GATEWAY_LL_26_006: [** This function shall log a failure and do nothing else when `gw` parameter is NULL. **]**
 
-## Gateway_GetModuleList
+## Gateway_LL_GetModuleList
 ```
-extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
+extern VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw);
 ```
 
 **SRS_GATEWAY_LL_26_007: [** This function shall return a snapshot copy of information about current gateway modules. **]**
+
+**SRS_GATEWAY_LL_26_013: [** For each module returned this function shall provide a snapshot copy vector of link sources for that module. **]**
+
+**SRS_GATEWAY_LL_26_014: [** For each module returned that has '*' as a link source this function shall provide NULL vector pointer as it's sources vector. **]**
 
 **SRS_GATEWAY_LL_26_008: [** If the `gw` parameter is NULL, the function shall return NULL handle and not allocate any data. **]**
 
 **SRS_GATEWAY_LL_26_009: [** This function shall return a NULL handle should any internal callbacks fail. **]**
 
+## Gateway_LL_DestroyModuleList
+```
+extern void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list);
+```
+
+**SRS_GATEWAY_LL_26_011: [** This function shall destroy the `module_sources` list of each `GATEWAY_MODULE_INFO` **]**
+
+**SRS_GATEWAY_LL_26_012: [** This function shall destroy the list of `GATEWAY_MODULE_INFO` **]**
 
 ## Gateway_LL_AddLink
 ```

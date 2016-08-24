@@ -78,14 +78,19 @@ typedef struct GATEWAY_MODULE_INFO_TAG
 {
 	/** @brief The (possibly @c NULL) name of the module */
 	const char* module_name;
+	/** A vector of pointers to @c GATEWAY_MODULE_INFO that this module will receive data from
+	 * (link sources, this one being the sink). If the handle == NULL it means that this module 
+	 * receives data from all other modules. */
+	VECTOR_HANDLE module_sources;
 } GATEWAY_MODULE_INFO;
 
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
 	GATEWAY_CREATED = 0,
-	/** @brief  Called everytime a list of modules changed, also during gateway creation
-	 * VECTOR_HANDLE from #Gateway_GetModuleList will be provided as the context to the callback.
+	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
+	 * VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
+	 * and be later cleaned-up automatically.
 	 */
 	GATEWAY_MODULE_LIST_CHANGED,
 	GATEWAY_DESTROYED,
@@ -146,17 +151,22 @@ extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 *   @param  event_type Enum stating on which event should the callback be called
 *   @param  callback   Pointer to a function that will be called when the event happens
 */
-extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
 
 /** @brief Returns a snapshot copy of information about running modules
 *   Since this function allocates new memory for the snapshot, the vector handle should be 
-*   later destroyed with #VECTOR_destroy
+*   later destroyed with @c Gateway_DestroyModuleList.
 *
 *   @param gw          Pointer to a #GATEWAY_HANDLE from which the module list should be snapshoted
 *
 *   @return            A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO. NULL if function errored.
 */
-extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
+extern VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw);
+
+/** @brief Destroys the list returned by @c Gateway_LL_GetModuleList
+*   @param module_list	A vector handle as returned from @c Gateway_LL_GetModuleList
+*/
+extern void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list);
 
 /** @brief		Adds a link to a gateway message broker.
 *

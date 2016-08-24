@@ -60,6 +60,6 @@ extern void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWA
 GATEWAY_MODULE_LIST_UPDATED
 ```
 
-**SRS_GATEWAY_LL_26_014: [** This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks **]**
+**SRS_EVENTSYSTEM_26_016: [** This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks **]**
 
-**SRS_GATEWAY_LL_26_015: [** This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks **]**
+**SRS_EVENTSYSTEM_26_015: [** This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks **]**
