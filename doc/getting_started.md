@@ -143,7 +143,7 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
     [
         {
             "source": "hello_world",
-            "sink": "logger"
+            "sink": "logger_hl"
         }
     ]
 }
@@ -265,7 +265,7 @@ The JSON file specifying the modules to be loaded is quite simple. It contains a
 - `module path` – the path to the library containing the module. For Linux this will be a .so while on Windows this will be a .dll file
 - `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
 
-The JSON file also contains the links that are going to be passed to the broker. A link has two proerties:
+The JSON file also contains the links that are going to be passed to the broker. A link has two properties:
 - `source` - a module name from the `modules` section, or "\*".  
 - `sink` - a module name from the `modules` section.
 
