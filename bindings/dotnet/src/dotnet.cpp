@@ -193,45 +193,81 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 
 	try
 	{
-		variant_t vtdotNetArgsArg(dotnet_module_args);
-		bstr_t bstrCreateClientMethodName(L"Create");
+		SAFEARRAYBOUND rgsabound[1];
+		HRESULT hrResult;
+		variant_t configurationInByteArray;
 		variant_t vt_Empty;
-		long index = 0;
-		HRESULT hr;
+		V_VT(&configurationInByteArray) = VT_ARRAY | VT_UI1;
+		void * pArrayData = NULL;
 
-		if ((psaClientModuleCreateArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2)) == NULL)
+		if (dotnet_module_args == NULL)
 		{
-			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-			LogError("Failed to create Safe Array. ");
-		}
-		else if (FAILED(hr = SafeArrayPutElement(psaClientModuleCreateArgs, &index, vtAzureIoTGatewayBrokerObject)))
-		{
-			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-			LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
+			LogError("Missing DotNetModule Configuration.");
 		}
 		else
 		{
-			index = 1;
-			if (FAILED(hr = SafeArrayPutElement(psaClientModuleCreateArgs, &index, &vtdotNetArgsArg)))
+			int32_t msg_size = strlen(dotnet_module_args);
+			if (msg_size < 0)
 			{
-				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-				LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
-			}
-			/* Codes_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
-			else if (FAILED(hr = pClientModuleType->InvokeMember_3(
-				bstrCreateClientMethodName,
-				static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
-				NULL, 
-				*vtClientModuleObject,
-				psaClientModuleCreateArgs,
-				&vt_Empty)))
-			{
-				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-				LogError("Failed to invoke Create Method with hr 0x%08lx\n", hr);
+				LogError("Error getting size of module configuration.");
 			}
 			else
 			{
-				returnResult = true;
+				rgsabound[0].cElements = msg_size;
+				rgsabound[0].lLbound = 0;
+
+				if ((V_ARRAY(&configurationInByteArray) = SafeArrayCreate(VT_UI1, 1, rgsabound)) == NULL)
+				{
+					LogError("Error creating SafeArray.");
+				}
+				else if (FAILED(hrResult = SafeArrayAccessData(configurationInByteArray.parray, &pArrayData)))
+				{
+					LogError("Error Acessing Safe Array Data. w/hr 0x%08lx\n", hrResult);
+				}
+				else
+				{
+					memcpy(pArrayData, dotnet_module_args, msg_size);
+					LONG index = 0;
+
+					bstr_t bstrCreateClientMethodName(L"Create");
+
+					if (FAILED(hrResult = SafeArrayUnaccessData(configurationInByteArray.parray)))
+					{
+						LogError("Error on call for SafeArrayUnaccessData.w/hr 0x%08lx\n", hrResult);
+					}
+					else if ((psaClientModuleCreateArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2)) == NULL)
+					{
+						LogError("Error building SafeArray Vector for arguments.");
+					}
+					else if (FAILED(hrResult = SafeArrayPutElement(psaClientModuleCreateArgs, &index, vtAzureIoTGatewayBrokerObject)))
+					{
+						LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hrResult);
+					}
+					else
+					{
+						index = 1;
+						if (FAILED(hrResult = SafeArrayPutElement(psaClientModuleCreateArgs, &index, &configurationInByteArray)))
+						{
+							LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
+						}
+						/*Codes_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
+						else if (FAILED(hrResult = pClientModuleType->InvokeMember_3(
+							bstrCreateClientMethodName,
+							static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
+							NULL,
+							*vtClientModuleObject,
+							psaClientModuleCreateArgs,
+							&vt_Empty)))
+						{
+							/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+							LogError("Failed to invoke Create Method with hr 0x%08lx\n", hrResult);
+						}
+						else
+						{
+							returnResult = true;
+						}
+					}
+				}
 			}
 		}
 	}

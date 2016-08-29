@@ -116,9 +116,9 @@ namespace PrinterModule
     public class DotNetPrinterModule : IGatewayModule
     {
         private string configuration;
-        public void Create(Broker broker, string configuration)
+        public void Create(Broker broker, byte[] configuration)
         {
-            this.configuration = configuration;
+            this.configuration = System.Text.Encoding.UTF8.GetString(configuration);
         }
 
         public void Destroy()
@@ -148,7 +148,7 @@ namespace PrinterModule
             "args" : {
                 "dotnet_module_path": "PrinterModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule", ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
-                "dotnet_module_args": "module configuration" ==> This is any configuratio you want to use on your sample. It will be passed to you as a String, you can add a JSON configuration in it.
+                "dotnet_module_args": "module configuration" ==> This is any configuratio you want to use on your sample. It will be passed to you as a byte[] that should be converted to an UTF-8 Encoded String, you can add a JSON configuration in it.
             }
         }
 

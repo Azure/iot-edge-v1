@@ -15,10 +15,12 @@ namespace SensorModule
         private Broker broker;
         private string configuration;
 
-        public void Create(Broker broker, string configuration)
+        public void Create(Broker broker, byte[] configuration)
         {
+
+
             this.broker = broker;
-            this.configuration = configuration;
+            this.configuration = System.Text.Encoding.UTF8.GetString(configuration);
 
             Thread oThread = new Thread(new ThreadStart(this.threadBody));
             // Start the thread
