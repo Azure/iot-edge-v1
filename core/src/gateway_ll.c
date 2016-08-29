@@ -404,6 +404,35 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 	}
 }
 
+int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name)
+{
+	int result;
+	if (gw != NULL && module_name != NULL)
+	{
+		MODULE_DATA *module_data = (MODULE_DATA*)VECTOR_find_if(gw->modules, module_name_find, module_name);
+		if (module_data != NULL)
+		{
+			/* Codes_SRS_GATEWAY_LL_26_016: [** The function shall return 0 if the module was found. ] */
+			result = 0;
+			gateway_removemodule_internal(gw, module_data);
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
+		}
+		else
+		{
+			/* Codes_SRS_GATEWAY_LL_26_017: [** If module with `module_name` name is not found this function shall return non - zero and do nothing. ] */
+			LogError("Couldn't find module with the specified name");
+			result = __LINE__;
+		}
+	}
+	else
+	{
+		/* Codes_SRS_GATEWAY_LL_26_015: [ If `gw` or `module_name` is `NULL` the function shall do nothing and return with non - zero result. ] */
+		LogError("NULL gateway or module_name given to Gateway_LL_RemoveModuleByName()");
+		result = __LINE__;
+	}
+	return result;
+}
+
 GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink)
 {
 	GATEWAY_ADD_LINK_RESULT result;

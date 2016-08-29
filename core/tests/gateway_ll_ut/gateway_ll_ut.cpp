@@ -4309,4 +4309,119 @@ TEST_FUNCTION(Gateway_LL_DestroyModuleList_null)
 	mocks.AssertActualAndExpectedCalls();
 }
 
+/* Tests_SRS_GATEWAY_LL_26_015: [ If `gw` or `module_name` is `NULL` the function shall do nothing and return with non - zero result. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModuleByName_Null_gw)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Expect
+	//Nothing!
+	
+	//Act
+	int result = Gateway_LL_RemoveModuleByName(NULL, "foo");
+
+	//Assert
+	ASSERT_ARE_NOT_EQUAL(int, 0, result);
+	mocks.AssertActualAndExpectedCalls();
+}
+
+/* Tests_SRS_GATEWAY_LL_26_017: [ If module with `module_name` name is not found this function shall return non - zero and do nothing. ] */
+/* Tests_SRS_GATEWAY_LL_26_015: [ If `gw` or `module_name` is `NULL` the function shall do nothing and return with non - zero result. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModuleByName_Null_name)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	auto gw = Gateway_LL_Create(NULL);
+	mocks.ResetAllCalls();
+
+	//Expect
+	//Nothing!
+
+	//Act
+	int result = Gateway_LL_RemoveModuleByName(gw, NULL);
+
+	//Assert
+	ASSERT_ARE_NOT_EQUAL(int, 0, result);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+/* Tests_SRS_GATEWAY_LL_26_017: [ If module with `module_name` name is not found this function shall return non - zero and do nothing. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModuleByName_no_modules)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	auto gw = Gateway_LL_Create(NULL);
+	mocks.ResetAllCalls();
+
+	//Expect
+	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+
+	//Act
+	int result = Gateway_LL_RemoveModuleByName(gw, "foo");
+
+	//Assert
+	ASSERT_ARE_NOT_EQUAL(int, 0, result);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+/* Tests_SRS_GATEWAY_LL_26_017: [ If module with `module_name` name is not found this function shall return non - zero and do nothing. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModuleByName_not_existing)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	auto gw = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expect
+	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+
+	//Act
+	int result = Gateway_LL_RemoveModuleByName(gw, "foo");
+
+	//Assert
+	ASSERT_ARE_NOT_EQUAL(int, 0, result);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+/* Tests_SRS_GATEWAY_LL_26_016: [ The function shall return 0 if the module was found. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModuleByName_success)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+	auto gw = Gateway_LL_Create(dummyProps);
+	mocks.ResetAllCalls();
+
+	//Expect
+	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED));
+
+	//Act
+	int result = Gateway_LL_RemoveModuleByName(gw, "dummy module");
+
+	//Assert
+	ASSERT_ARE_EQUAL(int, 0, result);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+
 END_TEST_SUITE(gateway_ll_ut)

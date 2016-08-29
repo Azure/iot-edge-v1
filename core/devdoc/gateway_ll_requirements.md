@@ -171,6 +171,16 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
+/** @brief                  Removes module by its unique name
+ *  @param      gw          Pointer to a #GATEWAY_HANDLE from which to remove the
+ *                          module.
+ *  @param      module_name A C string representing the name of module to be
+ *                          removed
+ *
+ *  @return                 0 on success and a non-zero value when an error occurs.
+ */
+int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
+
 /** @brief  Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
 *
 *   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
@@ -396,6 +406,20 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 **SRS_GATEWAY_LL_14_026: [** The function shall remove that `MODULE_DATA` from `GATEWAY_HANDLE_DATA`'s `modules`. **]**
 
 **SRS_GATEWAY_LL_26_012: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. **]**
+
+## Gateway_LL_RemoveModuleByName
+```
+int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
+```
+
+**SRS_GATEWAY_LL_26_015: [** If `gw` or `module_name` is `NULL` the function shall do nothing and return with non-zero result. **]**
+
+**SRS_GATEWAY_LL_26_016: [** The function shall return 0 if the module was found. **]**
+
+**SRS_GATEWAY_LL_26_017: [** If module with `module_name` name is not found this function shall return non-zero and do nothing. **]**
+
+To be consistent with the requirements of Gateway_LL_RemoveModule, any other remove failures other than name not found or `NULL` parameters, shall follow Gateway_LL_RemoveModule requirements, and thus be silent.
+Furthermore, this function follows the removal procedure requirements of Gateway_LL_RemoveModule.
 
 ## Gateway_LL_AddEventCallback
 ```

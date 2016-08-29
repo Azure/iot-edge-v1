@@ -145,6 +145,16 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
+/** @brief                  Removes module by its unique name
+ *  @param      gw          Pointer to a #GATEWAY_HANDLE from which to remove the
+ *                          module.
+ *  @param      module_name A C string representing the name of module to be
+ *                          removed
+ *
+ *  @return                 0 on success and a non-zero value when an error occurs.
+ */
+int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
+
 /** @brief  Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
 *
 *   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
