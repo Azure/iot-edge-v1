@@ -19,7 +19,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="broker">Handle to the message broker.</param>
         /// <param name="sourceModule">Handle to the (native) source module.</param>
-        /// <param name="source">Message content as a byte array.</param>
+        /// <param name="message">Message content as a byte array.</param>
         /// <param name="size">Size of the byte array.</param>
         /// <returns></returns>
         [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="broker">Handle to the message broker.</param>
         /// <param name="sourceModule">Handle to the (native) source module.</param>
-        /// <param name="source">Message content as a byte array.</param>
+        /// <param name="message">Message content as a byte array.</param>
         /// <returns></returns>
         virtual public bool PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message)
         {
