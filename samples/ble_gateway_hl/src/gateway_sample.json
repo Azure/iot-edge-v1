@@ -2,7 +2,7 @@
   "modules": [
     {
       "module name": "IoTHub",
-      "module path": "<</path/to/libiothubhttp_hl.so>>",
+      "module path": "<</path/to/libiothub_hl.so>>",
       "args": {
         "IoTHubName": "<<Azure IoT Hub Name>>",
         "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"

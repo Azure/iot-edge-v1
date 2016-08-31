@@ -41,7 +41,7 @@ The module identifies the messages that it needs to process by the following pro
 >| PropertyName | Description                                                                  |
 >|--------------|------------------------------------------------------------------------------|
 >| deviceName   | The deviceName as registered with IoTHub                                     |
->| source       | Set to "IoTHubHttp"                                                          |
+>| source       | Set to "iothub"                                                          |
 
 When this module publishes a message, each message will have the following proporties:
 >| PropertyName | Description                                                                  |
@@ -201,7 +201,7 @@ Upon recognition of a D2C message, the following transformations will be done to
 #### Device Id to MAC Address (C2D)
 **SRS_IDMAP_17_045: [** If `messageHandle` properties does not contain "deviceName" property, then the message shall not be marked as a C2D message. **]**    
 **SRS_IDMAP_17_046: [** If messageHandle properties does not contain a "source" property, then the message shall not be marked as a C2D message. **]**   
-**SRS_IDMAP_17_047: [** If messageHandle property "source" is not equal to "IoTHubHttp", then the message shall not be marked as a C2D message. **]**   
+**SRS_IDMAP_17_047: [** If messageHandle property "source" is not equal to "iothub", then the message shall not be marked as a C2D message. **]**   
 **SRS_IDMAP_17_048: [** If the `deviceName` of the message is not found in deviceToMacArray, then the message shall not be marked as a C2D message. **]**   
 On a message which passes all these checks, the message will be marked as a C2D message.
 

@@ -7,7 +7,7 @@
 extern "C" {
 //Add here paths for any new Module. 
 const char* e2e_module_path();
-const char* iothubhttp_module_path();
+const char* iothub_module_path();
 const char* identity_map_module_path();
 }
 

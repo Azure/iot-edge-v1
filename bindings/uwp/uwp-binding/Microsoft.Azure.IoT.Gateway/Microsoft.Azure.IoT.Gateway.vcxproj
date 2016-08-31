@@ -226,7 +226,6 @@
     <ClInclude Include="..\..\..\..\core\inc\message.h" />
     <ClInclude Include="..\..\..\..\core\inc\broker.h" />
     <ClInclude Include="..\..\..\..\core\inc\module.h" />
-    <ClInclude Include="..\..\..\..\core\inc\module_config_resources.h" />
     <ClInclude Include="GatewayUwp.h" />
     <ClInclude Include="IGatewayModule.h" />
     <ClInclude Include="MessageUwp.h" />

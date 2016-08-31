@@ -13,7 +13,7 @@ contains the following modules:
   2. A logger module for producing message broker diagnostics.
   3. An identity mapping module for translating between BLE device MAC addresses
      and Azure IoT Hub device identities.
-  4. An IoT Hub HTTP module for uploading BLE telemetry data and for receiving
+  4. An IoT Hub module for uploading BLE telemetry data and for receiving
      device commands from the Azure IoT Hub.
   5. A BLE Printer module that interprets telemetry from the Texas Instruments
      SensorTag device and prints formatted data to the console.
@@ -38,7 +38,7 @@ device before finding its way to an Azure IoT Hub.
      It then proceeds to publish a new message on to the message broker containing 
      the temperature sample data, the MAC address, the IoT Hub device ID and
      key.
-  4. The IoT Hub HTTP module then receives this message from the identity
+  4. The IotHub module then receives this message from the identity
      mapping module and publishes it to the Azure IoT Hub itself.
   5. The logger module logs all messages from the message broker into a file on
      the disk.
@@ -48,9 +48,9 @@ below:
 
 ![](./media/gateway_ble_command_data_flow.png)
 
-  1. The IoT Hub HTTP module periodically polls Azure IoT Hub for new command
+  1. The IotHub module periodically polls Azure IoT Hub for new command
      messages that might be available.
-  2. When the IoT Hub HTTP module receives a new command message, it publishes
+  2. When the IotHub module receives a new command message, it publishes
      it to the message broker.
   3. The Identity Mapping module picks up the message and translates the Azure
      IoT Hub device ID to a device MAC address and publishes a new message to
@@ -167,12 +167,12 @@ IDs and data (for write instructions).
 }
 ```
 
-### IoT Hub HTTP module
+### IotHub module
 
 ```json
 {
   "module name": "IoTHub",
-  "module path": "<</path/to/iothubhttp/libiothubhttp_hl.so>>",
+  "module path": "<</path/to/iothub/libiothub_hl.so>>",
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
     "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"

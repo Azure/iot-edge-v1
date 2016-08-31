@@ -35,7 +35,7 @@ include_directories(../../modules/common)
 #link modules
 linkModule(logger)
 linkModule(identitymap)
-linkModule(iothubhttp)
+linkModule(iothub)
 linkModule(simulated_device)
 
 add_executable(simulated_device_cloud_upload_sample ${modules_service_c_file} ${simulated_device_cloud_upload_sources})

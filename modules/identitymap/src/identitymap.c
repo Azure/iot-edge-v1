@@ -534,7 +534,7 @@ static bool determine_message_direction(const char * source, bool * isC2DMessage
 		}
 		else
 		{
-			/*Codes_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "IoTHubHttp", then the message shall not be marked as a C2D message. ]*/
+			/*Codes_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "iothub", then the message shall not be marked as a C2D message. ]*/
 			/*Codes_SRS_IDMAP_17_044: [ If messageHandle properties contains a "source" property that is set to "mapping", the message shall not be marked as a D2C message. ]*/
 			result = false;
 			*isC2DMessage = false;

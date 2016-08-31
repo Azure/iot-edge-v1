@@ -24,7 +24,7 @@ include_directories(../../../samples/protocol_encapsulation/inc ${IOTHUB_CLIENT_
 include_directories(../../../deps/azure-iot-sdks/c/testtools/iothub_test/inc)
 include_directories(../../../deps/azure-c-shared-utility/inc/azure_c_shared_utility)
 include_directories(../../../modules/common)
-include_directories(../../../modules/iothubhttp/inc)
+include_directories(../../../modules/iothub/inc)
 include_directories(../../../modules/identitymap/inc)
 include_directories(${IOTHUB_TEST_INC_FOLDER})
 include_directories(${IOTHUB_SERVICE_CLIENT_INC_FOLDER})
@@ -38,6 +38,7 @@ if(WIN32)
 			gateway
 			iothub_test
 			rpcrt4
+			iothub_client_http_transport
 		)
 	endif()
 	
@@ -46,6 +47,7 @@ if(WIN32)
 			gateway
 			iothub_test
 			rpcrt4
+			iothub_client_http_transport
 		)	
 		install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 	endif()
@@ -57,6 +59,7 @@ else()
 			aziotsharedutil
 			uuid
 			iothub_service_client
+			iothub_client_http_transport
 		)
 		target_link_libraries(${theseTestsName}_exe pthread)
 		linkUAMQP(${theseTestsName}_exe)	

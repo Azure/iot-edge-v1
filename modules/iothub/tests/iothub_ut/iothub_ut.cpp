@@ -44,7 +44,7 @@ namespace BASEIMPLEMENTATION
 #include "strings.c"
 };
 
-#include "iothubhttp.h"
+#include "iothub.h"
 #include "iothub_client.h"
 #include "message.h"
 #include "azure_c_shared_utility/constmap.h"
@@ -96,14 +96,16 @@ static size_t whenShallIoTHubMessage_CreateFromByteArray_fail;
 static size_t currentIoTHubClient_Create_call;
 static size_t whenShallIoTHubClient_Create_fail;
 
-static IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC IoTHubHttp_receive_message_callback_function;
-static void * IoTHubHttp_receive_message_userContext;
-static const char * IoTHubHttp_receive_message_content;
-static size_t IoTHubHttp_receive_message_size;
+static IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC IotHub_Receive_message_callback_function;
+static void * IotHub_Receive_message_userContext;
+static const char * IotHub_Receive_message_content;
+static size_t IotHub_Receive_message_size;
 
 
-/*variable mock :(*/
-extern "C" const void* (*const HTTP_Protocol)(void) = (const void* (*)(void))((void*)11);
+extern "C" const TRANSPORT_PROVIDER* HTTP_Protocol(void) { return NULL; }
+extern "C" const TRANSPORT_PROVIDER* AMQP_Protocol(void) { return NULL; }
+extern "C" const TRANSPORT_PROVIDER* MQTT_Protocol(void) { return NULL; }
+extern "C" const TRANSPORT_PROVIDER* ABCD_Protocol(void) { return NULL; }
 
 #define BROKER_HANDLE_VALID ((BROKER_HANDLE)(1))
 
@@ -152,33 +154,36 @@ static pfModule_Create Module_Create = NULL; /*gets assigned in TEST_SUITE_INITI
 static pfModule_Destroy Module_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive Module_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
-static const IOTHUBHTTP_CONFIG config_with_NULL_IoTHubName = {NULL, "devices.azure.com"};
-static const IOTHUBHTTP_CONFIG config_with_NULL_IoTHubSuffix = { "theIoTHub42", NULL};
-static const IOTHUBHTTP_CONFIG config_valid = { "theIoTHub42", "theAwesomeSuffix.com"};
+static const IOTHUB_CONFIG config_with_NULL_IoTHubName = {NULL, "devices.azure.com", HTTP_Protocol };
+static const IOTHUB_CONFIG config_with_NULL_IoTHubSuffix = { "theIoTHub42", NULL, HTTP_Protocol };
+static const IOTHUB_CONFIG config_with_invalid_transport = { "theIoTHub42", "theAwesomeSuffix.com", (IOTHUB_CLIENT_TRANSPORT_PROVIDER)0x42 };
+static const IOTHUB_CONFIG config_valid = { "theIoTHub42", "theAwesomeSuffix.com", HTTP_Protocol };
+static const IOTHUB_CONFIG config_valid_AMQP = { "theIoTHub42", "theAwesomeSuffix.com", AMQP_Protocol };
+static const IOTHUB_CONFIG config_valid_MQTT = { "theIoTHub42", "theAwesomeSuffix.com", MQTT_Protocol };
 
 
-TYPED_MOCK_CLASS(CIoTHubHTTPMocks, CGlobalMock)
+TYPED_MOCK_CLASS(IotHubMocks, CGlobalMock)
 {
 public:
 
 	// memory
     MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
         void* result2;
-    currentmalloc_call++;
-    if (whenShallmalloc_fail>0)
-    {
-        if (currentmalloc_call == whenShallmalloc_fail)
+        currentmalloc_call++;
+        if (whenShallmalloc_fail>0)
         {
-            result2 = NULL;
+            if (currentmalloc_call == whenShallmalloc_fail)
+            {
+                result2 = NULL;
+            }
+            else
+            {
+                result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
+            }
         }
         else
         {
             result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
-        }
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
     }
     MOCK_METHOD_END(void*, result2);
 
@@ -261,33 +266,33 @@ public:
 	MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
-    VECTOR_HANDLE result2;
-    currentVECTOR_create_call++;
-    if (currentVECTOR_create_call == whenShallVECTOR_create_fail)
-    {
-        result2 = NULL;
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::VECTOR_create(elementSize);
-    }
+        VECTOR_HANDLE result2;
+        currentVECTOR_create_call++;
+        if (currentVECTOR_create_call == whenShallVECTOR_create_fail)
+        {
+            result2 = NULL;
+        }
+        else
+        {
+            result2 = BASEIMPLEMENTATION::VECTOR_create(elementSize);
+        }
     MOCK_METHOD_END(VECTOR_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, void, VECTOR_destroy, VECTOR_HANDLE, handle)
-    BASEIMPLEMENTATION::VECTOR_destroy(handle);
+        BASEIMPLEMENTATION::VECTOR_destroy(handle);
     MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_3(, int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements)
-    int result2;
-    currentVECTOR_push_back_call++;
-    if (currentVECTOR_push_back_call == whenShallVECTOR_push_back_fail)
-    {
-        result2 = __LINE__;
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::VECTOR_push_back(handle, elements, numElements);
-    }
+        int result2;
+        currentVECTOR_push_back_call++;
+        if (currentVECTOR_push_back_call == whenShallVECTOR_push_back_fail)
+        {
+            result2 = __LINE__;
+        }
+        else
+        {
+            result2 = BASEIMPLEMENTATION::VECTOR_push_back(handle, elements, numElements);
+        }
     MOCK_METHOD_END(int, result2)
 
     MOCK_STATIC_METHOD_2(, void*, VECTOR_element, VECTOR_HANDLE, handle, size_t, index)
@@ -302,68 +307,68 @@ public:
     MOCK_STATIC_METHOD_1(, void*, VECTOR_back, VECTOR_HANDLE, handle)
     MOCK_METHOD_END(void*, BASEIMPLEMENTATION::VECTOR_back(handle))
 
-        MOCK_STATIC_METHOD_1(, void, STRING_delete, STRING_HANDLE, s)
+    MOCK_STATIC_METHOD_1(, void, STRING_delete, STRING_HANDLE, s)
         BASEIMPLEMENTATION::STRING_delete(s);
     MOCK_VOID_METHOD_END()
 
-        MOCK_STATIC_METHOD_0(, STRING_HANDLE, STRING_new)
+    MOCK_STATIC_METHOD_0(, STRING_HANDLE, STRING_new)
         STRING_HANDLE result2;
-    currentSTRING_new_call++;
-    if (whenShallSTRING_new_fail > 0)
-    {
-        if (currentSTRING_new_call == whenShallSTRING_new_fail)
+        currentSTRING_new_call++;
+        if (whenShallSTRING_new_fail > 0)
         {
-            result2 = (STRING_HANDLE)NULL;
+            if (currentSTRING_new_call == whenShallSTRING_new_fail)
+            {
+                result2 = (STRING_HANDLE)NULL;
+            }
+            else
+            {
+                result2 = BASEIMPLEMENTATION::STRING_new();
+            }
         }
         else
         {
             result2 = BASEIMPLEMENTATION::STRING_new();
         }
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::STRING_new();
-    }
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
-        MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_clone, STRING_HANDLE, handle)
+    MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_clone, STRING_HANDLE, handle)
         STRING_HANDLE result2;
-    currentSTRING_clone_call++;
-    if (whenShallSTRING_clone_fail > 0)
-    {
-        if (currentSTRING_clone_call == whenShallSTRING_clone_fail)
+        currentSTRING_clone_call++;
+        if (whenShallSTRING_clone_fail > 0)
         {
-            result2 = (STRING_HANDLE)NULL;
+            if (currentSTRING_clone_call == whenShallSTRING_clone_fail)
+            {
+                result2 = (STRING_HANDLE)NULL;
+            }
+            else
+            {
+                result2 = BASEIMPLEMENTATION::STRING_clone(handle);
+            }
         }
         else
         {
             result2 = BASEIMPLEMENTATION::STRING_clone(handle);
         }
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::STRING_clone(handle);
-    }
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
-        MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_construct, const char*, source)
+    MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_construct, const char*, source)
         STRING_HANDLE result2;
-    currentSTRING_construct_call++;
-    if (whenShallSTRING_construct_fail > 0)
-    {
-        if (currentSTRING_construct_call == whenShallSTRING_construct_fail)
+        currentSTRING_construct_call++;
+        if (whenShallSTRING_construct_fail > 0)
         {
-            result2 = (STRING_HANDLE)NULL;
+            if (currentSTRING_construct_call == whenShallSTRING_construct_fail)
+            {
+                result2 = (STRING_HANDLE)NULL;
+            }
+            else
+            {
+                result2 = BASEIMPLEMENTATION::STRING_construct(source);
+            }
         }
         else
         {
             result2 = BASEIMPLEMENTATION::STRING_construct(source);
         }
-    }
-    else
-    {
-        result2 = BASEIMPLEMENTATION::STRING_construct(source);
-    }
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
     MOCK_STATIC_METHOD_2(, int, STRING_concat, STRING_HANDLE, s1, const char*, s2)
@@ -385,15 +390,18 @@ public:
     MOCK_STATIC_METHOD_2(, IOTHUB_CLIENT_HANDLE, IoTHubClient_CreateWithTransport, TRANSPORT_HANDLE, transport, const IOTHUB_CLIENT_CONFIG*, config)
         IOTHUB_CLIENT_HANDLE result2;
         currentIoTHubClient_Create_call++;
-    if (whenShallIoTHubClient_Create_fail == currentIoTHubClient_Create_call)
-    {
-        result2 = NULL;
-    }
-    else
-    {
-        result2 = (IOTHUB_CLIENT_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
-    }
+        if (whenShallIoTHubClient_Create_fail == currentIoTHubClient_Create_call)
+        {
+            result2 = NULL;
+        }
+        else
+        {
+            result2 = (IOTHUB_CLIENT_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
+        }
+    MOCK_METHOD_END(IOTHUB_CLIENT_HANDLE, result2)
 
+    MOCK_STATIC_METHOD_1(, IOTHUB_CLIENT_HANDLE, IoTHubClient_Create, const IOTHUB_CLIENT_CONFIG*, config)
+        IOTHUB_CLIENT_HANDLE result2 = (IOTHUB_CLIENT_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
     MOCK_METHOD_END(IOTHUB_CLIENT_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, void, IoTHubClient_Destroy, IOTHUB_CLIENT_HANDLE, iotHubClientHandle)
@@ -483,8 +491,8 @@ public:
     MOCK_METHOD_END(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_OK)
 
 	MOCK_STATIC_METHOD_3(, IOTHUB_CLIENT_RESULT, IoTHubClient_SetMessageCallback, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC, messageCallback, void*, userContextCallback)
-		IoTHubHttp_receive_message_callback_function = messageCallback;
-		IoTHubHttp_receive_message_userContext = userContextCallback;
+		IotHub_Receive_message_callback_function = messageCallback;
+		IotHub_Receive_message_userContext = userContextCallback;
 		MOCK_METHOD_END(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_OK)
 
 
@@ -550,12 +558,12 @@ public:
     MOCK_METHOD_END(IOTHUB_MESSAGE_HANDLE, result2);
 
 	MOCK_STATIC_METHOD_3(, IOTHUB_MESSAGE_RESULT, IoTHubMessage_GetByteArray, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle, const unsigned char**, buffer, size_t*, size)
-		*buffer = (const unsigned char*)IoTHubHttp_receive_message_content;
-		*size = IoTHubHttp_receive_message_size;
+		*buffer = (const unsigned char*)IotHub_Receive_message_content;
+		*size = IotHub_Receive_message_size;
 	MOCK_METHOD_END(IOTHUB_MESSAGE_RESULT, IOTHUB_MESSAGE_OK)
 
 	MOCK_STATIC_METHOD_1(, const char*, IoTHubMessage_GetString, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
-	MOCK_METHOD_END(const char*, IoTHubHttp_receive_message_content)
+	MOCK_METHOD_END(const char*, IotHub_Receive_message_content)
 
 	MOCK_STATIC_METHOD_1(, IOTHUBMESSAGE_CONTENT_TYPE, IoTHubMessage_GetContentType, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
 	MOCK_METHOD_END(IOTHUBMESSAGE_CONTENT_TYPE, IOTHUBMESSAGE_BYTEARRAY)
@@ -579,50 +587,51 @@ public:
 
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void*, gballoc_malloc, size_t, size);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, gballoc_free, void*, ptr);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, ConstMap_Destroy, CONSTMAP_HANDLE, map);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Create, const unsigned char*, source, size_t, size);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Clone, CONSTBUFFER_HANDLE, constbufferHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , const CONSTBUFFER*, CONSTBUFFER_GetContent, CONSTBUFFER_HANDLE, constbufferHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, CONSTBUFFER_Destroy, CONSTBUFFER_HANDLE, constbufferHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements)
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , void*, VECTOR_element, VECTOR_HANDLE, handle, size_t, index)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , void*, VECTOR_find_if, VECTOR_HANDLE, handle, PREDICATE_FUNCTION, pred, const void*, value)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , size_t, VECTOR_size, VECTOR_HANDLE, handle)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, VECTOR_destroy, VECTOR_HANDLE, handle)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, STRING_delete, STRING_HANDLE, s);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , STRING_HANDLE, STRING_construct, const char*, source);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , int, STRING_concat_with_STRING, STRING_HANDLE, s1, STRING_HANDLE, s2);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , int, STRING_empty, STRING_HANDLE, s1);
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , const char*, STRING_c_str, STRING_HANDLE, s);
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , IOTHUB_CLIENT_HANDLE, IoTHubClient_CreateWithTransport, TRANSPORT_HANDLE, transport, const IOTHUB_CLIENT_CONFIG*, config)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, IoTHubClient_Destroy, IOTHUB_CLIENT_HANDLE, iotHubClientHandle)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , CONSTMAP_HANDLE, Message_GetProperties, MESSAGE_HANDLE, message)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, Message_Destroy, MESSAGE_HANDLE, message)
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , const char*, ConstMap_GetValue, CONSTMAP_HANDLE, handle, const char*, key)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value);
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , MAP_RESULT, Map_Add, MAP_HANDLE, handle, const char*, key, const char*, value);
-DECLARE_GLOBAL_MOCK_METHOD_4(CIoTHubHTTPMocks, , CONSTMAP_RESULT, ConstMap_GetInternals, CONSTMAP_HANDLE, handle, const char*const**, keys, const char*const**, values, size_t*, count)
-DECLARE_GLOBAL_MOCK_METHOD_4(CIoTHubHTTPMocks, ,IOTHUB_CLIENT_RESULT, IoTHubClient_SendEventAsync, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_MESSAGE_HANDLE, eventMessageHandle, IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK, eventConfirmationCallback, void*, userContextCallback)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , IOTHUB_CLIENT_RESULT, IoTHubClient_SetMessageCallback, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC, messageCallback, void*, userContextCallback)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , const CONSTBUFFER *, Message_GetContent, MESSAGE_HANDLE, message)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, IoTHubMessage_Destroy, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
-DECLARE_GLOBAL_MOCK_METHOD_2(CIoTHubHTTPMocks, , IOTHUB_MESSAGE_HANDLE, IoTHubMessage_CreateFromByteArray, const unsigned char*, byteArray, size_t, size)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , MAP_HANDLE, IoTHubMessage_Properties, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , IOTHUB_MESSAGE_RESULT, IoTHubMessage_GetByteArray, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle, const unsigned char**, buffer, size_t*, size)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , const char*, IoTHubMessage_GetString, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , IOTHUBMESSAGE_CONTENT_TYPE, IoTHubMessage_GetContentType, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void*, VECTOR_back, VECTOR_HANDLE, handle)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , TRANSPORT_HANDLE, IoTHubTransport_Create, IOTHUB_CLIENT_TRANSPORT_PROVIDER, protocol, const char*, iotHubName, const char*, iotHubSuffix)
-DECLARE_GLOBAL_MOCK_METHOD_1(CIoTHubHTTPMocks, , void, IoTHubTransport_Destroy, TRANSPORT_HANDLE, transportHlHandle)
-DECLARE_GLOBAL_MOCK_METHOD_3(CIoTHubHTTPMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, gballoc_malloc, size_t, size);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, gballoc_free, void*, ptr);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, ConstMap_Destroy, CONSTMAP_HANDLE, map);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Create, const unsigned char*, source, size_t, size);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Clone, CONSTBUFFER_HANDLE, constbufferHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const CONSTBUFFER*, CONSTBUFFER_GetContent, CONSTBUFFER_HANDLE, constbufferHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, CONSTBUFFER_Destroy, CONSTBUFFER_HANDLE, constbufferHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements)
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , void*, VECTOR_element, VECTOR_HANDLE, handle, size_t, index)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , void*, VECTOR_find_if, VECTOR_HANDLE, handle, PREDICATE_FUNCTION, pred, const void*, value)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , size_t, VECTOR_size, VECTOR_HANDLE, handle)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, VECTOR_destroy, VECTOR_HANDLE, handle)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, STRING_delete, STRING_HANDLE, s);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , STRING_HANDLE, STRING_construct, const char*, source);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , int, STRING_concat_with_STRING, STRING_HANDLE, s1, STRING_HANDLE, s2);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , int, STRING_empty, STRING_HANDLE, s1);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const char*, STRING_c_str, STRING_HANDLE, s);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , IOTHUB_CLIENT_HANDLE, IoTHubClient_CreateWithTransport, TRANSPORT_HANDLE, transport, const IOTHUB_CLIENT_CONFIG*, config)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , IOTHUB_CLIENT_HANDLE, IoTHubClient_Create, const IOTHUB_CLIENT_CONFIG*, config)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, IoTHubClient_Destroy, IOTHUB_CLIENT_HANDLE, iotHubClientHandle)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTMAP_HANDLE, Message_GetProperties, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, Message_Destroy, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , const char*, ConstMap_GetValue, CONSTMAP_HANDLE, handle, const char*, key)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value);
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , MAP_RESULT, Map_Add, MAP_HANDLE, handle, const char*, key, const char*, value);
+DECLARE_GLOBAL_MOCK_METHOD_4(IotHubMocks, , CONSTMAP_RESULT, ConstMap_GetInternals, CONSTMAP_HANDLE, handle, const char*const**, keys, const char*const**, values, size_t*, count)
+DECLARE_GLOBAL_MOCK_METHOD_4(IotHubMocks, ,IOTHUB_CLIENT_RESULT, IoTHubClient_SendEventAsync, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_MESSAGE_HANDLE, eventMessageHandle, IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK, eventConfirmationCallback, void*, userContextCallback)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , IOTHUB_CLIENT_RESULT, IoTHubClient_SetMessageCallback, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC, messageCallback, void*, userContextCallback)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const CONSTBUFFER *, Message_GetContent, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, IoTHubMessage_Destroy, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , IOTHUB_MESSAGE_HANDLE, IoTHubMessage_CreateFromByteArray, const unsigned char*, byteArray, size_t, size)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , MAP_HANDLE, IoTHubMessage_Properties, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , IOTHUB_MESSAGE_RESULT, IoTHubMessage_GetByteArray, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle, const unsigned char**, buffer, size_t*, size)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const char*, IoTHubMessage_GetString, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , IOTHUBMESSAGE_CONTENT_TYPE, IoTHubMessage_GetContentType, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, VECTOR_back, VECTOR_HANDLE, handle)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , TRANSPORT_HANDLE, IoTHubTransport_Create, IOTHUB_CLIENT_TRANSPORT_PROVIDER, protocol, const char*, iotHubName, const char*, iotHubSuffix)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, IoTHubTransport_Destroy, TRANSPORT_HANDLE, transportHlHandle)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 
-BEGIN_TEST_SUITE(iothubhttp_ut)
+BEGIN_TEST_SUITE(iothub_ut)
 
     TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
@@ -698,11 +707,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         }
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_025: [Module_GetAPIS shall return a non-NULL pointer.]*/
+    /*Tests_SRS_IOTHUBMODULE_02_025: [ `Module_GetAPIS` shall return a non-`NULL` pointer. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         auto MODULEAPIS = Module_GetAPIS();
@@ -714,11 +723,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
+    /*Tests_SRS_IOTHUBMODULE_02_026: [ The MODULE_APIS structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_fields)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         
         ///act
         auto MODULEAPIS = Module_GetAPIS();
@@ -732,11 +741,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_001: [If broker is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_BROKER_HANDLE_returns_NULL)
+    /*Tests_SRS_IOTHUBMODULE_02_001: [ If `broker` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_with_NULL_BROKER_HANDLE_returns_NULL)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         auto result = Module_Create(NULL, &config_valid);
@@ -748,11 +757,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_002: [If configuration is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_config_returns_NULL)
+    /*Tests_SRS_IOTHUBMODULE_02_002: [ If `configuration` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_with_NULL_config_returns_NULL)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         auto result = Module_Create((BROKER_HANDLE)1, NULL);
@@ -764,11 +773,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_003: [If configuration->IoTHubName is NULL then IoTHubHttp_Create shall and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_IoTHubName_fails)
+    /*Tests_SRS_IOTHUBMODULE_02_003: [ If `configuration->IoTHubName` is `NULL` then `IotHub_Create` shall and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_with_NULL_IoTHubName_fails)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubName);
@@ -780,11 +789,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_004: [If configuration->IoTHubSuffix is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_with_NULL_IoTHubSuffix_fails)
+    /*Tests_SRS_IOTHUBMODULE_02_004: [ If `configuration->IoTHubSuffix` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_with_NULL_IoTHubSuffix_fails)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubSuffix);
@@ -796,16 +805,16 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_008: [Otherwise, IoTHubHttp_Create shall return a non-NULL handle.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_006: [IoTHubHttp_Create shall create an empty VECTOR containing pointers to PERSONALITYs.]*/
-	/*Tests_SRS_IOTHUBHTTP_17_001: [ IoTHubHttp_Create shall create a shared transport by calling IoTHubTransport_Create. ]*/
-    /*Tests_SRS_IOTHUBHTTP_02_029: [IoTHubHttp_Create shall create a copy of configuration->IoTHubName.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_028: [IoTHubHttp_Create shall create a copy of configuration->IoTHubSuffix.]*/
-	//Tests_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the broker. ]
-    TEST_FUNCTION(IoTHubHttp_Create_succeeds)
+    /*Tests_SRS_IOTHUBMODULE_02_008: [ Otherwise, `IotHub_Create` shall return a non-`NULL` handle. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_006: [ `IotHub_Create` shall create an empty `VECTOR` containing pointers to `PERSONALITY`s. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_029: [ `IotHub_Create` shall create a copy of `configuration->IoTHubSuffix`. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_028: [ `IotHub_Create` shall create a copy of `configuration->IoTHubName`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_004: [ `IotHub_Create` shall store the broker. ]*/
+    TEST_FUNCTION(IotHub_Create_succeeds)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
@@ -819,7 +828,7 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         STRICT_EXPECTED_CALL(mocks, STRING_construct("theAwesomeSuffix.com"))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 
         ///act
@@ -833,11 +842,92 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_027: [When IoTHubHttp_Create encounters an internal failure it shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_fails_when_STRING_construct_fails_1)
+    TEST_FUNCTION(IotHub_Create_does_not_create_a_transport_for_AMQP)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
+
+        EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+
+        EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theIoTHub42"));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theAwesomeSuffix.com"));
+
+        EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .NeverInvoked();
+
+        ///act
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid_AMQP);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(module);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IotHub_Create_does_not_create_a_transport_for_MQTT)
+    {
+        ///arrange
+        IotHubMocks mocks;
+
+        EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+
+        EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theIoTHub42"));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theAwesomeSuffix.com"));
+
+        EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .NeverInvoked();
+
+        ///act
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid_MQTT);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(module);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IotHub_Create_does_not_create_an_unrecognized_transport)
+    {
+        ///arrange
+        IotHubMocks mocks;
+
+        EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+
+        EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theIoTHub42"));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("theAwesomeSuffix.com"));
+
+        EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .NeverInvoked();
+
+        ///act
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_with_invalid_transport);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(module);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_02_027: [ When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_fails_when_STRING_construct_fails_1)
+    {
+        ///arrange
+        IotHubMocks mocks;
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
@@ -849,7 +939,7 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -874,18 +964,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_027: [When IoTHubHttp_Create encounters an internal failure it shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_fails_when_STRING_construct_fails_2)
+    /*Tests_SRS_IOTHUBMODULE_02_027: [ When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_fails_when_STRING_construct_fails_2)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments();
 		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -911,18 +1001,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-	/*Tests_SRS_IOTHUBHTTP_17_002: [ If creating the shared transport fails, IoTHubHttp_Create shall fail and return NULL. ]*/
-	TEST_FUNCTION(IoTHubHttp_Create_fails_when_transport_create_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_002: [ If creating the shared transport fails, `IotHub_Create` shall fail and return `NULL`. ]*/
+	TEST_FUNCTION(IotHub_Create_fails_when_transport_create_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 
 		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create((IOTHUB_CLIENT_TRANSPORT_PROVIDER)HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+		STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
 			.IgnoreAllArguments()
 			.SetFailReturn((TRANSPORT_HANDLE)NULL);
 
@@ -943,11 +1033,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-    /*Tests_SRS_IOTHUBHTTP_02_007: [If creating the VECTOR fails then IoTHubHttp_Create shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_fails_when_VECTOR_create_fails)
+    /*Tests_SRS_IOTHUBMODULE_02_007: [ If creating the personality vector fails then `IotHub_Create` shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_fails_when_VECTOR_create_fails)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
@@ -968,11 +1058,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_027: [When IoTHubHttp_Create encounters an internal failure it shall fail and return NULL.]*/
-    TEST_FUNCTION(IoTHubHttp_Create_fails_when_gballoc_fails)
+    /*Tests_SRS_IOTHUBMODULE_02_027: [ When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. ]*/
+    TEST_FUNCTION(IotHub_Create_fails_when_gballoc_fails)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         whenShallmalloc_fail = currentmalloc_call + 1;
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
@@ -988,11 +1078,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_023: [If moduleHandle is NULL then IoTHubHttp_Destroy shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Destroy_with_NULL_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_023: [ If `moduleHandle` is `NULL` then `IotHub_Destroy` shall return. ]*/
+    TEST_FUNCTION(IotHub_Destroy_with_NULL_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         Module_Destroy(NULL);
@@ -1003,11 +1093,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_024: [Otherwise IoTHubHttp_Destroy shall free all used resources.]*/
-    TEST_FUNCTION(IoTHubHttp_Destroy_empty_module)
+    /*Tests_SRS_IOTHUBMODULE_02_024: [ Otherwise `IotHub_Destroy` shall free all used resources. ]*/
+    TEST_FUNCTION(IotHub_Destroy_empty_module)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1042,11 +1132,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_024: [Otherwise IoTHubHttp_Destroy shall free all used resources.]*/
-    TEST_FUNCTION(IoTHubHttp_Destroy_module_with_0_identity)
+    /*Tests_SRS_IOTHUBMODULE_02_024: [ Otherwise `IotHub_Destroy` shall free all used resources. ]*/
+    TEST_FUNCTION(IotHub_Destroy_module_with_0_identity)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1084,11 +1174,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup - nothing
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_024: [Otherwise IoTHubHttp_Destroy shall free all used resources.]*/
-    TEST_FUNCTION(IoTHubHttp_Destroy_module_with_1_identity)
+    /*Tests_SRS_IOTHUBMODULE_02_024: [ Otherwise `IotHub_Destroy` shall free all used resources. ]*/
+    TEST_FUNCTION(IotHub_Destroy_module_with_1_identity)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
@@ -1137,11 +1227,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup - nothing
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_024: [Otherwise IoTHubHttp_Destroy shall free all used resources.]*/
-    TEST_FUNCTION(IoTHubHttp_Destroy_module_with_2_identity)
+    /*Tests_SRS_IOTHUBMODULE_02_024: [ Otherwise `IotHub_Destroy` shall free all used resources. ]*/
+    TEST_FUNCTION(IotHub_Destroy_module_with_2_identity)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         (void)Module_Receive(module, MESSAGE_HANDLE_VALID_2);
@@ -1204,11 +1294,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup - nothing
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_009: [If moduleHandle or messageHandle is NULL then IoTHubHttp_Receive shall do nothing.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_with_NULL_moduleHandle_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_009: [ If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_with_NULL_moduleHandle_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
 
         ///act
         Module_Receive(NULL, MESSAGE_HANDLE_VALID);
@@ -1219,11 +1309,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_009: [If moduleHandle or messageHandle is NULL then IoTHubHttp_Receive shall do nothing.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_with_NULL_messageHandle_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_009: [ If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_with_NULL_messageHandle_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1238,15 +1328,16 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_013: [If the deviceName does not exist in the PERSONALITY collection then IoTHubHttp_Receive shall create a new IOTHUB_CLIENT_HANDLE by a call to IoTHubClient_CreateWithTransport.]*/
-	//Tests_SRS_IOTHUBHTTP_17_003: [ If a new PERSONALITY is created, then the IoTHubClient will be set to receive messages, by calling IoTHubClient_SetMessageCallback with callback function IoTHubHttp_ReceiveMessageCallback and PERSONALITY as context.]
-    /*Tests_SRS_IOTHUBHTTP_02_018: [IoTHubHttp_Receive shall create a new IOTHUB_MESSAGE_HANDLE having the same content as the messageHandle and same properties with the exception of deviceName and deviceKey properties.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_020: [IoTHubHttp_Receive shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_022: [IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_succeeds)
+    /*Tests_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
+    /*Tests_SRS_IOTHUBMODULE_05_002: [ If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_003: [ If a new personality is created, then the associated IoTHubClient will be set to receive messages by calling `IoTHubClient_SetMessageCallback` with callback function `IotHub_ReceiveMessageCallback`, and the personality as context. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_018: [ `IotHub_Receive` shall create a new IOTHUB_MESSAGE_HANDLE having the same content as `messageHandle`, and the same properties with the exception of `deviceName` and `deviceKey`. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_succeeds)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1282,7 +1373,7 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
             STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
                 .IgnoreArgument(1);
 
-           /*creating the IOTHUB_CLIENT_HANDLE associated with the device*/
+            /*creating the IOTHUB_CLIENT_HANDLE associated with the device*/
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_CreateWithTransport(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 				.IgnoreArgument(1)
 				.IgnoreArgument(2);
@@ -1356,13 +1447,83 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_017: [If the deviceName exists in the PERSONALITY collection then IoTHubHttp_Receive shall not create a new IOTHUB_CLIENT_HANDLE.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_020: [IoTHubHttp_Receive shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_022: [IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_after_receive_succeeds)
+    /*Tests_SRS_IOTHUBMODULE_05_003: [ If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. ]*/
+    TEST_FUNCTION(IotHub_Receive_creates_a_client_with_AMQP_transport)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER transport = AMQP_Protocol;
+
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        EXPECTED_CALL(mocks, IoTHubClient_Create(IGNORED_PTR_ARG))
+            .ValidateArgumentBuffer(1, &transport, sizeof(IOTHUB_CLIENT_TRANSPORT_PROVIDER));
+
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid_AMQP);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_003: [ If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. ]*/
+    TEST_FUNCTION(IotHub_Receive_creates_a_client_with_MQTT_transport)
+    {
+        ///arrange
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER transport = MQTT_Protocol;
+
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        EXPECTED_CALL(mocks, IoTHubClient_Create(IGNORED_PTR_ARG))
+            .ValidateArgumentBuffer(1, &transport, sizeof(IOTHUB_CLIENT_TRANSPORT_PROVIDER), 0);
+
+        auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid_MQTT);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_003: [ If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. ]*/
+    TEST_FUNCTION(IotHub_Receive_creates_a_client_with_custom_transport)
+    {
+        ///arrange
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER transport = ABCD_Protocol;
+
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        EXPECTED_CALL(mocks, IoTHubClient_Create(IGNORED_PTR_ARG))
+            .ValidateArgumentBuffer(1, &transport, sizeof(IOTHUB_CLIENT_TRANSPORT_PROVIDER));
+
+        const IOTHUB_CONFIG unknownTransport = { "name", "suffix", ABCD_Protocol };
+        auto module = Module_Create(BROKER_HANDLE_VALID, &unknownTransport);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_02_017: [ Otherwise `IotHub_Receive` shall not create a new personality. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_after_receive_succeeds)
+    {
+        ///arrange
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
@@ -1438,14 +1599,14 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_013: [If the deviceName does not exist in the PERSONALITY collection then IoTHubHttp_Receive shall create a new IOTHUB_CLIENT_HANDLE by a call to IoTHubClient_CreateWithTransport.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_018: [IoTHubHttp_Receive shall create a new IOTHUB_MESSAGE_HANDLE having the same content as the messageHandle and same properties with the exception of deviceName and deviceKey properties.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_020: [IoTHubHttp_Receive shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE.]*/
-    /*Tests_SRS_IOTHUBHTTP_02_022: [IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_after_Receive_a_new_device_succeeds)
+    /*Tests_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_018: [ `IotHub_Receive` shall create a new IOTHUB_MESSAGE_HANDLE having the same content as `messageHandle`, and the same properties with the exception of `deviceName` and `deviceKey`. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+    /*Tests_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_after_Receive_a_new_device_succeeds)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         Module_Receive(module, MESSAGE_HANDLE_VALID_1);
         mocks.ResetAllCalls();
@@ -1555,11 +1716,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_021: [If IoTHubClient_SendEventAsync fails then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_IoTHubClient_SendEventAsync_fails_it_still_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_IoTHubClient_SendEventAsync_fails_it_still_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1670,11 +1831,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_1)
+    /*Tests_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_1)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1781,11 +1942,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_2)
+    /*Tests_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_2)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1888,11 +2049,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_3)
+    /*Tests_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_3)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -1989,11 +2150,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_4)
+    /*Tests_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_IOTHUB_MESSAGE_HANDLE_fails_4)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2070,11 +2231,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_016: [If adding the new triplet fails, then IoTHubClient_Create shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_adding_the_personality_fails_it_fails)
+    /*Tests_SRS_IOTHUBMODULE_02_016: [ If adding a new personality to the vector fails, then `IoTHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_adding_the_personality_fails_it_fails)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2146,11 +2307,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-	/*Tests_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
-	TEST_FUNCTION(IoTHubHttp_Receive_when_creating_the_personality_fails_it_fails_1a)
+	/*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+	TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_1a)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
@@ -2192,11 +2353,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-    /*Tests_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_the_personality_fails_it_fails_1b)
+    /*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_1b)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2257,11 +2418,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-	/*Tests_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
-	TEST_FUNCTION(IoTHubHttp_Receive_when_creating_the_personality_fails_it_fails_1c)
+	/*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+	TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_1c)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
@@ -2328,11 +2489,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-    /*Tests_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_creating_the_personality_fails_it_fails_2)
+    /*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_2)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2378,11 +2539,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-	/*Tests_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
-	TEST_FUNCTION(IoTHubHttp_Receive_when_creating_the_personality_fails_it_fails_3)
+	/*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+	TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_3)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		mocks.ResetAllCalls();
 
@@ -2418,11 +2579,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-    /*Tests_SRS_IOTHUBHTTP_02_012: [If message properties do not contain a property called "deviceKey" having a non-NULL value then IoTHubHttp_Receive shall do nothing.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_deviceKey_doesn_t_exist_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_012: [ If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_deviceKey_doesn_t_exist_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2447,11 +2608,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_011: [If message properties do not contain a property called "deviceName" having a non-NULL value then IoTHubHttp_Receive shall do nothing.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_deviceName_doesn_t_exist_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_011: [ If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_deviceName_doesn_t_exist_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2474,11 +2635,11 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBHTTP_02_010: [If message properties do not contain a property called "source" having the value set to "mapping" then IoTHubHttp_Receive shall do nothing.]*/
-    TEST_FUNCTION(IoTHubHttp_Receive_when_source_mapping_doesn_t_exist_returns)
+    /*Tests_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" having the value set to "mapping" then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_source_mapping_doesn_t_exist_returns)
     {
         ///arrange
-        CIoTHubHTTPMocks mocks;
+        IotHubMocks mocks;
         auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
         mocks.ResetAllCalls();
 
@@ -2499,27 +2660,27 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
         Module_Destroy(module);
     }
 
-	//Tests_SRS_IOTHUBHTTP_17_007: [ IoTHubHttp_ReceiveMessageCallback shall get properties from message by calling IoTHubMessage_Properties. ]
-	//Tests_SRS_IOTHUBHTTP_17_009: [ IoTHubHttp_ReceiveMessageCallback shall define a property "source" as "IoTHubHTTP". ]
-	//Tests_SRS_IOTHUBHTTP_17_010: [ IoTHubHttp_ReceiveMessageCallback shall define a property "deviceName" as the PERSONALITY's deviceName. ]
-	//Tests_SRS_IOTHUBHTTP_17_011: [ IoTHubHttp_ReceiveMessageCallback shall combine message properties with the "source" and "deviceName" properties. ]
-	//Tests_SRS_IOTHUBHTTP_17_014: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer from results of IoTHubMessage_GetString. ]
-	//Tests_SRS_IOTHUBHTTP_17_015: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer size from the string length. ]
-	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]
-	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
-	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_string_success)
+	/*Tests_SRS_IOTHUBMODULE_17_007: [ `IotHub_ReceiveMessageCallback` shall get properties from message by calling `IoTHubMessage_Properties`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_009: [ `IotHub_ReceiveMessageCallback` shall define a property "source" as "iothub". ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_010: [ `IotHub_ReceiveMessageCallback` shall define a property "deviceName" as the `PERSONALITY`'s deviceName. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_011: [ `IotHub_ReceiveMessageCallback` shall combine message properties with the "source" and "deviceName" properties. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_014: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer from results of `IoTHubMessage_GetString`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_015: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer size from the string length. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_016: [ `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_020: [ `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_021: [ Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. ]*/
+	TEST_FUNCTION(IotHub_callback_string_success)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_STRING);
@@ -2539,8 +2700,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2551,26 +2712,26 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_007: [ IoTHubHttp_ReceiveMessageCallback shall get properties from message by calling IoTHubMessage_Properties. ]
-	//Tests_SRS_IOTHUBHTTP_17_009: [ IoTHubHttp_ReceiveMessageCallback shall define a property "source" as "IoTHubHTTP". ]
-	//Tests_SRS_IOTHUBHTTP_17_010: [ IoTHubHttp_ReceiveMessageCallback shall define a property "deviceName" as the PERSONALITY's deviceName. ]
-	//Tests_SRS_IOTHUBHTTP_17_011: [ IoTHubHttp_ReceiveMessageCallback shall combine message properties with the "source" and "deviceName" properties. ]
-	//Tests_SRS_IOTHUBHTTP_17_013: [ If Message content type is IOTHUBMESSAGE_BYTEARRAY, IoTHubHttp_ReceiveMessageCallback shall get the size and buffer from the results of IoTHubMessage_GetByteArray. ]
-	//Tests_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]
-	//Tests_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]
-	//Tests_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]
-	//Tests_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_byte_array_success)
+	/*Tests_SRS_IOTHUBMODULE_17_007: [ `IotHub_ReceiveMessageCallback` shall get properties from message by calling `IoTHubMessage_Properties`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_009: [ `IotHub_ReceiveMessageCallback` shall define a property "source" as "iothub". ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_010: [ `IotHub_ReceiveMessageCallback` shall define a property "deviceName" as the `PERSONALITY`'s deviceName. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_011: [ `IotHub_ReceiveMessageCallback` shall combine message properties with the "source" and "deviceName" properties. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_013: [ If Message content type is `IOTHUBMESSAGE_BYTEARRAY`, `IotHub_ReceiveMessageCallback` shall get the size and buffer from the  results of `IoTHubMessage_GetByteArray`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_016: [ `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_020: [ `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_021: [ Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. ]*/
+	TEST_FUNCTION(IotHub_callback_byte_array_success)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2592,8 +2753,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2604,18 +2765,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_019: [ If the message fails to publish, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_broker_publish_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_019: [ If the message fails to publish, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
+	TEST_FUNCTION(IotHub_callback_broker_publish_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2638,8 +2799,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2650,18 +2811,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_017: [ If the message fails to create, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_message_create_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_017: [ If the message fails to create, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
+	TEST_FUNCTION(IotHub_callback_message_create_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2680,8 +2841,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2692,18 +2853,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_022: [ If message properties fail to combined, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_Map_Add_2_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_022: [ If message properties fail to combine, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_Map_Add_2_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2721,8 +2882,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2733,18 +2894,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_022: [ If message properties fail to combined, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_Map_Add_1_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_022: [ If message properties fail to combine, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_Map_Add_1_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2759,8 +2920,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2771,18 +2932,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_008: [ If message properties are NULL, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_message_properties_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_008: [ If message properties are `NULL`, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_message_properties_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2795,8 +2956,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2807,18 +2968,18 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_023: [ If IoTHubMessage_GetByteArray fails, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_message_get_byte_array_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_023: [ If `IoTHubMessage_GetByteArray` fails, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_message_get_byte_array_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_BYTEARRAY);
@@ -2829,8 +2990,8 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2841,26 +3002,26 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_006: [ If Message Content type is IOTHUBMESSAGE_UNKNOWN, then IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_message_content_unknown_fails)
+	/*Tests_SRS_IOTHUBMODULE_17_006: [ If Message Content type is `IOTHUBMESSAGE_UNKNOWN`, then `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_message_content_unknown_fails)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 		STRICT_EXPECTED_CALL(mocks, IoTHubMessage_GetContentType(hubMsg))
 			.SetReturn(IOTHUBMESSAGE_UNKNOWN);
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, IoTHubHttp_receive_message_userContext);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, IotHub_Receive_message_userContext);
 
 
 		///assert
@@ -2871,24 +3032,24 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-	//Tests_SRS_IOTHUBHTTP_17_005: [ If userContextCallback is NULL, then IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]
-	TEST_FUNCTION(IoTHubHttp_callback_message_user_context_null)
+	/*Tests_SRS_IOTHUBMODULE_17_005: [ If `userContextCallback` is `NULL`, then `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
+	TEST_FUNCTION(IotHub_callback_message_user_context_null)
 	{
 		///arrange
-		CIoTHubHTTPMocks mocks;
+		IotHubMocks mocks;
 		auto module = Module_Create(BROKER_HANDLE_VALID, &config_valid);
 		Module_Receive(module, MESSAGE_HANDLE_VALID_1);
 		IOTHUB_MESSAGE_HANDLE hubMsg = IOTHUB_MESSAGE_HANDLE_VALID;
 		mocks.ResetAllCalls();
 
-		IoTHubHttp_receive_message_content = "a message";
-		IoTHubHttp_receive_message_size = 9;
+		IotHub_Receive_message_content = "a message";
+		IotHub_Receive_message_size = 9;
 
 
 		///act
 
-		// IoTHubHttp_receive_message_callback_function and IoTHubHttp_receive_message_userContext set in mock
-		auto result = IoTHubHttp_receive_message_callback_function(hubMsg, NULL);
+		// IotHub_Receive_message_callback_function and IotHub_Receive_message_userContext set in mock
+		auto result = IotHub_Receive_message_callback_function(hubMsg, NULL);
 
 
 		///assert
@@ -2899,4 +3060,4 @@ BEGIN_TEST_SUITE(iothubhttp_ut)
 		Module_Destroy(module);
 	}
 
-END_TEST_SUITE(iothubhttp_ut)
+END_TEST_SUITE(iothub_ut)

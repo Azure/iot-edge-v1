@@ -9,6 +9,7 @@
 #include "iothubtest.h"
 #include "iothub_account.h"
 #include "azure_c_shared_utility/platform.h"
+#include <iothubtransporthttp.h>
 
 #include "testrunnerswitcher.h"
 #include "micromock.h"
@@ -16,7 +17,7 @@
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/lock.h"
 #include "gateway_ll.h"
-#include "iothubhttp.h"
+#include "iothub.h"
 #include "e2e_module.h"
 #include "messageproperties.h"
 #include "identitymap.h"
@@ -146,10 +147,11 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		GATEWAY_HANDLE e2eGatewayInstance;
 
 		/* Setup: data for IoT Hub Module */
-		IOTHUBHTTP_CONFIG iotHubConfig;
+		IOTHUB_CONFIG iotHubConfig;
 
 		iotHubConfig.IoTHubName = IoTHubAccount_GetIoTHubName(g_iothubAcctInfo);
 		iotHubConfig.IoTHubSuffix = IoTHubAccount_GetIoTHubSuffix(g_iothubAcctInfo);
+        iotHubConfig.transportProvider = HTTP_Protocol;
 
 
 		E2EMODULE_CONFIG e2eModuleConfiguration;
@@ -183,7 +185,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
 
 		modules[0].module_configuration = &iotHubConfig;
 		modules[0].module_name = "IoTHub";
-		modules[0].module_path = iothubhttp_module_path();
+		modules[0].module_path = iothub_module_path();
 
 		
 		modules[1].module_configuration = e2eModuleMappingVector;

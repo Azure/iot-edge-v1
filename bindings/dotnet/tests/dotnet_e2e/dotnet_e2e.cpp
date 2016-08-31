@@ -16,7 +16,6 @@
 #include "gateway_ll.h"
 #include "messageproperties.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "module_config_resources.h"
 #include "internal/event_system.h"
 
 
