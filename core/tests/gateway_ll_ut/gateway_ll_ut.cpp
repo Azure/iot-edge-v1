@@ -661,6 +661,8 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -773,6 +775,8 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -872,6 +876,8 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1169,6 +1175,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1248,6 +1256,9 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
 		.IgnoreArgument(1); //Links
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.ExpectedTimesExactly(2);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1339,6 +1350,9 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.ExpectedTimesExactly(2);
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
@@ -1809,6 +1823,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
@@ -1875,6 +1891,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	whenShallBroker_RemoveModule_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -3501,6 +3519,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links)
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	// and the rest of the remove...
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
@@ -3583,6 +3603,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links_has_errors)
 		.IgnoreAllArguments()
 		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
 	// and the rest of the remove...
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
@@ -4402,7 +4424,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModuleByName_success)
 	mocks.ResetAllCalls();
 
 	//Expect
-	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG));
@@ -4423,5 +4446,71 @@ TEST_FUNCTION(Gateway_LL_RemoveModuleByName_success)
 	Gateway_LL_Destroy(gw);
 }
 
+/* Tests_SRS_GATEWAY_LL_26_018: [ This function shall remove any links that contain the removed module either as a source or sink. ] */
+TEST_FUNCTION(Gateway_LL_RemoveModule_removes_links)
+{
+	// Arrange
+	CNiceCallComparer<CGatewayLLMocks> mocks;
+
+	GATEWAY_MODULES_ENTRY modules[] = {
+		{
+			"module1",
+			"x.dll",
+			NULL
+		},
+		{
+			"module2",
+			"x.dll",
+			NULL
+		},
+		{
+			"module3",
+			"x.dll",
+			NULL
+		}
+	};
+
+	GATEWAY_LINK_ENTRY links[] = {
+		{
+			"module1",
+			"module2"
+		},
+		{
+			"module3",
+			"module1"
+		},
+		{
+			"module2",
+			"module3"
+		}
+	};
+
+	GATEWAY_PROPERTIES props;
+	props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+	props.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+	VECTOR_push_back(props.gateway_modules, modules, 3);
+	VECTOR_push_back(props.gateway_links, links, 3);
+
+	auto gw = Gateway_LL_Create(&props);
+	
+	// Expect
+	EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.ExpectedTimesExactly(2);
+	// remove from gw->links + remove module
+	EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.ExpectedTimesExactly(3);
+
+	// Act
+	int result = Gateway_LL_RemoveModuleByName(gw, "module1");
+
+	// Assert
+	ASSERT_ARE_EQUAL(int, result, 0);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	VECTOR_destroy(props.gateway_modules);
+	VECTOR_destroy(props.gateway_links);
+	Gateway_LL_Destroy(gw);
+}
 
 END_TEST_SUITE(gateway_ll_ut)
