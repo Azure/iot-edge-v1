@@ -109,7 +109,7 @@ IOTHUBMESSAGE_DISPOSITION_RESULT IotHub_ReceiveMessageCallback(IOTHUB_MESSAGE_HA
 **SRS_IOTHUBMODULE_17_015: [** If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer size from the string length. **]**
 **SRS_IOTHUBMODULE_17_016: [** `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. **]**
 **SRS_IOTHUBMODULE_17_017: [** If the message fails to create, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. **]**
-**SRS_IOTHUBMODULE_17_018: [** `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. **]**
+**SRS_IOTHUBMODULE_17_018: [** `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message, this module's handle, and the `broker`. **]**
 **SRS_IOTHUBMODULE_17_019: [** If the message fails to publish, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. **]**
 **SRS_IOTHUBMODULE_17_020: [** `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. **]**
 **SRS_IOTHUBMODULE_17_021: [** Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. **]**

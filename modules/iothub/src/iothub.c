@@ -24,6 +24,7 @@ typedef struct PERSONALITY_TAG
     STRING_HANDLE deviceKey;
     IOTHUB_CLIENT_HANDLE iothubHandle;
     BROKER_HANDLE broker;
+    MODULE_HANDLE module;
 }PERSONALITY;
 
 typedef PERSONALITY* PERSONALITY_PTR;
@@ -262,11 +263,11 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IotHub_ReceiveMessageCallback(IOTHUB_MES
                             /*Codes_SRS_IOTHUBMODULE_17_017: [ If the message fails to create, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
                             LogError("Failed to create gateway message");
                             result = IOTHUBMESSAGE_REJECTED;
-}
+                        }
                         else
                         {
-                            /*Codes_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. ]*/
-                            if (Broker_Publish(personality->broker, NULL, gatewayMsg) != BROKER_OK)
+                            /*Codes_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message, this module's handle, and the `broker`. ]*/
+                            if (Broker_Publish(personality->broker, personality->module, gatewayMsg) != BROKER_OK)
                             {
                                 /*Codes_SRS_IOTHUBMODULE_17_019: [ If the message fails to publish, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
                                 LogError("Failed to publish gateway message");
@@ -352,6 +353,7 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
                 {
                     /*it is all fine*/
                     result->broker = moduleHandleData->broker;
+                    result->module = moduleHandleData;
                 }
             }
         }

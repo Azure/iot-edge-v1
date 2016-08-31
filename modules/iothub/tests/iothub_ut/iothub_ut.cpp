@@ -2667,7 +2667,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 	/*Tests_SRS_IOTHUBMODULE_17_014: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer from results of `IoTHubMessage_GetString`. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_015: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer size from the string length. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_016: [ `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. ]*/
-	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message, this module's handle, and the `broker`. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_020: [ `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_021: [ Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. ]*/
 	TEST_FUNCTION(IotHub_callback_string_success)
@@ -2693,7 +2693,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, module, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2718,7 +2718,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 	/*Tests_SRS_IOTHUBMODULE_17_011: [ `IotHub_ReceiveMessageCallback` shall combine message properties with the "source" and "deviceName" properties. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_013: [ If Message content type is `IOTHUBMESSAGE_BYTEARRAY`, `IotHub_ReceiveMessageCallback` shall get the size and buffer from the  results of `IoTHubMessage_GetByteArray`. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_016: [ `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. ]*/
-	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message and the `broker`. ]*/
+	/*Tests_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message, this module's handle, and the `broker`. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_020: [ `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. ]*/
 	/*Tests_SRS_IOTHUBMODULE_17_021: [ Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. ]*/
 	TEST_FUNCTION(IotHub_callback_byte_array_success)
@@ -2746,7 +2746,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, module, IGNORED_PTR_ARG))
 			.IgnoreArgument(3);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -2791,7 +2791,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 		STRICT_EXPECTED_CALL(mocks, Map_Add(MAP_HANDLE_VALID_1, GW_DEVICENAME_PROPERTY, "firstDevice"));
 		STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
-		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, NULL, IGNORED_PTR_ARG))
+		STRICT_EXPECTED_CALL(mocks, Broker_Publish(BROKER_HANDLE_VALID, module, IGNORED_PTR_ARG))
 			.IgnoreArgument(3)
 			.SetFailReturn(BROKER_ERROR);
 		STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
