@@ -187,7 +187,7 @@ This is an example of a JSON settings file for Windows. that will write to `log.
     [
         {
             "source": "hello_world",
-            "sink": "logger"
+            "sink": "logger_hl"
         }
     ]
 }
@@ -297,7 +297,7 @@ The JSON below is the code from one of the JSON files (hello_world_lin.json)[(..
     [
         {
             "source": "hello_world",
-            "sink": "logger"
+            "sink": "logger_hl"
         }
     ]
 }
