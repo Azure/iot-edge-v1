@@ -46,9 +46,9 @@ typedef struct BROKER_LINK_DATA_TAG {
 */
 DEFINE_ENUM(BROKER_RESULT, BROKER_RESULT_VALUES);
 
-/** @brief	Creates a new message broker.
-*
-*	@return	A valid #BROKER_HANDLE upon success, or @c NULL upon failure.
+/** @brief	    Creates a new message broker.
+*   
+*	@return	    A valid #BROKER_HANDLE upon success, or @c NULL upon failure.
 */
 extern BROKER_HANDLE Broker_Create(void);
 
@@ -104,12 +104,12 @@ extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, 
 */
 extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module);
 
-/** @brief	Removes a module from the message broker.
-*
-*	@param	broker	The #BROKER_HANDLE from which the module will be removed.
-*	@param	module	The #MODULE of the module to be removed.
-*
-*	@return	A #BROKER_RESULT describing the result of the function.
+/** @brief	    Removes a module from the message broker.
+*   
+*	@param	    broker	The #BROKER_HANDLE from which the module will be removed.
+*	@param	    module	The #MODULE of the module to be removed.
+*   
+*	@return	    A #BROKER_RESULT describing the result of the function.
 */
 extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
 
@@ -128,18 +128,18 @@ extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* mod
 */
 extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
 
-/** @brief	Removes a route from the message broker.
+/** @brief	    Removes a route from the message broker.
 *
-*	@param	broker	The #BROKER_HANDLE from which the module will be removed.
-*	@param	route	The #BROKER_LINK_DATA of the module to be removed.
+*	@param	    broker	The #BROKER_HANDLE from which the module will be removed.
+*	@param	    route	The #BROKER_LINK_DATA of the module to be removed.
 *
-*	@return	A #BROKER_RESULT describing the result of the function.
+*	@return	    A #BROKER_RESULT describing the result of the function.
 */
 extern BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
 
-/** @brief Disposes of resources allocated by a message broker.
+/** @brief      Disposes of resources allocated by a message broker.
 *
-*	@param	broker  The #BROKER_HANDLE to be destroyed.
+*	@param      broker  The #BROKER_HANDLE to be destroyed.
 */
 extern void Broker_Destroy(BROKER_HANDLE broker);
 

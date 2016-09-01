@@ -197,9 +197,9 @@ extern const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
 */
 extern CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
 
-/** @brief Disposes of resources allocated by the message.
-*
-*	@param message		The #MESSAGE_HANDLE to be destroyed.
+/** @brief      Disposes of resources allocated by the message.
+*       
+*	@param      message		The #MESSAGE_HANDLE to be destroyed.
 */
 extern void Message_Destroy(MESSAGE_HANDLE message);
 

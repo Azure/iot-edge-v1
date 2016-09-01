@@ -76,36 +76,48 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 /** @brief Struct representing current information about a single module */
 typedef struct GATEWAY_MODULE_INFO_TAG
 {
-	/** @brief The (possibly @c NULL) name of the module */
+	/** @brief The name of the module */
 	const char* module_name;
-	/** A vector of pointers to @c GATEWAY_MODULE_INFO that this module will receive data from
-	 * (link sources, this one being the sink). If the handle == NULL it means that this module 
-	 * receives data from all other modules. */
+
+	/** @brief A vector of pointers to @c GATEWAY_MODULE_INFO that this module will receive data from
+	 * (link sources, this one being the sink). 
+	 * 
+	 * If the handle == NULL this module receives data from all other modules. 
+	 */
 	VECTOR_HANDLE module_sources;
 } GATEWAY_MODULE_INFO;
 
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
+	/** @brief Called when the gateway is created. */
 	GATEWAY_CREATED = 0,
-	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
-	 * VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
+
+	/** @brief  Called every time a list of modules or links changed and during gateway creation.
+	 *
+	 * The VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
 	 * and be later cleaned-up automatically.
 	 */
 	GATEWAY_MODULE_LIST_CHANGED,
+
+	/** @brief Called when the gateway is destroyed. */
 	GATEWAY_DESTROYED,
+
 	/* @brief  Not an actual event, used to keep track of count of different events */
 	GATEWAY_EVENTS_COUNT
 } GATEWAY_EVENT;
 
 /** @brief Context that is provided to the callback.
+ * 
  * The context is shared between all the callbacks for a current event and cleaned up afterwards.
  * See #GATEWAY_EVENT for specific contexts for each event.
- * If the event doesn't provide a context, NULL will be passed instead.
  */
 typedef void* GATEWAY_EVENT_CTX;
 
-/** @brief	Function pointer that can be registered and will be called for gateway events */
+/** @brief	Function pointer that can be registered and will be called for gateway events 
+ *
+ * @c context may be NULL if the #GATEWAY_EVENT does not provide a context.
+ */
 typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
@@ -145,7 +157,8 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 */
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
-/** @brief                  Removes module by its unique name
+/** @brief      Removes module by its unique name
+ *
  *  @param      gw          Pointer to a #GATEWAY_HANDLE from which to remove the
  *                          module.
  *  @param      module_name A C string representing the name of module to be
@@ -155,26 +168,28 @@ extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
  */
 int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
 
-/** @brief  Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
-*
-*   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
-*   @param  event_type Enum stating on which event should the callback be called
-*   @param  callback   Pointer to a function that will be called when the event happens
+/** @brief		Registers a function to be called on a callback thread when #GATEWAY_EVENT happens
+*		
+*   @param		gw			Pointer to a #GATEWAY_HANDLE to which register callback to
+*   @param		event_type 	Enum stating on which event should the callback be called
+*   @param		callback	Pointer to a function that will be called when the event happens
 */
 extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
 
-/** @brief Returns a snapshot copy of information about running modules
-*   Since this function allocates new memory for the snapshot, the vector handle should be 
-*   later destroyed with @c Gateway_DestroyModuleList.
+/** @brief		Returns a snapshot copy of information about running modules.
 *
-*   @param gw          Pointer to a #GATEWAY_HANDLE from which the module list should be snapshoted
+*				Since this function allocates new memory for the snapshot, the vector handle should be 
+*				later destroyed with @c Gateway_DestroyModuleList.
 *
-*   @return            A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO. NULL if function errored.
+*   @param 		gw			Pointer to a #GATEWAY_HANDLE from which the module list should be snapshoted
+*
+*   @return					A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO. NULL if function errored.
 */
 extern VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw);
 
-/** @brief Destroys the list returned by @c Gateway_LL_GetModuleList
-*   @param module_list	A vector handle as returned from @c Gateway_LL_GetModuleList
+/** @brief 		Destroys the list returned by @c Gateway_LL_GetModuleList
+*
+*   @param 		module_list	A vector handle as returned from @c Gateway_LL_GetModuleList
 */
 extern void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list);
 

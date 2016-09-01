@@ -5,7 +5,8 @@
       "module path": "<</path/to/libiothub_hl.so>>",
       "args": {
         "IoTHubName": "<<Azure IoT Hub Name>>",
-        "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"
+        "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
+        "Transport" : "amqp"
       }
     },
     {
