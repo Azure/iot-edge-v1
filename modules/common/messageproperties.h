@@ -13,7 +13,7 @@
 #define GW_SOURCE_BLE_TELEMETRY             "bleTelemetry"
 
 #define GW_IDMAP_MODULE                     "mapping"
-#define GW_IOTHUB_MODULE                    "IoTHubHTTP"
+#define GW_IOTHUB_MODULE                    "iothub"
 
 #define GW_BLE_CONTROLLER_INDEX_PROPERTY    "bleControllerIndex"
 #define GW_TIMESTAMP_PROPERTY               "timestamp"

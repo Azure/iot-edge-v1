@@ -16,9 +16,9 @@ namespace Microsoft.Azure.IoT.Gateway
         ///     Creates a module using the specified configuration connecting to the specified message broker.
         /// </summary>
         /// <param name="broker">The broker to which this module will connect.</param>
-        /// <param name="configuration">A string with user-defined configuration for this module.</param>
+        /// <param name="configuration">A byte[] with user-defined configuration for this module. This parameter shall be enconded to a UTF-8 String.</param>
         /// <returns></returns>
-        void Create(Broker broker, string configuration);
+        void Create(Broker broker, byte[] configuration);
 
         /// <summary>
         ///     Disposes of the resources allocated by/for this module.

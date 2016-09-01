@@ -92,7 +92,7 @@ else()
     target_link_libraries(gateway uuid)
 endif()
 
-target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library} )
+target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library})
 link_broker(gateway)
 #this adds the tests to the build process
 

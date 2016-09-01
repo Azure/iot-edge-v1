@@ -36,6 +36,8 @@ struct EVENTSYSTEM_DATA {
 	LIST_HANDLE thread_queue;
 };
 
+#ifndef UWP_BINDING
+
 typedef struct THREAD_QUEUE_ROW_TAG {
 	GATEWAY_HANDLE gateway;
 	GATEWAY_EVENT event_type;
@@ -55,7 +57,7 @@ static int callback_thread_main_func(void* event_system_param);
 static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks);
 
 /** @brief This function assumes that the context is a #VECTOR_HANDLE and destroys it */
-static void callback_destroy_vector(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
 
 EVENTSYSTEM_HANDLE EventSystem_Init(void)
 {
@@ -389,8 +391,8 @@ static int callback_thread_main_func(void* event_system_param)
 
 static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks)
 {
-	/* Codes_SRS_GATEWAY_LL_26_014: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks ] */
-	VECTOR_HANDLE modules = Gateway_GetModuleList(gateway);
+	/* Codes_SRS_EVENTSYSTEM_26_016: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_LL_GetModuleList as the event context in callbacks ] */
+	VECTOR_HANDLE modules = Gateway_LL_GetModuleList(gateway);
 	if (modules == NULL)
 	{
 		event_system->is_errored = 1;
@@ -398,8 +400,8 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 	else
 	{
 		/* You can't directly get a poitner to a function pointer, so we need a local copy for it to work */
-		GATEWAY_CALLBACK destroy_vec_ptr = callback_destroy_vector;
-		/* Codes_SRS_GATEWAY_LL_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks ] */
+		GATEWAY_CALLBACK destroy_vec_ptr = callback_destroy_modulelist;
+		/* Codes_SRS_EVENTSYSTEM_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_LL_GetModuleList after finishing all the callbacks ] */
 		if (VECTOR_push_back(callbacks, &destroy_vec_ptr, 1) != 0)
 		{
 			LogError("Failed to push back during handling module list updated event");
@@ -412,7 +414,9 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 }
 
 
-static void callback_destroy_vector(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context)
+static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context)
 {
-	VECTOR_destroy((VECTOR_HANDLE)context);
+	Gateway_LL_DestroyModuleList((VECTOR_HANDLE)context);
 }
+
+#endif

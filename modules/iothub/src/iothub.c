@@ -7,7 +7,7 @@
 #endif
 #include "azure_c_shared_utility/gballoc.h"
 
-#include "iothubhttp.h"
+#include "iothub.h"
 #include "iothub_client.h"
 #include "iothubtransport.h"
 #include "iothubtransporthttp.h"
@@ -24,45 +24,59 @@ typedef struct PERSONALITY_TAG
     STRING_HANDLE deviceKey;
     IOTHUB_CLIENT_HANDLE iothubHandle;
     BROKER_HANDLE broker;
+    MODULE_HANDLE module;
 }PERSONALITY;
 
 typedef PERSONALITY* PERSONALITY_PTR;
 
-typedef struct IOTHUBHTTP_HANDLE_DATA_TAG
+typedef struct IOTHUB_HANDLE_DATA_TAG
 {
     VECTOR_HANDLE personalities; /*holds PERSONALITYs*/
     STRING_HANDLE IoTHubName;
     STRING_HANDLE IoTHubSuffix;
+    IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
     TRANSPORT_HANDLE transportHandle;
     BROKER_HANDLE broker;
-}IOTHUBHTTP_HANDLE_DATA;
+}IOTHUB_HANDLE_DATA;
 
 #define SOURCE "source"
 #define MAPPING "mapping"
 #define DEVICENAME "deviceName"
 #define DEVICEKEY "deviceKey"
 
-static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configuration)
+static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configuration)
 {
-    IOTHUBHTTP_HANDLE_DATA *result;
-    /*Codes_SRS_IOTHUBHTTP_02_001: [If broker is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    /*Codes_SRS_IOTHUBHTTP_02_002: [If configuration is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
-    /*Codes_SRS_IOTHUBHTTP_02_003: [If configuration->IoTHubName is NULL then IoTHubHttp_Create shall and return NULL.]*/
-    /*Codes_SRS_IOTHUBHTTP_02_004: [If configuration->IoTHubSuffix is NULL then IoTHubHttp_Create shall fail and return NULL.]*/
+    IOTHUB_HANDLE_DATA *result;
+    const IOTHUB_CONFIG* config = configuration;
+
+    /*Codes_SRS_IOTHUBMODULE_02_001: [ If `broker` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
+    /*Codes_SRS_IOTHUBMODULE_02_002: [ If `configuration` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
+    /*Codes_SRS_IOTHUBMODULE_02_003: [ If `configuration->IoTHubName` is `NULL` then `IotHub_Create` shall and return `NULL`. ]*/
+    /*Codes_SRS_IOTHUBMODULE_02_004: [ If `configuration->IoTHubSuffix` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
     if (
         (broker == NULL) ||
-        (configuration == NULL) ||
-        (((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName == NULL) ||
-        (((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix == NULL)
+        (configuration == NULL)
         )
     {
-        LogError("invalid arg broker=%p, configuration=%p, IoTHubName=%s IoTHubSuffix=%s", broker, configuration, (configuration!=NULL)?((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName:"undefined behavior", (configuration != NULL) ? ((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix : "undefined behavior");
+        LogError("invalid arg broker=%p, configuration=%p", broker, configuration);
+        result = NULL;
+    }
+    else if (
+        (config->IoTHubName == NULL) ||
+        (config->IoTHubSuffix == NULL) ||
+        (config->transportProvider == NULL)
+        )
+    {
+        LogError("invalid configuration IoTHubName=%s IoTHubSuffix=%s transportProvider=%p",
+            (config != NULL) ? config->IoTHubName : "<null>",
+            (config != NULL) ? config->IoTHubSuffix : "<null>",
+            (config != NULL) ? config->transportProvider : 0);
         result = NULL;
     }
     else
     {
-        result = malloc(sizeof(IOTHUBHTTP_HANDLE_DATA));
-        /*Codes_SRS_IOTHUBHTTP_02_027: [When IoTHubHttp_Create encounters an internal failure it shall fail and return NULL.]*/
+        result = malloc(sizeof(IOTHUB_HANDLE_DATA));
+        /*Codes_SRS_IOTHUBMODULE_02_027: [ When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. ]*/
         if (result == NULL)
         {
             LogError("malloc returned NULL");
@@ -70,39 +84,48 @@ static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configu
         }
         else
         {
-            /*Codes_SRS_IOTHUBHTTP_02_006: [IoTHubHttp_Create shall create an empty VECTOR containing pointers to PERSONALITYs.]*/
+            /*Codes_SRS_IOTHUBMODULE_02_006: [ `IotHub_Create` shall create an empty `VECTOR` containing pointers to `PERSONALITY`s. ]*/
             result->personalities = VECTOR_create(sizeof(PERSONALITY_PTR));
             if (result->personalities == NULL)
             {
-                /*Codes_SRS_IOTHUBHTTP_02_007: [If creating the VECTOR fails then IoTHubHttp_Create shall fail and return NULL.]*/
+                /*Codes_SRS_IOTHUBMODULE_02_007: [ If creating the personality vector fails then `IotHub_Create` shall fail and return `NULL`. ]*/
                 free(result);
                 result = NULL;
                 LogError("VECTOR_create returned NULL");
             }
             else
             {
-                /*Codes_SRS_IOTHUBHTTP_17_001: [ IoTHubHttp_Create shall create a shared transport by calling IoTHubTransport_Create. ]*/
-                result->transportHandle = IoTHubTransport_Create(HTTP_Protocol, ((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName, ((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix);
-                if (result->transportHandle == NULL)
+                result->transportProvider = config->transportProvider;
+                if (result->transportProvider == HTTP_Protocol)
                 {
-                    /*Codes_SRS_IOTHUBHTTP_17_002: [ If creating the shared transport fails, IoTHubHttp_Create shall fail and return NULL. ]*/
-                    VECTOR_destroy(result->personalities);
-                    free(result);
-                    result = NULL;
-                    LogError("VECTOR_create returned NULL");
+                    /*Codes_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. ]*/
+                    result->transportHandle = IoTHubTransport_Create(config->transportProvider, config->IoTHubName, config->IoTHubSuffix);
+                    if (result->transportHandle == NULL)
+                    {
+                        /*Codes_SRS_IOTHUBMODULE_17_002: [ If creating the shared transport fails, `IotHub_Create` shall fail and return `NULL`. ]*/
+                        VECTOR_destroy(result->personalities);
+                        free(result);
+                        result = NULL;
+                        LogError("VECTOR_create returned NULL");
+                    }
                 }
                 else
                 {
-                    /*Codes_SRS_IOTHUBHTTP_02_028: [IoTHubHttp_Create shall create a copy of configuration->IoTHubSuffix.]*/
-                    /*Codes_SRS_IOTHUBHTTP_02_029: [IoTHubHttp_Create shall create a copy of configuration->IoTHubName.]*/
-                    if ((result->IoTHubName = STRING_construct(((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubName)) == NULL)
+                    result->transportHandle = NULL;
+                }
+
+                if (result != NULL)
+                {
+                    /*Codes_SRS_IOTHUBMODULE_02_028: [ `IotHub_Create` shall create a copy of `configuration->IoTHubName`. ]*/
+                    /*Codes_SRS_IOTHUBMODULE_02_029: [ `IotHub_Create` shall create a copy of `configuration->IoTHubSuffix`. ]*/
+                    if ((result->IoTHubName = STRING_construct(config->IoTHubName)) == NULL)
                     {
                         IoTHubTransport_Destroy(result->transportHandle);
                         VECTOR_destroy(result->personalities);
                         free(result);
                         result = NULL;
                     }
-                    else if ((result->IoTHubSuffix = STRING_construct(((const IOTHUBHTTP_CONFIG*)configuration)->IoTHubSuffix)) == NULL)
+                    else if ((result->IoTHubSuffix = STRING_construct(config->IoTHubSuffix)) == NULL)
                     {
                         STRING_delete(result->IoTHubName);
                         IoTHubTransport_Destroy(result->transportHandle);
@@ -112,9 +135,9 @@ static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configu
                     }
                     else
                     {
-                        /*Codes_SRS_IOTHUBHTTP_17_004: [ IoTHubHttp_Create shall store the broker. ]*/
+                        /*Codes_SRS_IOTHUBMODULE_17_004: [ `IotHub_Create` shall store the broker. ]*/
                         result->broker = broker;
-                        /*Codes_SRS_IOTHUBHTTP_02_008: [Otherwise, IoTHubHttp_Create shall return a non-NULL handle.]*/
+                        /*Codes_SRS_IOTHUBMODULE_02_008: [ Otherwise, `IotHub_Create` shall return a non-`NULL` handle. ]*/
                     }
                 }
             }
@@ -123,17 +146,17 @@ static MODULE_HANDLE IoTHubHttp_Create(BROKER_HANDLE broker, const void* configu
     return result;
 }
 
-static void IoTHubHttp_Destroy(MODULE_HANDLE moduleHandle)
+static void IotHub_Destroy(MODULE_HANDLE moduleHandle)
 {
-    /*Codes_SRS_IOTHUBHTTP_02_023: [If moduleHandle is NULL then IoTHubHttp_Destroy shall return.]*/
+    /*Codes_SRS_IOTHUBMODULE_02_023: [ If `moduleHandle` is `NULL` then `IotHub_Destroy` shall return. ]*/
     if (moduleHandle == NULL)
     {
         LogError("moduleHandle parameter was NULL");
     }
     else
     {
-        /*Codes_SRS_IOTHUBHTTP_02_024: [Otherwise IoTHubHttp_Destroy shall free all used resources.]*/
-        IOTHUBHTTP_HANDLE_DATA * handleData = moduleHandle;
+        /*Codes_SRS_IOTHUBMODULE_02_024: [ Otherwise `IotHub_Destroy` shall free all used resources. ]*/
+        IOTHUB_HANDLE_DATA * handleData = moduleHandle;
         size_t vectorSize = VECTOR_size(handleData->personalities);
         for (size_t i = 0; i < vectorSize; i++)
         {
@@ -156,12 +179,12 @@ static bool lookup_DeviceName(const void* element, const void* value)
     return (strcmp(STRING_c_str((*(PERSONALITY_PTR*)element)->deviceName), value) == 0);
 }
 
-static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB_MESSAGE_HANDLE msg, void* userContextCallback)
+static IOTHUBMESSAGE_DISPOSITION_RESULT IotHub_ReceiveMessageCallback(IOTHUB_MESSAGE_HANDLE msg, void* userContextCallback)
 {
     IOTHUBMESSAGE_DISPOSITION_RESULT result;
     if (userContextCallback == NULL)
     {
-        /*Codes_SRS_IOTHUBHTTP_17_005: [ If userContextCallback is NULL, then IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+        /*Codes_SRS_IOTHUBMODULE_17_005: [ If `userContextCallback` is `NULL`, then `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
         LogError("No context to associate message");
         result = IOTHUBMESSAGE_ABANDONED;
     }
@@ -171,7 +194,7 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
         IOTHUBMESSAGE_CONTENT_TYPE msgContentType = IoTHubMessage_GetContentType(msg);
         if (msgContentType == IOTHUBMESSAGE_UNKNOWN)
         {
-            /*Codes_SRS_IOTHUBHTTP_17_006: [ If Message Content type is IOTHUBMESSAGE_UNKNOWN, then IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+            /*Codes_SRS_IOTHUBMODULE_17_006: [ If Message Content type is `IOTHUBMESSAGE_UNKNOWN`, then `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
             LogError("Message content type is unknown");
             result = IOTHUBMESSAGE_ABANDONED;
         }
@@ -182,22 +205,22 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
             IOTHUB_MESSAGE_RESULT msgResult;
             if (msgContentType == IOTHUBMESSAGE_STRING)
             {
-                /*Codes_SRS_IOTHUBHTTP_17_014: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer from results of IoTHubMessage_GetString. ]*/
+                /*Codes_SRS_IOTHUBMODULE_17_014: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer from results of `IoTHubMessage_GetString`. ]*/
                 const char* sourceStr = IoTHubMessage_GetString(msg);
                 newMessageConfig.source = (const unsigned char*)sourceStr;
-                /*Codes_SRS_IOTHUBHTTP_17_015: [ If Message content type is IOTHUBMESSAGE_STRING, IoTHubHttp_ReceiveMessageCallback shall get the buffer size from the string length. ]*/
+                /*Codes_SRS_IOTHUBMODULE_17_015: [ If Message content type is `IOTHUBMESSAGE_STRING`, `IotHub_ReceiveMessageCallback` shall get the buffer size from the string length. ]*/
                 newMessageConfig.size = strlen(sourceStr);
                 msgResult = IOTHUB_MESSAGE_OK;
             }
             else
             {
                 /* content type is byte array */
-                /*Codes_SRS_IOTHUBHTTP_17_013: [ If Message content type is IOTHUBMESSAGE_BYTEARRAY, IoTHubHttp_ReceiveMessageCallback shall get the size and buffer from the results of IoTHubMessage_GetByteArray. ]*/
+                /*Codes_SRS_IOTHUBMODULE_17_013: [ If Message content type is `IOTHUBMESSAGE_BYTEARRAY`, `IotHub_ReceiveMessageCallback` shall get the size and buffer from the  results of `IoTHubMessage_GetByteArray`. ]*/
                 msgResult = IoTHubMessage_GetByteArray(msg, &(newMessageConfig.source), &(newMessageConfig.size));
             }
             if (msgResult != IOTHUB_MESSAGE_OK)
             {
-                /*Codes_SRS_IOTHUBHTTP_17_023: [ If IoTHubMessage_GetByteArray fails, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+                /*Codes_SRS_IOTHUBMODULE_17_023: [ If `IoTHubMessage_GetByteArray` fails, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
                 LogError("Failed to get message content");
                 result = IOTHUBMESSAGE_ABANDONED;
             }
@@ -205,57 +228,57 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
             {
                 /* Now, handle message properties. */
                 MAP_HANDLE newProperties;
-                /*Codes_SRS_IOTHUBHTTP_17_007: [ IoTHubHttp_ReceiveMessageCallback shall get properties from message by calling IoTHubMessage_Properties. */
+                /*Codes_SRS_IOTHUBMODULE_17_007: [ `IotHub_ReceiveMessageCallback` shall get properties from message by calling `IoTHubMessage_Properties`. ]*/
                 newProperties = IoTHubMessage_Properties(msg);
                 if (newProperties == NULL)
                 {
-                    /*Codes_SRS_IOTHUBHTTP_17_008: [ If message properties are NULL, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+                    /*Codes_SRS_IOTHUBMODULE_17_008: [ If message properties are `NULL`, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
                     LogError("No Properties in IoTHub Message");
                     result = IOTHUBMESSAGE_ABANDONED;
                 }
                 else
                 {
-                    /*Codes_SRS_IOTHUBHTTP_17_009: [ IoTHubHttp_ReceiveMessageCallback shall define a property "source" as "IoTHubHTTP". ]*/
-                    /*Codes_SRS_IOTHUBHTTP_17_010: [ IoTHubHttp_ReceiveMessageCallback shall define a property "deviceName" as the PERSONALITY's deviceName. ]*/
-                    /*Codes_SRS_IOTHUBHTTP_17_011: [ IoTHubHttp_ReceiveMessageCallback shall combine message properties with the "source" and "deviceName" properties. ]*/
+                    /*Codes_SRS_IOTHUBMODULE_17_009: [ `IotHub_ReceiveMessageCallback` shall define a property "source" as "iothub". ]*/
+                    /*Codes_SRS_IOTHUBMODULE_17_010: [ `IotHub_ReceiveMessageCallback` shall define a property "deviceName" as the `PERSONALITY`'s deviceName. ]*/
+                    /*Codes_SRS_IOTHUBMODULE_17_011: [ `IotHub_ReceiveMessageCallback` shall combine message properties with the "source" and "deviceName" properties. ]*/
                     if (Map_Add(newProperties, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE) != MAP_OK)
                     {
-                        /*Codes_SRS_IOTHUBHTTP_17_022: [ If message properties fail to combine, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+                        /*Codes_SRS_IOTHUBMODULE_17_022: [ If message properties fail to combine, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
                         LogError("Property [%s] did not add properly", GW_SOURCE_PROPERTY);
                         result = IOTHUBMESSAGE_ABANDONED;
                     }
                     else if (Map_Add(newProperties, GW_DEVICENAME_PROPERTY, STRING_c_str(personality->deviceName)) != MAP_OK)
                     {
-                        /*Codes_SRS_IOTHUBHTTP_17_022: [ If message properties fail to combine, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ABANDONED. ]*/
+                        /*Codes_SRS_IOTHUBMODULE_17_022: [ If message properties fail to combine, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ABANDONED`. ]*/
                         LogError("Property [%s] did not add properly", GW_DEVICENAME_PROPERTY);
                         result = IOTHUBMESSAGE_ABANDONED;
                     }
                     else
                     {
-                        /*Codes_SRS_IOTHUBHTTP_17_016: [ IoTHubHttp_ReceiveMessageCallback shall create a new message from combined properties, the size and buffer. ]*/
+                        /*Codes_SRS_IOTHUBMODULE_17_016: [ `IotHub_ReceiveMessageCallback` shall create a new message from combined properties, the size and buffer. ]*/
                         newMessageConfig.sourceProperties = newProperties;
                         MESSAGE_HANDLE gatewayMsg = Message_Create(&newMessageConfig);
                         if (gatewayMsg == NULL)
                         {
-                            /*Codes_SRS_IOTHUBHTTP_17_017: [ If the message fails to create, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]*/
+                            /*Codes_SRS_IOTHUBMODULE_17_017: [ If the message fails to create, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
                             LogError("Failed to create gateway message");
                             result = IOTHUBMESSAGE_REJECTED;
-}
+                        }
                         else
                         {
-                            /*Codes_SRS_IOTHUBHTTP_17_018: [ IoTHubHttp_ReceiveMessageCallback shall call Broker_Publish with the new message and the broker. ]*/
-                            if (Broker_Publish(personality->broker, NULL, gatewayMsg) != BROKER_OK)
+                            /*Codes_SRS_IOTHUBMODULE_17_018: [ `IotHub_ReceiveMessageCallback` shall call `Broker_Publish` with the new message, this module's handle, and the `broker`. ]*/
+                            if (Broker_Publish(personality->broker, personality->module, gatewayMsg) != BROKER_OK)
                             {
-                                /*Codes_SRS_IOTHUBHTTP_17_019: [ If the message fails to publish, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_REJECTED. ]*/
+                                /*Codes_SRS_IOTHUBMODULE_17_019: [ If the message fails to publish, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_REJECTED`. ]*/
                                 LogError("Failed to publish gateway message");
                                 result = IOTHUBMESSAGE_REJECTED;
                             }
                             else
                             {
-                                /*Codes_SRS_IOTHUBHTTP_17_021: [ Upon success, IoTHubHttp_ReceiveMessageCallback shall return IOTHUBMESSAGE_ACCEPTED. ]*/
+                                /*Codes_SRS_IOTHUBMODULE_17_021: [ Upon success, `IotHub_ReceiveMessageCallback` shall return `IOTHUBMESSAGE_ACCEPTED`. ]*/
                                 result = IOTHUBMESSAGE_ACCEPTED;
                             }
-                            /*Codes_SRS_IOTHUBHTTP_17_020: [ IoTHubHttp_ReceiveMessageCallback shall destroy all resources it creates. ]*/
+                            /*Codes_SRS_IOTHUBMODULE_17_020: [ `IotHub_ReceiveMessageCallback` shall destroy all resources it creates. ]*/
                             Message_Destroy(gatewayMsg);
                         }
                     }
@@ -267,7 +290,7 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IoTHubHttp_ReceiveMessageCallback(IOTHUB
 }
 
 /*returns non-null if PERSONALITY has been properly populated*/
-static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* deviceKey, IOTHUBHTTP_HANDLE_DATA* moduleHandleData)
+static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* deviceKey, IOTHUB_HANDLE_DATA* moduleHandleData)
 {
     PERSONALITY_PTR result = (PERSONALITY_PTR)malloc(sizeof(PERSONALITY));
     if (result == NULL)
@@ -279,29 +302,36 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
         if ((result->deviceName = STRING_construct(deviceName)) == NULL)
         {
             LogError("unable to STRING_construct");
-                free(result);
-                result = NULL;
+            free(result);
+            result = NULL;
         }
         else if ((result->deviceKey = STRING_construct(deviceKey)) == NULL)
         {
             LogError("unable to STRING_construct");
-                STRING_delete(result->deviceName);
-                free(result);
-                result = NULL;
+            STRING_delete(result->deviceName);
+            free(result);
+            result = NULL;
         }
         else
         {
             IOTHUB_CLIENT_CONFIG temp;
+            temp.protocol = moduleHandleData->transportProvider;
             temp.deviceId = deviceName;
             temp.deviceKey = deviceKey;
+            temp.deviceSasToken = NULL;
             temp.iotHubName = STRING_c_str(moduleHandleData->IoTHubName);
             temp.iotHubSuffix = STRING_c_str(moduleHandleData->IoTHubSuffix);
-            temp.protocol = HTTP_Protocol;
             temp.protocolGatewayHostName = NULL;
-            temp.deviceSasToken = NULL;
-            if ((result->iothubHandle = IoTHubClient_CreateWithTransport(moduleHandleData->transportHandle, &temp)) == NULL)
+
+            /*Codes_SRS_IOTHUBMODULE_05_002: [ If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. ]*/
+            /*Codes_SRS_IOTHUBMODULE_05_003: [ If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. ]*/
+            result->iothubHandle = (moduleHandleData->transportHandle != NULL)
+                ? IoTHubClient_CreateWithTransport(moduleHandleData->transportHandle, &temp)
+                : IoTHubClient_Create(&temp);
+
+            if (result->iothubHandle == NULL)
             {
-                LogError("unable to IoTHubClient_CreateWithTransport");
+                LogError("unable to create IoTHubClient");
                 STRING_delete(result->deviceName);
                 STRING_delete(result->deviceKey);
                 free(result);
@@ -309,8 +339,8 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
             }
             else
             {
-                /*Codes_SRS_IOTHUBHTTP_17_003: [ If a new PERSONALITY is created, then the IoTHubClient will be set to receive messages, by calling IoTHubClient_SetMessageCallback with callback function IoTHubHttp_ReceiveMessageCallback and PERSONALITY as context.]*/
-                if (IoTHubClient_SetMessageCallback(result->iothubHandle, IoTHubHttp_ReceiveMessageCallback, result) != IOTHUB_CLIENT_OK)
+                /*Codes_SRS_IOTHUBMODULE_17_003: [ If a new personality is created, then the associated IoTHubClient will be set to receive messages by calling `IoTHubClient_SetMessageCallback` with callback function `IotHub_ReceiveMessageCallback`, and the personality as context. ]*/
+                if (IoTHubClient_SetMessageCallback(result->iothubHandle, IotHub_ReceiveMessageCallback, result) != IOTHUB_CLIENT_OK)
                 {
                     LogError("unable to IoTHubClient_SetMessageCallback");
                     IoTHubClient_Destroy(result->iothubHandle);
@@ -323,6 +353,7 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
                 {
                     /*it is all fine*/
                     result->broker = moduleHandleData->broker;
+                    result->module = moduleHandleData;
                 }
             }
         }
@@ -337,9 +368,9 @@ static void PERSONALITY_destroy(PERSONALITY* personality)
     IoTHubClient_Destroy(personality->iothubHandle);
 }
 
-static PERSONALITY* PERSONALITY_find_or_create(IOTHUBHTTP_HANDLE_DATA* moduleHandleData, const char* deviceName, const char* deviceKey)
+static PERSONALITY* PERSONALITY_find_or_create(IOTHUB_HANDLE_DATA* moduleHandleData, const char* deviceName, const char* deviceKey)
 {
-    /*Codes_SRS_IOTHUBHTTP_02_017: [If the deviceName exists in the PERSONALITY collection then IoTHubHttp_Receive shall not create a new IOTHUB_CLIENT_HANDLE.]*/
+    /*Codes_SRS_IOTHUBMODULE_02_017: [ Otherwise `IotHub_Receive` shall not create a new personality. ]*/
     PERSONALITY* result;
     PERSONALITY_PTR* resultPtr = VECTOR_find_if(moduleHandleData->personalities, lookup_DeviceName, deviceName);
     if (resultPtr == NULL)
@@ -355,7 +386,7 @@ static PERSONALITY* PERSONALITY_find_or_create(IOTHUBHTTP_HANDLE_DATA* moduleHan
         {
             if ((VECTOR_push_back(moduleHandleData->personalities, &personality, 1)) != 0)
             {
-                /*Codes_SRS_IOTHUBHTTP_02_016: [If adding the new triplet fails, then IoTHubClient_Create shall return.]*/
+                /*Codes_SRS_IOTHUBMODULE_02_016: [ If adding a new personality to the vector fails, then `IoTHub_Receive` shall return. ]*/
                 LogError("VECTOR_push_back failed");
                 PERSONALITY_destroy(personality);
                 free(personality);
@@ -379,7 +410,7 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
 {
     IOTHUB_MESSAGE_HANDLE result;
     const CONSTBUFFER* content = Message_GetContent(message);
-    /*Codes_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
+    /*Codes_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
     result = IoTHubMessage_CreateFromByteArray(content->buffer, content->size);
     if (result == NULL)
     {
@@ -395,7 +426,7 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
         size_t nProperties;
         if (ConstMap_GetInternals(gwMessageProperties, &keys, &values, &nProperties) != CONSTMAP_OK)
         {
-            /*Codes_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
+            /*Codes_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
             LogError("unable to get properties of the GW message");
             IoTHubMessage_Destroy(result);
             result = NULL;
@@ -406,7 +437,7 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
             for (i = 0; i < nProperties; i++)
             {
                 /*add all the properties of the GW message to the IOTHUB message*/ /*with the exception*/
-                /*Codes_SRS_IOTHUBHTTP_02_018: [IoTHubHttp_Receive shall create a new IOTHUB_MESSAGE_HANDLE having the same content as the messageHandle and same properties with the exception of deviceName and deviceKey properties.]*/
+                /*Codes_SRS_IOTHUBMODULE_02_018: [ `IotHub_Receive` shall create a new IOTHUB_MESSAGE_HANDLE having the same content as `messageHandle`, and the same properties with the exception of `deviceName` and `deviceKey`. ]*/
                 if (
                     (strcmp(keys[i], "deviceName") != 0) &&
                     (strcmp(keys[i], "deviceKey") != 0)
@@ -415,7 +446,7 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
                    
                     if (Map_AddOrUpdate(iothubMessageProperties, keys[i], values[i]) != MAP_OK)
                     {
-                        /*Codes_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
+                        /*Codes_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
                         LogError("unable to Map_AddOrUpdate");
                         break;
                     }
@@ -428,7 +459,7 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
             }
             else
             {
-                /*Codes_SRS_IOTHUBHTTP_02_019: [If creating the IOTHUB_MESSAGE_HANDLE fails, then IoTHubHttp_Receive shall return.]*/
+                /*Codes_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
                 IoTHubMessage_Destroy(result);
                 result = NULL;
             }
@@ -438,9 +469,9 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
     return result;
 }
 
-static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-    /*Codes_SRS_IOTHUBHTTP_02_009: [If moduleHandle or messageHandle is NULL then IoTHubHttp_Receive shall do nothing.]*/
+    /*Codes_SRS_IOTHUBMODULE_02_009: [ If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. ]*/
     if (
         (moduleHandle == NULL) ||
         (messageHandle == NULL)
@@ -454,7 +485,7 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
         CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
         const char* source = ConstMap_GetValue(properties, SOURCE); /*properties is !=NULL by contract of Message*/
 
-        /*Codes_SRS_IOTHUBHTTP_02_010: [If message properties do not contain a property called "source" having the value set to "mapping" then IoTHubHttp_Receive shall do nothing.]*/
+        /*Codes_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" having the value set to "mapping" then `IotHub_Receive` shall do nothing. ]*/
         if (
             (source == NULL) ||
             (strcmp(source, MAPPING)!=0)
@@ -464,7 +495,7 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
         }
         else
         {
-            /*Codes_SRS_IOTHUBHTTP_02_011: [If message properties do not contain a property called "deviceName" having a non-NULL value then IoTHubHttp_Receive shall do nothing.]*/
+            /*Codes_SRS_IOTHUBMODULE_02_011: [ If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
             const char* deviceName = ConstMap_GetValue(properties, DEVICENAME);
             if (deviceName == NULL)
             {
@@ -472,7 +503,7 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
             }
             else
             {
-                /*Codes_SRS_IOTHUBHTTP_02_012: [If message properties do not contain a property called "deviceKey" having a non-NULL value then IoTHubHttp_Receive shall do nothing.]*/
+                /*Codes_SRS_IOTHUBMODULE_02_012: [ If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
                 const char* deviceKey = ConstMap_GetValue(properties, DEVICEKEY);
                 if (deviceKey == NULL)
                 {
@@ -480,13 +511,13 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
                 }
                 else
                 {
-                    IOTHUBHTTP_HANDLE_DATA* moduleHandleData = moduleHandle;
-                    /*Codes_SRS_IOTHUBHTTP_02_013: [If the deviceName does not exist in the PERSONALITY collection then IoTHubHttp_Receive shall create a new IOTHUB_CLIENT_HANDLE by a call to IoTHubClient_CreateWithTransport.]*/
+                    IOTHUB_HANDLE_DATA* moduleHandleData = moduleHandle;
+                    /*Codes_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
                     
                     PERSONALITY* whereIsIt = PERSONALITY_find_or_create(moduleHandleData, deviceName, deviceKey);
                     if (whereIsIt == NULL)
                     {
-                        /*Codes_SRS_IOTHUBHTTP_02_014: [If creating the PERSONALITY fails then IoTHubHttp_Receive shall return.]*/
+                        /*Codes_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
                         /*do nothing, device was not added to the GW*/
                         LogError("unable to PERSONALITY_find_or_create");
                     }
@@ -499,10 +530,10 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
                         }
                         else
                         {
-                            /*Codes_SRS_IOTHUBHTTP_02_020: [IoTHubHttp_Receive shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE.*/
+                            /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
                             if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
                             {
-                                /*Codes_SRS_IOTHUBHTTP_02_021: [If IoTHubClient_SendEventAsync fails then IoTHubHttp_Receive shall return.]*/
+                                /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
                                 LogError("unable to IoTHubClient_SendEventAsync");
                             }
                             else
@@ -517,23 +548,23 @@ static void IoTHubHttp_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
         }
         ConstMap_Destroy(properties);
     }
-    /*Codes_SRS_IOTHUBHTTP_02_022: [IoTHubHttp_Receive shall return.]*/
+    /*Codes_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
 }
 
-static const MODULE_APIS Module_GetAPIS_Impl = 
+static const MODULE_APIS moduleInterface = 
 {
-    /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
-    IoTHubHttp_Create,
-    IoTHubHttp_Destroy,
-    IoTHubHttp_Receive
+    /*Codes_SRS_IOTHUBMODULE_02_026: [ The MODULE_APIS structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
+    IotHub_Create,
+    IotHub_Destroy,
+    IotHub_Receive
 };
 
-/*Codes_SRS_IOTHUBHTTP_02_025: [Module_GetAPIS shall return a non-NULL pointer.]*/
+/*Codes_SRS_IOTHUBMODULE_02_025: [ `Module_GetAPIS` shall return a non-`NULL` pointer. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUBHTTP_MODULE)(void)
+MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(void)
 #else
 MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
 #endif
 {
-    return &Module_GetAPIS_Impl;
+    return &moduleInterface;
 }

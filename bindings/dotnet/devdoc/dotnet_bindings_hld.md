@@ -52,7 +52,7 @@ The JSON configuration for .NET Module will be similar to the configuration for 
 
     3.1 `dotnet_module_path`: place where the .NET module is located;
     3.2 `dotnet_module_entry_class`: class that implements `IGatewayModule`; 
-    3.3 `dotnet_module_args`: The value of this property is used to supply configuration information specific to a given .NET module. The value is serialized as a string and passed verbatim to the .NET module;  
+    3.3 `dotnet_module_args`: The value of this property is used to supply configuration information specific to a given .NET module. The value is passed as a byte[] to .NET module and it shall be converted as a UTF-8 String;  
 
 ##Native methods description
 ### Module\_Create
@@ -147,9 +147,9 @@ The high level design of these objects and interfaces is documented below:
             ///     Creates a module using the specified configuration connecting to the specified message broker.
             /// </summary>
             /// <param name="broker">The broker to which this module will connect.</param>
-            /// <param name="configuration">A string with user-defined configuration for this module.</param>
+            /// <param name="configuration">A byte[] with user-defined configuration for this module. This parameter shall be enconded to a UTF-8 String.</param>
             /// <returns></returns>
-            void Create(Broker broker, string configuration);
+            void Create(Broker broker, byte[] configuration);
             
             /// <summary>
             ///     Disposes of the resources allocated by/for this module.

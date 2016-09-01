@@ -3150,7 +3150,7 @@ BEGIN_TEST_SUITE(idmap_ut)
 
 	}
 
-	//Tests_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "IoTHubHttp", then the message shall not be marked as a C2D message. ]
+	//Tests_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "iothub", then the message shall not be marked as a C2D message. ]
 	TEST_FUNCTION(IdentityMap_Receive_no_direction_no_new_msg)
 	{
 		///Arrange
@@ -3210,7 +3210,7 @@ BEGIN_TEST_SUITE(idmap_ut)
 
 	}
 
-	//Tests_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "IoTHubHttp", then the message shall not be marked as a C2D message. ]
+	//Tests_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "iothub", then the message shall not be marked as a C2D message. ]
 	TEST_FUNCTION(IdentityMap_Receive_mapping_ignore_mapping_msg)
 	{
 		///Arrange

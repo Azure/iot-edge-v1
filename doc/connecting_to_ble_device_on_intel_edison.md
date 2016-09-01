@@ -20,43 +20,16 @@ only on Linux.  Here's what you'll need to do get your Intel Edison board setup:
      You'll need to follow along only up till the section titled "**Installing
      Git on your Intel Edison**".
 
-  2. Upgrade the installation of BlueZ on your board to version 5.37 by building
-     BlueZ from source. Here're the steps to do so:
-     
-       - Stop the currently running bluetooth daemon.
-       
-             systemctl stop bluetooth
-
-       - Download and extract the [source code](http://www.kernel.org/pub/linux/bluetooth/bluez-5.37.tar.xz)
-         for BlueZ version 5.37.
-         
-             wget http://www.kernel.org/pub/linux/bluetooth/bluez-5.37.tar.xz
-             tar -xvf bluez-5.37.tar.xz
-             cd bluez-5.37
-
-       - Build and install BlueZ.
-             
-             ./configure --disable-udev --disable-systemd --enable-experimental
-             make
-             make install
-             
-       - Change the *systemd* service configuration for bluetooth so that it
-         points to the new bluetooth daemon by editing the file
-         `/lib/systemd/system/bluetooth.service`. Replace the value of the
-         `ExecStart` attribute so that it looks like this:
-
-             ExecStart=/usr/local/libexec/bluetooth/bluetoothd -E
-
-  3. Reboot your Edison.
-
-  4. Unblock bluetooth.
-
-         rfkill unblock bluetooth
-
-  5. Check that the version of BlueZ is now 5.37. Running the following command
-     should cause it to print the string `5.37` to the terminal.
+  2. The latest firmware version for the Edison supports the BlueZ version 
+     needed to run the Azure IoT Gateway BLE module. To confirm that the 
+     version of BlueZ is now 5.37, running the following command should cause 
+     it to print the string `5.37` to the terminal.
 
          bluetoothctl --version
+
+  3. Unblock bluetooth.
+
+         rfkill unblock bluetooth
 
 Connecting your BLE device
 --------------------------
@@ -70,21 +43,26 @@ device:
          [NEW] Controller 98:4F:EE:03:BC:6B edison [default]
          [bluetooth]# _
   
-  2. You should find yourself inside the interactive bluetooth shell. Start
-     scanning for BLE devices:
+  2. You should find yourself inside the interactive bluetooth shell. Ensure
+     that the bluetooth controller is powered on:
+     
+         [bluetooth]# power on
+         Changing power on succeeded
+
+  3. Start scanning for BLE devices:
      
          [bluetooth]# scan on
          Discovery started
          [CHG] Controller 98:4F:EE:03:BC:6B Discovering: yes
 
-  2. Now cause your device to enter the mode that will cause it to broadcast
+  4. Now switch your device into the mode that will cause it to broadcast
      BLE advertisement packets. Eventually you should see your device being
      listed by `bluetoothctl`.
      
          [NEW] Device B0:B4:48:B9:27:82 CC2650 SensorTag
          [CHG] Device B0:B4:48:B9:27:82 TxPower: 0
 
-  3. Turn off scanning for bluetooth devices:
+  5. Turn off scanning for bluetooth devices:
   
          [bluetooth]# scan off
          [CHG] Device B0:B4:48:B9:27:82 TxPower is nil
@@ -93,7 +71,7 @@ device:
          Discovery stopped
          [bluetooth]# _
 
-  4. Connect to your BLE device:
+  6. Connect to your BLE device:
   
          [bluetooth]# connect B0:B4:48:B9:27:82
          Attempting to connect to B0:B4:48:B9:27:82
@@ -101,7 +79,7 @@ device:
          Connection successful
          [CC2650 SensorTag]# _
 
-  5. After connecting, `bluetoothctl` might proceed to list the GATT
+  7. After connecting, `bluetoothctl` might proceed to list the GATT
      characteristics and attributes supported by your BLE device. Inspect the
      characteristics it discovered by running `list-attributes`:
 
@@ -119,7 +97,7 @@ device:
      The full output has not been shown above - the output has been truncated
      after the enumeration of the first 3 GATT attribute rows.
 
-  6. Now you can proceed to disconnect from the device:
+  8. Now you can proceed to disconnect from the device:
   
          [CC2650 SensorTag]# disconnect B0:B4:48:B9:27:82
          Attempting to disconnect from B0:B4:48:B9:27:82

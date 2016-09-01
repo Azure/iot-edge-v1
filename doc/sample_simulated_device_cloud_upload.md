@@ -7,12 +7,11 @@ This sample contains the following modules:
 1. A logger module
 2. Two SIMULATED_DEVICE module instances 
 3. An identity mapping module
-4. An IoTHubHTTP module
+4. An IoT Hub module
 
 How it works: the two simulated device modules will produce messages containing simulated temperature readings and MAC address.
-These messages are received by the identity mapping module that will add the device name and the device key to the messages.
-Once messages carrying device name, device key and temperature are received by the IotHubHTTP module, they will be 
-uploaded to IoTHub on a multiplexed connection.
+These messages are received by the identity mapping module, which will add the device ID and key to the messages. Once messages
+carrying device ID, key, and temperature are received by the IotHub module, they will be sent to IoT Hub.
 
 The logger module logs all the exchanges on the message broker to a file. 
 

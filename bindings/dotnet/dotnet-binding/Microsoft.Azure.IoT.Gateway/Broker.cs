@@ -19,6 +19,12 @@ namespace Microsoft.Azure.IoT.Gateway
         private NativeDotNetHostWrapper dotnetWrapper;
 
 #if !DOXYGEN_SHOULD_SKIP_THIS
+        /// <summary>
+        ///   Constructor for a Broker that receives a reference to a broker, module and a nativeWrapper. NativeWrapper is used for Unit Tests.
+        /// </summary>
+        /// <param name="broker">A reference to an existing broker.</param>
+        /// <param name="module">A reference to an existing module.</param>
+        /// <param name="nativeWrapper">A Native DotNet Host Wrapper used for Mocking purposes on Unit Tests.</param>
         public Broker(long broker, long module, NativeDotNetHostWrapper nativeWrapper)
         {
             /* Codes_SRS_DOTNET_BROKER_04_001: [ If broker is <= 0, Broker constructor shall throw a new ArgumentException ] */
@@ -40,6 +46,11 @@ namespace Microsoft.Azure.IoT.Gateway
             }
         }
 
+        /// <summary>
+        ///   Broker Default Contructor that received a long for reference to an existing broker and another long to a reference to a module.
+        /// </summary>
+        /// <param name="broker">A reference to an existing broker.</param>
+        /// <param name="module">A reference to an existing module.</param>
         public Broker(long broker, long module) : this(broker, module, new NativeDotNetHostWrapper())
         {
 

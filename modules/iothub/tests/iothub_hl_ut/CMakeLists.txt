@@ -4,13 +4,13 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 compileAsC99()
-set(theseTestsName iothubhttp_hl_ut)
+set(theseTestsName iothub_hl_ut)
 set(${theseTestsName}_cpp_files
 ${theseTestsName}.cpp
 )
 
 set(${theseTestsName}_c_files
-	../../src/iothubhttp_hl.c
+	../../src/iothub_hl.c
 )
 
 set(${theseTestsName}_h_files

@@ -34,7 +34,7 @@ target_link_libraries(ble_gateway_hl ${LIBS})
 # is a runtime dependency, changes to code in ble_hl will not get built
 # when building the 'ble_gateway_hl' target; this explicit dependency
 # declaration will cause a build 
-add_dependencies(ble_gateway_hl ble_hl ble_printer identity_map_hl logger_hl iothubhttp_hl)
+add_dependencies(ble_gateway_hl ble_hl ble_printer identity_map_hl logger_hl iothub_hl)
 
 linkSharedUtil(ble_gateway_hl)
 install_broker(ble_gateway_hl ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )

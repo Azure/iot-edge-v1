@@ -2607,6 +2607,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayAccessData(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayUnaccessData(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2))
 			.SetFailReturn((SAFEARRAY*)NULL);
 
@@ -2687,6 +2696,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayAccessData(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayUnaccessData(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
@@ -2772,6 +2790,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayAccessData(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayUnaccessData(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
@@ -2862,6 +2889,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayAccessData(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayUnaccessData(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
@@ -2965,6 +3001,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		STRICT_EXPECTED_CALL(mocks, CreateInstance(bstrClientModuleClassName, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayAccessData(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
+
+		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayUnaccessData(IGNORED_PTR_ARG))
+			.IgnoreAllArguments();
 
 		STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreateVector(VT_VARIANT, 0, 2));
 
