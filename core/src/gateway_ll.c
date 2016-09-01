@@ -738,6 +738,16 @@ static bool module_name_find(const void* element, const void* module_name)
 	return (strcmp(((MODULE_DATA*)element)->module_name, module_name_casted) == 0);
 }
 
+/* Searches both sources and sinks. */
+static bool link_name_both_find(const void* link_void, const void* name_void)
+{
+	const char* name = (const char*)name_void;
+	const LINK_DATA *link = (LINK_DATA*)link_void;
+	return
+			strcmp(link->module_sink.module_name, name) == 0 ||
+			(!link->from_any_source && strcmp(link->module_source.module_name, name) == 0);
+}
+
 static bool link_data_find(const void* element, const void* linkEntry)
 {
 	bool result;
@@ -860,6 +870,10 @@ static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, M
 	module.module_handle = module_data->module;
 
 	remove_module_from_any_source(gateway_handle, module_data);
+	LINK_DATA *link;
+	/* Codes_SRS_GATEWAY_LL_26_018: [ This function shall remove any links that contain the removed module either as a source or sink. ] */
+	while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, module_data->module_name)) != NULL)
+		gateway_removelink_internal(gateway_handle, link);
 
 	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's broker cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/

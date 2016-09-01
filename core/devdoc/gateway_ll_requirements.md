@@ -407,6 +407,8 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_26_012: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully removing the module. **]**
 
+**SRS_GATEWAY_LL_26_018: [** This function shall remove any links that contain the removed module either as a source or sink. **]**
+
 ## Gateway_LL_RemoveModuleByName
 ```
 int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
