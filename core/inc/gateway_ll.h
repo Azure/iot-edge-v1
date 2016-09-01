@@ -118,7 +118,7 @@ typedef void* GATEWAY_EVENT_CTX;
  *
  * @c context may be NULL if the #GATEWAY_EVENT does not provide a context.
  */
-typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param);
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
 *
@@ -173,8 +173,9 @@ int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
 *   @param		gw			Pointer to a #GATEWAY_HANDLE to which register callback to
 *   @param		event_type 	Enum stating on which event should the callback be called
 *   @param		callback	Pointer to a function that will be called when the event happens
+*   @param		user_param	User defined parameter that will be later provided to the called callback
 */
-extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
 
 /** @brief		Returns a snapshot copy of information about running modules.
 *

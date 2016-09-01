@@ -198,7 +198,7 @@ void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list)
 	VECTOR_destroy(module_list);
 }
 
-void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param)
 {
 	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
 	if (gw == NULL)
@@ -207,7 +207,7 @@ void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GA
 	}
 	else
 	{
-		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
+		EventSystem_AddEventCallback(gw->event_system, event_type, callback, user_param);
 	}
 }
 

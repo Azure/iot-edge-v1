@@ -186,7 +186,7 @@ public:
 	MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
 	MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
 
-	MOCK_STATIC_METHOD_3(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback)
+	MOCK_STATIC_METHOD_4(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param)
 		// no-op
 	MOCK_VOID_METHOD_END();
 
@@ -299,7 +299,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_APIS*, ModuleLoader
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
-DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback);
+DECLARE_GLOBAL_MOCK_METHOD_4(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param);
 DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle);
 
@@ -346,7 +346,7 @@ static void expectEventSystemDestroy(CGatewayLLMocks &mocks)
 		.IgnoreArgument(1);
 }
 
-static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	sampleCallbackFuncCallCount++;
 }
@@ -2341,9 +2341,9 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_NULL_Gateway)
 	// Empty! No callbacks should happen at all
 
 	// Act
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL);
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL);
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc, NULL);
 
 	// Assert
 	ASSERT_ARE_EQUAL(int, sampleCallbackFuncCallCount, 0);
@@ -2469,11 +2469,11 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_Forwards)
 	mocks.ResetAllCalls();
 
 	// Expectations
-	STRICT_EXPECTED_CALL(mocks, EventSystem_AddEventCallback(IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc))
+	STRICT_EXPECTED_CALL(mocks, EventSystem_AddEventCallback(IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc, NULL))
 		.IgnoreArgument(1);
 
 	// Act
-	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc, NULL);
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();

@@ -56,6 +56,7 @@ static void* last_thread_arg;
 static int last_thread_result;
 
 static void* last_context;
+static void* last_user_param;
 
 static VECTOR_HANDLE module_list;
 
@@ -267,16 +268,17 @@ static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thre
 		.ExpectedTimesExactly(nodes_in_queue + 1);
 }
 
-static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	ASSERT_IS_TRUE(event_type < GATEWAY_EVENTS_COUNT);
 	callback_gw_history.push_back(gw);
 	callback_per_event_count[event_type]++;
 }
 
-static void catch_context_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+static void catch_context_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	last_context = ctx;
+	last_user_param = user_param;
 }
 
 BEGIN_TEST_SUITE(event_system_ut)
@@ -331,7 +333,7 @@ TEST_FUNCTION(EventSystem_Init_Basic)
 	EXPECTED_CALL(mocks, Lock_Init())
 		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, Condition_Init());
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_CALLBACK)))
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_PTR_ARG))
 		.ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
 	EXPECTED_CALL(mocks, list_create());
 
@@ -374,7 +376,7 @@ TEST_FUNCTION(EventSystem_Init_Fail_Vector)
 	EXPECTED_CALL(mocks, Lock_Init())
 		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, Condition_Init());
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_CALLBACK)))
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_PTR_ARG))
 		.SetFailReturn((VECTOR_HANDLE)NULL);
 	expectEventSystemDestroy(mocks, false, 0);
 
@@ -465,7 +467,7 @@ TEST_FUNCTION(EventSystem_Init_Fail_List)
 	EXPECTED_CALL(mocks, Lock_Init())
 		.ExpectedTimesExactly(2);
 	EXPECTED_CALL(mocks, Condition_Init());
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_CALLBACK)))
+	EXPECTED_CALL(mocks, VECTOR_create(IGNORED_PTR_ARG))
 		.ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
 	EXPECTED_CALL(mocks, list_create())
 		.SetFailReturn((LIST_HANDLE)NULL);
@@ -521,8 +523,8 @@ TEST_FUNCTION(EventSystem_Joins_Thread)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_CREATED);
 	mocks.ResetAllCalls();
 
@@ -543,9 +545,9 @@ TEST_FUNCTION(EventSystem_Destroy_Clears_Queue)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(handle, GATEWAY_DESTROYED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(handle, GATEWAY_DESTROYED, countingCallback, NULL);
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_CREATED);
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_DESTROYED);
 
@@ -570,8 +572,8 @@ TEST_FUNCTION(EventSystem_Report_CallAllRegistered)
 	mocks.SetIgnoreUnexpectedCalls(true);
 	EVENTSYSTEM_HANDLE event_system = EventSystem_Init();
 	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
-	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, countingCallback);
+	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, countingCallback, NULL);
 
 	// Act
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_CREATED);
@@ -600,7 +602,7 @@ TEST_FUNCTION(EventSystem_Thread_Creation_Fails)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -653,8 +655,8 @@ TEST_FUNCTION(EventSystem_Recreates_Thread_When_Quit)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 
 	// Act
 	ASSERT_IS_NULL((void*)last_thread_func);
@@ -712,18 +714,18 @@ TEST_FUNCTION(EventSystem_Report_CallOrder)
 	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	EVENTSYSTEM_HANDLE event_system = EventSystem_Init();
 	// We can't have capturing lambdas used as function pointers so duplication is necessary
-	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx) {
+	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
 		ASSERT_ARE_EQUAL(int, helper_counter, 0);
 		helper_counter++;
-	});
-	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx) {
+	}, NULL);
+	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
 		ASSERT_ARE_EQUAL(int, helper_counter, 1);
 		helper_counter++;
-	});
-	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx) {
+	}, NULL);
+	EventSystem_AddEventCallback(event_system, GATEWAY_CREATED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
 		ASSERT_ARE_EQUAL(int, helper_counter, 2);
 		helper_counter++;
-	});
+	}, NULL);
 
 	// Act
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_CREATED);
@@ -747,7 +749,7 @@ TEST_FUNCTION(EventSystem_Report_NULL_EventSystem)
 	CEventSystemMocks mocks;
 	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
 	EVENTSYSTEM_HANDLE event_system = EventSystem_Init();
-	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, countingCallback);
+	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -792,8 +794,8 @@ TEST_FUNCTION(EventSystem_AddEventCallback_NULLs)
 	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 
 	// Act
-	EventSystem_AddEventCallback(NULL, GATEWAY_CREATED, countingCallback);
-	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, NULL);
+	EventSystem_AddEventCallback(NULL, GATEWAY_CREATED, countingCallback, NULL);
+	EventSystem_AddEventCallback(event_system, GATEWAY_DESTROYED, NULL, NULL);
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_CREATED);
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_DESTROYED);
 	// Cleanup to force multi-threaded callbacks to finish
@@ -811,7 +813,7 @@ TEST_FUNCTION(EventSystem_AddEventCallback_Vector_fail)
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
 	// This one will register but fail to be called because of failed AddEventCallback
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -819,7 +821,7 @@ TEST_FUNCTION(EventSystem_AddEventCallback_Vector_fail)
 		.SetFailReturn(1);
 
 	// Act
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_CREATED);
 
 	// Assert
@@ -835,7 +837,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_Vector_Create_Fail)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -865,7 +867,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_Vector_Pushback_Fail)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -900,7 +902,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_malloc_fail)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -938,7 +940,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_list_add_fail)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback);
+	EventSystem_AddEventCallback(handle, GATEWAY_CREATED, countingCallback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -982,7 +984,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_Modules_Proper_List_Given)
 	CEventSystemMocks mocks;
 	module_list = BASEIMPLEMENTATION::VECTOR_create(1);
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -1033,7 +1035,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_Modules_GetModuleList_Fails)
 	// Arrange
 	CEventSystemMocks mocks;
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -1065,7 +1067,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_Modules_Pushback_Fails)
 	CEventSystemMocks mocks;
 	module_list = BASEIMPLEMENTATION::VECTOR_create(1);
 	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
-	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback);
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback, NULL);
 	mocks.ResetAllCalls();
 
 	// Expect
@@ -1090,6 +1092,28 @@ TEST_FUNCTION(EventSystem_ReportEvent_Modules_Pushback_Fails)
 	mocks.AssertActualAndExpectedCalls();
 
 	// Cleanup
+	EventSystem_Destroy(handle);
+}
+
+TEST_FUNCTION(EventSystem_ReportEvent_user_param_is_passed)
+{
+	// Arrange
+	CNiceCallComparer<CEventSystemMocks> mocks;
+	module_list = BASEIMPLEMENTATION::VECTOR_create(1);
+	EVENTSYSTEM_HANDLE handle = EventSystem_Init();
+	EventSystem_AddEventCallback(handle, GATEWAY_MODULE_LIST_CHANGED, catch_context_callback, (void*)0x42);
+	mocks.ResetAllCalls();
+
+	// Act
+	EventSystem_ReportEvent(handle, NULL, GATEWAY_MODULE_LIST_CHANGED);
+	// simulate the thread running
+	last_thread_func(last_thread_arg);
+
+	// Assert
+	ASSERT_IS_TRUE(last_user_param == (void*)0x42);
+
+	// Cleanup
+	BASEIMPLEMENTATION::VECTOR_destroy(module_list);
 	EventSystem_Destroy(handle);
 }
 
