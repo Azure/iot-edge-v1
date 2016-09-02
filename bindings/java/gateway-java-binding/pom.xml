@@ -7,7 +7,7 @@
 
     <groupId>com.microsoft.azure.gateway</groupId>
     <artifactId>gateway-java-binding</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>Azure IoT Gateway SDK Java Module Binding</name>
     <developers>
         <developer>
