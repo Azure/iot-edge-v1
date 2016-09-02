@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['message_5fbus_5fresult_5ftag',['MESSAGE_BUS_RESULT_TAG',['../message__bus_8h.html#aa2705d6d660b5992b33bdc206bd912ac',1,'message_bus.h']]]
+  ['broker_5fresult_5ftag',['BROKER_RESULT_TAG',['../broker_8h.html#ad96859655f3af466bf97c0ffac1b800c',1,'broker.h']]]
 ];

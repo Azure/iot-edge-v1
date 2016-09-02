@@ -1,10 +1,12 @@
 var searchData=
 [
-  ['message_5fbuffer_5fconfig',['MESSAGE_BUFFER_CONFIG',['../message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3',1,'message.h']]],
-  ['message_5fbus_5fhandle',['MESSAGE_BUS_HANDLE',['../message__bus_8h.html#a0bc434235ab1ceb0642cbcbdd286dd2a',1,'message_bus.h']]],
-  ['message_5fbus_5fresult',['MESSAGE_BUS_RESULT',['../message__bus_8h.html#a44dee4bacd606c62948e33f495f9b682',1,'message_bus.h']]],
-  ['message_5fconfig',['MESSAGE_CONFIG',['../message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47',1,'message.h']]],
-  ['message_5fhandle',['MESSAGE_HANDLE',['../message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb',1,'message.h']]],
-  ['module_5fapis',['MODULE_APIS',['../module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3',1,'module.h']]],
-  ['module_5fhandle',['MODULE_HANDLE',['../module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5',1,'module.h']]]
+  ['gateway_5fadd_5flink_5fresult',['GATEWAY_ADD_LINK_RESULT',['../gateway__ll_8h.html#a315cd329016ccba7844e0ddd8b05f082',1,'gateway_ll.h']]],
+  ['gateway_5fcallback',['GATEWAY_CALLBACK',['../gateway__ll_8h.html#a68630162e1844bd991f470255bbbe1fe',1,'gateway_ll.h']]],
+  ['gateway_5fevent',['GATEWAY_EVENT',['../gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7',1,'gateway_ll.h']]],
+  ['gateway_5fevent_5fctx',['GATEWAY_EVENT_CTX',['../gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29',1,'gateway_ll.h']]],
+  ['gateway_5fhandle',['GATEWAY_HANDLE',['../gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0',1,'gateway_ll.h']]],
+  ['gateway_5flink_5fentry',['GATEWAY_LINK_ENTRY',['../gateway__ll_8h.html#a1b9ee3bd6d18a10d16de102f3a1f2d29',1,'gateway_ll.h']]],
+  ['gateway_5fmodule_5finfo',['GATEWAY_MODULE_INFO',['../gateway__ll_8h.html#aa08d409bd2c343e2d40c233dc6831ca3',1,'gateway_ll.h']]],
+  ['gateway_5fmodules_5fentry',['GATEWAY_MODULES_ENTRY',['../gateway__ll_8h.html#abc96e2b7c756185cbedcfca06c423858',1,'gateway_ll.h']]],
+  ['gateway_5fproperties',['GATEWAY_PROPERTIES',['../gateway__ll_8h.html#a28fc4104517800be5e2d396fd5371a8c',1,'gateway_ll.h']]]
 ];

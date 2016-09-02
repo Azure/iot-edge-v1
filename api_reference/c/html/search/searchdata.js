@@ -1,14 +1,15 @@
 var indexSectionsWithContent =
 {
-  0: "gmps",
-  1: "gm",
-  2: "gm",
-  3: "gm",
+  0: "bgmps",
+  1: "bgm",
+  2: "bgm",
+  3: "bgm",
   4: "gms",
-  5: "gmp",
-  6: "m",
-  7: "m",
-  8: "m"
+  5: "bgmp",
+  6: "bg",
+  7: "g",
+  8: "m",
+  9: "m"
 };
 
 var indexSectionNames =
@@ -20,8 +21,9 @@ var indexSectionNames =
   4: "variables",
   5: "typedefs",
   6: "enums",
-  7: "defines",
-  8: "pages"
+  7: "enumvalues",
+  8: "defines",
+  9: "pages"
 };
 
 var indexSectionLabels =
@@ -33,7 +35,8 @@ var indexSectionLabels =
   4: "Variables",
   5: "Typedefs",
   6: "Enumerations",
-  7: "Macros",
-  8: "Pages"
+  7: "Enumerator",
+  8: "Macros",
+  9: "Pages"
 };
 

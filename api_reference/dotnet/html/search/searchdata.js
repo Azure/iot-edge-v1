@@ -1,7 +1,7 @@
 var indexSectionsWithContent =
 {
-  0: "cdimprt",
-  1: "im",
+  0: "bcdimprt",
+  1: "bim",
   2: "m",
   3: "cdmprt",
   4: "cp",

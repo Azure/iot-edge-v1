@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.0-beta.2</span>
+   &#160;<span id="projectnumber">1.0.0-beta.3</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -95,7 +95,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Defines structures and function prototypes for creating, inspecting and disposing off messages published on to the message bus.  
+<p>Defines structures and function prototypes for creating, inspecting and disposing of messages published to the message broker.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;azure_c_shared_utility/macro_utils.h&quot;</code><br />
 <code>#include &quot;azure_c_shared_utility/map.h&quot;</code><br />
@@ -138,9 +138,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a59655001821b305d857e6b730893a7eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a59655001821b305d857e6b730893a7eb">Message_CreateFromByteArray</a> (const unsigned char *source, int32_t size)</td></tr>
 <tr class="memdesc:a59655001821b305d857e6b730893a7eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a byte array containing the serialized form of a message.  <a href="#a59655001821b305d857e6b730893a7eb">More...</a><br /></td></tr>
 <tr class="separator:a59655001821b305d857e6b730893a7eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac32d38e4b5cf9de8da3331e58374f767"><td class="memItemLeft" align="right" valign="top">const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#ac32d38e4b5cf9de8da3331e58374f767">Message_ToByteArray</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> messageHandle, int32_t *size)</td></tr>
-<tr class="memdesc:ac32d38e4b5cf9de8da3331e58374f767"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a byte array representation of a MESSAGE_HANDLE.  <a href="#ac32d38e4b5cf9de8da3331e58374f767">More...</a><br /></td></tr>
-<tr class="separator:ac32d38e4b5cf9de8da3331e58374f767"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45d8f1db2330d4ddffff32782ccb31ff"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a45d8f1db2330d4ddffff32782ccb31ff">Message_ToByteArray</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> messageHandle, unsigned char *buf, int32_t size)</td></tr>
+<tr class="memdesc:a45d8f1db2330d4ddffff32782ccb31ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a byte array representation of a MESSAGE_HANDLE.  <a href="#a45d8f1db2330d4ddffff32782ccb31ff">More...</a><br /></td></tr>
+<tr class="separator:a45d8f1db2330d4ddffff32782ccb31ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90e4b3bcde9a14de285217b237ad610e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a90e4b3bcde9a14de285217b237ad610e">Message_CreateFromBuffer</a> (const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *cfg)</td></tr>
 <tr class="memdesc:a90e4b3bcde9a14de285217b237ad610e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>.  <a href="#a90e4b3bcde9a14de285217b237ad610e">More...</a><br /></td></tr>
 <tr class="separator:a90e4b3bcde9a14de285217b237ad610e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,7 +161,7 @@ Functions</h2></td></tr>
 <tr class="separator:af394c268c898a833b6d0bacafb29c81a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Defines structures and function prototypes for creating, inspecting and disposing off messages published on to the message bus. </p>
+<div class="textblock"><p>Defines structures and function prototypes for creating, inspecting and disposing of messages published to the message broker. </p>
 <p>A message essentially has two components:</p><ul>
 <li>Properties represented as key/value pairs where both the key and value are strings</li>
 <li>The content of the message which is simply a memory buffer (a <code>BUFFER_HANDLE</code>)</li>
@@ -385,12 +385,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ac32d38e4b5cf9de8da3331e58374f767"></a>
+<a class="anchor" id="a45d8f1db2330d4ddffff32782ccb31ff"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const unsigned char* Message_ToByteArray </td>
+          <td class="memname">int32_t Message_ToByteArray </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
           <td class="paramname"><em>messageHandle</em>, </td>
@@ -398,7 +398,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int32_t *&#160;</td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
           <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
@@ -410,15 +416,16 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Creates a byte array representation of a MESSAGE_HANDLE. </p>
-<p>The byte array created can be used with function <a class="el" href="message_8h.html#a59655001821b305d857e6b730893a7eb" title="Creates a new reference counted message from a byte array containing the serialized form of a message...">Message_CreateFromByteArray</a> to reproduce the message. The returned byte array needs to be deallocated by free function.</p>
+<p>The byte array created can be used with function <a class="el" href="message_8h.html#a59655001821b305d857e6b730893a7eb" title="Creates a new reference counted message from a byte array containing the serialized form of a message...">Message_CreateFromByteArray</a> to reproduce the message. If buffer is not set, this function will return the serialization size.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">messageHandle</td><td>A <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a>. This parameter cannot be NULL. </td></tr>
-    <tr><td class="paramname">size</td><td>pointer to a int32_t that will receive the size of the byte array</td></tr>
+    <tr><td class="paramname">buf</td><td>A pointer to a byte array in memory, may be NULL. </td></tr>
+    <tr><td class="paramname">size</td><td>An int32_t that specifies the size of buf.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A non-NULL const unsigned char* is returned when creating the serialized form succeeds. *size is updated to the size of the array A NULL value is returned when the array cannot be created. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>An int32_t that specifies the size of the serialized message written when "buf" is not NULL. If "buf" is NULL, returns the size required for a full successful serialization. Returns a negative value when an error occurs. </dd></dl>
 
 </div>
 </div>

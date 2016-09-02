@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.0-beta.2</span>
+   &#160;<span id="projectnumber">1.0.0-beta.3</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -90,11 +90,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div class="contents">
 <div class="textblock">Here is a list of all documented struct and union fields with links to the struct/union documentation for each field:</div><ul>
-<li>gateway_properties_entries
-: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html#af6be1443f1fd66862c109b40bbb3d6cf">GATEWAY_PROPERTIES_DATA_TAG</a>
+<li>gateway_links
+: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html#a275cad5dbb16724e599c7540e9a0feb4">GATEWAY_PROPERTIES_DATA_TAG</a>
+</li>
+<li>gateway_modules
+: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html#a09fed1369a7d5b76f25d8945f99376ef">GATEWAY_PROPERTIES_DATA_TAG</a>
+</li>
+<li>module_apis
+: <a class="el" href="struct_m_o_d_u_l_e___t_a_g.html#aeab304b6cd40130fdcc1691f6ded37ba">MODULE_TAG</a>
 </li>
 <li>module_configuration
-: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___e_n_t_r_y___t_a_g.html#af3b75acfacc82c000f2479df34b02c81">GATEWAY_PROPERTIES_ENTRY_TAG</a>
+: <a class="el" href="struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#ab3d3b4aba94c854cc6478462fc04fc92">GATEWAY_MODULES_ENTRY_TAG</a>
 </li>
 <li>Module_Create
 : <a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#abe57f0199db79e9abb97e095f38ac9cd">MODULE_APIS_TAG</a>
@@ -102,14 +108,33 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Module_Destroy
 : <a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#a35833110cbe9935a9e4f35412b55a2a9">MODULE_APIS_TAG</a>
 </li>
+<li>module_handle
+: <a class="el" href="struct_m_o_d_u_l_e___t_a_g.html#a486cabc6145b907051e79fa6c8ecdea5">MODULE_TAG</a>
+</li>
 <li>module_name
-: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___e_n_t_r_y___t_a_g.html#ab96352af4c8eb0088b37f53b86430005">GATEWAY_PROPERTIES_ENTRY_TAG</a>
+: <a class="el" href="struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#ac0cb5d549a16b9ba089e07c50923b4d4">GATEWAY_MODULE_INFO_TAG</a>
+, <a class="el" href="struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#a67e5297fdb1fe276be40ad2197318d84">GATEWAY_MODULES_ENTRY_TAG</a>
 </li>
 <li>module_path
-: <a class="el" href="struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___e_n_t_r_y___t_a_g.html#a3bfd0ef6877dc87127e88d6167c962ff">GATEWAY_PROPERTIES_ENTRY_TAG</a>
+: <a class="el" href="struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#a70f8d9db7026526d7843f3fce0c68a8f">GATEWAY_MODULES_ENTRY_TAG</a>
 </li>
 <li>Module_Receive
 : <a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#adcafe9dc639366e6111a21dfe33b1cfc">MODULE_APIS_TAG</a>
+</li>
+<li>module_sink
+: <a class="el" href="struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html#a3463b718145cb554964024aa8feb055c">GATEWAY_LINK_ENTRY_TAG</a>
+</li>
+<li>module_sink_handle
+: <a class="el" href="struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html#a04470e739e0ba90ecd8ac45241f6cc17">BROKER_LINK_DATA_TAG</a>
+</li>
+<li>module_source
+: <a class="el" href="struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html#a702271f06fe380e76ad23edc52a5da96">GATEWAY_LINK_ENTRY_TAG</a>
+</li>
+<li>module_source_handle
+: <a class="el" href="struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html#a3357dfccc1183e0f4a890493cc0aeecb">BROKER_LINK_DATA_TAG</a>
+</li>
+<li>module_sources
+: <a class="el" href="struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#a83a2db5b1a5eda8a2a0dc32175a625d6">GATEWAY_MODULE_INFO_TAG</a>
 </li>
 <li>size
 : <a class="el" href="struct_m_e_s_s_a_g_e___c_o_n_f_i_g___t_a_g.html#a07ebe3741b55c3292d3fe7b67f4d6192">MESSAGE_CONFIG_TAG</a>

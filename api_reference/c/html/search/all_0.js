@@ -1,16 +1,18 @@
 var searchData=
 [
-  ['gateway_2eh',['gateway.h',['../gateway_8h.html',1,'']]],
-  ['gateway_5fcreate_5ffrom_5fjson',['Gateway_Create_From_JSON',['../gateway_8h.html#ac354efb769e402405eb13ac4a8a9e9d0',1,'gateway.h']]],
-  ['gateway_5fhandle',['GATEWAY_HANDLE',['../gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0',1,'gateway_ll.h']]],
-  ['gateway_5fll_2eh',['gateway_ll.h',['../gateway__ll_8h.html',1,'']]],
-  ['gateway_5fll_5faddmodule',['Gateway_LL_AddModule',['../gateway__ll_8h.html#a8e994aac67a888e7bb0dcf7f0c69d563',1,'gateway_ll.h']]],
-  ['gateway_5fll_5fcreate',['Gateway_LL_Create',['../gateway__ll_8h.html#ad39f3abdc982cc3cd6ecbe149a82160b',1,'gateway_ll.h']]],
-  ['gateway_5fll_5fdestroy',['Gateway_LL_Destroy',['../gateway__ll_8h.html#a9d67ad00897609f152edb3f704bdfd30',1,'gateway_ll.h']]],
-  ['gateway_5fll_5fremovemodule',['Gateway_LL_RemoveModule',['../gateway__ll_8h.html#adfa1de88b36d0ec68d7ab533c56705fd',1,'gateway_ll.h']]],
-  ['gateway_5fproperties',['GATEWAY_PROPERTIES',['../gateway__ll_8h.html#a28fc4104517800be5e2d396fd5371a8c',1,'gateway_ll.h']]],
-  ['gateway_5fproperties_5fdata_5ftag',['GATEWAY_PROPERTIES_DATA_TAG',['../struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html',1,'']]],
-  ['gateway_5fproperties_5fentries',['gateway_properties_entries',['../struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html#af6be1443f1fd66862c109b40bbb3d6cf',1,'GATEWAY_PROPERTIES_DATA_TAG']]],
-  ['gateway_5fproperties_5fentry',['GATEWAY_PROPERTIES_ENTRY',['../gateway__ll_8h.html#a35611c82f1fe2575ae02193a29504c5b',1,'gateway_ll.h']]],
-  ['gateway_5fproperties_5fentry_5ftag',['GATEWAY_PROPERTIES_ENTRY_TAG',['../struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___e_n_t_r_y___t_a_g.html',1,'']]]
+  ['broker_2eh',['broker.h',['../broker_8h.html',1,'']]],
+  ['broker_5faddlink',['Broker_AddLink',['../broker_8h.html#a910cb4a93b0c39fbebd55af3020c95d2',1,'broker.h']]],
+  ['broker_5faddmodule',['Broker_AddModule',['../broker_8h.html#ab2fa760ff8d5964a918ca66246d4b043',1,'broker.h']]],
+  ['broker_5fcreate',['Broker_Create',['../broker_8h.html#a6cbd4674f2b3b464d2f0603773d5b398',1,'broker.h']]],
+  ['broker_5fdecref',['Broker_DecRef',['../broker_8h.html#accac1b05e6b48e13e09c185febd9aeba',1,'broker.h']]],
+  ['broker_5fdestroy',['Broker_Destroy',['../broker_8h.html#a52e9eb82b70751aedb66b68aaf5d6703',1,'broker.h']]],
+  ['broker_5fhandle',['BROKER_HANDLE',['../broker_8h.html#a2e5e8420f5c7121d56ae35c88897f5d4',1,'broker.h']]],
+  ['broker_5fincref',['Broker_IncRef',['../broker_8h.html#a3862c8c206a3cbfd540d28b2ee4b2e6c',1,'broker.h']]],
+  ['broker_5flink_5fdata',['BROKER_LINK_DATA',['../broker_8h.html#a653dc60f78fa263db14a86ae6b345879',1,'broker.h']]],
+  ['broker_5flink_5fdata_5ftag',['BROKER_LINK_DATA_TAG',['../struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html',1,'']]],
+  ['broker_5fpublish',['Broker_Publish',['../broker_8h.html#a415ae544429cd27ba52499bf45bc6763',1,'broker.h']]],
+  ['broker_5fremovelink',['Broker_RemoveLink',['../broker_8h.html#a26469622aabda54464b1d4066c966c99',1,'broker.h']]],
+  ['broker_5fremovemodule',['Broker_RemoveModule',['../broker_8h.html#a576edcdaa12f0e2564b4946ccddf5627',1,'broker.h']]],
+  ['broker_5fresult',['BROKER_RESULT',['../broker_8h.html#a56ca07e00a5fd03727a1032c10cc0f83',1,'broker.h']]],
+  ['broker_5fresult_5ftag',['BROKER_RESULT_TAG',['../broker_8h.html#ad96859655f3af466bf97c0ffac1b800c',1,'broker.h']]]
 ];
