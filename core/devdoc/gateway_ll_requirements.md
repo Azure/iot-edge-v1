@@ -477,6 +477,8 @@ Gateway_LL_AddLink adds a link to the gateway's message broker using the provide
 
 **SRS_GATEWAY_LL_04_013: [** If adding the link succeed this function shall return `GATEWAY_ADD_LINK_SUCCESS` **]**
 
+**SRS_GATEWAY_LL_26_019: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. **]**
+
 ## Gateway_LL_RemoveLink
 ```
 extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
@@ -488,3 +490,5 @@ Gateway_RemoveLink will remove the specified `link` from the message broker.
 **SRS_GATEWAY_LL_04_006: [** The function shall locate the `LINK_DATA` object in `GATEWAY_HANDLE_DATA`'s `links` containing `link` and return if it cannot be found. **]**
 
 **SRS_GATEWAY_LL_04_007: [** The functional shall remove that `LINK_DATA` from `GATEWAY_HANDLE_DATA`'s `links`. **]**
+
+**SRS_GATEWAY_LL_26_018: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event. **]**
