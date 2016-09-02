@@ -606,6 +606,10 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -629,6 +633,10 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -730,6 +738,10 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -753,6 +765,10 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -845,6 +861,10 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -946,6 +966,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -969,6 +991,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1040,6 +1064,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1063,6 +1089,8 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 1));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1139,6 +1167,10 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
 	STRICT_EXPECTED_CALL(mocks, VECTOR_element(dummyProps->gateway_modules, 0));
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1273,6 +1305,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1294,6 +1328,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1367,6 +1403,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1388,6 +1426,8 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 
 
 	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
@@ -1524,6 +1564,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(DUMMY_LIBRARY_PATH));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1557,6 +1599,33 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_031: [ If unsuccessful, the function shall return NULL. ]*/
+TEST_FUNCTION(Gateway_LL_AddModule_Malloc_data_Fails)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	mocks.ResetActualCalls();
+
+	//Expectations
+	whenShallModuleLoader_Load_fail = 1;
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1)
+		.SetFailReturn(nullptr);
+
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+
+	//Assert
+	ASSERT_IS_NULL(handle);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+}
+
+/*Tests_SRS_GATEWAY_LL_14_031: [ If unsuccessful, the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Fails)
 {
 	//Arrange
@@ -1569,6 +1638,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Fails)
 	whenShallModuleLoader_Load_fail = 1;
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
@@ -1602,6 +1675,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1654,6 +1729,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(DUMMY_LIBRARY_PATH));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1686,6 +1765,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Broker_AddModule_Fails)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -1726,6 +1809,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(DUMMY_LIBRARY_PATH));
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -1838,6 +1925,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1);
 	
@@ -1908,6 +1997,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	// Well it IS removed from the gateway even if still linked to broker. I think this scenario should report the event
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1);
@@ -2788,8 +2879,7 @@ TEST_FUNCTION(Gateway_LL_AddLink_broker_add_fails)
 		.IgnoreAllArguments()
 		.SetFailReturn(BROKER_ADD_LINK_ERROR);
 
-
-	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink);
+ 	GATEWAY_ADD_LINK_RESULT result = Gateway_LL_AddLink(gateway, &dummyLink);
 
 	//Assert
 	ASSERT_ARE_EQUAL(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_ERROR, result);
@@ -2982,6 +3072,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_with_star_links)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -3067,6 +3159,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_addLink_fails)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -3182,6 +3278,10 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_find_fails)
 	//Expectations
 	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
@@ -3546,6 +3646,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1);
 
@@ -3630,6 +3732,8 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links_has_errors)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gateway, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1);
 
@@ -4451,6 +4555,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModuleByName_success)
 	EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
+	EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED));
 
 	//Act
