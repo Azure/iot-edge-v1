@@ -38,6 +38,11 @@ struct EVENTSYSTEM_DATA {
 
 #ifndef UWP_BINDING
 
+typedef struct CALLBACK_CLOSURE_TAG {
+	GATEWAY_CALLBACK call;
+	void* user_param;
+} CALLBACK_CLOSURE;
+
 typedef struct THREAD_QUEUE_ROW_TAG {
 	GATEWAY_HANDLE gateway;
 	GATEWAY_EVENT event_type;
@@ -57,7 +62,7 @@ static int callback_thread_main_func(void* event_system_param);
 static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks);
 
 /** @brief This function assumes that the context is a #VECTOR_HANDLE and destroys it */
-static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param);
 
 EVENTSYSTEM_HANDLE EventSystem_Init(void)
 {
@@ -87,7 +92,7 @@ EVENTSYSTEM_HANDLE EventSystem_Init(void)
 		{
 			for (int i = 0; i < GATEWAY_EVENTS_COUNT; i++)
 			{
-				VECTOR_HANDLE event_callbacks = VECTOR_create(sizeof(GATEWAY_CALLBACK));
+				VECTOR_HANDLE event_callbacks = VECTOR_create(sizeof(CALLBACK_CLOSURE));
 				/* Codes_SRS_EVENTSYSTEM_26_002: [ This function shall return NULL upon any internal error during event system creation. ] */
 				if (event_callbacks == NULL)
 				{
@@ -121,7 +126,7 @@ EVENTSYSTEM_HANDLE EventSystem_Init(void)
 	return result;
 }
 
-void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param)
 {
 	/* Codes_SRS_EVENTSYSTEM_26_012: [ This function shall log a failure and do nothing else when either `event_system` or `callback` parameters are NULL. ] */
 	if (event_system == NULL || callback == NULL)
@@ -129,11 +134,18 @@ void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT
 		LogError("null gateway events handle or callback parameters during event registration");
 	}
 	/* Codes_SRS_EVENTSYSTEM_26_011: [ This function shall register given GATEWAY_CALLBACK and call it when given GATEWAY_EVENT event happens inside of the gateway. ] */
-	else if (VECTOR_push_back(event_system->event_callbacks[event_type], &callback, 1) != 0)
+	else
 	{
-		/* Codes_SRS_EVENTSYSTEM_26_013: [ Should the worker thread ever fail to be created or any internall callbacks fail, failure will be logged and no further callbacks will be called during gateway's lifecycle. ] */
-		LogError("failed to register callback");
-		event_system->is_errored = 1;
+		CALLBACK_CLOSURE closure = {
+			callback,
+			user_param
+		};
+		if (VECTOR_push_back(event_system->event_callbacks[event_type], &closure, 1) != 0)
+		{
+			/* Codes_SRS_EVENTSYSTEM_26_013: [ Should the worker thread ever fail to be created or any internall callbacks fail, failure will be logged and no further callbacks will be called during gateway's lifecycle. ] */
+			LogError("failed to register callback");
+			event_system->is_errored = 1;
+		}
 	}
 }
 
@@ -162,7 +174,7 @@ void EventSystem_ReportEvent(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw,
 
 			if (vector_size > 0)
 			{
-				VECTOR_HANDLE call_queue = VECTOR_create(sizeof(GATEWAY_CALLBACK));
+				VECTOR_HANDLE call_queue = VECTOR_create(sizeof(CALLBACK_CLOSURE));
 				if (call_queue == NULL)
 				{
 					/*Codes_SRS_EVENTSYSTEM_26_013: [ Should the worker thread ever fail to be created or any internall callbacks fail, failure will be logged and no further callbacks will be called during gateway's lifecycle. ] */
@@ -344,7 +356,8 @@ static THREAD_QUEUE_ROW* get_from_thread_queue(EVENTSYSTEM_HANDLE event_system, 
 	}
 
 	/* Condition might have timed out or we don't have delayed destroy so the node can be NULL */
-	if (node != NULL) {
+	if (node != NULL)
+	{
 		row = (THREAD_QUEUE_ROW*)list_item_get_value(node);
 		list_remove(event_system->thread_queue, node);
 	}
@@ -372,9 +385,9 @@ static int callback_thread_main_func(void* event_system_param)
 		/* Codes_SRS_EVENTSYSTEM_26_009: [ This function shall call all registered callbacks in First - In - First - Out order in terms registration. ] */
 		for (size_t i = 0; i < vector_size; i++)
 		{
-			GATEWAY_CALLBACK callback = *(GATEWAY_CALLBACK*)VECTOR_element(row->callbacks, i);
-			/* Codes_SRS_EVENTSYSTEM_26_010: [ The given GATEWAY_CALLBACK function shall be called with proper GATEWAY_HANDLE and GATEWAY_EVENT as function parameters coresponding to the gateway and the event that occured. ] */
-			callback(row->gateway, row->event_type, row->context);
+			CALLBACK_CLOSURE *closure = (CALLBACK_CLOSURE*)VECTOR_element(row->callbacks, i);
+			/* Codes_SRS_EVENTSYSTEM_26_010: [ The given `GATEWAY_CALLBACK` function shall be called with proper `GATEWAY_HANDLE`, `GATEWAY_EVENT` and provided user parameter as function parameters coresponding to the gateway and the event that occured. ] */
+			closure->call(row->gateway, row->event_type, row->context, closure->user_param);
 		}
 		destroy_thread_row(row);
 	}
@@ -399,10 +412,12 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 	}
 	else
 	{
-		/* You can't directly get a poitner to a function pointer, so we need a local copy for it to work */
-		GATEWAY_CALLBACK destroy_vec_ptr = callback_destroy_modulelist;
+		CALLBACK_CLOSURE closure = {
+			callback_destroy_modulelist,
+			NULL
+		};
 		/* Codes_SRS_EVENTSYSTEM_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_LL_GetModuleList after finishing all the callbacks ] */
-		if (VECTOR_push_back(callbacks, &destroy_vec_ptr, 1) != 0)
+		if (VECTOR_push_back(callbacks, &closure, 1) != 0)
 		{
 			LogError("Failed to push back during handling module list updated event");
 			VECTOR_destroy(modules);
@@ -414,7 +429,7 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 }
 
 
-static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context)
+static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param)
 {
 	Gateway_LL_DestroyModuleList((VECTOR_HANDLE)context);
 }

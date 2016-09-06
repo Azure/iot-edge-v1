@@ -132,7 +132,7 @@ typedef enum GATEWAY_EVENT_TAG
 typedef void* GATEWAY_EVENT_CTX;
 
 /** @brief	Function pointer that can be registered and will be called for gateway events */
-typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param);
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
 *
@@ -186,8 +186,9 @@ int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
 *   @param  gw         Pointer to a #GATEWAY_HANDLE to which register callback to
 *   @param  event_type Enum stating on which event should the callback be called
 *   @param  callback   Pointer to a function that will be called when the event happens
+*   @param  user_param User defined parameter that will be provided to the callback
 */
-extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
 
 /** @brief Returns a snapshot copy of information about running modules
 *   Since this function allocates new memory for the snapshot, the vector handle should be 
@@ -477,6 +478,8 @@ Gateway_LL_AddLink adds a link to the gateway's message broker using the provide
 
 **SRS_GATEWAY_LL_04_013: [** If adding the link succeed this function shall return `GATEWAY_ADD_LINK_SUCCESS` **]**
 
+**SRS_GATEWAY_LL_26_019: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. **]**
+
 ## Gateway_LL_RemoveLink
 ```
 extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
@@ -488,3 +491,5 @@ Gateway_RemoveLink will remove the specified `link` from the message broker.
 **SRS_GATEWAY_LL_04_006: [** The function shall locate the `LINK_DATA` object in `GATEWAY_HANDLE_DATA`'s `links` containing `link` and return if it cannot be found. **]**
 
 **SRS_GATEWAY_LL_04_007: [** The functional shall remove that `LINK_DATA` from `GATEWAY_HANDLE_DATA`'s `links`. **]**
+
+**SRS_GATEWAY_LL_26_018: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event. **]**

@@ -38,13 +38,13 @@ extern void EventSystem_ReportEvent(EVENT_SYSTEM_HANDLE event_system, GATEWAY_HA
 
 **SRS_EVENTSYSTEM_26_009: [** This function shall call all registered callbacks in First-In-First-Out order in terms registration. **]**
 
-**SRS_EVENTSYSTEM_26_010: [** The given `GATEWAY_CALLBACK` function shall be called with proper `GATEWAY_HANDLE` and `GATEWAY_EVENT` as function parameters coresponding to the gateway and the event that occured. **]**
+**SRS_EVENTSYSTEM_26_010: [** The given `GATEWAY_CALLBACK` function shall be called with proper `GATEWAY_HANDLE`, `GATEWAY_EVENT` and provided user parameter as function parameters coresponding to the gateway and the event that occured. **]**
 
 **SRS_EVENTSYSTEM_26_014: [** This function shall do nothing when `event_system` parameter is NULL. **]**
 
 ## EventSystem_AddEventCallback
 ```
-extern void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
 ```
 
 **SRS_EVENTSYSTEM_26_011: [** This function shall register given `GATEWAY_CALLBACK` and call it when given `GATEWAY_EVENT` event happens inside of the gateway. **]**

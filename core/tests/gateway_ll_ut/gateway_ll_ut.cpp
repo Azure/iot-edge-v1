@@ -186,7 +186,7 @@ public:
 	MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
 	MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
 
-	MOCK_STATIC_METHOD_3(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback)
+	MOCK_STATIC_METHOD_4(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param)
 		// no-op
 	MOCK_VOID_METHOD_END();
 
@@ -299,7 +299,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_APIS*, ModuleLoader
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, ModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
-DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback);
+DECLARE_GLOBAL_MOCK_METHOD_4(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param);
 DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void, EventSystem_ReportEvent, EVENTSYSTEM_HANDLE, event_system, GATEWAY_HANDLE, gw, GATEWAY_EVENT, event_type);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, EventSystem_Destroy, EVENTSYSTEM_HANDLE, handle);
 
@@ -346,7 +346,7 @@ static void expectEventSystemDestroy(CGatewayLLMocks &mocks)
 		.IgnoreArgument(1);
 }
 
-static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx)
+static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	sampleCallbackFuncCallCount++;
 }
@@ -2104,6 +2104,9 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_NonExistingSinkModule_Find_star_Link_Data_Fa
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 
 	//Act
 	Gateway_LL_RemoveLink(gw, &dummyLink);
@@ -2153,6 +2156,9 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_Finds_Link_Data_Success)
 	STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
@@ -2335,9 +2341,9 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_NULL_Gateway)
 	// Empty! No callbacks should happen at all
 
 	// Act
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL);
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL);
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc, NULL);
 
 	// Assert
 	ASSERT_ARE_EQUAL(int, sampleCallbackFuncCallCount, 0);
@@ -2463,11 +2469,11 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_Forwards)
 	mocks.ResetAllCalls();
 
 	// Expectations
-	STRICT_EXPECTED_CALL(mocks, EventSystem_AddEventCallback(IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc))
+	STRICT_EXPECTED_CALL(mocks, EventSystem_AddEventCallback(IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc, NULL))
 		.IgnoreArgument(1);
 
 	// Act
-	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc);
+	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, sampleCallbackFunc, NULL);
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();
@@ -2684,6 +2690,9 @@ TEST_FUNCTION(Gateway_LL_AddLink_Succeeds)
 	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
@@ -3308,6 +3317,9 @@ TEST_FUNCTION(Gateway_LL_AddLink_star_success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 
 
 	///Act
@@ -3692,6 +3704,9 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_star_link_success)
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
 
 	//Act
 	Gateway_LL_RemoveLink(gateway, &dummyLink2);
@@ -3749,6 +3764,9 @@ TEST_FUNCTION(Gateway_LL_RemoveLink_nostar_link_success)
 		.IgnoreAllArguments()
 		.SetFailReturn(BROKER_REMOVE_LINK_ERROR);
 	STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 
@@ -4511,6 +4529,90 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_removes_links)
 	VECTOR_destroy(props.gateway_modules);
 	VECTOR_destroy(props.gateway_links);
 	Gateway_LL_Destroy(gw);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_019: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. ]*/
+TEST_FUNCTION(Gateway_LL_AddLink_reports_on_success)
+{
+	// Arrange
+	CNiceCallComparer<CGatewayLLMocks> mocks;
+	auto gateway = Gateway_LL_Create(dummyProps);
+	GATEWAY_LINK_ENTRY entry = {
+		"dummy module",
+		"dummy module"
+	};
+
+	// Expect
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	// Act
+	auto result = Gateway_LL_AddLink(gateway, &entry);
+
+	// Assert
+	ASSERT_IS_TRUE(result == GATEWAY_ADD_LINK_SUCCESS);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+/*Tests_SRS_GATEWAY_LL_26_019: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. ]*/
+TEST_FUNCTION(Gateway_LL_AddLink_no_report_on_fail)
+{
+	// Arrange
+	CNiceCallComparer<CGatewayLLMocks> mocks;
+	auto gateway = Gateway_LL_Create(dummyProps);
+	GATEWAY_LINK_ENTRY entry = {
+		"dummy module",
+		"dummy module"
+	};
+
+	// Expect
+	EXPECTED_CALL(mocks, Broker_AddLink(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.SetFailReturn(BROKER_ADD_LINK_ERROR);
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2)
+		.NeverInvoked();
+
+	// Act
+	auto result = Gateway_LL_AddLink(gateway, &entry);
+
+	// Assert
+	ASSERT_IS_TRUE(result == GATEWAY_ADD_LINK_ERROR);
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	Gateway_LL_Destroy(gateway);
+}
+
+TEST_FUNCTION(Gateway_LL_RemoveLink_reports)
+{
+	// Arrange
+	CNiceCallComparer<CGatewayLLMocks> mocks;
+	auto gateway = Gateway_LL_Create(dummyProps);
+	GATEWAY_LINK_ENTRY entry = {
+		"dummy module",
+		"dummy module"
+	};
+	Gateway_LL_AddLink(gateway, &entry);
+	mocks.ResetAllCalls();
+
+	// Expect
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+
+	// Act
+	Gateway_LL_RemoveLink(gateway, &entry);
+
+	// Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	// Cleanup
+	Gateway_LL_Destroy(gateway);
 }
 
 END_TEST_SUITE(gateway_ll_ut)

@@ -198,7 +198,7 @@ void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list)
 	VECTOR_destroy(module_list);
 }
 
-void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param)
 {
 	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
 	if (gw == NULL)
@@ -207,7 +207,7 @@ void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GA
 	}
 	else
 	{
-		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
+		EventSystem_AddEventCallback(gw->event_system, event_type, callback, user_param);
 	}
 }
 
@@ -455,6 +455,8 @@ GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK
 		{
 			/*Codes_SRS_GATEWAY_LL_04_013: [ If adding the link succeed this function shall return GATEWAY_ADD_LINK_SUCCESS ]*/
 			result = GATEWAY_ADD_LINK_SUCCESS;
+			/*Codes_SRS_GATEWAY_LL_26_019: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
 		}
 	}
 
@@ -478,6 +480,8 @@ void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLin
 		if (link_data != NULL)
 		{
 			gateway_removelink_internal(gateway_handle, link_data);
+			/*Codes_SRS_GATEWAY_LL_26_018: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
 		}
 		else
 		{
