@@ -4,6 +4,7 @@ This document describes how to prepare your development environment to use the *
 
 - [Setting up a Windows development environment](#windows)
 - [Setting up a Linux development environment](#linux)
+- [Setting up cross-compiling for Wind River Linux 7](#windriver)
 
 <a name="windows"/>
 ## Setting up a Windows development environment
@@ -41,3 +42,26 @@ sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-
 git clone --recursive https://github.com/Azure/azure-iot-gateway-sdk.git
 ```
 Use the **master** branch to ensure you fetch the latest release version.
+
+<a name="windriver"/>
+## Setting up cross-compiling for Wind River Linux 7
+
+This section shows you how to set up a development environment for the Azure IoT Gateway SDK for cross-compiling to Wind River Linux on Ubuntu.
+
+1. Set up the Ubuntu system as described in the previous section: [Setting up a Linux development environment](#linux)
+
+2. Acquire or build the Wind River Linux toolchain. This is licensed software from Intel, see [Wind River Linux Toolchain and Build System User's Guide](https://knowledge.windriver.com/en-us/000_Products/000/010/000/050/000_Wind_River_Linux_Toolchain_and_Build_System_User's_Guide%2C_7.0) for more information.
+
+3. Run the toolchain installer: 
+```
+./wrlinux-7.0.0.13-glibc-x86_64-intel_baytrail_64-wrlinux-image-idp-sdk.sh
+```
+
+4. By default, the toolchain will install to a directory like `/opt/windriver/wrlinux/7.0-intel-baytrail-64`
+
+5. Change directory to the Azure IoT Gateway SDK repository.
+
+6. Run the Wind River Linux build script:
+```
+tools/windriver_linux_c.sh --toolchain /opt/windriver/wrlinux/7.0-intel-baytrail-64
+```
