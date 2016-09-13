@@ -5,7 +5,8 @@ cmake_minimum_required(VERSION 2.8.11)
 project(azure_iot_gateway_sdk)
 
 #the following variables are project-wide and can be used with cmake-gui
-option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always build]" OFF)
+option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
+option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always built]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)

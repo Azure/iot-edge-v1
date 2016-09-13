@@ -7,7 +7,7 @@ set -e
 build_clean=
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 log_dir=$build_root
-run_unit_tests=ON
+skip_unittests=OFF
 run_e2e_tests=ON
 run_valgrind=0
 enable_java_binding=OFF
@@ -23,6 +23,7 @@ usage ()
     echo " -cl, --compileoption <value>  specify a compile option to be passed to gcc"
     echo "   Example: -cl -O1 -cl ..."
     echo " -rv, --run-valgrind           will execute ctest with valgrind"
+    echo " --skip-unittests              skip the running of unit tests (unit tests are run by default)"
     echo " --skip-e2e-tests              skip the running of end-to-end tests (e2e tests are run by default)"
     echo " --enable-java-binding         enables building of Java binding; environment variable JAVA_HOME must be defined"
     echo " --enable-nodejs-binding       enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined"
@@ -46,10 +47,11 @@ process_args ()
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;
               "-c" | "--clean" ) build_clean=1;;
+              "--skip-unittests" ) skip_unittests=ON;;
               "--skip-e2e-tests" ) run_e2e_tests=OFF;;
               "-cl" | "--compileoption" ) save_next_arg=1;;
               "-rv" | "--run-valgrind" ) run_valgrind=1;;
-	      "--enable-java-binding" ) enable_java_binding=ON;;
+	          "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               * ) usage;;
           esac
@@ -71,6 +73,7 @@ mkdir -p "$cmake_root"
 pushd "$cmake_root"
 cmake -DCMAKE_BUILD_TYPE=Debug \
       -Drun_e2e_tests:BOOL=$run_e2e_tests \
+      -Dskip_unittests:BOOL=$skip_unittests \
       -Denable_java_binding:BOOL=$enable_java_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
       -Drun_valgrind:BOOL=$run_valgrind \
