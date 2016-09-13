@@ -80,8 +80,9 @@ TYPED_MOCK_CLASS(IotHubHLMocks, CGlobalMock)
 public:
 
 	/* IotHub module mocks*/
-	MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(IOTHUB_MODULE))
-	MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&moduleInterface);
+	MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(IOTHUB_MODULE), MODULE_APIS*, apis)
+		(*apis) = moduleInterface;
+	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IotHub_Create, BROKER_HANDLE, broker, const void*, configuration)
 	MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
@@ -147,7 +148,7 @@ public:
 	MOCK_VOID_METHOD_END()
 };
 
-DECLARE_GLOBAL_MOCK_METHOD_0(IotHubHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(IOTHUB_MODULE));
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubHLMocks, , void, MODULE_STATIC_GETAPIS(IOTHUB_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubHLMocks, , MODULE_HANDLE, IotHub_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubHLMocks, , void, IotHub_Destroy, MODULE_HANDLE, moduleHandle);
@@ -170,9 +171,11 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	g_testByTest = MicroMockCreateMutex();
 	ASSERT_IS_NOT_NULL(g_testByTest);
 
-	Module_Create = Module_GetAPIS()->Module_Create;
-	Module_Destroy = Module_GetAPIS()->Module_Destroy;
-	Module_Receive = Module_GetAPIS()->Module_Receive;
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
+	Module_Create = apis.Module_Create;
+	Module_Destroy = apis.Module_Destroy;
+	Module_Receive = apis.Module_Receive;
 }
 
 TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -197,36 +200,20 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	}
 }
 
-
-/*Tests_SRS_IOTHUBMODULE_HL_17_013: [ `Module_GetAPIS` shall return a non-NULL pointer. ]*/
-TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
-{
-	///arrange
-	IotHubHLMocks mocks;
-
-	///act
-	auto MODULEAPIS = Module_GetAPIS();
-
-	///assert
-	ASSERT_IS_NOT_NULL(MODULEAPIS);
-	mocks.AssertActualAndExpectedCalls();
-
-	///cleanup
-}
-
-/*Tests_SRS_IOTHUBMODULE_HL_17_014: [ The MODULE_APIS structure shall have non-NULL `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
+/*Tests_SRS_IOTHUBMODULE_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_fields)
 {
 	///arrange
 	IotHubHLMocks mocks;
 
 	///act
-	auto MODULEAPIS = Module_GetAPIS();
-
+	MODULE_APIS MODULEAPIS;
+	Module_GetAPIS(&MODULEAPIS);
+	
 	///assert
-	ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Create);
-	ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Destroy);
-	ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Receive);
+	ASSERT_IS_TRUE(MODULEAPIS.Module_Create != NULL);
+	ASSERT_IS_TRUE(MODULEAPIS.Module_Destroy != NULL);
+	ASSERT_IS_TRUE(MODULEAPIS.Module_Receive != NULL);
 	mocks.AssertActualAndExpectedCalls();
 
 	///cleanup
@@ -252,7 +239,7 @@ TEST_FUNCTION(IotHub_HL_Create_success)
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
         .IgnoreArgument(1)
         .SetReturn("HTTP");
-    STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)());
+    EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(IGNORED_PTR_ARG));
 	STRICT_EXPECTED_CALL(mocks, IotHub_Create(broker, IGNORED_PTR_ARG))
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
@@ -415,7 +402,7 @@ TEST_FUNCTION(IotHub_HL_Create_ll_module_null_returns_null)
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
         .IgnoreArgument(1)
         .SetReturn("HTTP");
-    STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)());
+    EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(IGNORED_PTR_ARG));
 	STRICT_EXPECTED_CALL(mocks, IotHub_Create(broker, IGNORED_PTR_ARG))
 		.IgnoreArgument(2)
 		.SetFailReturn((MODULE_HANDLE)NULL);
@@ -596,7 +583,7 @@ TEST_FUNCTION(IotHub_HL_Destroy_does_everything)
 	auto result = Module_Create(broker, validJsonString);
 	mocks.ResetAllCalls();
 
-	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)());
+	EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(IGNORED_PTR_ARG));
 	STRICT_EXPECTED_CALL(mocks, IotHub_Destroy(result));
 
 	///act
@@ -617,7 +604,7 @@ TEST_FUNCTION(IotHub_HL_Receive_does_everything)
 	auto result = Module_Create(broker, validJsonString);
 	mocks.ResetAllCalls();
 
-	STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)());
+	EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(IGNORED_PTR_ARG));
 	STRICT_EXPECTED_CALL(mocks, IotHub_Receive(result, messageHandle));
 
 	///act

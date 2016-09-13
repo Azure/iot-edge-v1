@@ -379,8 +379,9 @@ public:
         free(value);
     MOCK_VOID_METHOD_END();
     
-    MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST))
-    MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&DOTNET_APIS);
+	MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(DOTNET_HOST), MODULE_APIS*, apis)
+		(*apis) = DOTNET_APIS;
+	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_2(, MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, broker, const void*, configuration)
 		MODULE_HANDLE result2 = NULL;
@@ -426,7 +427,8 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, DotNET_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , void, DotNET_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
-DECLARE_GLOBAL_MOCK_METHOD_0(CDOTNETHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(DOTNET_HOST));
+
+DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, MODULE_STATIC_GETAPIS(DOTNET_HOST), MODULE_APIS*, apis);
 
 
 
@@ -437,9 +439,12 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		DotNET_HL_Create = Module_GetAPIS()->Module_Create;
-		DotNET_HL_Destroy = Module_GetAPIS()->Module_Destroy;
-		DotNET_HL_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+
+		DotNET_HL_Create = apis.Module_Create;
+		DotNET_HL_Destroy = apis.Module_Destroy;
+		DotNET_HL_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -648,7 +653,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
 
 		STRICT_EXPECTED_CALL(mocks, DotNET_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(2)
@@ -686,7 +691,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
 
 		STRICT_EXPECTED_CALL(mocks, DotNET_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
@@ -717,7 +722,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 
 		MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
 
 		STRICT_EXPECTED_CALL(mocks, DotNET_Receive((MODULE_HANDLE)module, (MESSAGE_HANDLE)0x42));
 
@@ -755,7 +760,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 		auto module = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
 
 		STRICT_EXPECTED_CALL(mocks, DotNET_Destroy(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
@@ -769,20 +774,20 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_HL_04_012: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ] */
+	/* Tests_SRS_DOTNET_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
 	TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
 	{
 		///arrage
 		CDOTNETHLMocks mocks;
 
 		///act
-		const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
 		///assert
-		ASSERT_IS_NOT_NULL(apis);
-		ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-		ASSERT_IS_NOT_NULL(apis->Module_Create);
-		ASSERT_IS_NOT_NULL(apis->Module_Receive);
+		ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 
 		///cleanup
 	}

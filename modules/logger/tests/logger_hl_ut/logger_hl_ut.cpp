@@ -400,8 +400,9 @@ public:
     struct tm* result2 = (struct tm*)0x42;
     MOCK_METHOD_END(struct tm*, result2);
 
-    MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE))
-    MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&Logger_APIS);
+	MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(LOGGER_MODULE), MODULE_APIS*, apis)
+		(*apis) = Logger_APIS;
+	MOCK_VOID_METHOD_END();	
 
     MOCK_STATIC_METHOD_2( , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, broker, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
@@ -455,7 +456,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , long int, gb_ftell, FILE*, stream)
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , time_t, gb_time, time_t*, timer);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , struct tm*, gb_localtime, const time_t*, timer);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CLoggerMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(LOGGER_MODULE));
+DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, MODULE_STATIC_GETAPIS(LOGGER_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
@@ -483,9 +484,12 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        Logger_HL_Create = Module_GetAPIS()->Module_Create;
-        Logger_HL_Destroy = Module_GetAPIS()->Module_Destroy;
-        Logger_HL_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+
+        Logger_HL_Create = apis.Module_Create;
+        Logger_HL_Destroy = apis.Module_Destroy;
+        Logger_HL_Receive = apis.Module_Receive;
 
     }
 
@@ -560,7 +564,7 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "filename")) /*this is getting a json string that is what follows "filename": in the json*/
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(LOGGER_MODULE)())); /*this is finding the Logger's API*/
+        EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(LOGGER_MODULE)(IGNORED_PTR_ARG))); /*this is finding the Logger's API*/
         STRICT_EXPECTED_CALL(mocks, Logger_Create(validBrokerHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
             .IgnoreArgument(2);
 
@@ -591,7 +595,7 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "filename")) /*this is getting a json string that is what follows "filename": in the json*/
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)(IGNORED_PTR_ARG)); /*this is finding the Logger's API*/
         STRICT_EXPECTED_CALL(mocks, Logger_Create(validBrokerHandle, IGNORED_PTR_ARG)) /*this is calling Logger_Create function*/
             .IgnoreArgument(2)
             .SetFailReturn((MODULE_HANDLE)NULL);
@@ -684,7 +688,7 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         MODULE_HANDLE handle = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)(IGNORED_PTR_ARG)); /*this is finding the Logger's API*/
         STRICT_EXPECTED_CALL(mocks, Logger_Receive(handle, VALID_MESSAGE_HANDLE)); /*this is calling Logger_Receive function*/
 
         ///act
@@ -705,7 +709,7 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         MODULE_HANDLE handle = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)()); /*this is finding the Logger's API*/
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)(IGNORED_PTR_ARG)); /*this is finding the Logger's API*/
         STRICT_EXPECTED_CALL(mocks, Logger_Destroy(handle)); /*this is calling Logger_Receive function*/
 
         ///act
@@ -717,20 +721,20 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_LOGGER_HL_02_010: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+    /*Tests_SRS_LOGGER_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
     {
         ///arrage
         CLoggerMocks mocks;
         
         ///act
-        const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
         ///assert
-        ASSERT_IS_NOT_NULL(apis);
-        ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-        ASSERT_IS_NOT_NULL(apis->Module_Create);
-        ASSERT_IS_NOT_NULL(apis->Module_Receive);
+        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(apis.Module_Create != NULL);
+        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 
         ///cleanup
     }

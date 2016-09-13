@@ -447,9 +447,11 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	g_testByTest = TEST_MUTEX_CREATE();
 	ASSERT_IS_NOT_NULL(g_testByTest);
 
-	JavaModuleHost_Create = Module_GetAPIS()->Module_Create;
-	JavaModuleHost_Destroy = Module_GetAPIS()->Module_Destroy;
-	JavaModuleHost_Receive = Module_GetAPIS()->Module_Receive;
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
+	JavaModuleHost_Create = apis.Module_Create;
+	JavaModuleHost_Destroy = apis.Module_Destroy;
+	JavaModuleHost_Receive = apis.Module_Receive;
 
 	umock_c_init(on_umock_c_error);
 	umocktypes_charptr_register_types();
@@ -2409,20 +2411,20 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_Broker_publishMessage_failur
 	JavaModuleHost_Destroy(module);
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_14_028: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
 TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
 {
 	//Arrange
 
 	//Act
 
-	const MODULE_APIS* apis = Module_GetAPIS();
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
 
 	//Assert
-	ASSERT_IS_NOT_NULL(apis);
-	ASSERT_IS_NOT_NULL(apis->Module_Create);
-	ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-	ASSERT_IS_NOT_NULL(apis->Module_Receive);
+	ASSERT_IS_NOT_NULL(apis.Module_Create);
+	ASSERT_IS_NOT_NULL(apis.Module_Destroy);
+	ASSERT_IS_NOT_NULL(apis.Module_Receive);
 }
 
 END_TEST_SUITE(JavaModuleHost_UnitTests);

@@ -553,18 +553,24 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 
 static const MODULE_APIS moduleInterface = 
 {
-    /*Codes_SRS_IOTHUBMODULE_02_026: [ The MODULE_APIS structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
     IotHub_Create,
     IotHub_Destroy,
     IotHub_Receive
 };
 
-/*Codes_SRS_IOTHUBMODULE_02_025: [ `Module_GetAPIS` shall return a non-`NULL` pointer. ]*/
+/*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    return &moduleInterface;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = moduleInterface;
+	}
 }

@@ -32,9 +32,9 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
 
 ## Module_GetAPIs
 
-This is the primary public interface for the module.  It returns a pointer to 
-the `MODULE_APIS` structure containing the implementation functions for this
-module. `Module_GetAPIs` returns a non-`NULL` pointer to a MODULE_APIS structure.
+This is the primary public interface for the module.  It fills out the
+provided `MODULE_APIS` structure containing the implementation functions for this
+module.
 The `MODULE_APIS` structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, 
 and `Module_Receive` fields.
 

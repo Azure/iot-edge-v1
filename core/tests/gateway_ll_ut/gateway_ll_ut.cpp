@@ -329,7 +329,7 @@ static int sampleCallbackFuncCallCount;
 static void expectEventSystemInit(CGatewayLLMocks &mocks)
 {
 	STRICT_EXPECTED_CALL(mocks, EventSystem_Init());
-	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_CREATED))
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_STARTED))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
@@ -2341,7 +2341,7 @@ TEST_FUNCTION(Gateway_LL_AddLink_with_Null_Link_Module_Source_Fail)
 	Gateway_LL_Destroy(gw);
 }
 
-/* Tests_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Event System and report GATEWAY_CREATED event. ]*/
+/* Tests_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Event System and report GATEWAY_STARTED event. ]*/
 /* Tests_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
 TEST_FUNCTION(Gateway_LL_Event_System_Create_And_Report)
 {
@@ -2432,9 +2432,9 @@ TEST_FUNCTION(Gateway_LL_AddEventCallback_NULL_Gateway)
 	// Empty! No callbacks should happen at all
 
 	// Act
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, NULL, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_STARTED, NULL, NULL);
 	Gateway_LL_AddEventCallback(NULL, GATEWAY_DESTROYED, NULL, NULL);
-	Gateway_LL_AddEventCallback(NULL, GATEWAY_CREATED, sampleCallbackFunc, NULL);
+	Gateway_LL_AddEventCallback(NULL, GATEWAY_STARTED, sampleCallbackFunc, NULL);
 
 	// Assert
 	ASSERT_ARE_EQUAL(int, sampleCallbackFuncCallCount, 0);

@@ -650,11 +650,18 @@ static const MODULE_APIS DOTNET_APIS_all =
 
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_HOST)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(DOTNET_HOST)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	/* Codes_SRS_DOTNET_04_021: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ] */
-	return &DOTNET_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_DOTNET_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = DOTNET_APIS_all;
+	}
 }

@@ -132,8 +132,8 @@ Module_GetAPIs
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_DOTNET_04_021: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. **]**
 
+**SRS_DOTNET_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 Module_DotNetHost_PublishMessage
 --------------------------------

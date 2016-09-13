@@ -116,9 +116,11 @@ static MODULE_HANDLE IotHub_HL_Create(BROKER_HANDLE broker, const void* configur
 
                     if (foundTransport)
                     {
+						MODULE_APIS apis;
+						MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
                         /*Codes_SRS_IOTHUBMODULE_HL_17_009: [ When the lower layer IotHub module creation succeeds, `IotHub_HL_Create` shall succeed and return a non-NULL value. ]*/
                         /*Codes_SRS_IOTHUBMODULE_HL_17_010: [ If the lower layer IotHub module creation fails, `IotHub_HL_Create` shall fail and return NULL. ]*/
-                        result = MODULE_STATIC_GETAPIS(IOTHUB_MODULE)()->Module_Create(broker, &llConfiguration);
+                        result = apis.Module_Create(broker, &llConfiguration);
                     }
                 }
             }
@@ -130,18 +132,21 @@ static MODULE_HANDLE IotHub_HL_Create(BROKER_HANDLE broker, const void* configur
 
 static void IotHub_HL_Destroy(MODULE_HANDLE moduleHandle)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
     /*Codes_SRS_IOTHUBMODULE_HL_17_012: [ IotHub_HL_Destroy shall free all used resources. ]*/
-    MODULE_STATIC_GETAPIS(IOTHUB_MODULE)()->Module_Destroy(moduleHandle);
+    apis.Module_Destroy(moduleHandle);
 }
 
 
 static void IotHub_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
     /*Codes_SRS_IOTHUBMODULE_HL_17_011: [ IotHub_HL_Receive shall pass the received parameters to the underlying IotHub module's receive function. ]*/
-    MODULE_STATIC_GETAPIS(IOTHUB_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+    apis.Module_Receive(moduleHandle, messageHandle);
 }
 
-/*Codes_SRS_IOTHUBMODULE_HL_17_014: [ The MODULE_APIS structure shall have non-NULL `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
 static const MODULE_APIS moduleInterface =
 {
     IotHub_HL_Create,
@@ -151,11 +156,18 @@ static const MODULE_APIS moduleInterface =
 
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUB_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUB_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_IOTHUBMODULE_HL_17_013: [ `Module_GetAPIS` shall return a non-NULL pointer. ]*/
-    return &moduleInterface;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_IOTHUBMODULE_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+		(*apis) = moduleInterface;
+	}
 }

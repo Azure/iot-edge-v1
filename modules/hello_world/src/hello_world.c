@@ -168,10 +168,17 @@ static const MODULE_APIS HelloWorld_APIS_all =
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &HelloWorld_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = HelloWorld_APIS_all;
+	}
 }

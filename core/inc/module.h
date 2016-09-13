@@ -116,7 +116,7 @@ extern "C"
     *			exported function, the caller learns the functions for the 
     *			particular module.
     */
-    typedef const MODULE_APIS* (*pfModule_GetAPIS)(void);
+    typedef void (*pfModule_GetAPIS)(MODULE_APIS* apis);
 
     /** @brief Returns the module APIS name.*/
 #define MODULE_GETAPIS_NAME ("Module_GetAPIS")
@@ -136,7 +136,7 @@ extern "C"
 *			convention" name. Using the exported function, the caller learns
 *			the functions for the particular module.
 */
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis);
 #endif // UWP_BINDING
 
 #ifdef __cplusplus

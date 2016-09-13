@@ -639,9 +639,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        Module_Create = Module_GetAPIS()->Module_Create;
-        Module_Destroy = Module_GetAPIS()->Module_Destroy;
-        Module_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        Module_Create = apis.Module_Create;
+        Module_Destroy = apis.Module_Destroy;
+        Module_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -707,35 +709,20 @@ BEGIN_TEST_SUITE(iothub_ut)
         }
     }
 
-    /*Tests_SRS_IOTHUBMODULE_02_025: [ `Module_GetAPIS` shall return a non-`NULL` pointer. ]*/
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
-    {
-        ///arrange
-        IotHubMocks mocks;
-
-        ///act
-        auto MODULEAPIS = Module_GetAPIS();
-
-        ///assert
-        ASSERT_IS_NOT_NULL(MODULEAPIS);
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-    }
-
-    /*Tests_SRS_IOTHUBMODULE_02_026: [ The MODULE_APIS structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. ]*/
+    /*Tests_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_fields)
     {
         ///arrange
         IotHubMocks mocks;
         
         ///act
-        auto MODULEAPIS = Module_GetAPIS();
+		MODULE_APIS MODULEAPIS;
+		Module_GetAPIS(&MODULEAPIS);
 
         ///assert
-        ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Create);
-        ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Destroy);
-        ASSERT_IS_NOT_NULL(MODULEAPIS->Module_Receive);
+        ASSERT_IS_TRUE(MODULEAPIS.Module_Create != NULL);
+        ASSERT_IS_TRUE(MODULEAPIS.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(MODULEAPIS.Module_Receive != NULL);
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup

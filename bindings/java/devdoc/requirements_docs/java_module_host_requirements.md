@@ -51,9 +51,8 @@ This is the primary public interface for the module. It returns a pointer to the
 `MODULE_APIS` structure containing the implementation functions for this module.
 The following functions are the implementation of those APIs.
 
-**SRS_JAVA_MODULE_HOST_14_028: [** This function shall return a
-non-`NULL` pointer to a structure of type `MODULE_APIS` that has all
-fields non-`NULL`. **]**
+**SRS_JAVA_MODULE_HOST_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
+
 
 ##JavaModuleHost_Create
 ```C

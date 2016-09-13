@@ -186,10 +186,17 @@ static const MODULE_APIS SimulatedDevice_APIS_all =
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &SimulatedDevice_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = SimulatedDevice_APIS_all;
+	}
 }

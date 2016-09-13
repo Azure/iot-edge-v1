@@ -18,7 +18,7 @@ typedef struct DOTNET_HOST_CONFIG_TAG
     const char* dotnet_module_args;
 }DOTNET_HOST_CONFIG;
 
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_HOST)(void);
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(DOTNET_HOST)(MODULE_APIS* apis);
 
 extern __declspec(dllexport) bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size);
 
