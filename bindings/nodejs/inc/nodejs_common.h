@@ -42,7 +42,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         :
         broker{ broker },
         main_path{ path },
-        configuration_json{ config == nullptr ? "" : config },
+        configuration_json{ config == nullptr ? "null" : config },
         on_module_start{ module_start },
         module_id{ 0 },
         v8_isolate{ nullptr },

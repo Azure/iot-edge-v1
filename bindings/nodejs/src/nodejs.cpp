@@ -62,20 +62,20 @@
     "})();"
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
-static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json);
+static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config);
 
 static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration)
 {
     MODULE_HANDLE result;
     const NODEJS_MODULE_CONFIG* module_config = reinterpret_cast<const NODEJS_MODULE_CONFIG*>(configuration);
-    JSON_Value* json = nullptr;
 
     /*Codes_SRS_NODEJS_13_001: [ NodeJS_Create shall return NULL if broker is NULL. ]*/
     /*Codes_SRS_NODEJS_13_002: [ NodeJS_Create shall return NULL if configuration is NULL. ]*/
     /*Codes_SRS_NODEJS_13_019: [ NodeJS_Create shall return NULL if configuration->configuration_json is not valid JSON. ]*/
+    /*Codes_SRS_NODEJS_05_001: [ NodeJS_Create shall interpret a NULL value for configuration->configuration_json as the JSON string "\"args\": null". ]*/
     /*Codes_SRS_NODEJS_13_003: [ NodeJS_Create shall return NULL if configuration->main_path is NULL. ]*/
     /*Codes_SRS_NODEJS_13_013: [ NodeJS_Create shall return NULL if configuration->main_path is an invalid file system path. ]*/
-    if (validate_input(broker, module_config, &json) == false)
+    if (validate_input(broker, module_config) == false)
     {
         result = NULL;
     }
@@ -123,17 +123,13 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
         }
     }
 
-    if (json != nullptr)
-    {
-        json_value_free(json);
-    }
-
     return result;
 }
 
-static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config, JSON_Value** json)
+static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config)
 {
     bool result;
+    JSON_Value* json = nullptr;
 
     if (broker == NULL || module_config == NULL)
     {
@@ -148,7 +144,7 @@ static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* mod
     else if (
         module_config->configuration_json != NULL
         &&
-        (*json = json_parse_string(module_config->configuration_json)) == NULL
+        (json = json_parse_string(module_config->configuration_json)) == NULL
     )
     {
         LogError("Unable to parse configuration JSON");
@@ -168,6 +164,11 @@ static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* mod
     else
     {
         result = true;
+    }
+
+    if (json != nullptr)
+    {
+        json_value_free(json);
     }
 
     return result;

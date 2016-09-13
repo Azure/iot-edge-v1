@@ -44,6 +44,8 @@ pointer to a `NODEJS_MODULE_CONFIG` object.
 
 **SRS_NODEJS_13_019: [** `NodeJS_Create` shall return `NULL` if `configuration->configuration_json` is not valid JSON. **]**
 
+**SRS_NODEJS_05_001: [** `NodeJS_Create` shall interpret a `NULL` value for `configuration->configuration_json` as the JSON string `"\"args\": null"`. **]**
+
 **SRS_NODEJS_13_003: [** `NodeJS_Create` shall return `NULL` if `configuration->main_path` is `NULL`. **]**
 
 **SRS_NODEJS_13_013: [** `NodeJS_Create` shall return `NULL` if `configuration->main_path` is an invalid file system path. **]**

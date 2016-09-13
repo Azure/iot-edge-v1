@@ -427,6 +427,42 @@ BEGIN_TEST_SUITE(nodejs_int)
         ASSERT_IS_NULL(result);
     }
 
+    TEST_FUNCTION(NODEJS_Create_returns_handle_for_NULL_config_json)
+    {
+        ///arrange
+        const char* NOOP_JS_MODULE =
+            "module.exports = { "                        \
+            "create: function(b, c) { return true; }, "  \
+            "receive: function(m) {}, "                  \
+            "destroy: function() {} "                    \
+            "};";
+
+        TempFile js_file;
+        js_file.Write(NOOP_JS_MODULE);
+
+        NODEJS_MODULE_CONFIG config = {
+            js_file.js_file_path.c_str(),
+            NULL
+        };
+
+        ///act
+        auto result = NODEJS_Create(g_broker, &config);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+
+        // wait for 15 seconds for the create to get done
+        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+        wait_for_predicate(15, [handle_data]() {
+            return handle_data->GetModuleState() == NodeModuleState::initialized;
+        });
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
+        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+
+        ///cleanup
+        NODEJS_Destroy(result);
+    }
+
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)
     {
         ///arrrange
