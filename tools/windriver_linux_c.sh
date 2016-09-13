@@ -106,7 +106,7 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cmake -DCMAKE_BUILD_TYPE=Debug -Dskip_unittests:BOOL=ON -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)
