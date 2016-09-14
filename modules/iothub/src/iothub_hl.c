@@ -37,7 +37,7 @@ static int strcmp_i(const char* lhs, const char* rhs)
 
 static MODULE_HANDLE IotHub_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
-    MODULE_HANDLE *result;
+    MODULE_HANDLE result;
     if ((broker == NULL) || (configuration == NULL))
     {
         /*Codes_SRS_IOTHUBMODULE_HL_17_001: [If `broker` is NULL then `IotHub_HL_Create` shall fail and return NULL.]*/

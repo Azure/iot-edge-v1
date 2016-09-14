@@ -79,7 +79,7 @@ static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
  */
 static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
-	MODULE_HANDLE *result;
+	MODULE_HANDLE result;
 	if ((broker == NULL) || (configuration == NULL))
 	{
 		/*Codes_SRS_IDMAP_HL_17_003: [ If broker is NULL then IdentityMap_HL_Create shall fail and return NULL. ]*/
