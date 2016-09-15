@@ -43,7 +43,6 @@ function(linkHttp whatExecutableIsBuilding)
 endfunction(linkHttp)
 
 function(includeHttp)
-#function body to be similar to includeProton
 endfunction(includeHttp)
 
 
