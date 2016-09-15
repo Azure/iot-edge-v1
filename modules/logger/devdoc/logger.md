@@ -116,4 +116,5 @@ void Logger_Destroy(MODULE_HANDLE moduleHandle);
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_LOGGER_02_016: [**Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL.**]**
+
+**SRS_LOGGER_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

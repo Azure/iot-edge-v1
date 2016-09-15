@@ -82,4 +82,5 @@ void NODEJS_HL_Destroy(MODULE_HANDLE module)
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_NODEJS_HL_13_011: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type `MODULE_APIS` that has all fields non-`NULL`. **]**
+
+**SRS_NODEJS_HL_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**

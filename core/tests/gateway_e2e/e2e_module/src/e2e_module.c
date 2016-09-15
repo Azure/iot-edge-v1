@@ -186,7 +186,7 @@ static const MODULE_APIS E2EModule_APIS_all =
 	E2EModule_Receive
 };
 
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 {
-	return &E2EModule_APIS_all;
+	(*apis) = E2EModule_APIS_all;
 }

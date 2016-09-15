@@ -1667,12 +1667,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create(NULL, "Anything");
+		auto result = theAPIS.Module_Create(NULL, "Anything");
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1686,12 +1687,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, NULL);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, NULL);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1705,7 +1707,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = NULL;
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1714,7 +1717,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1728,7 +1731,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = NULL;
@@ -1737,7 +1741,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1751,7 +1755,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1760,7 +1765,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1774,7 +1779,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1791,7 +1797,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		mocks.ResetAllCalls();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1805,7 +1811,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1818,7 +1825,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1832,7 +1839,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1848,7 +1856,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1862,7 +1870,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1881,7 +1890,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1895,7 +1904,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1915,7 +1925,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.IgnoreAllArguments();
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1929,7 +1939,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1953,7 +1964,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -1967,7 +1978,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -1992,7 +2004,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2007,7 +2019,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2036,7 +2049,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2050,7 +2063,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2082,7 +2096,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2096,7 +2110,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2132,7 +2147,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2146,7 +2161,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2185,7 +2201,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2199,7 +2215,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2243,7 +2260,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2257,7 +2274,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2305,7 +2323,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((SAFEARRAY*)NULL);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2320,7 +2338,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2377,7 +2396,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2391,7 +2410,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2452,7 +2472,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2466,7 +2486,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2531,7 +2552,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2545,7 +2566,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2621,7 +2643,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2635,7 +2657,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2719,7 +2742,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2732,7 +2755,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2813,7 +2837,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2826,7 +2850,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -2917,7 +2942,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.SetFailReturn((HRESULT)E_POINTER);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -2938,7 +2963,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -3028,14 +3054,14 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.IgnoreArgument(6);
 
 		///act
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
 		ASSERT_IS_NOT_NULL(result);
 
 		///cleanup
-		theAPIS->Module_Destroy((MODULE_HANDLE)result);
+		theAPIS.Module_Destroy((MODULE_HANDLE)result);
 	}
 
 	/* Tests_SRS_DOTNET_04_015: [ DotNET_Receive shall do nothing if module is NULL. ] */
@@ -3043,12 +3069,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 
 		mocks.ResetAllCalls();
 
 		///act
-		theAPIS->Module_Receive(NULL,(MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive(NULL,(MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3061,12 +3088,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 
 		mocks.ResetAllCalls();
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)0x42, NULL);
+		theAPIS.Module_Receive((MODULE_HANDLE)0x42, NULL);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3079,14 +3107,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3095,7 +3124,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3107,14 +3136,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3124,7 +3154,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3137,14 +3167,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3161,7 +3192,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3175,14 +3206,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3200,7 +3232,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3214,14 +3246,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3243,7 +3276,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3256,14 +3289,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3287,7 +3321,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3300,14 +3334,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3337,7 +3372,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3350,14 +3385,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3390,7 +3426,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3403,14 +3439,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3445,7 +3482,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3458,14 +3495,15 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
 		dotNetConfig.dotnet_module_args = "module configuration";
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3506,7 +3544,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3519,7 +3557,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
@@ -3528,7 +3567,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		bstr_t bstrReceiveClientMethodName(L"Receive");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3574,7 +3613,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3587,7 +3626,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
@@ -3596,7 +3636,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		bstr_t bstrReceiveClientMethodName(L"Receive");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 
@@ -3641,7 +3681,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 
 		///act
-		theAPIS->Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
+		theAPIS.Module_Receive((MODULE_HANDLE)result, (MESSAGE_HANDLE)0x42);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3654,12 +3694,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 
 		mocks.ResetAllCalls();
 
 		///act
-		theAPIS->Module_Destroy((MODULE_HANDLE)NULL);
+		theAPIS.Module_Destroy((MODULE_HANDLE)NULL);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3673,7 +3714,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	{
 		///arrage
 		CDOTNETMocks mocks;
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
 		DOTNET_HOST_CONFIG dotNetConfig;
 		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
 		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
@@ -3681,7 +3723,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		bstr_t bstrDestroyClientMethodName(L"Destroy");
 		variant_t emptyVariant(0);
 
-		auto  result = theAPIS->Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
 
 		mocks.ResetAllCalls();
 		STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrDestroyClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -3690,7 +3732,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 			.IgnoreArgument(6);
 
 		///act
-		theAPIS->Module_Destroy(result);
+		theAPIS.Module_Destroy(result);
 
 		///assert
 		mocks.AssertActualAndExpectedCalls();
@@ -3829,7 +3871,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_021: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ] */
+	/* Tests_SRS_DOTNET_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
 	TEST_FUNCTION(DotNET_Module_GetAPIS_returns_non_NULL)
 	{
 		///arrage
@@ -3837,13 +3879,13 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 		mocks.ResetAllCalls();
 		///act
-		const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
 		///assert
-		ASSERT_IS_NOT_NULL(apis);
-		ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-		ASSERT_IS_NOT_NULL(apis->Module_Create);
-		ASSERT_IS_NOT_NULL(apis->Module_Receive);
+		ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 
 		///cleanup
 	}

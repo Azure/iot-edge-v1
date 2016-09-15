@@ -139,4 +139,4 @@ void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 
-**SRS_BLE_HL_13_019: [** `Module_GetAPIS` shall return a non-`NULL` pointer to a structure of type `MODULE_APIS` that has all fields initialized to non-`NULL` values. **]**
+**SRS_BLE_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

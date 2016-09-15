@@ -91,7 +91,7 @@ typedef struct GATEWAY_MODULE_INFO_TAG
 typedef enum GATEWAY_EVENT_TAG
 {
 	/** @brief Called when the gateway is created. */
-	GATEWAY_CREATED = 0,
+	GATEWAY_STARTED = 0,
 
 	/** @brief  Called every time a list of modules or links changed and during gateway creation.
 	 *

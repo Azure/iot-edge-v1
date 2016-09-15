@@ -444,8 +444,9 @@ public:
         free(value);
     MOCK_VOID_METHOD_END();
     
-    MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE))
-    MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&BLE_APIS);
+	MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(BLE_MODULE), MODULE_APIS*, apis)
+		(*apis) = BLE_APIS;
+	MOCK_VOID_METHOD_END();
 
     MOCK_STATIC_METHOD_2(, MODULE_HANDLE, BLE_Create, BROKER_HANDLE, broker, const void*, configuration)
         BLE_CONFIG *config = (BLE_CONFIG*)malloc(sizeof(BLE_CONFIG));
@@ -561,7 +562,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, BLE_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
-DECLARE_GLOBAL_MOCK_METHOD_0(CBLEHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(BLE_MODULE));
+DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, MODULE_STATIC_GETAPIS(BLE_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, VECTOR_destroy, VECTOR_HANDLE, vector);
@@ -596,9 +597,11 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        BLE_HL_Create = Module_GetAPIS()->Module_Create;
-        BLE_HL_Destroy = Module_GetAPIS()->Module_Destroy;
-        BLE_HL_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        BLE_HL_Create = apis.Module_Create;
+        BLE_HL_Destroy = apis.Module_Destroy;
+        BLE_HL_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -1555,7 +1558,7 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///arrange
         CBLEHLMocks mocks;
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)(IGNORED_PTR_ARG));
 
         STRICT_EXPECTED_CALL(mocks, BLE_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
             .IgnoreArgument(2)
@@ -1629,7 +1632,7 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         ///arrange
         CBLEHLMocks mocks;
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)(IGNORED_PTR_ARG));
 
         STRICT_EXPECTED_CALL(mocks, BLE_Create((BROKER_HANDLE)0x42, IGNORED_PTR_ARG))
             .IgnoreArgument(2);
@@ -1729,7 +1732,7 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         STRICT_EXPECTED_CALL(mocks, BUFFER_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)(IGNORED_PTR_ARG));
 
         STRICT_EXPECTED_CALL(mocks, BLE_Destroy(module));
 
@@ -1757,7 +1760,7 @@ BEGIN_TEST_SUITE(ble_hl_ut)
 
         MESSAGE_HANDLE fakeMessage = (MESSAGE_HANDLE)0x42;
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)(IGNORED_PTR_ARG));
         STRICT_EXPECTED_CALL(mocks, BLE_Receive(module, (MESSAGE_HANDLE)0x42));
 
         ///act
@@ -1804,20 +1807,20 @@ BEGIN_TEST_SUITE(ble_hl_ut)
         BLE_HL_Destroy(module);
     }
 
-    /*Tests_SRS_BLE_HL_13_019: [Module_GetAPIS shall return a non - NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non - NULL values.]*/
+    /*Tests_SRS_BLE_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
     {
         ///arrage
         CBLEHLMocks mocks;
 
         ///act
-        const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
         ///assert
-        ASSERT_IS_NOT_NULL(apis);
-        ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-        ASSERT_IS_NOT_NULL(apis->Module_Create);
-        ASSERT_IS_NOT_NULL(apis->Module_Receive);
+		ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 
         ///cleanup
     }

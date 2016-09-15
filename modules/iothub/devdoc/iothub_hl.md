@@ -65,5 +65,4 @@ void IotHub_HL_Destroy(MODULE_HANDLE moduleHandle);
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 
-**SRS_IOTHUBMODULE_HL_17_013: [** `Module_GetAPIS` shall return a non-NULL pointer. **]**
-**SRS_IOTHUBMODULE_HL_17_014: [** The MODULE_APIS structure shall have non-NULL `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. **]**
+**SRS_IOTHUBMODULE_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

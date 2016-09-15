@@ -315,7 +315,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 					{
 						/* TODO: Seperate the gateway init from gateway start-up so that plugins have the chance
 						* register themselves */
-						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
+						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
 						gateway->event_system = EventSystem_Init();
 						/*Codes_SRS_GATEWAY_LL_26_002: [ If Gateway Events module fails to be initialized the gateway module shall be destroyed with no events reported. ] */
 						if (gateway->event_system == NULL)
@@ -326,8 +326,8 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						}
 						else
 						{
-							/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
-							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_CREATED);
+							/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
+							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_STARTED);
 							/*Codes_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
 							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
 						}
