@@ -527,12 +527,16 @@ BEGIN_TEST_SUITE(nodejs_int)
 		ASSERT_IS_TRUE(result1 != result2);
 
 		// wait for 15 seconds for the create to get done
-		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result2);
-		wait_for_predicate(15, [handle_data]() {
-			return handle_data->GetModuleState() == NodeModuleState::initialized;
+		NODEJS_MODULE_HANDLE_DATA* handle_data1 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result1);
+		NODEJS_MODULE_HANDLE_DATA* handle_data2 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result2);
+		wait_for_predicate(15, [handle_data1, handle_data2]() {
+			return handle_data1->GetModuleState() == NodeModuleState::initialized && 
+				   handle_data2->GetModuleState() == NodeModuleState::initialized;
 		});
-		ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
-		ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+		ASSERT_IS_TRUE(handle_data1->GetModuleState() == NodeModuleState::initialized);
+		ASSERT_IS_TRUE(handle_data1->module_object.IsEmpty() == false);
+		ASSERT_IS_TRUE(handle_data2->GetModuleState() == NodeModuleState::initialized);
+		ASSERT_IS_TRUE(handle_data2->module_object.IsEmpty() == false);
 
 		///cleanup
 		NODEJS_Destroy(result1);
