@@ -1,0 +1,21 @@
+{
+  "modules": [
+    {
+      "module name": "hello_world",
+      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+      "args": null
+    },
+    {
+      "module name": "functions_http_trigger",
+      "module path": "..\\..\\..\\modules\\functionshttptrigger\\Debug\\functions_http_trigger_hl.dll",
+      "args": {
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "functions_http_trigger"
+    }
+  ]
+}
