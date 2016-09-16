@@ -9,6 +9,8 @@
       "module name": "functions_http_trigger",
       "module path": "..\\..\\..\\modules\\functionshttptrigger\\Debug\\functions_http_trigger_hl.dll",
       "args": {
+        "hostname": "<YourHosNAmeHere from Functions Portal>",
+        "relativePath": "api/<YourFunctionName>"
       }
     }
   ],
