@@ -286,6 +286,19 @@ static void publish_mock_message(const v8::FunctionCallbackInfo<v8::Value>& info
     g_mock_module.publish_mock_message();
 }
 
+static const char * NOOP_JS_MODULE = "module.exports = { "   \
+"create: function(broker, configuration) { "       \
+"  console.log('create'); "                            \
+"  return true; "                                      \
+"}, "                                                  \
+"receive: function(msg) { "                            \
+"  console.log('receive'); "                           \
+"}, "                                                  \
+"destroy: function() { "                               \
+"  console.log('destroy'); "                           \
+"} "                                                   \
+"};";
+
 BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_SUITE_INITIALIZE(TestClassInitialize)
@@ -433,12 +446,6 @@ BEGIN_TEST_SUITE(nodejs_int)
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_NULL_config_json)
     {
         ///arrange
-        const char* NOOP_JS_MODULE =
-            "module.exports = { "                        \
-            "create: function(b, c) { return true; }, "  \
-            "receive: function(m) {}, "                  \
-            "destroy: function() {} "                    \
-            "};";
 
         TempFile js_file;
         js_file.Write(NOOP_JS_MODULE);
@@ -466,21 +473,11 @@ BEGIN_TEST_SUITE(nodejs_int)
         NODEJS_Destroy(result);
     }
 
+
+
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)
     {
-        ///arrrange
-        const char* NOOP_JS_MODULE = "module.exports = { "   \
-            "create: function(broker, configuration) { "       \
-            "  console.log('create'); "                            \
-            "  return true; "                                      \
-            "}, "                                                  \
-            "receive: function(msg) { "                            \
-            "  console.log('receive'); "                           \
-            "}, "                                                  \
-            "destroy: function() { "                               \
-            "  console.log('destroy'); "                           \
-            "} "                                                   \
-            "};";
+        ///arrange
 
         TempFile js_file;
         js_file.Write(NOOP_JS_MODULE);
@@ -510,19 +507,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
 	TEST_FUNCTION(NODEJS_Create_returns_handle_for_adding_same_nodejs_module_twice)
 	{
-		///arrrange
-		const char* NOOP_JS_MODULE = "module.exports = { "   \
-			"create: function(broker, configuration) { "       \
-			"  console.log('create'); "                            \
-			"  return true; "                                      \
-			"}, "                                                  \
-			"receive: function(msg) { "                            \
-			"  console.log('receive'); "                           \
-			"}, "                                                  \
-			"destroy: function() { "                               \
-			"  console.log('destroy'); "                           \
-			"} "                                                   \
-			"};";
+		///arrange
 
 		TempFile js_file;
 		js_file.Write(NOOP_JS_MODULE);
