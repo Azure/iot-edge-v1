@@ -384,6 +384,8 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
 
+**SRS_GATEWAY_LL_26_020: [** The function shall make a copy of the name of the module for internal use. **]**
+
 ## Gateway_LL_RemoveModule
 ```
 extern void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
