@@ -386,7 +386,6 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                                         }
                                         else
                                         {
-											LogInfo("Received Data: %s", STRING_c_str(jsonToBeAppended));
                                             /*all seems fine*/
                                         }
                                     }
