@@ -59,7 +59,6 @@ static MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const voi
 		else
 		{
 			result->functionsHttpTriggerConfiguration = (FUNCTIONS_HTTP_TRIGGER_CONFIG*)malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG));
-			//TODO: MISSING ALL THE CHECK AND CLEAN UP. 
 			result->functionsHttpTriggerConfiguration->hostAddress = STRING_clone(config->hostAddress);
 			result->functionsHttpTriggerConfiguration->relativePath = STRING_clone(config->relativePath);
 			result->broker = broker;
@@ -74,7 +73,6 @@ static MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const voi
 /*
 * @brief	Destroy an identity map module.
 */
-//TODO: CHECK FOR MEMORY LEAKS.
 static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle)
 {
 	if (moduleHandle != NULL)
@@ -91,7 +89,6 @@ static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle)
 /*
  * @brief	Receive a message from the message broker.
  */
-//TODO: PARSE ADDRESS INPUT, CLEAN UP, BUILD PARAMETERS ON THE HTTP REQUEST.
 static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	if (moduleHandle == NULL || messageHandle == NULL)
