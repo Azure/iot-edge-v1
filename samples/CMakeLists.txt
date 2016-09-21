@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for samples folder
 
 add_subdirectory(hello_world)
+add_subdirectory(device_ping)
 add_subdirectory(simulated_device_cloud_upload)
 add_subdirectory(callbacks_sample)
 

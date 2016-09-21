@@ -1,0 +1,11 @@
+{
+    "modules": [
+        {
+            "module name": "iothubdeviceping",
+            "module path": "..\\..\\..\\modules\\iothubdeviceping\\Debug\\iothubdeviceping_hl.dll",
+            "args": {
+                "DeviceConnectionString": "HostName=yaweiIotHub.azure-devices.net;DeviceId=yaweiFirstDevice;SharedAccessKey=e3MIeWm8OvVL2zwqiVymLla1uIvsl3vQVO0cFUjoKb8="
+            }
+        }
+    ]
+}

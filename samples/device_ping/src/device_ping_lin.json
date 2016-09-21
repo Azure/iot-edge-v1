@@ -1,0 +1,11 @@
+{
+    "modules": [
+        {
+            "module name": "iothubdeviceping_hl",
+            "module path": "./modules/iothubdeviceping/libiothubdeviceping_hl.so",
+            "args": {
+                "DeviceConnectionString": "<DeviceConnectionString>"
+            }
+        }
+    ]
+}
