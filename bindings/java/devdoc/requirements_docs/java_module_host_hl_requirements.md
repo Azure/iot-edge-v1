@@ -95,6 +95,14 @@ static void JavaModuleHost_HL_Destroy(MODULE_HANDLE module);
 ```
 **SRS_JAVA_MODULE_HOST_HL_14_008: [** This function shall call the underlying Java Module Host's `_Destroy` function using this `module` `MODULE_HANDLE`. **]**
 
+##JavaModuleHost_HL_Start
+```c
+static void JavaModuleHost_HL_Start(MODULE_HANDLE module);
+```
+
+**SRS_JAVA_MODULE_HOST_HL_17_001: [** This function shall pass the arguments to the underlying Java Module Host's `_Start` function, if defined. **]**
+
+
 ##JavaModuleHost_HL_Receive
 ```C
 static void JavaModuleHost_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);

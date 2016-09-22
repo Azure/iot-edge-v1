@@ -746,7 +746,8 @@ static const MODULE_APIS Module_GetAPIS_Impl =
 {
     BLE_Create,
     BLE_Destroy,
-    BLE_Receive
+    BLE_Receive, 
+	NULL
 };
 
 /*Codes_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/

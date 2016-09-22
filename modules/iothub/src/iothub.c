@@ -555,7 +555,8 @@ static const MODULE_APIS moduleInterface =
 {
     IotHub_Create,
     IotHub_Destroy,
-    IotHub_Receive
+    IotHub_Receive,
+	NULL
 };
 
 /*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/

@@ -153,21 +153,8 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 			else
 			{
 				result->fakeMacAddress = newFakeAdress;
-				/* OK to start */
-				/* Create a fake data thread.  */
-				if (ThreadAPI_Create(
-					&(result->simulatedDeviceThread),
-					simulated_device_worker,
-					(void*)result) != THREADAPI_OK)
-				{
-					LogError("ThreadAPI_Create failed");
-					free(result);
-					result = NULL;
-				}
-				else
-				{
-					/* Thread started, module created, all complete.*/
-				}
+				result->simulatedDeviceThread = NULL;
+
 			}
 
         }
@@ -175,6 +162,32 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 	return result;
 }
 
+
+static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
+{
+	if (moduleHandle == NULL)
+	{
+		LogError("Attempt to start NULL module");
+	}
+	else
+	{
+		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+		/* OK to start */
+		/* Create a fake data thread.  */
+		if (ThreadAPI_Create(
+			&(module_data->simulatedDeviceThread),
+			simulated_device_worker,
+			(void*)module_data) != THREADAPI_OK)
+		{
+			LogError("ThreadAPI_Create failed");
+			module_data->simulatedDeviceThread = NULL;
+		}
+		else
+		{
+			/* Thread started, module created, all complete.*/
+		}
+	}
+}
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
@@ -182,7 +195,8 @@ static const MODULE_APIS SimulatedDevice_APIS_all =
 {
 	SimulatedDevice_Create,
 	SimulatedDevice_Destroy,
-	SimulatedDevice_Receive
+	SimulatedDevice_Receive,
+	SimulatedDevice_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

@@ -168,6 +168,19 @@ static void IdentityMap_HL_Destroy(MODULE_HANDLE moduleHandle)
 	apis.Module_Destroy(moduleHandle);
 }
 
+/*
+* @brief	Start the Module.
+*/
+static void IdentityMap_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		/*Codes_SRS_IDMAP_HL_17_021: [ IdentityMap_HL_Start shall pass the received parameters to the underlying identity map module start function, if defined. ]*/
+		apis.Module_Start(moduleHandle);
+	}
+}
 
 /*
  * @brief	Receive a message from the message broker.
@@ -188,7 +201,8 @@ static const MODULE_APIS IdentityMap_HL_APIS_all =
 {
 	IdentityMap_HL_Create,
 	IdentityMap_HL_Destroy,
-	IdentityMap_HL_Receive
+	IdentityMap_HL_Receive,
+	IdentityMap_HL_Start
 };
 
 /*Codes_SRS_IDMAP_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/

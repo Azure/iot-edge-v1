@@ -858,7 +858,8 @@ static const MODULE_APIS JavaModuleHost_APIS =
 {
 	JavaModuleHost_Create,
 	JavaModuleHost_Destroy,
-	JavaModuleHost_Receive
+	JavaModuleHost_Receive,
+	NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

@@ -25,6 +25,7 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static pfModule_Create  BLE_HL_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy BLE_HL_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive BLE_HL_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start BLE_HL_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 static size_t gMessageSize;
 static const unsigned char * gMessageSource;
@@ -300,12 +301,14 @@ MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration);
 void BLE_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void BLE_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void BLE_Start(MODULE_HANDLE moduleHandle);
 
 static MODULE_APIS BLE_APIS =
 {
     BLE_Create,
     BLE_Destroy,
-    BLE_Receive
+    BLE_Receive,
+	BLE_Start
 };
 
 TYPED_MOCK_CLASS(CBLEHLMocks, CGlobalMock)
@@ -454,6 +457,11 @@ public:
         MODULE_HANDLE result2 = (MODULE_HANDLE)config;
     MOCK_METHOD_END(MODULE_HANDLE, result2);
 
+
+	MOCK_STATIC_METHOD_1(, void, BLE_Start, MODULE_HANDLE, moduleHandle)
+	MOCK_VOID_METHOD_END()
+
+
     MOCK_STATIC_METHOD_1(, void, BLE_Destroy, MODULE_HANDLE, moduleHandle)
         if(moduleHandle != NULL)
         {
@@ -562,6 +570,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , MODULE_HANDLE, BLE_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, BLE_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEHLMocks, , void, BLE_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, BLE_Start, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , void, MODULE_STATIC_GETAPIS(BLE_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEHLMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize);
@@ -601,7 +610,8 @@ BEGIN_TEST_SUITE(ble_hl_ut)
 		Module_GetAPIS(&apis);
         BLE_HL_Create = apis.Module_Create;
         BLE_HL_Destroy = apis.Module_Destroy;
-        BLE_HL_Receive = apis.Module_Receive;
+		BLE_HL_Receive = apis.Module_Receive;
+		BLE_HL_Start = apis.Module_Start;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -1744,6 +1754,33 @@ BEGIN_TEST_SUITE(ble_hl_ut)
 
         ///cleanup
     }
+
+	/*Tests_SRS_BLE_HL_17_003: [ BLE_HL_Start shall pass the received parameters to the underlying BLE module's Start function, if defined. ]*/
+	TEST_FUNCTION(BLE_HL_Start_forwards_call)
+	{
+		///arrange
+		CBLEHLMocks mocks;
+		unsigned char fake = '\0';
+		CONSTBUFFER messageBuffer;
+		messageBuffer.buffer = &fake;
+		messageBuffer.size = 1;
+
+		auto module = BLE_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		mocks.ResetAllCalls();
+
+
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(BLE_MODULE)(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, BLE_Start(module));
+
+		///act
+		BLE_HL_Start(module);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+		BLE_HL_Destroy(module);
+	}
 
     /*Tests_SRS_BLE_HL_13_024: [ BLE_HL_Receive shall pass the received parameters to the underlying BLE module's receive function. ]*/
     TEST_FUNCTION(BLE_HL_Receive_forwards_call)

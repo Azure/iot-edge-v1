@@ -97,6 +97,16 @@ static void JavaModuleHost_HL_Destroy(MODULE_HANDLE module)
 	apis.Module_Destroy(module);
 }
 
+static void JavaModuleHost_HL_Start(MODULE_HANDLE module)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(module);
+	}
+}
+
 static void JavaModuleHost_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_HL_14_009: [ This function shall call the underlying Java Module Host's _Receive function using this module MODULE_HANDLE and message MESSAGE_HANDLE. ]*/
@@ -160,7 +170,8 @@ static const MODULE_APIS JavaModuleHost_HL_APIS =
 {
 	JavaModuleHost_HL_Create,
 	JavaModuleHost_HL_Destroy,
-	JavaModuleHost_HL_Receive
+	JavaModuleHost_HL_Receive,
+	JavaModuleHost_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

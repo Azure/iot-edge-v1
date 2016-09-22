@@ -43,7 +43,8 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
             }
         }
     ]
-}```
+}
+```
 
 
 **SRS_DOTNET_HL_04_001: [** If `broker` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
@@ -64,6 +65,13 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
 
 **SRS_DOTNET_HL_04_009: [** If `DotNET_Create` fails then `DotNET_HL_Create` shall fail and return NULL. **]**
 
+
+DotNET_HL_Start
+---------------
+```c
+void DotNET_HL_Start(MODULE_HANDLE module);
+```
+**SRS_DOTNET_HL_17_001: [** `DotNET_HL_Start` shall pass the received parameters to the underlying DotNET Host Module's `_Start` function, if defined. **]**
 
 DotNET_HL_Receive
 ---------------

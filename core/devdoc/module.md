@@ -48,13 +48,13 @@ extern "C"
     *			contain Hamdle/FxnPtrs or an interface ptr or some unforseen
     *			representation.
     */
-    typedef struct MODULE_TAG
+    struct MODULE_TAG
     {
         /** @brief Struct containing function pointers */
         const MODULE_APIS* module_apis;
         /** @brief HANDLE for module. */
         MODULE_HANDLE module_handle;
-    }MODULE;
+    };
 
     /** @brief		Creates a module using the specified configuration connecting
     *				to the specified message broker.
@@ -63,7 +63,7 @@ extern "C"
     *
     *	@param		broker		The #BROKER_HANDLE onto which this module
     *								will connect.
-    *	@param		configureation	A pointer to the user-defined configuration 
+    *	@param		configuration	A pointer to the user-defined configuration 
     *								structure for this module.
     *
     *	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
@@ -91,10 +91,20 @@ extern "C"
     */
     typedef void(*pfModule_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
+	/** @brief		The module may start activity.  This is called when the broker
+	*				is guaranteed to be ready to accept messages from this module.
+	*
+	*	@details	This function may be implemented by the module creator.
+	*
+	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
+	*								message.
+	*/
+	typedef void(*pfModule_Start)(MODULE_HANDLE moduleHandle);
+
     /** @brief	Structure returned by ::Module_GetAPIS containing the function
     *			pointers of the module-specific implementations of the interface.
     */
-    typedef struct MODULE_APIS_TAG
+    struct MODULE_APIS_TAG
     {
         /** @brief Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;
@@ -104,7 +114,10 @@ extern "C"
 
         /** @brief Function pointer to the #Module_Receive function. */
         pfModule_Receive Module_Receive;
-    }MODULE_APIS;
+
+		/** @brief Function pointer to the #Module_Start function (optional). */
+		pfModule_Start Module_Start;
+    };
 
     /** @brief	This is the only function exported by a module. Using the
     *			exported function, the caller learns the functions for the 
@@ -167,3 +180,11 @@ static void Module_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 This function is to be implemented by the module creator. This function is called by the
 framework. This function is not called re-entrant. This function shouldn't assume it is 
 called from the same thread.
+
+## Module_Start
+```c
+static void Module_Start(MODULE_HANDLE moduleHandle);
+```
+
+This function may be implemented by the module creator.  It is allowed to be `NULL` in the `MODULE_APIS` structure. If defined, this function is called by the framework when the message broker is guaranteed to be ready to accept messages from the module.
+

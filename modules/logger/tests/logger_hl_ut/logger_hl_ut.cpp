@@ -240,12 +240,14 @@ MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration);
 void Logger_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void Logger_Start(MODULE_HANDLE moduleHandle);
 
 static MODULE_APIS Logger_APIS =
 {
     Logger_Create,
     Logger_Destroy,
-    Logger_Receive
+    Logger_Receive,
+	Logger_Start
 };
 
 TYPED_MOCK_CLASS(CLoggerMocks, CGlobalMock)
@@ -415,6 +417,9 @@ public:
     
     MOCK_STATIC_METHOD_2(, void, Logger_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
     MOCK_VOID_METHOD_END()
+
+	MOCK_STATIC_METHOD_1(, void, Logger_Start, MODULE_HANDLE, moduleHandle)
+	MOCK_VOID_METHOD_END()
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , JSON_Value*, json_parse_file, const char *, filename);
@@ -461,6 +466,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, MODULE_STATIC_GETAPIS(LOGGER_
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , MODULE_HANDLE, Logger_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, Logger_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , void, Logger_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, Logger_Start, MODULE_HANDLE, moduleHandle);
 
 /*definitions of cached functions, initialized in TEST_FIUCNTION_INIT*/
 
@@ -469,6 +475,8 @@ MODULE_HANDLE (*Logger_HL_Create)(BROKER_HANDLE broker, const void* configuratio
 void (*Logger_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*Logger_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void(*Logger_HL_Start)(MODULE_HANDLE moduleHandle);
+
 
 static BROKER_HANDLE validBrokerHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
@@ -490,6 +498,7 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         Logger_HL_Create = apis.Module_Create;
         Logger_HL_Destroy = apis.Module_Destroy;
         Logger_HL_Receive = apis.Module_Receive;
+		Logger_HL_Start = apis.Module_Start;
 
     }
 
@@ -680,6 +689,27 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         ///cleanup
     }
 
+	/*Tests_SRS_LOGGER_HL_17_001: [ Logger_HL_Start shall pass the received parameters to the underlying Logger's _Start function, if defined. ]*/
+	TEST_FUNCTION(Logger_HL_Start_passthrough_succeeds)
+	{
+		///arrage
+		CLoggerMocks mocks;
+		MODULE_HANDLE handle = Logger_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
+		mocks.ResetAllCalls();
+
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(LOGGER_MODULE)(IGNORED_PTR_ARG)); /*this is finding the Logger's API*/
+		STRICT_EXPECTED_CALL(mocks, Logger_Start(handle)); /*this is calling Logger_Start function*/
+
+		///act
+		Logger_HL_Start(handle);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+		Logger_HL_Destroy(handle);
+	}
+
     /*Tests_SRS_LOGGER_HL_02_008: [ Logger_HL_Receive shall pass the received parameters to the underlying Logger's _Receive function. ]*/
     TEST_FUNCTION(Logger_HL_Receive_passthrough_succeeds)
     {
@@ -734,7 +764,8 @@ BEGIN_TEST_SUITE(logger_hl_ut)
         ///assert
         ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
         ASSERT_IS_TRUE(apis.Module_Create != NULL);
-        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+		ASSERT_IS_TRUE(apis.Module_Start != NULL);
 
         ///cleanup
     }

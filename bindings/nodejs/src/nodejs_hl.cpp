@@ -100,6 +100,17 @@ static void NODEJS_HL_Destroy(MODULE_HANDLE module)
 	apis.Module_Destroy(module);
 }
 
+static void NODEJS_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(NODEJS_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+
+	}
+}
+
 static void NODEJS_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     /*Codes_SRS_NODEJS_HL_13_009: [ NODEJS_HL_Receive shall pass the received parameters to the underlying module's _Receive function. ]*/
@@ -115,7 +126,8 @@ static const MODULE_APIS NODEJS_HL_APIS_all =
 {
     NODEJS_HL_Create,
     NODEJS_HL_Destroy,
-    NODEJS_HL_Receive
+    NODEJS_HL_Receive,
+    NODEJS_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

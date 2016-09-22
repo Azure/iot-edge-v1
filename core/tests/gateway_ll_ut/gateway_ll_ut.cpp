@@ -21,6 +21,7 @@
 #define GBALLOC_H
 
 DEFINE_MICROMOCK_ENUM_TO_STRING(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
+DEFINE_MICROMOCK_ENUM_TO_STRING(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
 
 extern "C" int gballoc_init(void);
 extern "C" void gballoc_deinit(void);
@@ -95,6 +96,9 @@ public:
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_2(, void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, void, mock_Module_Start, MODULE_HANDLE, moduleHandle)
 	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, broker)
@@ -288,6 +292,7 @@ public:
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, mock_Module_Start, MODULE_HANDLE, moduleHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , BROKER_HANDLE, Broker_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);
@@ -334,7 +339,7 @@ static int sampleCallbackFuncCallCount;
 static void expectEventSystemInit(CGatewayLLMocks &mocks)
 {
 	STRICT_EXPECTED_CALL(mocks, EventSystem_Init());
-	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_STARTED))
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_CREATED))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_MODULE_LIST_CHANGED))
@@ -405,7 +410,8 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 	dummyAPIs = {
 		mock_Module_Create,
 		mock_Module_Destroy,
-		mock_Module_Receive
+		mock_Module_Receive,
+		mock_Module_Start
 	};
 
 	GATEWAY_MODULES_ENTRY dummyEntry = {
@@ -4825,5 +4831,208 @@ TEST_FUNCTION(Gateway_LL_AddModule_malloc_name_fail)
 	// Cleanup
 	Gateway_LL_Destroy(gateway);
 }
+
+//Tests_SRS_GATEWAY_LL_17_010: [ This function shall call Module_Start for every module which defines the start function. ]
+//Tests_SRS_GATEWAY_LL_17_012: [ This function shall report a GATEWAY_STARTED events. ]
+//Tests_SRS_GATEWAY_LL_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]
+TEST_FUNCTION(Gateway_LL_Start_starts_stuff)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	bool* properties = (bool*)malloc(sizeof(bool));
+	*properties = true;
+	GATEWAY_MODULES_ENTRY entry1 = {
+		"Test module1",
+		DUMMY_LIBRARY_PATH,
+		properties
+	};
+	GATEWAY_MODULES_ENTRY entry2 = {
+		"Test module2",
+		DUMMY_LIBRARY_PATH,
+		properties
+	};
+	const MODULE_APIS dummyAPIs_nostart = {
+		mock_Module_Create,
+		mock_Module_Destroy,
+		mock_Module_Receive,
+		NULL
+	};
+	MODULE_HANDLE handle1 = Gateway_LL_AddModule(gw, &entry1);
+	MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, &entry2);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetReturn(&dummyAPIs_nostart);
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Start(handle2));
+
+	STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, gw, GATEWAY_STARTED))
+		.IgnoreArgument(1);
+
+	//Act
+	auto result = Gateway_LL_Start(gw);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_START_RESULT, result, GATEWAY_START_SUCCESS);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+	free(properties);
+}
+
+//Tests_SRS_GATEWAY_LL_17_009: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]
+TEST_FUNCTION(Gateway_LL_Start_null_gw_returns_error)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Act
+	auto result = Gateway_LL_Start(NULL);
+
+	//Assert
+	ASSERT_ARE_EQUAL(GATEWAY_START_RESULT, result, GATEWAY_START_INVALID_ARGS);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+}
+
+//Tests_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]
+TEST_FUNCTION(Gateway_LL_StartModule_starts_module)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	bool* properties = (bool*)malloc(sizeof(bool));
+	*properties = true;
+	GATEWAY_MODULES_ENTRY entry = {
+		"Test module",
+		DUMMY_LIBRARY_PATH,
+		properties
+	};
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, &entry);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, handle))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, mock_Module_Start(handle));
+
+	//Act
+
+	Gateway_LL_StartModule(gw, handle);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+	free(properties);
+}
+
+//Tests_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]
+TEST_FUNCTION(Gateway_LL_StartModule_no_start_for_null_start_func)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	bool* properties = (bool*)malloc(sizeof(bool));
+	*properties = true;
+	GATEWAY_MODULES_ENTRY entry = {
+		"Test module",
+		DUMMY_LIBRARY_PATH,
+		properties
+	};
+
+	const MODULE_APIS dummyAPIs_nostart = {
+		mock_Module_Create,
+		mock_Module_Destroy,
+		mock_Module_Receive,
+		NULL
+	};
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, &entry);
+	mocks.ResetAllCalls();
+
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, handle))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetReturn(&dummyAPIs_nostart);
+
+	//Act
+
+	Gateway_LL_StartModule(gw, handle);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+	free(properties);
+}
+
+//Tests_SRS_GATEWAY_LL_17_007: [ If module is not found in the gateway, this function shall do nothing. ]
+TEST_FUNCTION(Gateway_LL_StartModule_no_module)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+	bool* properties = (bool*)malloc(sizeof(bool));
+	*properties = true;
+	GATEWAY_MODULES_ENTRY entry = {
+		"Test module",
+		DUMMY_LIBRARY_PATH,
+		properties
+	};
+	MODULE_HANDLE handle = Gateway_LL_AddModule(gw, &entry);
+	mocks.ResetAllCalls();
+
+	STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, handle))
+		.IgnoreAllArguments();
+
+	//Act
+
+	Gateway_LL_StartModule(gw, NULL);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	Gateway_LL_Destroy(gw);
+	free(properties);
+}
+
+//Tests_SRS_GATEWAY_LL_17_006: [ If gw is NULL, this function shall do nothing. ]
+TEST_FUNCTION(Gateway_LL_StartModule_no_gateway)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Act
+	Gateway_LL_StartModule(NULL, NULL);
+
+	//Assert
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+
+}
+
 
 END_TEST_SUITE(gateway_ll_ut)

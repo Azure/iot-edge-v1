@@ -114,6 +114,13 @@ Creates a new BLE Module HL instance. `configuration` is a `const char*` that co
 
 **SRS_BLE_HL_13_023: [** `BLE_HL_Create` shall return a non-`NULL` handle if calling the underlying module's `create` function succeeds. **]**
 
+## BLE_HL_Start
+```c
+void BLE_HL_Start(MODULE_HANDLE module)
+```
+
+**SRS_BLE_HL_17_003: [** `BLE_HL_Start` shall pass the received parameters to the underlying BLE module's Start function, if defined. **]**
+
 ## BLE_HL_Destroy
 ```c
 void BLE_HL_Destroy(MODULE_HANDLE module)

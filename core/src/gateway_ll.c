@@ -30,6 +30,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
+
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
@@ -315,7 +316,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 					{
 						/* TODO: Seperate the gateway init from gateway start-up so that plugins have the chance
 						* register themselves */
-						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
+						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
 						gateway->event_system = EventSystem_Init();
 						/*Codes_SRS_GATEWAY_LL_26_002: [ If Gateway Events module fails to be initialized the gateway module shall be destroyed with no events reported. ] */
 						if (gateway->event_system == NULL)
@@ -326,8 +327,8 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 						}
 						else
 						{
-							/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
-							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_STARTED);
+							/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_CREATED event. ] */
+							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_CREATED);
 							/*Codes_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
 							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
 						}
@@ -343,6 +344,38 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 	}
 
 	return gateway;
+}
+
+GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
+{
+	GATEWAY_START_RESULT result;
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+
+		/*Codes_SRS_GATEWAY_LL_17_010: [ This function shall call Module_Start for every module which defines the start function. ]*/
+		size_t module_count = VECTOR_size(gateway_handle->modules);
+		size_t m;
+		for (m = 0; m < module_count; m++)
+		{
+			MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				(pfStart)((*module_data)->module);
+			}
+		}
+		/*Codes_SRS_GATEWAY_LL_17_012: [ This function shall report a GATEWAY_STARTED event. ]*/
+		EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_STARTED);
+		/*Codes_SRS_GATEWAY_LL_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]*/
+		result = GATEWAY_START_SUCCESS;
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_LL_17_009: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]*/
+		result = GATEWAY_START_INVALID_ARGS;
+	}
+	return result;
 }
 
 void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
@@ -376,6 +409,35 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTR
 
 	return module;
 }
+
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
+{
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+		MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
+		if (module_data != NULL)
+		{
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				/*Codes_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/
+				(pfStart)((*module_data)->module);
+			}
+		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_LL_17_007: [ If module is not found in the gateway, this function shall do nothing. ]*/
+			LogError("Gateway_LL_StartModule(): Failed to start module because the MODULE_DATA not found.");
+		}
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_LL_17_006: [ If gw is NULL, this function shall do nothing. ]*/
+		LogError("Gateway_LL_StartModule(): Failed to start module because the GATEWAY_HANDLE is NULL.");
+	}
+}
+
 
 void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 {
@@ -628,6 +690,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 								/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
 								if (VECTOR_push_back(gateway_handle->modules, &new_module_data, 1) != 0)
 								{
+									/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
 									Broker_DecRef(gateway_handle->broker);
 									free(new_module_data);
 									free(name_copied);
@@ -642,6 +705,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 								{
 									if (add_module_to_any_source(gateway_handle, *(MODULE_DATA**)VECTOR_back(gateway_handle->modules)) != 0)
 									{
+										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
 										Broker_DecRef(gateway_handle->broker);
 										module_result = NULL;
 										if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)

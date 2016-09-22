@@ -264,7 +264,8 @@ static const MODULE_APIS BLE_C2D_APIS_all =
 {
     BLE_C2D_Create,
     BLE_C2D_Destroy,
-    BLE_C2D_Receive
+    BLE_C2D_Receive,
+    NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
