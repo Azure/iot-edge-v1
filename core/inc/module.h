@@ -69,7 +69,7 @@ extern "C"
     *
     *	@param		broker		The #BROKER_HANDLE onto which this module
     *								will connect.
-    *	@param		configureation	A pointer to the user-defined configuration 
+    *	@param		configuration	A pointer to the user-defined configuration 
     *								structure for this module.
     *
     *	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
@@ -97,6 +97,16 @@ extern "C"
     */
     typedef void(*pfModule_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
+	/** @brief		The module may start activity.  This is called when the broker
+	*				is guaranteed to be ready to accept messages from this module.
+	*
+	*	@details	This function is to be implemented by the module creator.
+	*
+	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
+	*								message.
+	*/
+	typedef void(*pfModule_Start)(MODULE_HANDLE moduleHandle);
+
     /** @brief	Structure returned by ::Module_GetAPIS containing the function
     *			pointers of the module-specific implementations of the interface.
     */
@@ -110,6 +120,9 @@ extern "C"
 
         /** @brief Function pointer to the #Module_Receive function. */
         pfModule_Receive Module_Receive;
+
+		/** @brief Function pointer to the #Module_Start function (optional). */
+		pfModule_Start Module_Start;
     };
 
     /** @brief	This is the only function exported by a module. Using the
