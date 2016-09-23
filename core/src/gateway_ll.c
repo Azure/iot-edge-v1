@@ -30,6 +30,9 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
+
+	/** @brief flag to indicate that the broker is ready to accept messages. */
+	int broker_ready;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
@@ -41,6 +44,9 @@ typedef struct MODULE_DATA_TAG {
 
 	/** @brief The MODULE_HANDLE of the same module that lives on the message broker.*/
 	MODULE_HANDLE module;
+
+	/** @brief Flag to indicate we have started this module.*/
+	int module_started;
 } MODULE_DATA;
 
 #ifndef UWP_BINDING
@@ -345,6 +351,58 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 	return gateway;
 }
 
+GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
+{
+	GATEWAY_START_RESULT result;
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+
+		size_t module_count = VECTOR_size(gateway_handle->modules);
+		size_t m;
+		int module_status = 0;
+		for (m = 0; m < module_count; m++)
+		{
+			MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				/*Codes_SRS_GATEWAY_17_002: [ This function shall call Module_Start for every module which defines the start function. ]*/
+				int current_status = (pfStart)((*module_data)->module);
+				if (current_status != 0)
+				{
+					LogError("Module [%s] failed to start", (*module_data)->module_name);
+				}
+				else
+				{
+					(*module_data)->module_started = 1;
+				}
+				module_status += current_status;
+			}
+		}
+		/*Codes_SRS_GATEWAY_17_003: [ This function shall mark the gateway as started upon starting each module. ]*/
+		gateway_handle->broker_ready = 1;
+		/*Codes_SRS_GATEWAY_17_007: [ This function shall report a GATEWAY_STARTED event. ]*/
+		EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_STARTED);
+		if (module_status == 0)
+		{
+			/*Codes_SRS_GATEWAY_17_005: [ This function shall return GATEWAY_START_SUCCESS if all modules report success on starting. ]*/
+			result = GATEWAY_START_SUCCESS;
+		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_17_004: [ This function shall return GATEWAY_START_MODULE_FAIL if one or more module reports an error on starting. ]*/
+			result = GATEWAY_START_MODULE_FAIL;
+		}
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_17_001: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]*/
+		result = GATEWAY_START_INVALID_ARGS;
+	}
+	return result;
+}
+
 void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 {
 	gateway_destroy_internal(gw);
@@ -622,12 +680,14 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 								{
 									name_copied,
 									module_library_handle,
-									module_handle
+									module_handle,
+									0
 								};
 								*new_module_data = module_data;
 								/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
 								if (VECTOR_push_back(gateway_handle->modules, &new_module_data, 1) != 0)
 								{
+									/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
 									Broker_DecRef(gateway_handle->broker);
 									free(new_module_data);
 									free(name_copied);
@@ -642,6 +702,7 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 								{
 									if (add_module_to_any_source(gateway_handle, *(MODULE_DATA**)VECTOR_back(gateway_handle->modules)) != 0)
 									{
+										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
 										Broker_DecRef(gateway_handle->broker);
 										module_result = NULL;
 										if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
@@ -655,8 +716,35 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 									}
 									else
 									{
-										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
-										module_result = module_handle;
+										if (gateway_handle->broker_ready == 0)
+										{
+											/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+											module_result = module_handle;
+										}
+										else
+										{
+											/*SRS_GATEWAY_17_006: [ If the gateway has been started (via a call to Gateway_LL_Start), and the module has defined the Module_Start function, then Module_Start will be called. ]*/
+											if ((module_apis->Module_Start != NULL) &&
+												(module_apis->Module_Start(module_handle) != 0))
+											{
+												/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+												Broker_DecRef(gateway_handle->broker);
+												module_result = NULL;
+												if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
+												{
+													LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
+												}
+												VECTOR_erase(gateway_handle->modules, VECTOR_back(gateway_handle->modules), 1);
+												free(new_module_data);
+												free(name_copied);
+												LogError("Failed to Start module [%p]. Module will not be added to gateway.", &module);
+											}
+											else
+											{
+												/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+												module_result = module_handle;
+											}
+										}
 									}
 								}
 							}

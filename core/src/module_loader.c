@@ -73,6 +73,7 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName)
 				  {
 					  /* Codes_SRS_MODULE_LOADER_17_013: [If locating the function is not successful, the load shall fail, and it shall return NULL.]*/
 					  DynamicLibrary_UnloadLibrary(result->library);
+					  free(result->apis);
 					  free(result);
 					  result = NULL;
 					  LogError("ModuleLoader_Load() - DynamicLibrary_FindSymbol() returned NULL");
@@ -89,6 +90,7 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName)
 					  {
                           /*Codes_SRS_MODULE_LOADER_26_001: [ If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`. ]*/
 						  DynamicLibrary_UnloadLibrary(result->library);
+						  free(result->apis);
 						  free(result);
 						  result = NULL;
 						  LogError("ModuleLoader_Load() - pfnGetAPIS() returned NULL");

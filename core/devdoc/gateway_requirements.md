@@ -82,4 +82,8 @@ Gateway_Create_From_JSON creates a new gateway using information contained withi
 
 **SRS_GATEWAY_14_007: [** The function shall use the `GATEWAY_PROPERTIES` instance to create and return a `GATEWAY_HANDLE` using the lower level API. **]**
 
+**SRS_GATEWAY_17_001: [** Upon successful creation, this function shall start the gateway. **]**
+
+**SRS_GATEWAY_17_002: [** This function shall return `NULL` if starting the gateway fails. **]**
+
 **SRS_GATEWAY_14_008: [** This function shall return `NULL` upon any memory allocation failure. **]**

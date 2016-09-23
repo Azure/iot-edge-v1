@@ -273,6 +273,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 
 		///act
@@ -299,6 +300,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 
 		///act
