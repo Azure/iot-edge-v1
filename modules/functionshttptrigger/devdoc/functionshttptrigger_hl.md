@@ -61,22 +61,23 @@ function.
 **SRS_FUNCHTTPTRIGGER_HL_04_005: [** `Functions_Http_Trigger_HL_Create` shall parse the 
 `configuration` as a JSON array of strings. **]**
 
-**SRS_FUNCHTTPTRIGGER_HL_04_006: [** `Functions_Http_Trigger_HL_Create` shall call 
-STRING_construct to create hostAddress based on input host address. **]**
-
-**SRS_FUNCHTTPTRIGGER_HL_04_007: [** `Functions_Http_Trigger_HL_Create` shall call 
-STRING_construct to create relativePath based on input host address. **]**
-
-**SRS_FUNCHTTPTRIGGER_HL_04_008: [** If creating the strings fails, then 
-`Functions_Http_Trigger_HL_Create` shall fail and return NULL. **]**
-
-**SRS_FUNCHTTPTRIGGER_HL_17_009: [** If the array object does not contain a value 
+**SRS_FUNCHTTPTRIGGER_HL_04_006: [** If the array object does not contain a value 
 named "hostAddress" then `Functions_Http_Trigger_HL_Create` shall fail and return 
 NULL. **]**
 
-**SRS_FUNCHTTPTRIGGER_HL_04_010: [** If the array object does not contain a value 
+**SRS_FUNCHTTPTRIGGER_HL_04_007: [** If the array object does not contain a value 
 named "relativePath" then `Functions_Http_Trigger_HL_Create` shall fail and return 
 NULL. **]**
+
+**SRS_FUNCHTTPTRIGGER_HL_04_008: [** `Functions_Http_Trigger_HL_Create` shall call 
+STRING_construct to create hostAddress based on input host address. **]**
+
+**SRS_FUNCHTTPTRIGGER_HL_04_009: [** `Functions_Http_Trigger_HL_Create` shall call 
+STRING_construct to create relativePath based on input host address. **]**
+
+**SRS_FUNCHTTPTRIGGER_HL_04_010: [** If creating the strings fails, then 
+`Functions_Http_Trigger_HL_Create` shall fail and return NULL. **]**
+
 
 **SRS_FUNCHTTPTRIGGER_HL_04_011: [** `Functions_Http_Trigger_HL_Create` shall invoke 
 functions http trigger module's create, passing in the message broker handle and the `FUNCTIONS_HTTP_TRIGGER_CONFIG`. 
@@ -101,6 +102,8 @@ static void Functions_Http_Trigger_HL_Destroy(MODULE_HANDLE moduleHandle);
 **SRS_FUNCHTTPTRIGGER_HL_04_015: [** `Functions_Http_Trigger_HL_Destroy` shall free all 
 used resources. **]**
 
+**SRS_FUNCHTTPTRIGGER_HL_04_017: [** `Functions_Http_Trigger_HL_Destroy` shall do nothing if `moduleHandle` is NULL. **]**
+
 
 ## Functions_Http_Trigger_HL_Receive
 ```C
@@ -109,3 +112,5 @@ static void Functions_Http_Trigger_HL_Receive(MODULE_HANDLE moduleHandle, MESSAG
 
 **SRS_FUNCHTTPTRIGGER_HL_04_016: [** `Functions_Http_Trigger_HL_Receive` shall pass the 
 received parameters to the underlying  identity map module receive function. **]**
+
+**SRS_FUNCHTTPTRIGGER_HL_04_018: [** `Functions_Http_Trigger_HL_Receive` shall do nothing if any parameter is NULL. **]**

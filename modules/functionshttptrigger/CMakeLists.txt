@@ -68,3 +68,5 @@ if(install_executables)
 	install(TARGETS functions_http_trigger LIBRARY DESTINATION lib) 
     install(TARGETS functions_http_trigger_hl LIBRARY DESTINATION lib) 
 endif()
+
+add_subdirectory(tests)

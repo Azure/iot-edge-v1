@@ -21,6 +21,7 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/httpapiex.h"
+#include "azure_c_shared_utility/base64.h"
 
 typedef struct FUNCTIONS_HTTP_TRIGGER_DATA_TAG
 {
@@ -105,7 +106,6 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 		HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(idModule->functionsHttpTriggerConfiguration->hostAddress));
 		
 		unsigned int statuscodeBack;
-		HTTP_HEADERS_HANDLE responseHttpHeadersHandle;
 		BUFFER_HANDLE myResponse = BUFFER_new();
 		
 		STRING_HANDLE relativePathInfoForRequest = STRING_clone(idModule->functionsHttpTriggerConfiguration->relativePath);
@@ -142,10 +142,17 @@ static const MODULE_APIS FunctionsHttpTrigger_APIS_all =
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &FunctionsHttpTrigger_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = FunctionsHttpTrigger_APIS_all;
+	}
 }

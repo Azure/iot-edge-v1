@@ -15,7 +15,7 @@
 #include "functionshttptrigger_hl.h"
 
 /*
- * @brief	Create an identity map HL module.
+ * @brief	Create an Functions Http Trigger HL module.
  */
 static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
@@ -25,14 +25,18 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
         (configuration == NULL)
     )
     { 
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_002: [ If broker is NULL then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_003: [ If configuration is NULL then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
         LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
         result = NULL;
     }
     else
     {
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_005: [ Functions_Http_Trigger_HL_Create shall parse the configuration as a JSON array of strings. ] */
         JSON_Value* json = json_parse_string((const char*)configuration);
         if (json == NULL)
         {
+			/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_004: [ If configuration is not a JSON string, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
             LogError("unable to json_parse_string");
             result = NULL;
         }
@@ -41,11 +45,13 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
             JSON_Object* obj = json_value_get_object(json);
             if (obj == NULL)
             {
+				/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_004: [ If configuration is not a JSON string, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
                 LogError("unable to json_value_get_object");
                 result = NULL;
             }
             else
             {
+			    /* Codes_SRS_FUNCHTTPTRIGGER_HL_04_006: [If the array object does not contain a value named "hostAddress" then Functions_Http_Trigger_HL_Create shall fail and return NULL.] */
                 const char* hostAddress = json_object_get_string(obj, "hostname");
                 if (hostAddress == NULL)
                 {
@@ -54,6 +60,7 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
                 }
 				else
 				{
+					/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_007: [ If the array object does not contain a value named "relativePath" then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
 					const char* relativePath = json_object_get_string(obj, "relativePath");
 					if (relativePath == NULL)
 					{
@@ -63,28 +70,41 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
 					else
 					{
 						FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+						config.relativePath = NULL;
+						/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_008: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
 						config.hostAddress = STRING_construct(hostAddress);
 
 						if (config.hostAddress == NULL)
 						{
+							/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_010: [ If creating the strings fails, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
 							LogError("error buliding hostAddress String.");
 							result = NULL;
 						}
 						else
 						{
+							/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_009: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create relativePath based on input host address. ] */
 							config.relativePath = STRING_construct(relativePath);
 							if (config.relativePath == NULL)
 							{
+								/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_010: [ If creating the strings fails, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
 								LogError("error buliding relative path String.");
 								result = NULL;
 							}
+							else
+							{
+								/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_011: [ Functions_Http_Trigger_HL_Create shall invoke functions http trigger module's create, passing in the message broker handle and the FUNCTIONS_HTTP_TRIGGER_CONFIG. ] */
+								MODULE_APIS apis;
+								memset(&apis, 0, sizeof(MODULE_APIS));
+								MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(&apis);
 
-						}						
-
-						result = MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)()->Module_Create(broker, &config);
+								/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_012: [ When the lower layer functions http trigger module create succeeds, Functions_Http_Trigger_HL_Create shall succeed and return a non-NULL value. ] */
+								result = apis.Module_Create(broker, &config);
+							}
+						}
 
 						if (result == NULL)
 						{
+							/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_013: [ If the lower layer functions http trigger module create fails, Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
 							/*return result "as is" - that is - NULL*/
 							LogError("unable to create Logger");
 						}
@@ -92,11 +112,13 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
 						{
 							/*return result "as is" - that is - not NULL*/
 						}
+						/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_014: [ Functions_Http_Trigger_HL_Create shall release all data it allocated. ] */
 						STRING_delete(config.hostAddress);
 						STRING_delete(config.relativePath);
 					}
                 }
             }
+			/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_014: [ Functions_Http_Trigger_HL_Create shall release all data it allocated. ] */
             json_value_free(json);
         }
     }
@@ -105,11 +127,23 @@ static MODULE_HANDLE Functions_Http_Trigger_HL_Create(BROKER_HANDLE broker, cons
 }
 
 /*
-* @brief	Destroy an identity map HL module.
+* @brief	Destroy a Functions Http Trigger HL module.
 */
 static void Functions_Http_Trigger_HL_Destroy(MODULE_HANDLE moduleHandle)
 {
-	MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)()->Module_Destroy(moduleHandle);
+	if (moduleHandle != NULL)
+	{
+		MODULE_APIS apis;
+		memset(&apis, 0, sizeof(MODULE_APIS));
+		MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(&apis);
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_015: [ Functions_Http_Trigger_HL_Destroy shall free all used resources. ] */
+		apis.Module_Destroy(moduleHandle);
+	}
+	else
+	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_017: [ Functions_Http_Trigger_HL_Destroy shall do nothing if moduleHandle is NULL. ] */
+		LogError("'module' is NULL");
+	}
 }
 
 
@@ -118,7 +152,20 @@ static void Functions_Http_Trigger_HL_Destroy(MODULE_HANDLE moduleHandle)
  */
 static void Functions_Http_Trigger_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-	MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+	if (moduleHandle != NULL && messageHandle != NULL)
+	{
+		MODULE_APIS apis;
+		memset(&apis, 0, sizeof(MODULE_APIS));
+		MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(&apis);
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_016: [ Functions_Http_Trigger_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ] */
+		apis.Module_Receive(moduleHandle, messageHandle);
+	}
+	else
+	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_018: [ Functions_Http_Trigger_HL_Receive shall do nothing if any parameter is NULL. ] */
+		LogError("'module' and/or 'message_handle' is NULL");
+	}
+	
 }
 
 
@@ -133,10 +180,18 @@ static const MODULE_APIS FunctionsHttpTrigger_HL_APIS_all =
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &FunctionsHttpTrigger_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_HL_04_001: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
+		(*apis) = FunctionsHttpTrigger_HL_APIS_all;
+	}
 }

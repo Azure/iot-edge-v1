@@ -1,22 +1,33 @@
 {
-    "modules" :
-    [
-        {
-            "module name" : "logger_hl",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
-            "args" : {"filename":"f:\\log.txt"}
-        },
-        {
-            "module name" : "hello_world",
-            "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
-            "args" : null
-        }
-    ],
-    "links": 
-    [
-        {
-            "source": "hello_world",
-            "sink": "logger_hl"
-        }
-    ]
+  "modules": [
+    {
+      "module name": "logger_hl",
+      "module path": "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+      "args": { "filename": "c:\\temp\\log.txt" }
+    },
+    {
+      "module name": "logger_wonderfull",
+      "module path": "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+      "args": { "filename": "c:\\temp\\log2.txt" }
+    },
+    {
+      "module name": "hello_world",
+      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+      "args": null
+    }
+  ],
+  "links": [
+    {
+      "source": "*",
+      "sink": "logger_hl"
+    },
+    {
+      "source": "hello_world",
+      "sink": "logger_hl"
+    },
+    {
+      "source": "hello_world",
+      "sink": "logger_wonderfull"
+    }
+  ]
 }
