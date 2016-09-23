@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include "azure_c_shared_utility/threadapi.h"
 #include "gateway.h"
 
 int main(int argc, char** argv)
@@ -22,8 +23,7 @@ int main(int argc, char** argv)
         else
         {
             printf("gateway successfully created from JSON\n");
-            printf("gateway shall run until ENTER is pressed\n");
-            (void)getchar();
+            ThreadAPI_Sleep(4000);
             Gateway_LL_Destroy(gateway);
         }
     }

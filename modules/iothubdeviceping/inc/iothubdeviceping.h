@@ -5,15 +5,7 @@
 #define IOTHUBDEVICEPING_H
 
 #include "module.h"
-#ifdef linux
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <sys/mman.h>
-#endif
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <iothub_client_ll.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -23,9 +15,18 @@ extern "C"
 typedef struct IOTHUBDEVICEPING_CONFIG_TAG
 {
 	const char* DeviceConnectionString;
+	const char* EH_HOST;
+	const char* EH_KEY_NAME;
+	const char* EH_KEY;
+	const char* EH_COMP_NAME;
 }IOTHUBDEVICEPING_CONFIG; /*this needs to be passed to the Module_Create function*/
 
 MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(void);
+
+/* prototype */
+static IOTHUBMESSAGE_DISPOSITION_RESULT createAndPublishGatewayMessage(MESSAGE_CONFIG , MODULE_HANDLE , MESSAGE_HANDLE *);
+static void sendCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT , void *);
+static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE );
 
 #ifdef __cplusplus
 }

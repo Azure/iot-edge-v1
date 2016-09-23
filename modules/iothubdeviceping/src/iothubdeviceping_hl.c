@@ -9,10 +9,10 @@
 
 #include "iothubdeviceping_hl.h"
 #include "iothubdeviceping.h"
+#include "iothubtransporthttp.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 
-#define MESSAGECONTENT "MessageContent"
 #define DEVICECONNECTIONSTRING "DeviceConnectionString"
 
 

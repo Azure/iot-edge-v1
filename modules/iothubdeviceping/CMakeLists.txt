@@ -22,7 +22,7 @@ set(iothubdeviceping_hl_headers
 
 include_directories(./inc)
 include_directories(${GW_INC})
-include_directories(${IOTHUB_CLIENT_INC_FOLDER})
+include_directories(${IOTHUB_CLIENT_INC_FOLDER} ${UAMQP_INC_FOLDER} ${SHARED_UTIL_INC_FOLDER})
 
 #this builds the IoTHubDevicePing dynamic library
 add_library(iothubdeviceping MODULE
