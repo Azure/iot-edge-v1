@@ -175,7 +175,7 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
     return result;
 }
 
-static int queryEventhub(IOTHUBDEVICEPING_HANDLE_DATA handleData)
+static int queryEventhub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
 {
     int result;
     XIO_HANDLE sasl_io = NULL;
@@ -183,9 +183,10 @@ static int queryEventhub(IOTHUBDEVICEPING_HANDLE_DATA handleData)
     SESSION_HANDLE session = NULL;
     LINK_HANDLE link = NULL;
     MESSAGE_RECEIVER_HANDLE message_receiver = NULL;
-    const char *EH_HOST = handleData->config->EH_HOST;
-    const char *EH_KEY_NAME = handleData->config->EH_KEY_NAME;
-    const char *EH_KEY = handleData->config->EH_KEY;
+    const char *EH_HOST = ((const IOTHUBDEVICEPING_CONFIG *)(handleData->config))->EH_HOST;
+    const char *EH_KEY_NAME = ((const IOTHUBDEVICEPING_CONFIG *)(handleData->config))->EH_KEY_NAME;
+    const char *EH_KEY = ((const IOTHUBDEVICEPING_CONFIG *)(handleData->config))->EH_KEY;
+    const char *EH_COMP_NAME = ((const IOTHUBDEVICEPING_CONFIG *)(handleData->config))->EH_COMP_NAME;
 
     amqpalloc_set_memory_tracing_enabled(true);
 
