@@ -11,11 +11,12 @@
             "module name": "iothubdeviceping_hl",
             "module path": "..\\..\\..\\modules\\iothubdeviceping\\Debug\\iothubdeviceping_hl.dll",
             "args": {
-                "DeviceConnectionString": "HostName=yaweiIotHub.azure-devices.net;DeviceId=yaweiFirstDevice;SharedAccessKey=e3MIeWm8OvVL2zwqiVymLla1uIvsl3vQVO0cFUjoKb8=",
-                "EH_HOST": "iothub-ns-yaweiiothu-55847-fec6e54725.servicebus.windows.net",
+                "DeviceConnectionString": "HostName=deviceping.azure-devices.net;DeviceId=device1;SharedAccessKey=P2b95Cto5uXIZS2PSSHtKwkf2RV/4BtdhOgRxvdh/8A=",
+                "EH_HOST": "iothub-ns-deviceping-70854-826f86cb58.servicebus.windows.net",
                 "EH_KEY_NAME" : "iothubowner",
-                "EH_KEY" : "AR21wXooHbat4R/E1QkMf5SsHXi8xvFpyuSBKI78Ne0=",
-                "EH_COMP_NAME" : "yaweiIotHub"
+                "EH_KEY" : "zOhrHRM7zdEHTaaoM+ZqSJucfhuqLiG+k7tLB+7bgTI=",
+                "EH_COMP_NAME" : "deviceping",
+                "EH_PARTITION_NUM" : "2"
             }
         }
     ],

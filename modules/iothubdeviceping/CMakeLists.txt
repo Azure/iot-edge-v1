@@ -5,19 +5,19 @@ cmake_minimum_required(VERSION 2.8.11)
 #this is CMakeLists for the iothubdeviceping module
 
 set(iothubdeviceping_sources
-	./src/iothubdeviceping.c
+    ./src/iothubdeviceping.c
 )
 
 set(iothubdeviceping_headers
-	./inc/iothubdeviceping.h
+    ./inc/iothubdeviceping.h
 )
 
 set(iothubdeviceping_hl_sources
-	./src/iothubdeviceping_hl.c
+    ./src/iothubdeviceping_hl.c
 )
 
 set(iothubdeviceping_hl_headers
-	./inc/iothubdeviceping_hl.h
+    ./inc/iothubdeviceping_hl.h
 )
 
 include_directories(./inc)
@@ -65,30 +65,30 @@ target_link_libraries(iothubdeviceping_hl_static
 )
 
 if(${use_amqp})
-	target_link_libraries(iothubdeviceping_static iothub_client_amqp_transport)
-	target_link_libraries(iothubdeviceping iothub_client_amqp_transport)
-	linkUAMQP(iothubdeviceping_static)
-	linkUAMQP(iothubdeviceping)
+    target_link_libraries(iothubdeviceping_static iothub_client_amqp_transport)
+    target_link_libraries(iothubdeviceping iothub_client_amqp_transport)
+    linkUAMQP(iothubdeviceping_static)
+    linkUAMQP(iothubdeviceping)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_AMQP)
+    add_definitions(-DIOTHUBMODULE_NULL_AMQP)
 endif()
 
 if(${use_http})
-	target_link_libraries(iothubdeviceping_static iothub_client_http_transport)
-	target_link_libraries(iothubdeviceping iothub_client_http_transport)
-	linkHttp(iothubdeviceping_static)
-	linkHttp(iothubdeviceping)
+    target_link_libraries(iothubdeviceping_static iothub_client_http_transport)
+    target_link_libraries(iothubdeviceping iothub_client_http_transport)
+    linkHttp(iothubdeviceping_static)
+    linkHttp(iothubdeviceping)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_HTTP)
+    add_definitions(-DIOTHUBMODULE_NULL_HTTP)
 endif()
 
 if(${use_mqtt})
-	target_link_libraries(iothubdeviceping_static iothub_client_mqtt_transport)
-	target_link_libraries(iothubdeviceping iothub_client_mqtt_transport)
-	linkMqttLibrary(iothubdeviceping_static)
-	linkMqttLibrary(iothubdeviceping)
+    target_link_libraries(iothubdeviceping_static iothub_client_mqtt_transport)
+    target_link_libraries(iothubdeviceping iothub_client_mqtt_transport)
+    linkMqttLibrary(iothubdeviceping_static)
+    linkMqttLibrary(iothubdeviceping)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_MQTT)
+    add_definitions(-DIOTHUBMODULE_NULL_MQTT)
 endif()
 
 linkSharedUtil(iothubdeviceping)
@@ -99,6 +99,6 @@ add_module_to_solution(iothubdeviceping)
 #add_subdirectory(tests)
 
 if(install_executables)
-	install(TARGETS iothubdeviceping LIBRARY DESTINATION lib)
+    install(TARGETS iothubdeviceping LIBRARY DESTINATION lib)
     install(TARGETS iothubdeviceping_hl LIBRARY DESTINATION lib)
 endif()

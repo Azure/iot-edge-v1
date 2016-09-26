@@ -23,7 +23,8 @@ int main(int argc, char** argv)
         else
         {
             printf("gateway successfully created from JSON\n");
-            ThreadAPI_Sleep(4000);
+            //ThreadAPI_Sleep(4000);
+            (void)getchar();
             Gateway_LL_Destroy(gateway);
         }
     }
