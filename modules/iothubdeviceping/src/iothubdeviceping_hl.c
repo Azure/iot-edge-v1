@@ -91,10 +91,11 @@ static void IoTHubDevicePing_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAND
 
 /*Codes_SRS_IOTHUBHTTP_HL_17_014: [ The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields. ]*/
 static const MODULE_APIS IoTHubDevicePing_HL_GetAPIS_Impl =
-    {
-        IoTHubDevicePing_HL_Create,
-        IoTHubDevicePing_HL_Destroy,
-        IoTHubDevicePing_HL_Receive};
+{
+    IoTHubDevicePing_HL_Create,
+    IoTHubDevicePing_HL_Destroy,
+    IoTHubDevicePing_HL_Receive
+};
 
 #ifdef BUILD_MODULE_TYPE_STATIC
 MODULE_EXPORT const MODULE_APIS *MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE_HL)(void)
