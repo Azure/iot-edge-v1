@@ -7,9 +7,30 @@ set build-root=%~dp0..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
+set build-platform=Win32
+set java-option=
+set all-args=%*
+
+:args-loop
+if "%1" equ "" goto args-done
+if "%1" equ "--platform" goto arg-build-platform
+shift
+
+:arg-build-platform
+shift
+if "%1" equ "" call :usage && exit /b 1
+set build-platform=%1
+goto args-continue
+
+:args-continue
+shift
+goto args-loop
+
+:args-done
+
 REM -- use 32 bit java8 
 set JAVA_SAVE=%JAVA_HOME%
-set JAVA_HOME=%JAVA_8_32%
+if not "%build-platform%" equ "x64" set JAVA_HOME=%JAVA_8_32%&& set java-option=--enable-java-binding
 
 REM -- C --
 cd %build-root%\tools
@@ -19,7 +40,7 @@ REM -- Build first dotnet binding for End2End Test.
 call build_dotnet.cmd %*
 if errorlevel 1 goto :eof
 
-call build.cmd --run-e2e-tests --enable-nodejs-binding --enable-java-binding --enable-dotnet-binding %*
+call build.cmd --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding %java-option% %*
 if errorlevel 1 goto :eof
 cd %build-root%
 
