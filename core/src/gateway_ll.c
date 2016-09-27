@@ -417,6 +417,35 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTR
 	return module;
 }
 
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
+{
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+		MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
+		if (module_data != NULL)
+		{
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				/*Codes_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/
+				(pfStart)((*module_data)->module);
+			}
+		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_LL_17_007: [ If module is not found in the gateway, this function shall do nothing. ]*/
+			LogError("Gateway_LL_StartModule(): Failed to start module because the MODULE_DATA not found.");
+		}
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_LL_17_006: [ If gw is NULL, this function shall do nothing. ]*/
+		LogError("Gateway_LL_StartModule(): Failed to start module because the GATEWAY_HANDLE is NULL.");
+	}
+}
+
+
 void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 {
 	/*Codes_SRS_GATEWAY_LL_14_020: [ If gw or module is NULL the function shall return. ]*/
@@ -698,21 +727,8 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 									}
 									else
 									{
-										if (gateway_handle->broker_ready == 0)
-										{
-											/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
-											module_result = module_handle;
-										}
-										else
-										{
-											/*SRS_GATEWAY_17_006: [ If the gateway has been started (via a call to Gateway_LL_Start), and the module has defined the Module_Start function, then Module_Start will be called. ]*/
-											if (module_apis->Module_Start != NULL)
-											{
-												module_apis->Module_Start(module_handle);
-											}
-											/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
-											module_result = module_handle;
-										}
+										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+										module_result = module_handle;
 									}
 								}
 							}

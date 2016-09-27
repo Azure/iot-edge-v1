@@ -170,7 +170,7 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 *						Module.
 *	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
 */
-extern GATEWAY_START_RESULT Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 
 /** @brief		Removes the provided module from the gateway and all links that involves this module.

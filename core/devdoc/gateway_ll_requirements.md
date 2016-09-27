@@ -421,8 +421,6 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_030: [** If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed. **]**
 
-**SRS_GATEWAY_17_006: [** If the gateway has been started (via a call to `Gateway_LL_Start`), and the module has defined the `Module_Start` function, then `Module_Start` will be called. **]**
-
 **SRS_GATEWAY_LL_14_019: [** The function shall return the newly created `MODULE_HANDLE` only if each API call returns successfully. **]**
 
 **SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
@@ -430,6 +428,19 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 **SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
 
 **SRS_GATEWAY_LL_26_020: [** The function shall make a copy of the name of the module for internal use. **]**
+
+## Gateway_LL_StartModule
+```
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+```
+When a module is added to the Gateway after it has been started, `Gateway_LL_StartModule` informs a module when the broker is ready for the module to send and receive messages (i.e. after `Gateway_LL_AddModule` and all `Gateway_LL_AddLink` have been called).  This informational to the module, and the module is not required to implement a Module_Start function. 
+
+**SRS_GATEWAY_LL_17_006: [** If `gw` is `NULL`, this function shall do nothing. **]**
+
+**SRS_GATEWAY_LL_17_007: [** If `module` is not found in the gateway, this function shall do nothing. **]**
+
+**SRS_GATEWAY_LL_17_008: [** When `module` is found, if the `Module_Start` function is defined for this module, the `Module_Start` function shall be called. **]**
+
 
 ## Gateway_LL_RemoveModule
 ```
