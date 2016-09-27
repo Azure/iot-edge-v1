@@ -463,7 +463,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_happy_path)
 
 
 	// act
-	auto result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)0x42);
+	MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)0x42);
 	//assert
 	ASSERT_IS_NOT_NULL(result);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -573,7 +573,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_doesNothing_if_messageHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* SRS_FUNCHTTPTRIGGER_HL_04_016: [ Functions_Http_Trigger_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ] */
+/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_016: [ Functions_Http_Trigger_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ] */
 TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_happyPath)
 {
 	// arrange
@@ -593,19 +593,4 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_happyPath)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests Template
-//TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_configuration_is_NULL)
-//{
-//	// arrange
-//	MODULE_APIS apis;
-//	memset(&apis, 0, sizeof(MODULE_APIS));
-//	Module_GetAPIS(&apis);
-//
-//  //act
-//	auto result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)0x42);
-//
-//	//assert
-//	ASSERT_IS_NULL(result);
-//  ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-//}
 END_TEST_SUITE(functionshttptrigger_hl_ut)

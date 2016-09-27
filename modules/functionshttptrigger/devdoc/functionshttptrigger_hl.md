@@ -28,7 +28,7 @@ The arguments to this module is a JSON with the following values:
 }
 ```
 
-##Exposed API
+## Exposed API
 ```c
 MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
 ```

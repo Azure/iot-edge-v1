@@ -1,13 +1,13 @@
 # Functions Http Trigger Module Requirements
 
-##Overview
+## Overview
 This document describes the functions http trigger module.  This module gets messages received from other modules and sends as an http GET, trigerring an Azure Function. 
  
 #### Http GET 
 This module send an HTTP GET request to https://<hostAddress/<relativepath>?name=myGatewayDevice&content=<MessageContentreceived>
 
 
-##References
+## References
 [module.h](../../../../devdoc/module.md)
 
 [Functions Http Trigger Module](functionshttptrigger.md)
@@ -16,7 +16,7 @@ This module send an HTTP GET request to https://<hostAddress/<relativepath>?name
 
 [Introduction to Azure Functions](https://azure.microsoft.com/en-us/blog/introducing-azure-functions/)
 
-##Exposed API
+## Exposed API
 ```c
 
 typedef struct FUNCTIONS_HTTP_TRIGGER_CONFIG_TAG
@@ -35,9 +35,9 @@ This is the primary public interface for the module.  It returns a pointer to
 the `MODULE_APIS` structure containing the implementation functions for this module.  
 The following functions are the implementation of those APIs.
 
-`Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers.
+**SRS_FUNCHTTPTRIGGER_04_020: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
 
-##FunctionsHttpTrigger_Create
+## FunctionsHttpTrigger_Create
 ```C
 MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const void* configuration);
 ```
@@ -73,7 +73,7 @@ Where `broker` is the message broker passed in as input, `functionsHttpTriggerCo
 **SRS_FUNCHTTPTRIGGER_04_007: [** If `FunctionsHttpTrigger_Create` fails to clone STRING for `relativePath`, then this function shall fail and return `NULL`. **]**
 
 
-##Module_Destroy
+## Module_Destroy
 ```C
 static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle);
 ```
@@ -86,7 +86,7 @@ This function released all resources owned by the module specified by the `modul
 
 
 
-##FunctionsHttpTrigger_Receive
+## FunctionsHttpTrigger_Receive
 ```C
 static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
@@ -94,15 +94,21 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 This function will be the main work of this module. The processing of each 
 message in pseudocode is as follows:
 
-`
-01: Retrieves the content of the message received; 
+
+01: Retrieves the content of the message received;
+
 02: Create an HTTPAPIEX handle;
+
 03: Clone the relative path handle
+
 04: Adds to the  `name` parameter together with an ID (Hard Coded) to the relative path;
+
 05: adds the `content` parameter together with the message content to the relative path;
+
 06: call HTTPAPIEX_ExecuteRequest to send the message;
+
 07: logs the reply back by the Azure Functions.
-`
+
 
 **SRS_FUNCHTTPTRIGGER_04_010: [** If `moduleHandle` is NULL than `FunctionsHttpTrigger_Receive` shall fail and return. **]**
 

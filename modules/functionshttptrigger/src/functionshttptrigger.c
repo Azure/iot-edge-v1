@@ -46,26 +46,69 @@ static MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const voi
 	FUNCTIONS_HTTP_TRIGGER_DATA* result;
 	if (broker == NULL || configuration == NULL)
 	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
 		LogError("invalid parameter (NULL).");
 		result = NULL;
 	}
 	else
 	{
 		FUNCTIONS_HTTP_TRIGGER_CONFIG* config = (FUNCTIONS_HTTP_TRIGGER_CONFIG*)configuration;
-		result = (FUNCTIONS_HTTP_TRIGGER_DATA*)malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_DATA));
-		if (result == NULL)
+		if (config->hostAddress == NULL || config->relativePath == NULL)
 		{
-			LogError("Could not Allocate Module");
+			/* Codes_SRS_FUNCHTTPTRIGGER_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
+			LogError("invalid parameter (NULL). HostAddress or relativePath can't be NULL.");
+			result = NULL;
 		}
 		else
 		{
-			result->functionsHttpTriggerConfiguration = (FUNCTIONS_HTTP_TRIGGER_CONFIG*)malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG));
-			result->functionsHttpTriggerConfiguration->hostAddress = STRING_clone(config->hostAddress);
-			result->functionsHttpTriggerConfiguration->relativePath = STRING_clone(config->relativePath);
-			result->broker = broker;
-
-			LogInfo("hostName is: %s", STRING_c_str(result->functionsHttpTriggerConfiguration->hostAddress));
-			LogInfo("relative path is: %s", STRING_c_str(result->functionsHttpTriggerConfiguration->relativePath));
+			result = (FUNCTIONS_HTTP_TRIGGER_DATA*)malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_DATA));
+			if (result == NULL)
+			{
+				/* Codes_SRS_FUNCHTTPTRIGGER_04_005: [ If FunctionsHttpTrigger_Create fails to allocate a new FUNCTIONS_HTTP_TRIGGER_DATA structure, then this function shall fail, and return NULL. ] */
+				LogError("Could not Allocate Module");
+			}
+			else
+			{
+				/* Codes_SRS_FUNCHTTPTRIGGER_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+				result->functionsHttpTriggerConfiguration = (FUNCTIONS_HTTP_TRIGGER_CONFIG*)malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG));
+				if (result->functionsHttpTriggerConfiguration == NULL)
+				{
+					LogError("Could not Allocation Memory for Configuration");
+					free(result);
+					result = NULL;
+				}
+				else
+				{
+					result->functionsHttpTriggerConfiguration->hostAddress = STRING_clone(config->hostAddress);
+					if (result->functionsHttpTriggerConfiguration->hostAddress == NULL)
+					{
+						/* Codes_SRS_FUNCHTTPTRIGGER_04_006: [ If FunctionsHttpTrigger_Create fails to clone STRING for hostAddress, then this function shall fail and return NULL. ] */
+						LogError("Error cloning string for hostAddress.");
+						free(result->functionsHttpTriggerConfiguration);
+						free(result);
+						result = NULL;
+					}
+					else
+					{
+						result->functionsHttpTriggerConfiguration->relativePath = STRING_clone(config->relativePath);
+						if (result->functionsHttpTriggerConfiguration->relativePath == NULL)
+						{
+							/* Codes_SRS_FUNCHTTPTRIGGER_04_007: [ If FunctionsHttpTrigger_Create fails to clone STRING for relativePath, then this function shall fail and return NULL. ] */
+							LogError("Error cloning string for relativePath.");
+							STRING_delete(result->functionsHttpTriggerConfiguration->hostAddress);
+							free(result->functionsHttpTriggerConfiguration);
+							free(result);
+							result = NULL;
+						}
+						else
+						{
+							/* Codes_SRS_FUNCHTTPTRIGGER_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+							result->broker = broker;
+						}
+					}
+				}
+			}
 		}
 	}
 	return result;
@@ -76,8 +119,10 @@ static MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const voi
 */
 static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle)
 {
+	/* Codes_SRS_FUNCHTTPTRIGGER_04_008: [ If moduleHandle is NULL, FunctionsHttpTrigger_Destroy shall return. ] */
 	if (moduleHandle != NULL)
 	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_009: [ FunctionsHttpTrigger_Destroy shall release all resources allocated for the module. ] */
 		FUNCTIONS_HTTP_TRIGGER_DATA * idModule = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
 		STRING_delete(idModule->functionsHttpTriggerConfiguration->hostAddress);
 		STRING_delete(idModule->functionsHttpTriggerConfiguration->relativePath);
@@ -85,6 +130,7 @@ static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle)
 		free(idModule->functionsHttpTriggerConfiguration);
 		free(idModule);
 	}
+
 }
 
 /*
@@ -94,39 +140,90 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 {
 	if (moduleHandle == NULL || messageHandle == NULL)
 	{
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_010: [If moduleHandle is NULL than FunctionsHttpTrigger_Receive shall fail and return.] */
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_011: [ If messageHandle is NULL than FunctionsHttpTrigger_Receive shall fail and return. ] */
 		LogError("Received NULL arguments: module = %p, massage = %p", moduleHandle, messageHandle);
 	}
 	else
 	{
 		FUNCTIONS_HTTP_TRIGGER_DATA*idModule = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
+		/* Codes_SRS_FUNCHTTPTRIGGER_04_012: [ FunctionsHttpTrigger_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
 		const CONSTBUFFER * content = Message_GetContent(messageHandle);
-		STRING_HANDLE contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
-
-		//HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(idModule->functionsHttpTriggerConfiguration->httpAddress));
-		HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(idModule->functionsHttpTriggerConfiguration->hostAddress));
-		
-		unsigned int statuscodeBack;
-		BUFFER_HANDLE myResponse = BUFFER_new();
-		
-		STRING_HANDLE relativePathInfoForRequest = STRING_clone(idModule->functionsHttpTriggerConfiguration->relativePath);
-		STRING_concat(relativePathInfoForRequest, "?name=myGatewayDevice");
-		STRING_concat(relativePathInfoForRequest, "&content=");
-		STRING_concat(relativePathInfoForRequest, STRING_c_str(contentAsJSON));
-
-
-		HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_GET, STRING_c_str(relativePathInfoForRequest), NULL, NULL, &statuscodeBack, NULL, myResponse);
-
-		if (requestResult != HTTPAPIEX_OK)
+		if (content == NULL)
 		{
-			LogError("Error Sending REquest. Status Code: %d", statuscodeBack);
+			LogError("Failed to get Message Content");
 		}
 		else
 		{
-			LogInfo("Request Sent to Function Succesfully. Response from Functions: %s", BUFFER_u_char(myResponse));
+			/* Codes_SRS_FUNCHTTPTRIGGER_04_013: [ FunctionsHttpTrigger_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+			STRING_HANDLE contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
+			if (contentAsJSON == NULL)
+			{
+				LogError("Failed to Base64 Encode Message Content.");
+			}
+			else
+			{
+				/* Codes_SRS_FUNCHTTPTRIGGER_04_014: [ FunctionsHttpTrigger_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+				HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(idModule->functionsHttpTriggerConfiguration->hostAddress));
+				if (myHTTPEXHandle == NULL)
+				{
+					LogError("Failed to create HTTPAPIEX handle.");
+				}
+				else
+				{
+					unsigned int statuscodeBack;
+					/* Codes_SRS_FUNCHTTPTRIGGER_04_015: [ FunctionsHttpTrigger_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+					BUFFER_HANDLE myResponseBuffer = BUFFER_new();
+
+					if (myResponseBuffer == NULL)
+					{
+						LogError("Failed to create response Buffer.");
+					}
+					else
+					{
+						/* Codes_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+						STRING_HANDLE relativePathInfoForRequest = STRING_clone(idModule->functionsHttpTriggerConfiguration->relativePath);
+
+						if (relativePathInfoForRequest == NULL)
+						{
+							LogError("Error building request String.");
+						}
+						else
+						{
+							if ((STRING_concat(relativePathInfoForRequest, "?name=myGatewayDevice") != 0) ||
+								(STRING_concat(relativePathInfoForRequest, "&content=") != 0) ||
+								(STRING_concat(relativePathInfoForRequest, STRING_c_str(contentAsJSON)) != 0))
+							{
+								LogError("Error building request String.");
+							}
+							else
+							{
+								/* Codes_SRS_FUNCHTTPTRIGGER_04_017: [ FunctionsHttpTrigger_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
+								HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_GET, STRING_c_str(relativePathInfoForRequest), NULL, NULL, &statuscodeBack, NULL, myResponseBuffer);
+
+								if (requestResult != HTTPAPIEX_OK)
+								{
+									LogError("Error Sending REquest. Status Code: %d", statuscodeBack);
+								}
+								else
+								{
+									/* Codes_SRS_FUNCHTTPTRIGGER_04_018: [ Upon success FunctionsHttpTrigger_Receive shall log the response from HTTP GET and return. ] */
+									LogInfo("Request Sent to Function Succesfully. Response from Functions: %s", BUFFER_u_char(myResponseBuffer));
+								}
+							}
+							/* Codes_SRS_FUNCHTTPTRIGGER_04_019: [ FunctionsHttpTrigger_Receive shall destroy any allocated memory before returning. ] */
+							STRING_delete(relativePathInfoForRequest);
+						}
+						/* Codes_SRS_FUNCHTTPTRIGGER_04_019: [ FunctionsHttpTrigger_Receive shall destroy any allocated memory before returning. ] */
+						BUFFER_delete(myResponseBuffer);
+					}
+					/* Codes_SRS_FUNCHTTPTRIGGER_04_019: [ FunctionsHttpTrigger_Receive shall destroy any allocated memory before returning. ] */
+					HTTPAPIEX_Destroy(myHTTPEXHandle);
+				}
+				/* Codes_SRS_FUNCHTTPTRIGGER_04_019: [ FunctionsHttpTrigger_Receive shall destroy any allocated memory before returning. ] */
+				STRING_delete(contentAsJSON);
+			}
 		}
-		
-		STRING_delete(relativePathInfoForRequest);
-		HTTPAPIEX_Destroy(myHTTPEXHandle);
 	}
 }
 

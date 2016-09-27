@@ -4,4 +4,4 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 add_subdirectory(functionshttptrigger_hl_ut)
-#add_subdirectory(functionshttptrigger_ut)
+add_subdirectory(functionshttptrigger_ut)
