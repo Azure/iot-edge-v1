@@ -97,8 +97,8 @@ public:
 	MOCK_STATIC_METHOD_2(, void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
 	MOCK_VOID_METHOD_END();
 
-	MOCK_STATIC_METHOD_1(, int, mock_Module_Start, MODULE_HANDLE, moduleHandle)
-	MOCK_METHOD_END(int, 0);
+	MOCK_STATIC_METHOD_1(, void, mock_Module_Start, MODULE_HANDLE, moduleHandle)
+	MOCK_VOID_METHOD_END();
 
 	MOCK_STATIC_METHOD_1(, void, Broker_DecRef, BROKER_HANDLE, broker)
 		if (currentBroker_ref_count > 0)
@@ -291,7 +291,7 @@ public:
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , int, mock_Module_Start, MODULE_HANDLE, moduleHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, mock_Module_Start, MODULE_HANDLE, moduleHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , BROKER_HANDLE, Broker_Create);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_Destroy, BROKER_HANDLE, broker);

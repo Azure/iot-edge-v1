@@ -807,7 +807,7 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
 
 	STRICT_EXPECTED_CALL(mocks, Gateway_LL_Start(IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
-		.SetFailReturn((GATEWAY_START_RESULT)GATEWAY_START_MODULE_FAIL);
+		.SetFailReturn((GATEWAY_START_RESULT)GATEWAY_START_INVALID_ARGS);
 	STRICT_EXPECTED_CALL(mocks, Gateway_LL_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 

@@ -104,10 +104,8 @@ extern "C"
 	*
 	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
 	*								message.
-	*
-	*	@return		Zero on success, non-zero on failure.
 	*/
-	typedef int(*pfModule_Start)(MODULE_HANDLE moduleHandle);
+	typedef void(*pfModule_Start)(MODULE_HANDLE moduleHandle);
 
     /** @brief	Structure returned by ::Module_GetAPIS containing the function
     *			pointers of the module-specific implementations of the interface.

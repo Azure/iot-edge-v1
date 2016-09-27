@@ -36,7 +36,6 @@ DEFINE_ENUM(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
 
 #define GATEWAY_START_RESULT_VALUES \
     GATEWAY_START_SUCCESS, \
-    GATEWAY_START_MODULE_FAIL, \
 	GATEWAY_START_INVALID_ARGS
 
 /** @brief	Enumeration describing the result of ::Gateway_LL_Start.
@@ -99,9 +98,10 @@ typedef struct GATEWAY_MODULE_INFO_TAG
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
+	/** @brief Called when the gateway is created. */
+	GATEWAY_CREATED = 0,
 	/** @brief Called when the gateway is started. */
-	GATEWAY_STARTED = 0,
-
+	GATEWAY_STARTED,
 	/** @brief  Called every time a list of modules or links changed and during gateway creation.
 	 *
 	 * The VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
@@ -143,8 +143,7 @@ extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 *
 *	@param		gw		#GATEWAY_HANDLE to be destroyed.
 *
-*	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
-*				gateway or @c NULL on failure.
+*	@return		A #GATEWAY_START_RESULT to report the result of the start
 */
 extern GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw);
 
@@ -171,7 +170,7 @@ extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODUL
 *						Module.
 *	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
 */
-extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+extern GATEWAY_START_RESULT Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 
 /** @brief		Removes the provided module from the gateway and all links that involves this module.

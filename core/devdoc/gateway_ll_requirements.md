@@ -122,8 +122,10 @@ typedef struct GATEWAY_MODULE_INFO_TAG
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
+	/** @brief Called when the gateway is created. */
 	GATEWAY_CREATED = 0,
-	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
+	/** @brief Called when the gateway is started. */
+	GATEWAY_STARTED,	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
 	 * VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
 	 * and be later cleaned-up automatically.
 	 */
@@ -349,11 +351,9 @@ Gateway_LL_Start informs all modules that the gateway is ready to operate. This 
 
 **SRS_GATEWAY_17_003: [** This function shall mark the gateway as started upon starting each module. **]**
 
-**SRS_GATEWAY_17_004: [** This function shall return `GATEWAY_START_MODULE_FAIL` if one or more module reports an error on starting. **]**
-
 **SRS_GATEWAY_17_007: [** This function shall report a `GATEWAY_STARTED` event. **]**
 
-**SRS_GATEWAY_17_005: [** This function shall return `GATEWAY_START_SUCCESS` if all modules report success on starting. **]**
+**SRS_GATEWAY_17_005: [** This function shall return `GATEWAY_START_SUCCESS` upon completion. **]**
 
 
 ## Gateway_LL_Destroy
