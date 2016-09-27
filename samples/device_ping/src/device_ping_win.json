@@ -11,12 +11,12 @@
             "module name": "iothubdeviceping_hl",
             "module path": "..\\..\\..\\modules\\iothubdeviceping\\Debug\\iothubdeviceping_hl.dll",
             "args": {
-                "DeviceConnectionString": "HostName=deviceping.azure-devices.net;DeviceId=device1;SharedAccessKey=P2b95Cto5uXIZS2PSSHtKwkf2RV/4BtdhOgRxvdh/8A=",
-                "EH_HOST": "iothub-ns-deviceping-70854-826f86cb58.servicebus.windows.net",
-                "EH_KEY_NAME" : "iothubowner",
-                "EH_KEY" : "zOhrHRM7zdEHTaaoM+ZqSJucfhuqLiG+k7tLB+7bgTI=",
-                "EH_COMP_NAME" : "deviceping",
-                "EH_PARTITION_NUM" : "2"
+                "DeviceConnectionString": "HostName=[IotHub name];DeviceId=[device];SharedAccessKey=[shared access key]",
+                "EH_HOST": "[Event Hub compatible endpoint e.g. xx.servicebus.windows.net]",
+                "EH_KEY_NAME" : "[policy name e.g.iothubowner]",
+                "EH_KEY" : "[key]",
+                "EH_COMP_NAME" : "[Event Hub compatible name]",
+                "EH_PARTITION_NUM" : "[num of partitions]"
             }
         }
     ],

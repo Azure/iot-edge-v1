@@ -1,11 +1,29 @@
 {
     "modules": [
         {
+            "module name": "logger_hl",
+            "module path": "./modules/logger/liblogger_hl.so",
+            "args": {
+                "filename": "log.txt"
+            }
+        },
+        {
             "module name": "iothubdeviceping_hl",
             "module path": "./modules/iothubdeviceping/libiothubdeviceping_hl.so",
             "args": {
-                "DeviceConnectionString": "<DeviceConnectionString>"
+                "DeviceConnectionString": "HostName=[IotHub name];DeviceId=[device];SharedAccessKey=[shared access key]",
+                "EH_HOST": "[Event Hub compatible endpoint e.g. xx.servicebus.windows.net]",
+                "EH_KEY_NAME" : "[policy name e.g.iothubowner]",
+                "EH_KEY" : "[key]",
+                "EH_COMP_NAME" : "[Event Hub compatible name]",
+                "EH_PARTITION_NUM" : "[num of partitions]"
             }
+        }
+    ],
+    "links": [
+        {
+            "source": "iothubdeviceping_hl",
+            "sink": "logger_hl"
         }
     ]
 }
