@@ -39,6 +39,10 @@
 #define ECHOREPLY "echo response received successfully"
 #endif
 
+#ifndef _TIMEOUT
+#define TIMEOUT "poll event hub time out"
+#endif
+
 typedef struct IOTHUBDEVICEPING_HANDLE_DATA_TAG
 {
     THREAD_HANDLE threadHandle;
@@ -48,7 +52,7 @@ typedef struct IOTHUBDEVICEPING_HANDLE_DATA_TAG
     IOTHUBDEVICEPING_CONFIG *config;
 } IOTHUBDEVICEPING_HANDLE_DATA;
 
-typedef struct POLLEVENTHUB_DATA_TAG
+typedef struct MESSAGE_RECEIVER_CONTEXT_TAG
 {
     THREAD_HANDLE threadHandle;
     IOTHUBDEVICEPING_HANDLE_DATA *moduleHandleData;
@@ -56,10 +60,13 @@ typedef struct POLLEVENTHUB_DATA_TAG
     const char *eventHubKeyName;
     const char *eventHubKey;
     const char *address;
-    int messageReceived;
-} POLLEVENTHUB_DATA;
+    time_t begin_execution_time;
+    int num_message_received;
+    bool message_received;
+} MESSAGE_RECEIVER_CONTEXT;
 
-static int g_echoreply = 0;
+static const int MAX_DRAIN_TIME_IN_SECONDS = 20;
+static bool g_echoreply = false;
 
 int devicepingThread(void *param)
 {
@@ -116,9 +123,6 @@ int devicepingThread(void *param)
                     Message_Destroy(msgBusMessage);
                     return 1;
                 }
-                else
-                {
-                }
                 IoTHubClient_LL_DoWork(moduleHandleData->iotHubClientHandle);
                 ThreadAPI_Sleep(1000);
                 IoTHubMessage_Destroy(iotHubMessage);
@@ -170,8 +174,8 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT createAndPublishGatewayMessage(MESSAGE_C
 
 static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE message)
 {
-    POLLEVENTHUB_DATA *pollEventHubDataHandle = (POLLEVENTHUB_DATA *)context;
-    IOTHUBDEVICEPING_HANDLE_DATA *moduleHandleData = (IOTHUBDEVICEPING_HANDLE_DATA *)pollEventHubDataHandle->moduleHandleData;
+    MESSAGE_RECEIVER_CONTEXT *ctx = (MESSAGE_RECEIVER_CONTEXT *)context;
+    IOTHUBDEVICEPING_HANDLE_DATA *moduleHandleData = (IOTHUBDEVICEPING_HANDLE_DATA *)ctx->moduleHandleData;
     AMQP_VALUE result;
     BINARY_DATA binary_data;
     MESSAGE_HANDLE msgBusMessage;
@@ -185,7 +189,6 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
     }
     else
     {
-
         if (message_get_body_amqp_data(message, 0, &binary_data) != 0)
         {
             LogError("Cannot get message data");
@@ -216,7 +219,9 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
                     LogError("unable to Map_AddOrUpdate ECHOREPLY");
                     return result;
                 }
-                g_echoreply = 1;
+                g_echoreply = true;
+                ctx->message_received = g_echoreply;
+
                 msgConfig.size = strlen(ECHOREPLY);
                 msgConfig.source = ECHOREPLY;
                 msgConfig.sourceProperties = propertiesMap;
@@ -225,10 +230,12 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
                     LogError("iot hub message rejected");
                 }
                 Message_Destroy(msgBusMessage);
+                LogInfo("%d number of message received by thread %d\r\n", ctx->num_message_received, ctx->threadHandle);
             }
-            pollEventHubDataHandle->messageReceived++;
+            ctx->num_message_received++;
+
+            LogInfo("Message received: %s; Length: %u, Thread: %d\r\n", (const char *)binary_data.bytes, binary_data.length, ctx->threadHandle);
         }
-        LogInfo("Message received: %s; Length: %u\r\n", (const char *)binary_data.bytes, binary_data.length);
     }
     return result;
 }
@@ -257,15 +264,15 @@ static int pollEventHubThread(void *param)
     LINK_HANDLE link = NULL;
     MESSAGE_RECEIVER_HANDLE message_receiver = NULL;
 
-    POLLEVENTHUB_DATA *pollEventHubDataHandle = (POLLEVENTHUB_DATA *)param;
+    MESSAGE_RECEIVER_CONTEXT *message_receiver_context = (MESSAGE_RECEIVER_CONTEXT *)param;
 
     /* create SASL plain handler */
-    SASL_PLAIN_CONFIG sasl_plain_config = {pollEventHubDataHandle->eventHubKeyName, pollEventHubDataHandle->eventHubKey, NULL};
+    SASL_PLAIN_CONFIG sasl_plain_config = {message_receiver_context->eventHubKeyName, message_receiver_context->eventHubKey, NULL};
     SASL_MECHANISM_HANDLE sasl_mechanism_handle = saslmechanism_create(saslplain_get_interface(), &sasl_plain_config);
     XIO_HANDLE tls_io;
 
     /* create the TLS IO */
-    TLSIO_CONFIG tls_io_config = {pollEventHubDataHandle->eventHubHost, 5671};
+    TLSIO_CONFIG tls_io_config = {message_receiver_context->eventHubHost, 5671};
     const IO_INTERFACE_DESCRIPTION *tlsio_interface = platform_get_default_tlsio();
     tls_io = xio_create(tlsio_interface, &tls_io_config);
 
@@ -276,13 +283,13 @@ static int pollEventHubThread(void *param)
     sasl_io = xio_create(saslclientio_get_interface_description(), &sasl_io_config);
 
     /* create the connection, session and link */
-    connection = connection_create(sasl_io, pollEventHubDataHandle->eventHubHost, "whatever", NULL, NULL);
+    connection = connection_create(sasl_io, message_receiver_context->eventHubHost, "whatever", NULL, NULL);
     session = session_create(connection, NULL, NULL);
 
     /* set incoming window to 100 for the session */
     session_set_incoming_window(session, 100);
 
-    AMQP_VALUE source = messaging_create_source(pollEventHubDataHandle->address);
+    AMQP_VALUE source = messaging_create_source(message_receiver_context->address);
     AMQP_VALUE target = messaging_create_target("messages/events");
     link = link_create(session, "receiver-link", role_receiver, source, target);
     link_set_rcv_settle_mode(link, receiver_settle_mode_first);
@@ -291,17 +298,60 @@ static int pollEventHubThread(void *param)
 
     /* create a message receiver */
     message_receiver = messagereceiver_create(link, NULL, NULL);
-    // pass handleData into call back
     if ((message_receiver == NULL) ||
-        (messagereceiver_open(message_receiver, on_message_received, pollEventHubDataHandle) != 0))
+        (messagereceiver_open(message_receiver, on_message_received, message_receiver_context) != 0))
     {
         result = -1;
+        LogError("messagereceiver_open failed");
     }
     else
     {
-        while (!g_echoreply && (pollEventHubDataHandle->messageReceived <= 100))
+        time_t nowExecutionTime;
+        time_t beginExecutionTime = message_receiver_context->begin_execution_time;
+        double timespan;
+        // loop to poll event hub until time out or the message received
+        while ((nowExecutionTime = time(NULL)), timespan = difftime(nowExecutionTime, beginExecutionTime), timespan < MAX_DRAIN_TIME_IN_SECONDS)
         {
             connection_dowork(connection);
+            ThreadAPI_Sleep(10);
+
+            // the thread whose message_received is true or who sets g_echoreply will finish receiving whatever left in the incomming window
+            // other threads will break
+            if (g_echoreply)
+            {
+                break;
+            }
+        }
+        if (timespan >= MAX_DRAIN_TIME_IN_SECONDS)
+        {
+            // time out. message not received
+            result = -1;
+            MAP_HANDLE propertiesMap = Map_Create(NULL);
+            if (Map_AddOrUpdate(propertiesMap, "TIMEOUT", TIMEOUT) != MAP_OK)
+            {
+                LogError("unable to Map_AddOrUpdate TIMEOUT");
+            }
+            else
+            {
+                MESSAGE_CONFIG msgConfig;
+                msgConfig.size = strlen(TIMEOUT);
+                msgConfig.source = TIMEOUT;
+                msgConfig.sourceProperties = propertiesMap;
+
+                MESSAGE_HANDLE msgBusMessage = Message_Create(&msgConfig);
+                if (msgBusMessage == NULL)
+                {
+                    LogError("unable to create ECHOREUQEST message");
+                }
+                else if (createAndPublishGatewayMessage(msgConfig, message_receiver_context->moduleHandleData, &msgBusMessage, 1) != IOTHUBMESSAGE_ACCEPTED)
+                {
+                    LogError("iot hub message rejected");
+                }
+                else
+                {
+                    Message_Destroy(msgBusMessage);
+                }
+            }
         }
         result = 0;
     }
@@ -313,7 +363,6 @@ static int pollEventHubThread(void *param)
     platform_deinit();
     return result;
 }
-
 
 static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
 {
@@ -332,8 +381,8 @@ static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
     }
     else
     {
-        POLLEVENTHUB_DATA *pollEventHubDataHandleArr = (POLLEVENTHUB_DATA *)malloc(sizeof(POLLEVENTHUB_DATA) * partitionNum);
-        if (pollEventHubDataHandleArr == NULL)
+        MESSAGE_RECEIVER_CONTEXT *message_receiver_context_arr = (MESSAGE_RECEIVER_CONTEXT *)malloc(sizeof(MESSAGE_RECEIVER_CONTEXT) * partitionNum);
+        if (message_receiver_context_arr == NULL)
         {
             LogError("malloc returned NULL\r\n");
             return -1;
@@ -352,14 +401,17 @@ static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
                 int length = snprintf(NULL, 0, "%d", i);
                 char *str = malloc(length + 1);
                 snprintf(str, length + 1, "%d", i);
-                pollEventHubDataHandleArr[i].address = (char *)concat((const char *)result4, (const char *)str);
-                pollEventHubDataHandleArr[i].moduleHandleData = handleData;
-                pollEventHubDataHandleArr[i].eventHubHost = eventHubHost;
-                pollEventHubDataHandleArr[i].eventHubKeyName = eventHubKeyName;
-                pollEventHubDataHandleArr[i].eventHubKey = eventHubKey;
-                pollEventHubDataHandleArr[i].messageReceived = 0;
+                message_receiver_context_arr[i].address = (char *)concat((const char *)result4, (const char *)str);
+                message_receiver_context_arr[i].moduleHandleData = handleData;
+                message_receiver_context_arr[i].eventHubHost = eventHubHost;
+                message_receiver_context_arr[i].eventHubKeyName = eventHubKeyName;
+                message_receiver_context_arr[i].eventHubKey = eventHubKey;
+                message_receiver_context_arr[i].begin_execution_time = time(NULL);
+                message_receiver_context_arr[i].num_message_received = 0;
+                message_receiver_context_arr[i].message_received = false;
+
                 free(str);
-                if (ThreadAPI_Create(&pollEventHubDataHandleArr[i].threadHandle, pollEventHubThread, &pollEventHubDataHandleArr[i]) != THREADAPI_OK)
+                if (ThreadAPI_Create(&message_receiver_context_arr[i].threadHandle, pollEventHubThread, &message_receiver_context_arr[i]) != THREADAPI_OK)
                 {
                     LogError("failed to spawn a thread");
                     return -1;
@@ -372,19 +424,19 @@ static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
             // wait for threads to exit
             for (i = 0; i < partitionNum; i++)
             {
-                LogInfo("%d messages received by thread %d\r\n", pollEventHubDataHandleArr[i].messageReceived, pollEventHubDataHandleArr[i].threadHandle);
                 int thread_result;
-                if (ThreadAPI_Join(pollEventHubDataHandleArr[i].threadHandle, &thread_result) != THREADAPI_OK)
+                if (ThreadAPI_Join(message_receiver_context_arr[i].threadHandle, &thread_result) != THREADAPI_OK)
                 {
                     LogError("ThreadAPI_Join() returned an error");
                     return -1;
                 }
                 else
                 {
+                    LogInfo("%d messages received by thread %d\r\n result %d", message_receiver_context_arr[i].num_message_received, message_receiver_context_arr[i].threadHandle, thread_result);
                 }
             }
         }
-        free(pollEventHubDataHandleArr);
+        free(message_receiver_context_arr);
     }
     return 0;
 }
@@ -619,12 +671,11 @@ static void IoTHubDevicePing_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE 
 }
 
 static const MODULE_APIS Module_GetAPIS_Impl =
-{
-    /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
-    IoTHubDevicePing_Create,
-    IoTHubDevicePing_Destroy,
-    IoTHubDevicePing_Receive
-};
+    {
+        /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
+        IoTHubDevicePing_Create,
+        IoTHubDevicePing_Destroy,
+        IoTHubDevicePing_Receive};
 
 /*Codes_SRS_IOTHUBHTTP_02_025: [Module_GetAPIS shall return a non-NULL pointer.]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
