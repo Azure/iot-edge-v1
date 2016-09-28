@@ -1,10 +1,10 @@
 # Functions Http Trigger Module Requirements
 
 ## Overview
-This document describes the functions http trigger module.  This module gets messages received from other modules and sends as an http GET, trigerring an Azure Function. 
+This document describes the Functions Http trigger module.  This module gets messages received from other modules and sends as an http GET, triggering an Azure Function. 
  
 #### Http GET 
-This module send an HTTP GET request to https://<hostAddress/<relativepath>?name=myGatewayDevice&content=<MessageContentreceived>
+This module send an HTTP GET request to https://<hostAddress>/<relativepath>?name=myGatewayDevice&content=<MessageContentreceived>
 
 
 ## References
@@ -42,7 +42,7 @@ The following functions are the implementation of those APIs.
 MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
-This function creates the function http trigger module.  This module expects a `FUNCTIONS_HTTP_TRIGGER_CONFIG`, which contains two strings which are hostAddress and relativePath
+This function creates the Function HTTP trigger module.  This module expects a `FUNCTIONS_HTTP_TRIGGER_CONFIG`, which contains two strings which are hostAddress and relativePath
  for an HTTP Trigger Azure Funcion. 
 
 **SRS_FUNCHTTPTRIGGER_04_001: [** Upon success, this function shall return a valid pointer to a `MODULE_HANDLE`. **]**

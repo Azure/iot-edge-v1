@@ -48,7 +48,7 @@ static MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const voi
 	{
 		/* Codes_SRS_FUNCHTTPTRIGGER_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
 		/* Codes_SRS_FUNCHTTPTRIGGER_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
-		LogError("invalid parameter (NULL).");
+		LogError("Received NULL arguments: broker = %p, configuration = %p", broker, configuration);
 		result = NULL;
 	}
 	else
@@ -123,12 +123,12 @@ static void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle)
 	if (moduleHandle != NULL)
 	{
 		/* Codes_SRS_FUNCHTTPTRIGGER_04_009: [ FunctionsHttpTrigger_Destroy shall release all resources allocated for the module. ] */
-		FUNCTIONS_HTTP_TRIGGER_DATA * idModule = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
-		STRING_delete(idModule->functionsHttpTriggerConfiguration->hostAddress);
-		STRING_delete(idModule->functionsHttpTriggerConfiguration->relativePath);
+		FUNCTIONS_HTTP_TRIGGER_DATA * moduleData = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
+		STRING_delete(moduleData->functionsHttpTriggerConfiguration->hostAddress);
+		STRING_delete(moduleData->functionsHttpTriggerConfiguration->relativePath);
 
-		free(idModule->functionsHttpTriggerConfiguration);
-		free(idModule);
+		free(moduleData->functionsHttpTriggerConfiguration);
+		free(moduleData);
 	}
 
 }
@@ -146,7 +146,7 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 	}
 	else
 	{
-		FUNCTIONS_HTTP_TRIGGER_DATA*idModule = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
+		FUNCTIONS_HTTP_TRIGGER_DATA*module_data = (FUNCTIONS_HTTP_TRIGGER_DATA*)moduleHandle;
 		/* Codes_SRS_FUNCHTTPTRIGGER_04_012: [ FunctionsHttpTrigger_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
 		const CONSTBUFFER * content = Message_GetContent(messageHandle);
 		if (content == NULL)
@@ -164,14 +164,13 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 			else
 			{
 				/* Codes_SRS_FUNCHTTPTRIGGER_04_014: [ FunctionsHttpTrigger_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
-				HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(idModule->functionsHttpTriggerConfiguration->hostAddress));
+				HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(module_data->functionsHttpTriggerConfiguration->hostAddress));
 				if (myHTTPEXHandle == NULL)
 				{
 					LogError("Failed to create HTTPAPIEX handle.");
 				}
 				else
 				{
-					unsigned int statuscodeBack;
 					/* Codes_SRS_FUNCHTTPTRIGGER_04_015: [ FunctionsHttpTrigger_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
 					BUFFER_HANDLE myResponseBuffer = BUFFER_new();
 
@@ -182,7 +181,7 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 					else
 					{
 						/* Codes_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-						STRING_HANDLE relativePathInfoForRequest = STRING_clone(idModule->functionsHttpTriggerConfiguration->relativePath);
+						STRING_HANDLE relativePathInfoForRequest = STRING_clone(module_data->functionsHttpTriggerConfiguration->relativePath);
 
 						if (relativePathInfoForRequest == NULL)
 						{
@@ -198,6 +197,7 @@ static void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HAN
 							}
 							else
 							{
+								unsigned int statuscodeBack;
 								/* Codes_SRS_FUNCHTTPTRIGGER_04_017: [ FunctionsHttpTrigger_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
 								HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_GET, STRING_c_str(relativePathInfoForRequest), NULL, NULL, &statuscodeBack, NULL, myResponseBuffer);
 

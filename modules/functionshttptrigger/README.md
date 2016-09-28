@@ -1,1 +1,1 @@
-# Functios Http Trigger Module
+# Functions Http Trigger Module
