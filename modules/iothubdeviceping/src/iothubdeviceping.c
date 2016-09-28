@@ -32,11 +32,11 @@
 #include "azure_uamqp_c/sasl_plain.h"
 
 #ifndef _ECHOREUQEST
-#define ECHOREUQEST "echo request sent successfully"
+#define ECHOREUQEST "AAAAAecho request sent successfully"
 #endif
 
 #ifndef _ECHOREPLY
-#define ECHOREPLY "echo response received successfully"
+#define ECHOREPLY "AAAAAecho response received successfully"
 #endif
 
 #ifndef _TIMEOUT
@@ -65,7 +65,7 @@ typedef struct MESSAGE_RECEIVER_CONTEXT_TAG
     bool message_received;
 } MESSAGE_RECEIVER_CONTEXT;
 
-static const int MAX_DRAIN_TIME_IN_SECONDS = 20;
+static const int MAX_DRAIN_TIME_IN_SECONDS = 10;
 static bool g_echoreply = false;
 
 int devicepingThread(void *param)
@@ -286,83 +286,135 @@ static int pollEventHubThread(void *param)
     connection = connection_create(sasl_io, message_receiver_context->eventHubHost, "whatever", NULL, NULL);
     session = session_create(connection, NULL, NULL);
 
-    /* set incoming window to 100 for the session */
-    session_set_incoming_window(session, 100);
+    /* set incoming window to 1000 for the session */
+    session_set_incoming_window(session, 1000);
 
-    AMQP_VALUE source = messaging_create_source(message_receiver_context->address);
-    AMQP_VALUE target = messaging_create_target("messages/events");
-    link = link_create(session, "receiver-link", role_receiver, source, target);
-    link_set_rcv_settle_mode(link, receiver_settle_mode_first);
-    amqpvalue_destroy(source);
-    amqpvalue_destroy(target);
-
-    /* create a message receiver */
-    message_receiver = messagereceiver_create(link, NULL, NULL);
-    if ((message_receiver == NULL) ||
-        (messagereceiver_open(message_receiver, on_message_received, message_receiver_context) != 0))
+    char tempBuffer[256];
+    const char filter_name[] = "apache.org:selector-filter:string";
+    time_t receiveTimeRangeStart = time(NULL);
+    int filter_string_length = sprintf(tempBuffer, "amqp.annotation.x-opt-enqueuedtimeutc > %llu", ((unsigned long long)receiveTimeRangeStart - 330) * 1000);
+    if (filter_string_length < 0)
     {
+        LogError("Failed creating filter set with enqueuedtimeutc filter.");
         result = -1;
-        LogError("messagereceiver_open failed");
     }
     else
     {
-        time_t nowExecutionTime;
-        time_t beginExecutionTime = message_receiver_context->begin_execution_time;
-        double timespan;
-        // loop to poll event hub until time out or the message received
-        while ((nowExecutionTime = time(NULL)), timespan = difftime(nowExecutionTime, beginExecutionTime), timespan < MAX_DRAIN_TIME_IN_SECONDS)
+        /* create the filter set to be used for the source of the link */
+        filter_set filter_set = amqpvalue_create_map();
+        AMQP_VALUE filter_key = amqpvalue_create_symbol(filter_name);
+        AMQP_VALUE descriptor = amqpvalue_create_symbol(filter_name);
+        AMQP_VALUE filter_value = amqpvalue_create_string(tempBuffer);
+        AMQP_VALUE described_filter_value = amqpvalue_create_described(descriptor, filter_value);
+        amqpvalue_set_map_value(filter_set, filter_key, described_filter_value);
+        amqpvalue_destroy(filter_key);
+        if (filter_set == NULL)
         {
-            connection_dowork(connection);
-            ThreadAPI_Sleep(10);
-
-            // the thread whose message_received is true or who sets g_echoreply will finish receiving whatever left in the incomming window
-            // other threads will break
-            if (g_echoreply)
-            {
-                break;
-            }
-        }
-        if (timespan >= MAX_DRAIN_TIME_IN_SECONDS)
-        {
-            // time out. message not received
+            LogError("Failed creating filter set with enqueuedtimeutc filter.");
             result = -1;
-            MAP_HANDLE propertiesMap = Map_Create(NULL);
-            if (Map_AddOrUpdate(propertiesMap, "TIMEOUT", TIMEOUT) != MAP_OK)
+        }
+        else
+        {
+            AMQP_VALUE target = NULL;
+            AMQP_VALUE source = NULL;
+            /* create the source of the link */
+            SOURCE_HANDLE source_handle = source_create();
+            AMQP_VALUE address_value = amqpvalue_create_string(message_receiver_context->address);
+            source_set_address(source_handle, address_value);
+            source_set_filter(source_handle, filter_set);
+            amqpvalue_destroy(address_value);
+            source = amqpvalue_create_source(source_handle);
+            source_destroy(source_handle);
+
+            if (source == NULL)
             {
-                LogError("unable to Map_AddOrUpdate TIMEOUT");
+                LogError("Failed creating source for link.");
+                result = -1;
             }
             else
             {
-                MESSAGE_CONFIG msgConfig;
-                msgConfig.size = strlen(TIMEOUT);
-                msgConfig.source = TIMEOUT;
-                msgConfig.sourceProperties = propertiesMap;
+                AMQP_VALUE target = messaging_create_target("messages/events");
+                link = link_create(session, "receiver-link", role_receiver, source, target);
+                link_set_rcv_settle_mode(link, receiver_settle_mode_first);
+                amqpvalue_destroy(source);
+                amqpvalue_destroy(target);
 
-                MESSAGE_HANDLE msgBusMessage = Message_Create(&msgConfig);
-                if (msgBusMessage == NULL)
+                /* create a message receiver */
+                message_receiver = messagereceiver_create(link, NULL, NULL);
+                if ((message_receiver == NULL) ||
+                    (messagereceiver_open(message_receiver, on_message_received, message_receiver_context) != 0))
                 {
-                    LogError("unable to create ECHOREUQEST message");
-                }
-                else if (createAndPublishGatewayMessage(msgConfig, message_receiver_context->moduleHandleData, &msgBusMessage, 1) != IOTHUBMESSAGE_ACCEPTED)
-                {
-                    LogError("iot hub message rejected");
+                    result = -1;
+                    LogError("messagereceiver_open failed");
                 }
                 else
                 {
-                    Message_Destroy(msgBusMessage);
+                    time_t nowExecutionTime;
+                    time_t beginExecutionTime = message_receiver_context->begin_execution_time;
+                    double timespan;
+                    // loop to poll event hub until time out or the message received
+                    while ((nowExecutionTime = time(NULL)), timespan = difftime(nowExecutionTime, beginExecutionTime), timespan < MAX_DRAIN_TIME_IN_SECONDS)
+                    {
+                        connection_dowork(connection);
+                        ThreadAPI_Sleep(10);
+
+                        // the thread whose message_received is true or who sets g_echoreply will finish receiving whatever left in the incomming window
+                        // other threads will break
+                        if (g_echoreply)
+                        {
+                            break;
+                        }
+                    }
+                    if (timespan >= MAX_DRAIN_TIME_IN_SECONDS)
+                    {
+                        // time out. message not received
+                        result = -1;
+                        MAP_HANDLE propertiesMap = Map_Create(NULL);
+                        if (Map_AddOrUpdate(propertiesMap, "TIMEOUT", TIMEOUT) != MAP_OK)
+                        {
+                            LogError("unable to Map_AddOrUpdate TIMEOUT");
+                        }
+                        else
+                        {
+                            MESSAGE_CONFIG msgConfig;
+                            msgConfig.size = strlen(TIMEOUT);
+                            msgConfig.source = TIMEOUT;
+                            msgConfig.sourceProperties = propertiesMap;
+
+                            MESSAGE_HANDLE msgBusMessage = Message_Create(&msgConfig);
+                            if (msgBusMessage == NULL)
+                            {
+                                LogError("unable to create ECHOREUQEST message");
+                            }
+                            else if (createAndPublishGatewayMessage(msgConfig, message_receiver_context->moduleHandleData, &msgBusMessage, 1) != IOTHUBMESSAGE_ACCEPTED)
+                            {
+                                LogError("iot hub message rejected");
+                            }
+                            else
+                            {
+                                Message_Destroy(msgBusMessage);
+                            }
+                        }
+                    }
+                    result = 0;
                 }
             }
+            messagereceiver_destroy(message_receiver);
         }
-        result = 0;
+        amqpvalue_destroy(described_filter_value);
+        amqpvalue_destroy(filter_set);
     }
-
-    messagereceiver_destroy(message_receiver);
     link_destroy(link);
     session_destroy(session);
     connection_destroy(connection);
+    xio_destroy(sasl_io);
+    xio_destroy(tls_io);
+    saslmechanism_destroy(sasl_mechanism_handle);
     platform_deinit();
+
     return result;
 }
+
 
 static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
 {
@@ -394,7 +446,6 @@ static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
             char *result3 = concat((const char *)result1, (const char *)result2);
             char *result4 = concat((const char *)result3, "/ConsumerGroups/$Default/Partitions/");
 
-            //char **addressArr = (char **)malloc(sizeof(char *) * partitionNum);
             int i = 0;
             for (i = 0; i < partitionNum; i++)
             {
@@ -583,7 +634,6 @@ static MODULE_HANDLE IoTHubDevicePing_Create(BROKER_HANDLE brokerHandle, const v
 
 static void IoTHubDevicePing_Destroy(MODULE_HANDLE moduleHandle)
 {
-    /*first stop the thread*/
     IOTHUBDEVICEPING_HANDLE_DATA *handleData = moduleHandle;
     int notUsed;
     if (handleData->iotHubClientHandle != NULL)
@@ -667,15 +717,16 @@ static void IoTHubDevicePing_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE 
 {
     (void)moduleHandle;
     (void)messageHandle;
-    /*no action, HelloWorld is not interested in any messages*/
+    /*no action, IoTHubDevicePing is not interested in any messages*/
 }
 
 static const MODULE_APIS Module_GetAPIS_Impl =
-    {
-        /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
-        IoTHubDevicePing_Create,
-        IoTHubDevicePing_Destroy,
-        IoTHubDevicePing_Receive};
+{
+    /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
+    IoTHubDevicePing_Create,
+    IoTHubDevicePing_Destroy,
+    IoTHubDevicePing_Receive
+};
 
 /*Codes_SRS_IOTHUBHTTP_02_025: [Module_GetAPIS shall return a non-NULL pointer.]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
