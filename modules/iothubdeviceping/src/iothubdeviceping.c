@@ -70,7 +70,7 @@ static bool g_echoreply = false;
 
 int devicepingThread(void *param)
 {
-    //(void)ThreadAPI_Sleep(2000); /*wait for gw to start*/
+    (void)ThreadAPI_Sleep(2000); /*wait for gw to start*/
     // send message to iot hub and publish it to broker
     IOTHUBDEVICEPING_HANDLE_DATA *moduleHandleData = param;
     MESSAGE_HANDLE msgBusMessage;
@@ -94,18 +94,10 @@ int devicepingThread(void *param)
             msgConfig.source = ECHOREUQEST;
             msgConfig.sourceProperties = propertiesMap;
 
-            MESSAGE_HANDLE msg = Message_Create(&msgConfig);
-            if (msg == NULL)
-            {
-                LogError("unable to create ECHOREUQEST message");
-            }
             if (createAndPublishGatewayMessage(msgConfig, moduleHandleData, &msgBusMessage, messageCount) != IOTHUBMESSAGE_ACCEPTED)
             {
                 LogError("iot hub message rejected");
                 return 1;
-            }
-            else
-            {
             }
             // ping iot hub device
             IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(msgBusMessage);
@@ -206,7 +198,7 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
             {
                 LogError("iot hub message rejected");
             }
-            Message_Destroy(msgBusMessage);
+
         }
         else
         {
@@ -229,13 +221,13 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
                 {
                     LogError("iot hub message rejected");
                 }
-                Message_Destroy(msgBusMessage);
                 LogInfo("%d number of message received by thread %d\r\n", ctx->num_message_received, ctx->threadHandle);
             }
             ctx->num_message_received++;
 
             LogInfo("Message received: %s; Length: %u, Thread: %d\r\n", (const char *)binary_data.bytes, binary_data.length, ctx->threadHandle);
         }
+        Message_Destroy(msgBusMessage);
     }
     return result;
 }
