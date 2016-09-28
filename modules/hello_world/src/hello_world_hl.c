@@ -28,6 +28,16 @@ static MODULE_HANDLE HelloWorld_HL_Create(BROKER_HANDLE broker, const void* conf
     return result;
 }
 
+static void HelloWorld_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void HelloWorld_HL_Destroy(MODULE_HANDLE module)
 {
 	MODULE_APIS apis;
@@ -46,7 +56,8 @@ static const MODULE_APIS HelloWorld_HL_APIS_all =
 {
 	HelloWorld_HL_Create,
 	HelloWorld_HL_Destroy,
-	HelloWorld_HL_Receive
+	HelloWorld_HL_Receive,
+	HelloWorld_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

@@ -174,6 +174,16 @@ static void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
     }
 }
 
+static void BLE_HL_Start(MODULE_HANDLE module)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(BLE_MODULE)(&apis);
+
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(module);
+	}
+}
 /*
  *	Required for all modules: the public API and the designated implementation functions.
  */
@@ -181,7 +191,8 @@ static const MODULE_APIS BLE_HL_APIS_all =
 {
     BLE_HL_Create,
     BLE_HL_Destroy,
-    BLE_HL_Receive
+    BLE_HL_Receive,
+	BLE_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

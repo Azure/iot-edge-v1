@@ -644,7 +644,8 @@ static const MODULE_APIS DOTNET_APIS_all =
 {
 	DotNET_Create,
 	DotNET_Destroy,
-	DotNET_Receive
+	DotNET_Receive, 
+	NULL
 };
 
 

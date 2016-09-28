@@ -412,7 +412,8 @@ static const MODULE_APIS Logger_APIS_all =
 {
     Logger_Create,
     Logger_Destroy,
-    Logger_Receive
+    Logger_Receive,
+	NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

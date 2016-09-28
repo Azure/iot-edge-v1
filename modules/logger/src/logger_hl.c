@@ -95,6 +95,16 @@ static void Logger_HL_Destroy(MODULE_HANDLE module)
     apis.Module_Destroy(module);
 }
 
+static void Logger_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void Logger_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	MODULE_APIS apis;
@@ -110,7 +120,8 @@ static const MODULE_APIS Logger_HL_APIS_all =
 {
 	Logger_HL_Create,
 	Logger_HL_Destroy,
-	Logger_HL_Receive
+	Logger_HL_Receive,
+	Logger_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

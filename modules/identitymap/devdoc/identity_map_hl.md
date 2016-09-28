@@ -121,6 +121,12 @@ fails, `IdentityMap_HL_Create` shall fail and return NULL. **]**
 **SRS_IDMAP_HL_17_016: [** `IdentityMap_HL_Create` shall release 
 all data it allocated. **]**
 
+## IdentityMap_HL_Start
+```C
+static void IdentityMap_HL_Start(MODULE_HANDLE moduleHandle);
+```
+
+**SRS_IDMAP_HL_17_021: [** `IdentityMap_HL_Start` shall pass the received parameters to the underlying identity map module start function, if defined. **]**
 
 ## IdentityMap_HL_Destroy
 ```C

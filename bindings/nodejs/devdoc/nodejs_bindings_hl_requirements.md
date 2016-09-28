@@ -62,6 +62,14 @@ The JSON should conform to the following structure:
 
 **SRS_NODEJS_HL_13_008: [** If `NODEJS_Create` fail then the value `NULL` shall be returned. **]**
 
+NODEJS_HL_Start
+---------------
+```c
+void NODEJS_HL_Start(MODULE_HANDLE module)
+```
+
+**SRS_NODEJS_HL_17_001: [** `NODEJS_HL_Start` shall pass the received parameters to the underlying module's `_Start` function, if defined. **]**
+
 NODEJS_HL_Receive
 -----------------
 ```c

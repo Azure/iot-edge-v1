@@ -1194,7 +1194,8 @@ static const MODULE_APIS NODEJS_APIS_all =
 {
     NODEJS_Create,
     NODEJS_Destroy,
-    NODEJS_Receive
+    NODEJS_Receive, 
+	NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

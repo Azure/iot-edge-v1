@@ -118,6 +118,17 @@ static void DotNET_HL_Destroy(MODULE_HANDLE module)
 	}
 }
 
+static void DotNET_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
+	if (api.Module_Start != NULL)
+	{
+		/*Codes_SRS_DOTNET_HL_17_001: [ DotNET_HL_Start shall pass the received parameters to the underlying DotNET Host Module's _Start function, if defined. ]*/
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void DotNET_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 
@@ -131,7 +142,8 @@ static const MODULE_APIS DotNET_HL_APIS_all =
 {
 	DotNET_HL_Create,
 	DotNET_HL_Destroy,
-	DotNET_HL_Receive
+	DotNET_HL_Receive,
+	DotNET_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

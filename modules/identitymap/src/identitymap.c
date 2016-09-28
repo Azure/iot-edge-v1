@@ -646,7 +646,8 @@ static const MODULE_APIS IdentityMap_APIS_all =
 {
 	IdentityMap_Create,
 	IdentityMap_Destroy,
-	IdentityMap_Receive
+	IdentityMap_Receive,
+	NULL
 };
 
 /*Codes_SRS_IDMAP_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/

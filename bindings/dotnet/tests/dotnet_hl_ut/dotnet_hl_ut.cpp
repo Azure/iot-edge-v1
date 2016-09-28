@@ -25,6 +25,8 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static pfModule_Create  DotNET_HL_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy DotNET_HL_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive DotNET_HL_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start DotNET_HL_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+
 
 static size_t gMessageSize;
 static const unsigned char * gMessageSource;
@@ -278,12 +280,14 @@ MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configuration);
 void DotNET_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void DotNET_Start(MODULE_HANDLE moduleHandle);
 
 static MODULE_APIS DOTNET_APIS =
 {
     DotNET_Create,
     DotNET_Destroy,
-    DotNET_Receive
+    DotNET_Receive,
+    DotNET_Start
 };
 
 TYPED_MOCK_CLASS(CDOTNETHLMocks, CGlobalMock)
@@ -393,6 +397,9 @@ public:
 		}
     MOCK_METHOD_END(MODULE_HANDLE, result2);
 
+    MOCK_STATIC_METHOD_1(, void, DotNET_Start, MODULE_HANDLE, moduleHandle);
+    MOCK_VOID_METHOD_END()
+
     MOCK_STATIC_METHOD_1(, void, DotNET_Destroy, MODULE_HANDLE, moduleHandle);
     {
         if(moduleHandle != NULL)
@@ -427,6 +434,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , MODULE_HANDLE, DotNET_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, DotNET_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETHLMocks, , void, DotNET_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, DotNET_Start, MODULE_HANDLE, moduleHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETHLMocks, , void, MODULE_STATIC_GETAPIS(DOTNET_HOST), MODULE_APIS*, apis);
 
@@ -445,6 +453,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 		DotNET_HL_Create = apis.Module_Create;
 		DotNET_HL_Destroy = apis.Module_Destroy;
 		DotNET_HL_Receive = apis.Module_Receive;
+		DotNET_HL_Start = apis.Module_Start;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -705,6 +714,31 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 
 		///cleanup
 		DotNET_HL_Destroy(result);
+	}
+
+	/* Tests_SRS_DOTNET_HL_17_001: [ DotNET_HL_Start shall pass the received parameters to the underlying DotNET Host Module's _Start function, if defined. ]*/
+	TEST_FUNCTION(DOTNET_HL_Start_forwards_call)
+	{
+		///arrange
+		CDOTNETHLMocks mocks;
+		unsigned char fake = '\0';
+
+
+		auto module = DotNET_HL_Create((BROKER_HANDLE)0x42, (const void*)FAKE_CONFIG);
+		mocks.ResetAllCalls();
+
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
+
+		STRICT_EXPECTED_CALL(mocks, DotNET_Start((MODULE_HANDLE)module);
+
+		///act
+		DotNET_HL_Start(module);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+		DotNET_HL_Destroy(module);
 	}
 
 	/* Tests_SRS_DOTNET_HL_04_010: [ DotNET_HL_Receive shall pass the received parameters to the underlying DotNET Host Module's _Receive function. ] */

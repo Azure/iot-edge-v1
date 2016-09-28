@@ -15,6 +15,16 @@
 #include "broker.h"
 #include "parson.h"
 
+static void SimulatedDevice_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void SimulatedDevice_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	MODULE_APIS apis;
@@ -81,7 +91,8 @@ static const MODULE_APIS SimulatedDevice_HL_APIS_all =
 {
 	SimulatedDevice_HL_Create,
 	SimulatedDevice_HL_Destroy,
-	SimulatedDevice_HL_Receive
+	SimulatedDevice_HL_Receive, 
+	SimulatedDevice_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

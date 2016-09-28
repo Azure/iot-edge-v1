@@ -138,20 +138,30 @@ static void IotHub_HL_Destroy(MODULE_HANDLE moduleHandle)
     apis.Module_Destroy(moduleHandle);
 }
 
+static void IotHub_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
 
 static void IotHub_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	MODULE_APIS apis;
 	MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
-    /*Codes_SRS_IOTHUBMODULE_HL_17_011: [ IotHub_HL_Receive shall pass the received parameters to the underlying IotHub module's receive function. ]*/
-    apis.Module_Receive(moduleHandle, messageHandle);
+	/*Codes_SRS_IOTHUBMODULE_HL_17_011: [ IotHub_HL_Receive shall pass the received parameters to the underlying IotHub module's receive function. ]*/
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 static const MODULE_APIS moduleInterface =
 {
     IotHub_HL_Create,
     IotHub_HL_Destroy,
-    IotHub_HL_Receive
+	IotHub_HL_Receive,
+	IotHub_HL_Start
 };
 
 
