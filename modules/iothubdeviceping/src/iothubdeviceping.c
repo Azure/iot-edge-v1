@@ -32,11 +32,11 @@
 #include "azure_uamqp_c/sasl_plain.h"
 
 #ifndef _ECHOREUQEST
-#define ECHOREUQEST "AAAAAecho request sent successfully"
+#define ECHOREUQEST "echo request sent successfully"
 #endif
 
 #ifndef _ECHOREPLY
-#define ECHOREPLY "AAAAAecho response received successfully"
+#define ECHOREPLY "echo response received successfully"
 #endif
 
 #ifndef _TIMEOUT
