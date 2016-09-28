@@ -70,7 +70,7 @@ static bool g_echoreply = false;
 
 int devicepingThread(void *param)
 {
-    (void)ThreadAPI_Sleep(2000); /*wait for gw to start*/
+    //(void)ThreadAPI_Sleep(2000); /*wait for gw to start*/
     // send message to iot hub and publish it to broker
     IOTHUBDEVICEPING_HANDLE_DATA *moduleHandleData = param;
     MESSAGE_HANDLE msgBusMessage;
@@ -292,7 +292,7 @@ static int pollEventHubThread(void *param)
     char tempBuffer[256];
     const char filter_name[] = "apache.org:selector-filter:string";
     time_t receiveTimeRangeStart = time(NULL);
-    int filter_string_length = sprintf(tempBuffer, "amqp.annotation.x-opt-enqueuedtimeutc > %llu", ((unsigned long long)receiveTimeRangeStart - 330) * 1000);
+    int filter_string_length = sprintf(tempBuffer, "amqp.annotation.x-opt-enqueuedtimeutc > %llu", ((unsigned long long)receiveTimeRangeStart - 30) * 1000);
     if (filter_string_length < 0)
     {
         LogError("Failed creating filter set with enqueuedtimeutc filter.");
@@ -483,7 +483,7 @@ static int pollEventHub(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
                 }
                 else
                 {
-                    LogInfo("%d messages received by thread %d\r\n result %d", message_receiver_context_arr[i].num_message_received, message_receiver_context_arr[i].threadHandle, thread_result);
+                    LogInfo("%d messages received by thread %d result %d\r\n", message_receiver_context_arr[i].num_message_received, message_receiver_context_arr[i].threadHandle, thread_result);
                 }
             }
         }
