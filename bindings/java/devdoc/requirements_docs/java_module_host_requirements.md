@@ -1,6 +1,6 @@
 # Java Module Host Requirements
 
-##Overview
+## Overview
 
 This module enables interop between the native gateway and modules written in
 Java. This module will broker communication to and from the native gateway as
@@ -11,13 +11,13 @@ module will be built as a dynamic library and loaded by the Java class using
 to the .dll or .so must be included in `library_path` of the configuration for 
 the java module host, or be part of the default library path.
 
-##References
+## References
 
 [module.h](../../../../core/devdoc/module.md)
 
 [JNI](http://docs.oracle.com/javase/8/docs/technotes/guides/jni/)
 
-##Relevant Structures
+## Relevant Structures
 ```C
 typedef struct JVM_OPTIONS_TAG
 {
@@ -46,7 +46,7 @@ typedef struct JAVA_MODULE_HANDLE_DATA_TAG
 }JAVA_MODULE_HANDLE_DATA;
 ```
 
-##Module_GetAPIs
+## Module_GetAPIs
 This is the primary public interface for the module. It returns a pointer to the
 `MODULE_APIS` structure containing the implementation functions for this module.
 The following functions are the implementation of those APIs.
@@ -54,7 +54,7 @@ The following functions are the implementation of those APIs.
 **SRS_JAVA_MODULE_HOST_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 
-##JavaModuleHost_Create
+## JavaModuleHost_Create
 ```C
 static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration);
 ```
@@ -123,7 +123,7 @@ static void JavaModuleHost_Destroy(MODULE_HANDLE module);
 
 **SRS_JAVA_MODULE_HOST_14_039: [** This function shall attach the JVM to the current thread. **]**
 
-**SRS_JAVA_MODULE_HOST_14_038: [** This function shall find get the user-defined Java module class using the `module` parameter and get the `destroy()`. **]**
+**SRS_JAVA_MODULE_HOST_14_038: [** This function shall get the user-defined Java module class using the `module` parameter and get the `destroy()` method. **]**
 
 **SRS_JAVA_MODULE_HOST_14_020: [** This function shall call the `void destroy()` method of the Java module object and delete the global reference to this object. **]**
 
@@ -135,7 +135,7 @@ static void JavaModuleHost_Destroy(MODULE_HANDLE module);
 
 **SRS_JAVA_MODULE_HOST_14_041: [** This function shall exit if any JNI function fails. **]**
 
-##JavaModuleHost_Receive
+## JavaModuleHost_Receive
 ```C
 static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
 ```
@@ -158,7 +158,24 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 **SRS_JAVA_MODULE_HOST_14_047: [** This function shall exit if any underlying function fails. **]**
 
-##Broker_Publish
+## JavaModuleHost_Start
+```C
+static void JavaModuleHost_Start(MODULE_HANDLE module);
+```
+
+**SRS_JAVA_MODULE_HOST_14_049: [** This function shall do nothing if `module` is `NULL`. **]**
+
+**SRS_JAVA_MODULE_HOST_14_050: [** This function shall attach the JVM to the current thread. **]**
+
+**SRS_JAVA_MODULE_HOST_14_051: [** This function shall get the user-defined Java module class using the `module` parameter and get the `start()` method. **]**
+
+**SRS_JAVA_MODULE_HOST_14_052: [** This function shall call the `void start()` method of the Java module object. **]**
+
+**SRS_JAVA_MODULE_HOST_14_053: [** This function shall detach the JVM from the current thread. **]**
+
+**SRS_JAVA_MODULE_HOST_14_054: [** This function shall exit if any JNI function fails. **]**
+
+## Broker_Publish
 ```C
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv *env, jobject Broker, jlong addr, jbyteArray message);
 ```

@@ -4,7 +4,7 @@
       "module name": "java_printer",
       "module path": "..\\..\\bindings\\java\\Debug\\java_module_host_hl.dll",
       "args": {
-        "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.1-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.1-with-deps.jar",
+        "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.2-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.2-with-deps.jar",
         "library_path": "..\\..\\bindings\\java\\Debug",
         "class_name": "Printer",
         "args": null,
@@ -23,7 +23,7 @@
       "module name": "java_sensor",
       "module path": "..\\..\\bindings\\java\\Debug\\java_module_host_hl.dll",
       "args": {
-        "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.1-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.1-with-deps.jar",
+        "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.2-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.2-with-deps.jar",
         "library_path": "..\\..\\bindings\\java\\Debug",
         "class_name": "Sensor",
         "args": null,

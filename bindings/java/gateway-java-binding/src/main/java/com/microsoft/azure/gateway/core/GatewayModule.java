@@ -51,6 +51,8 @@ public abstract class GatewayModule implements IGatewayModule{
         this.configuration = configuration;
     }
 
+    public void start(){}
+
     public void receive(byte[] serializedMessage){
         this.receive(new Message(serializedMessage));
     }

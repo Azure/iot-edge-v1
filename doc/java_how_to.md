@@ -14,7 +14,8 @@ Creating a Java module is easy:
 - **Implement the methods**
   
   In order to create a proper module that can be recognized by the gateway, it must extend the ```GatewayModule``` abstract class.
-  After extending the ```GatewayModule``` abstract class, you must override the ```public void receive(Message message)``` and ```publich void destroy()``` methods and provide a constructor that calls the super constructor.
+  After extending the ```GatewayModule``` abstract class, you must override the ```public void receive(Message message)``` and ```public void destroy()``` methods and provide a constructor that calls the super constructor.
+  Optionally, you may override the ```public void start()``` method which is called to notify modules that it is safe to start processing and sending messages.
   
   ```java
   public class YourModule extends GatewayModule {
@@ -38,6 +39,14 @@ Creating a Java module is easy:
 
     @Override
     public void destroy() {
+    }
+
+    /**
+     * Optional start function.
+     */
+    @Override
+    public void start(){
+
     }
   }
   ```
