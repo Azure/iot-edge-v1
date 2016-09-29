@@ -122,7 +122,7 @@ static void DotNET_HL_Start(MODULE_HANDLE moduleHandle)
 {
 	MODULE_APIS apis;
 	MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
-	if (api.Module_Start != NULL)
+	if (apis.Module_Start != NULL)
 	{
 		/*Codes_SRS_DOTNET_HL_17_001: [ DotNET_HL_Start shall pass the received parameters to the underlying DotNET Host Module's _Start function, if defined. ]*/
 		apis.Module_Start(moduleHandle);

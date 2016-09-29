@@ -729,7 +729,7 @@ BEGIN_TEST_SUITE(dotnet_hl_ut)
 
 		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(DOTNET_HOST)(IGNORED_PTR_ARG));
 
-		STRICT_EXPECTED_CALL(mocks, DotNET_Start((MODULE_HANDLE)module);
+		STRICT_EXPECTED_CALL(mocks, DotNET_Start((MODULE_HANDLE)module));
 
 		///act
 		DotNET_HL_Start(module);
