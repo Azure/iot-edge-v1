@@ -8,7 +8,7 @@
 #include "azure_c_shared_utility/gballoc.h"
 
 #include <stddef.h>
-#include <azure_c_shared_utility/strings.h>
+#include "azure_c_shared_utility/strings.h"
 #include <ctype.h>
 
 #include "azure_c_shared_utility/crt_abstractions.h"

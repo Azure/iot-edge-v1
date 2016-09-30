@@ -5,7 +5,7 @@
 #define AZUREFUNCTIONS_H
 
 #include "module.h"
-#include "azure_c_shared_utility\strings.h"
+#include "azure_c_shared_utility/strings.h"
 
 #ifdef __cplusplus
 extern "C"
