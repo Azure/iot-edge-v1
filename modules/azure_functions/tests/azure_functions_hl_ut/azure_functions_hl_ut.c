@@ -22,24 +22,24 @@ extern "C" {
 
 #include "azure_c_shared_utility/strings.h"
 #include "parson.h"
-#include "functionshttptrigger.h"
+#include "azure_functions.h"
 #include "module.h"
 
 /*forward declarations*/
 
-MODULE_HANDLE FunctionsHttpTrigger_Create(BROKER_HANDLE broker, const void* configuration);
+MODULE_HANDLE azure_functions_Create(BROKER_HANDLE broker, const void* configuration);
 
 /*this destroys (frees resources) of the module parameter*/
-void FunctionsHttpTrigger_Destroy(MODULE_HANDLE moduleHandle);
+void azure_functions_Destroy(MODULE_HANDLE moduleHandle);
 
 /*this is the module's callback function - gets called when a message is to be received by the module*/
-void FunctionsHttpTrigger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void azure_functions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
-static MODULE_APIS FunctionsHttpTrigger_APIS_all =
+static MODULE_APIS azure_functions_APIS_all =
 {
-	FunctionsHttpTrigger_Create,
-	FunctionsHttpTrigger_Destroy,
-	FunctionsHttpTrigger_Receive
+	azure_functions_Create,
+	azure_functions_Destroy,
+	azure_functions_Receive
 };
 
 
@@ -49,22 +49,22 @@ MOCKABLE_FUNCTION(, void, json_value_free, JSON_Value *, value);
 MOCKABLE_FUNCTION(, JSON_Object*, json_value_get_object, const JSON_Value *, value);
 
 
-MOCKABLE_FUNCTION(, MODULE_HANDLE, FunctionsHttpTrigger_Create, BROKER_HANDLE, broker, const void*, configuration);
+MOCKABLE_FUNCTION(, MODULE_HANDLE, azure_functions_Create, BROKER_HANDLE, broker, const void*, configuration);
 
-MOCKABLE_FUNCTION(, void, FunctionsHttpTrigger_Destroy, MODULE_HANDLE, moduleHandle);
+MOCKABLE_FUNCTION(, void, azure_functions_Destroy, MODULE_HANDLE, moduleHandle);
 
-MOCKABLE_FUNCTION(, void, FunctionsHttpTrigger_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+MOCKABLE_FUNCTION(, void, azure_functions_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
 
-MOCK_FUNCTION_WITH_CODE(, void, MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE), MODULE_APIS*, apis)
-     (*apis) = FunctionsHttpTrigger_APIS_all;
+MOCK_FUNCTION_WITH_CODE(, void, MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE), MODULE_APIS*, apis)
+     (*apis) = azure_functions_APIS_all;
 MOCK_FUNCTION_END();
 
 
 
 #undef ENABLE_MOCKS
 
-#include "functionshttptrigger_hl.h"
+#include "azure_functions_hl.h"
 
 
 
@@ -81,7 +81,7 @@ static void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 }
 
 
-BEGIN_TEST_SUITE(functionshttptrigger_hl_ut)
+BEGIN_TEST_SUITE(azure_functions_hl_ut)
 
 TEST_SUITE_INITIALIZE(suite_init)
 {
@@ -125,8 +125,8 @@ TEST_FUNCTION_CLEANUP(method_cleanup)
 	TEST_MUTEX_RELEASE(g_testByTest);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_001: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Module_GetAPIS_returns_non_NULL)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_001: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Module_GetAPIS_returns_non_NULL)
 {
 	// arrange
 
@@ -141,8 +141,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Module_GetAPIS_returns_non_NULL)
 	ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_002: [ If broker is NULL then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_broker_is_NULL)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_002: [ If broker is NULL then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_broker_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -156,8 +156,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_broker_is_NULL)
 	ASSERT_IS_NULL(result);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_003: [ If configuration is NULL then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_configuration_is_NULL)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_003: [ If configuration is NULL then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_configuration_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -172,9 +172,9 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_configuration_is_NULL)
 }
 
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_005: [ Functions_Http_Trigger_HL_Create shall parse the configuration as a JSON array of strings. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_004: [ If configuration is not a JSON string, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_configuration_is_not_validJson)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_005: [ Azure_Functions_HL_Create shall parse the configuration as a JSON array of strings. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_004: [ If configuration is not a JSON string, then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_configuration_is_not_validJson)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -192,9 +192,9 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_configuration_is_not_v
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_005: [ Functions_Http_Trigger_HL_Create shall parse the configuration as a JSON array of strings. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_004: [ If configuration is not a JSON string, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_failedToRetrieveJsonObject)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_005: [ Azure_Functions_HL_Create shall parse the configuration as a JSON array of strings. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_004: [ If configuration is not a JSON string, then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_failedToRetrieveJsonObject)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -215,8 +215,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_failedToRetrieveJsonOb
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_006: [ If the array object does not contain a value named "hostAddress" then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_hostAddress_not_present)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_006: [ If the array object does not contain a value named "hostAddress" then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_hostAddress_not_present)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -242,8 +242,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_hostAddress_not_presen
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_007: [ If the array object does not contain a value named "relativePath" then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_helativePath_not_present)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_007: [ If the array object does not contain a value named "relativePath" then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_helativePath_not_present)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -273,9 +273,9 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_helativePath_not_prese
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_008: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_010: [ If creating the strings fails, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_STRING_construct__hostname_fail)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_008: [ Azure_Functions_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_010: [ If creating the strings fails, then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__hostname_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -313,9 +313,9 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_STRING_construct__host
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_009: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create relativePath based on input host address. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_010: [ If creating the strings fails, then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_STRING_construct__relativepath_fail)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_009: [ Azure_Functions_HL_Create shall call STRING_construct to create relativePath based on input host address. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_010: [ If creating the strings fails, then Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__relativepath_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -358,9 +358,9 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_STRING_construct__rela
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_011: [ Functions_Http_Trigger_HL_Create shall invoke functions http trigger module's create, passing in the message broker handle and the FUNCTIONS_HTTP_TRIGGER_CONFIG. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_013: [ If the lower layer functions http trigger module create fails, Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_ModuleCreate_fail)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_011: [ Azure_Functions_HL_Create shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_013: [ If the lower layer Azure Functions module create fails, Azure_Functions_HL_Create shall fail and return NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_ModuleCreate_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -388,10 +388,10 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_ModuleCreate_fail)
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
 
-	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FunctionsHttpTrigger_Create((BROKER_HANDLE)0x42, (const void*)0x42))
+	STRICT_EXPECTED_CALL(azure_functions_Create((BROKER_HANDLE)0x42, (const void*)0x42))
 		.IgnoreArgument(2)
 		.SetFailReturn(NULL);
 
@@ -411,15 +411,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_returns_NULL_when_ModuleCreate_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_014: [ Functions_Http_Trigger_HL_Create shall release all data it allocated. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_012: [ When the lower layer functions http trigger module create succeeds, Functions_Http_Trigger_HL_Create shall succeed and return a non-NULL value. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_011: [ Functions_Http_Trigger_HL_Create shall invoke functions http trigger module's create, passing in the message broker handle and the FUNCTIONS_HTTP_TRIGGER_CONFIG. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_009: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create relativePath based on input host address. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_008: [ Functions_Http_Trigger_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_007: [ If the array object does not contain a value named "relativePath" then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_006: [ If the array object does not contain a value named "hostAddress" then Functions_Http_Trigger_HL_Create shall fail and return NULL. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_005: [ Functions_Http_Trigger_HL_Create shall parse the configuration as a JSON array of strings. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_happy_path)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_014: [ Azure_Functions_HL_Create shall release all data it allocated. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_012: [ When the lower layer Azure Functions module create succeeds, Azure_Functions_HL_Create shall succeed and return a non-NULL value. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_011: [ Azure_Functions_HL_Create shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_009: [ Azure_Functions_HL_Create shall call STRING_construct to create relativePath based on input host address. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_008: [ Azure_Functions_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_007: [ If the array object does not contain a value named "relativePath" then Azure_Functions_HL_Create shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_006: [ If the array object does not contain a value named "hostAddress" then Azure_Functions_HL_Create shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_005: [ Azure_Functions_HL_Create shall parse the configuration as a JSON array of strings. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_happy_path)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -448,10 +448,10 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_happy_path)
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
 
-	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FunctionsHttpTrigger_Create((BROKER_HANDLE)0x42, (const void*)0x42))
+	STRICT_EXPECTED_CALL(azure_functions_Create((BROKER_HANDLE)0x42, (const void*)0x42))
 		.IgnoreArgument(2)
 		.SetReturn((MODULE_HANDLE)0x42);
 
@@ -469,8 +469,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Create_happy_path)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_017: [ Functions_Http_Trigger_HL_Destroy shall do nothing if moduleHandle is NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_does_nothing_if_module_handle_null)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_017: [ Azure_Functions_HL_Destroy shall do nothing if moduleHandle is NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Destroy_does_nothing_if_module_handle_null)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -483,8 +483,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_does_nothing_if_module_handle_null)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-///* Tests_SRS_FUNCHTTPTRIGGER_HL_04_015: [ Functions_Http_Trigger_HL_Destroy shall free all used resources. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_happy_path)
+///* Tests_SRS_AZUREFUNCTIONS_HL_04_015: [ Azure_Functions_HL_Destroy shall free all used resources. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Destroy_happy_path)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -513,10 +513,10 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_happy_path)
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
 
-	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FunctionsHttpTrigger_Create((BROKER_HANDLE)0x42, (const void*)0x42))
+	STRICT_EXPECTED_CALL(azure_functions_Create((BROKER_HANDLE)0x42, (const void*)0x42))
 		.IgnoreArgument(2)
 		.SetReturn((MODULE_HANDLE)0x42);
 
@@ -531,10 +531,10 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_happy_path)
 
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FunctionsHttpTrigger_Destroy((BROKER_HANDLE)0x42));
+	STRICT_EXPECTED_CALL(azure_functions_Destroy((BROKER_HANDLE)0x42));
 
 	//act
 	apis.Module_Destroy(result);
@@ -543,8 +543,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Destroy_happy_path)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_018: [ Functions_Http_Trigger_HL_Receive shall do nothing if any parameter is NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_doesNothing_if_moduleHandleIsNull)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_018: [ Azure_Functions_HL_Receive shall do nothing if any parameter is NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Receive_doesNothing_if_moduleHandleIsNull)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -558,8 +558,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_doesNothing_if_moduleHandleIsNull)
   ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_018: [ Functions_Http_Trigger_HL_Receive shall do nothing if any parameter is NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_doesNothing_if_messageHandleIsNull)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_018: [ Azure_Functions_HL_Receive shall do nothing if any parameter is NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Receive_doesNothing_if_messageHandleIsNull)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -573,18 +573,18 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_doesNothing_if_messageHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_HL_04_016: [ Functions_Http_Trigger_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_happyPath)
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_016: [ Azure_Functions_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Receive_happyPath)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(FUNCTIONSHTTPTRIGGER_MODULE)(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
-	STRICT_EXPECTED_CALL(FunctionsHttpTrigger_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42));
+	STRICT_EXPECTED_CALL(azure_functions_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42));
 
 	//act
 	apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
@@ -593,4 +593,4 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_HL_Receive_happyPath)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-END_TEST_SUITE(functionshttptrigger_hl_ut)
+END_TEST_SUITE(azure_functions_hl_ut)

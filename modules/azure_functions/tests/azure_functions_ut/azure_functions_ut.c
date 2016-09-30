@@ -41,7 +41,7 @@ MOCKABLE_FUNCTION(, const CONSTBUFFER*, Message_GetContent, MESSAGE_HANDLE, mess
 #undef ENABLE_MOCKS
 
 
-#include "functionshttptrigger.h"
+#include "azure_functions.h"
 
 
 static TEST_MUTEX_HANDLE g_testByTest;
@@ -57,7 +57,7 @@ static void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 }
 
 
-BEGIN_TEST_SUITE(functionshttptrigger_ut)
+BEGIN_TEST_SUITE(azure_functions_ut)
 
 TEST_SUITE_INITIALIZE(suite_init)
 {
@@ -113,8 +113,8 @@ TEST_FUNCTION_CLEANUP(method_cleanup)
 }
 
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Module_GetAPIS_returns_non_NULL)
+/* Tests_SRS_AZURE_FUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetAPIS_returns_non_NULL)
 {
 	// arrange
 
@@ -129,15 +129,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Module_GetAPIS_returns_non_NULL)
 	ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_happy_Path)
+/* Tests_SRS_AZURE_FUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
@@ -146,7 +146,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_happy_Path)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -169,8 +169,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_happy_Path)
 	apis.Module_Destroy(result);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_broker_is_NULL)
+/* Tests_SRS_AZURE_FUNCTIONS_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_broker_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -185,8 +185,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_broker_is_NULL)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_configuration_is_NULL)
+/* Tests_SRS_AZURE_FUNCTIONS_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_configuration_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -202,15 +202,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_configuration_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_hostAddress_is_NULL)
+/* Tests_SRS_AZURE_FUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = NULL;
 
@@ -224,15 +224,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_hostAddress_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_relativePath_is_NULL)
+/* Tests_SRS_AZURE_FUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = NULL;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
@@ -246,15 +246,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_when_relativePath_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_005: [ If FunctionsHttpTrigger_Create fails to allocate a new FUNCTIONS_HTTP_TRIGGER_DATA structure, then this function shall fail, and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_To_Allocate_Handle)
+/* Tests_SRS_AZURE_FUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 	
@@ -272,15 +272,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_To_Allocate_Handle)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_005: [ If FunctionsHttpTrigger_Create fails to allocate a new FUNCTIONS_HTTP_TRIGGER_DATA structure, then this function shall fail, and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_To_Allocate_configuration)
+/* Tests_SRS_AZURE_FUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configuration)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
@@ -289,7 +289,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_To_Allocate_configurati
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)))
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)))
 		.SetReturn(NULL);
 
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
@@ -304,15 +304,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_To_Allocate_configurati
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_006: [ If FunctionsHttpTrigger_Create fails to clone STRING for hostAddress, then this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_hostAddress)
+/* Tests_SRS_AZURE_FUNCTIONS_04_006: [ If azure_functions_Create fails to clone STRING for hostAddress, then this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
@@ -321,7 +321,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_hostAddress)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -342,15 +342,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_hostAddress)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_007: [ If FunctionsHttpTrigger_Create fails to clone STRING for relativePath, then this function shall fail and return NULL. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_relativePath)
+/* Tests_SRS_AZURE_FUNCTIONS_04_007: [ If azure_functions_Create fails to clone STRING for relativePath, then this function shall fail and return NULL. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 {
 	// arrange
 	MODULE_APIS apis;
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
@@ -359,7 +359,7 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_relativePath)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -386,8 +386,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Create_returns_NULL_failed_to_clone_relativePath)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_008: [ If moduleHandle is NULL, FunctionsHttpTrigger_Destroy shall return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Destroy_does_nothing_if_module_handle_null)
+/* Tests_SRS_AZURE_FUNCTIONS_04_008: [ If moduleHandle is NULL, azure_functions_Destroy shall return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_does_nothing_if_module_handle_null)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -400,8 +400,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Destroy_does_nothing_if_module_handle_null)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_009: [ FunctionsHttpTrigger_Destroy shall release all resources allocated for the module. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Destroy_happy_path)
+/* Tests_SRS_AZURE_FUNCTIONS_04_009: [ azure_functions_Destroy shall release all resources allocated for the module. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path)
 {
 
 	// arrange
@@ -409,14 +409,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Destroy_happy_path)
 	memset(&apis, 0, sizeof(MODULE_APIS));
 	Module_GetAPIS(&apis);
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -450,8 +450,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Destroy_happy_path)
 
 
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_010: [If moduleHandle is NULL than FunctionsHttpTrigger_Receive shall fail and return.] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_doesNothing_if_moduleHandleIsNull)
+/* Tests_SRS_AZURE_FUNCTIONS_04_010: [If moduleHandle is NULL than azure_functions_Receive shall fail and return.] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_moduleHandleIsNull)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -465,8 +465,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_doesNothing_if_moduleHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_011: [ If messageHandle is NULL than FunctionsHttpTrigger_Receive shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_doesNothing_if_messageHandleIsNull)
+/* Tests_SRS_AZURE_FUNCTIONS_04_011: [ If messageHandle is NULL than azure_functions_Receive shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_messageHandleIsNull)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -480,8 +480,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_doesNothing_if_messageHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_012: [ FunctionsHttpTrigger_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fails_when_Message_getContent_fail)
+/* Tests_SRS_AZURE_FUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Message_getContent_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -498,8 +498,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fails_when_Message_getContent_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_013: [ FunctionsHttpTrigger_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fails_when_Base64_Encode_fail)
+/* Tests_SRS_AZURE_FUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -525,8 +525,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fails_when_Base64_Encode_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_014: [ FunctionsHttpTrigger_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_HTTPAPIEX_create_Fail)
+/* Tests_SRS_AZURE_FUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -537,14 +537,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_HTTPAPIEX_create_Fail)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 	
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -582,8 +582,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_HTTPAPIEX_create_Fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_015: [ FunctionsHttpTrigger_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_if_buffer_new_fails)
+/* Tests_SRS_AZURE_FUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -594,14 +594,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_if_buffer_new_fails)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -647,8 +647,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_if_buffer_new_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_clone_fails)
+/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -659,14 +659,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_clone_fails)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -717,8 +717,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_clone_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat1_fails)
+/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -729,14 +729,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat1_fails)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -793,8 +793,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat1_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat2_fails)
+/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat2_fails)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -805,14 +805,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat2_fails)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -873,8 +873,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat2_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat3_fails)
+/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat3_fails)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -885,14 +885,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat3_fails)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -961,8 +961,8 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_String_concat3_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_017: [ FunctionsHttpTrigger_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_httpapiex_executeRequest_fail)
+/* Tests_SRS_AZURE_FUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -973,14 +973,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_httpapiex_executeRequest_fail)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -1058,15 +1058,15 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_fail_when_httpapiex_executeRequest_fail)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_FUNCHTTPTRIGGER_04_019: [ FunctionsHttpTrigger_Receive shall destroy any allocated memory before returning. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_018: [ Upon success FunctionsHttpTrigger_Receive shall log the response from HTTP GET and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_017: [ FunctionsHttpTrigger_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_016: [ FunctionsHttpTrigger_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_015: [ FunctionsHttpTrigger_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_014: [ FunctionsHttpTrigger_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_013: [ FunctionsHttpTrigger_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
-/* Tests_SRS_FUNCHTTPTRIGGER_04_012: [ FunctionsHttpTrigger_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
-TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_happy_path)
+/* Tests_SRS_AZURE_FUNCTIONS_04_019: [ azure_functions_Receive shall destroy any allocated memory before returning. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_018: [ Upon success azure_functions_Receive shall log the response from HTTP GET and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+/* Tests_SRS_AZURE_FUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
 {
 	// arrange
 	MODULE_APIS apis;
@@ -1077,14 +1077,14 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_happy_path)
 	buffer.buffer = (const unsigned char*)"12345";
 	buffer.size = sizeof("12345");
 
-	FUNCTIONS_HTTP_TRIGGER_CONFIG config;
+	AZURE_FUNCTIONS_CONFIG config;
 	config.relativePath = (STRING_HANDLE)0x42;
 	config.hostAddress = (STRING_HANDLE)0x42;
 
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 
-	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(FUNCTIONS_HTTP_TRIGGER_CONFIG)));
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
 
 	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
@@ -1164,4 +1164,4 @@ TEST_FUNCTION(FUNCHTTPTRIGGER_Receive_happy_path)
 	apis.Module_Destroy(moduleInfo);
 }
 
-END_TEST_SUITE(functionshttptrigger_ut)
+END_TEST_SUITE(azure_functions_ut)

@@ -4,14 +4,14 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 compileAsC99()
-set(theseTestsName functionshttptrigger_hl_ut)
+set(theseTestsName azure_functions_ut)
 
 set(${theseTestsName}_test_files
 ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-	../../src/functionshttptrigger_hl.c	
+	../../src/azure_functions.c	
 )
 
 set(${theseTestsName}_h_files

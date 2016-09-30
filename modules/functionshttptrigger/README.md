@@ -1,1 +1,0 @@
-# Functions Http Trigger Module

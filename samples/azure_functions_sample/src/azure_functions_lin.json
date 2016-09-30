@@ -2,12 +2,12 @@
   "modules": [
     {
       "module name": "hello_world",
-      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+      "module path": "./modules/hello_world/libhello_world_hl.so",
       "args": null
     },
     {
-      "module name": "functions_http_trigger",
-      "module path": "..\\..\\..\\modules\\functionshttptrigger\\Debug\\functions_http_trigger_hl.dll",
+      "module name": "azure_functions",
+      "module path": "./modules/functionshttptrigger/libazure_functions_hl.so",
       "args": {
         "hostname": "<YourHosNameHere from Functions Portal>",
         "relativePath": "api/<YourFunctionName>"
@@ -17,7 +17,7 @@
   "links": [
     {
       "source": "hello_world",
-      "sink": "functions_http_trigger"
+      "sink": "azure_functions"
     }
   ]
 }

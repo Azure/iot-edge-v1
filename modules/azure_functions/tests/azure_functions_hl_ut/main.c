@@ -6,6 +6,6 @@
 int main(void)
 {
     size_t failedTestCount = 0;
-    RUN_TEST_SUITE(functionshttptrigger_ut, failedTestCount);
+    RUN_TEST_SUITE(azure_functions_hl_ut, failedTestCount);
     return failedTestCount;
 }
