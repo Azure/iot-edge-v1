@@ -54,13 +54,13 @@ extern "C"
     *			contain Hamdle/FxnPtrs or an interface ptr or some unforseen
     *			representation.
     */
-    typedef struct MODULE_TAG
+    struct MODULE_TAG
     {
         /** @brief Struct containing function pointers */
         const MODULE_APIS* module_apis;
         /** @brief HANDLE for module. */
         MODULE_HANDLE module_handle;
-    }MODULE;
+    };
 
     /** @brief		Creates a module using the specified configuration connecting
     *				to the specified message broker.
@@ -100,7 +100,7 @@ extern "C"
     /** @brief	Structure returned by ::Module_GetAPIS containing the function
     *			pointers of the module-specific implementations of the interface.
     */
-    typedef struct MODULE_APIS_TAG
+    struct MODULE_APIS_TAG
     {
         /** @brief Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;
@@ -110,7 +110,7 @@ extern "C"
 
         /** @brief Function pointer to the #Module_Receive function. */
         pfModule_Receive Module_Receive;
-    }MODULE_APIS;
+    };
 
     /** @brief	This is the only function exported by a module. Using the
     *			exported function, the caller learns the functions for the 
