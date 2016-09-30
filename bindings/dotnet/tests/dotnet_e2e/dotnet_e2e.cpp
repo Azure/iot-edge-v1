@@ -76,7 +76,8 @@ static const MODULE_APIS E2E_APIS_all =
 {
 	E2EModule_Create,
 	E2EModule_Destroy,
-	E2EModule_Receive
+	E2EModule_Receive,
+	NULL
 };
 
 MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
@@ -141,6 +142,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
 	MODULE_HANDLE managedModuleReceiverHandle = Gateway_LL_AddModule(e2eGatewayInstance, &managedModuleReceiver);
 
+	Gateway_LL_Start(e2eGatewayInstance);
 
 	//Set the test probe module.
 	GATEWAY_HANDLE_DATA* gatewayHandleData = (GATEWAY_HANDLE_DATA*)e2eGatewayInstance;

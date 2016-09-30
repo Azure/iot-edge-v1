@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IGatewayModule.cs" />
+    <Compile Include="IGatewayModuleStart.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Broker.cs" />
     <Compile Include="NativeDotNetHostWrapper.cs" />

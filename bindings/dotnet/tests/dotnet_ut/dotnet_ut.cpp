@@ -1088,7 +1088,7 @@ class my_Type: public _Type
 	HRESULT __stdcall GetInterface(
 		/*[in]*/ BSTR name,
 		/*[in]*/ VARIANT_BOOL ignoreCase,
-		/*[out,retval]*/ struct _Type * * pRetVal){  return S_OK; } ;
+		/*[out,retval]*/ struct _Type * * pRetVal) ;
 	HRESULT __stdcall GetInterfaces(
 		/*[out,retval]*/ SAFEARRAY * * pRetVal){  return S_OK; } ;
 	HRESULT __stdcall FindInterfaces(
@@ -1423,7 +1423,12 @@ public:
 		*pRetVal = myAssemblyClassInstance;
 	MOCK_METHOD_END(HRESULT, S_OK);
 
-	MOCK_STATIC_METHOD_2(, HRESULT, GetType_2, BSTR, name, _Type * *, pRetVal);
+	MOCK_STATIC_METHOD_3(, HRESULT, GetInterface_Type, BSTR, typeName, VARIANT_BOOL, ignoreCase, _Type * *, pRetVal)
+		my_Type* my_TypeInstance = new my_Type();
+		*pRetVal = my_TypeInstance;
+	MOCK_METHOD_END(HRESULT, S_OK);
+
+	MOCK_STATIC_METHOD_2(, HRESULT, GetType_2, BSTR, name, _Type * *, pRetVal)
 		my_Type* my_TypeInstance = new my_Type();
 		*pRetVal = my_TypeInstance;
 	MOCK_METHOD_END(HRESULT, S_OK);
@@ -1509,8 +1514,10 @@ extern "C"
 
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, HRESULT, __stdcall, Load_2, BSTR, assemblyString, _Assembly * *, pRetVal);
 
+	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, HRESULT, __stdcall, GetInterface_Type, BSTR, name, VARIANT_BOOL, ignoreCase, _Type * *, pRetVal);
+
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, HRESULT, __stdcall, GetType_2, BSTR, name, _Type * *, pRetVal);
-	
+
 	DECLARE_GLOBAL_MOCK_METHOD_8(CDOTNETMocks, HRESULT, __stdcall, CreateInstance_3, BSTR, typeName, VARIANT_BOOL, ignoreCase, enum BindingFlags, bindingAttr, struct _Binder*, Binder, SAFEARRAY*, args, struct _CultureInfo*, culture, SAFEARRAY *, activationAttributes, VARIANT*, pRetVal);
 
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, HRESULT, __stdcall, CreateInstance, BSTR, typeName, VARIANT *, pRetVal);
@@ -1612,6 +1619,14 @@ HRESULT myAssemblyClass::CreateInstance(
 	/*[out,retval]*/ VARIANT * pRetVal)
 {
 	return ::CreateInstance(typeName, pRetVal);
+};
+
+HRESULT my_Type::GetInterface(
+	/*[in]*/ BSTR name,
+	/*[in]*/ VARIANT_BOOL ignoreCase,
+	/*[out,retval]*/ struct _Type * * pRetVal) 
+{
+	return ::GetInterface_Type(name, ignoreCase, pRetVal);
 };
 
 HRESULT my_Type::InvokeMember_3(
@@ -3380,6 +3395,125 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
+	/*Tests_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ]*/
+	TEST_FUNCTION(DotNET_Start_succeeds)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+		bstr_t bstrStartClientMethodName(L"Start");
+		bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+		variant_t emptyVariant(0);
+
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+
+		mocks.ResetAllCalls();
+		STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+		STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument(4)
+			.IgnoreArgument(5)
+			.IgnoreArgument(6);
+
+		///act
+		theAPIS.Module_Start((MODULE_HANDLE)result);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ] */
+	TEST_FUNCTION(DotNET_Start_Invoke_fails_log_error)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+		bstr_t bstrStartClientMethodName(L"Start");
+		bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+		variant_t emptyVariant(0);
+
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+
+		mocks.ResetAllCalls();
+		STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+			.IgnoreArgument(3);
+		STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument(4)
+			.IgnoreArgument(5)
+			.IgnoreArgument(6)
+			.SetFailReturn((HRESULT)E_POINTER);
+
+		///act
+		theAPIS.Module_Start((MODULE_HANDLE)result);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	/*Tests_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+	TEST_FUNCTION(DotNET_Start_GetInterface_fails_log_error)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
+		DOTNET_HOST_CONFIG dotNetConfig;
+		dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+		dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+		dotNetConfig.dotnet_module_args = "module configuration";
+		bstr_t bstrStartClientMethodName(L"Start");
+		bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+		variant_t emptyVariant(0);
+
+		auto  result = theAPIS.Module_Create((BROKER_HANDLE)0x42, &dotNetConfig);
+
+		mocks.ResetAllCalls();
+		STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+			.IgnoreArgument(3)
+			.SetFailReturn((HRESULT)E_POINTER);
+
+		///act
+		theAPIS.Module_Start((MODULE_HANDLE)result);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	/*Tests_SRS_DOTNET_17_001: [ DotNET_Start shall do nothing if module is NULL. ] */
+	TEST_FUNCTION(DotNET_Start_does_nothing_with_NULL)
+	{
+		///arrage
+		CDOTNETMocks mocks;
+		MODULE_APIS theAPIS;
+		Module_GetAPIS(&theAPIS);
+
+
+		///act
+		theAPIS.Module_Start(NULL);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+	
 	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
 	TEST_FUNCTION(DotNET_Receive__does_nothing_when_Create_Instance_3_for_Message_Constructor_fails)
 	{
