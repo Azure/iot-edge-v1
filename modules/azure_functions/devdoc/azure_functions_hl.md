@@ -6,13 +6,13 @@ the existing lower layer Azure Functions module for use with the Gateway HL libr
 It is mostly a passthrough to the existing module, with a specialized create 
 function to interpret the serialized JSON module arguments.
 
-The Azure Functions module triggers an Azure Functions by sending an http GET to it's trigger endpoint.
+The Azure Functions module triggers an Azure Function by sending an http GET to it's trigger endpoint.
 
 ## Reference
 
 [module.h](../../../../devdoc/module.md)
 
-[Azure Functions Module](functionshttptrigger.md)
+[Azure Functions Module](azure_functions.md)
 
 [httpapiex.h](../../../../azure-c-shared-utility/c/inc/httpapiex.h)
 

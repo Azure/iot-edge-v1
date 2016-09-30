@@ -172,7 +172,7 @@ static void Azure_Functions_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDL
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS azure_functions_HL_APIS_all =
+static const MODULE_APIS Azure_functions_HL_APIS_all =
 {
 	Azure_Functions_HL_Create,
 	Azure_Functions_HL_Destroy,
@@ -192,6 +192,6 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 	else
 	{
 		/* Codes_SRS_AZUREFUNCTIONS_HL_04_001: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
-		(*apis) = azure_functions_HL_APIS_all;
+		(*apis) = Azure_functions_HL_APIS_all;
 	}
 }

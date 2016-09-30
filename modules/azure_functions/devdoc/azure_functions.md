@@ -4,13 +4,13 @@
 This document describes the Azure Functions module.  This module gets messages received from other modules and sends as an http GET, triggering an Azure Function. 
  
 #### Http GET 
-This module send an HTTP GET request to https://<hostAddress>/<relativepath>?name=myGatewayDevice&content=<MessageContentreceived>
+This module sends an HTTP GET request to https://<hostAddress>/<relativepath>?name=myGatewayDevice&content=<MessageContentreceived>
 
 
 ## References
 [module.h](../../../../devdoc/module.md)
 
-[Functions Http Trigger Module](azure_functions.md)
+[Azure Functions Module](azure_functions.md)
 
 [httpapiex.h](../../../../azure-c-shared-utility/c/inc/httpapiex.h)
 

@@ -39,9 +39,9 @@ DEFINE_ENUM(AZURE_FUNCTIONS_RESULT, AZURE_FUNCTIONS_RESULT_VALUES)
 DEFINE_ENUM_STRINGS(BROKER_RESULT, BROKER_RESULT_VALUES);
 
 /*
- * @brief	Create a function http trigger module.
+ * @brief	Create an Azure Functions module.
  */
-static MODULE_HANDLE azureFunctions_Create(BROKER_HANDLE broker, const void* configuration)
+static MODULE_HANDLE AzureFunctions_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	AZURE_FUNCTIONS_DATA* result;
 	if (broker == NULL || configuration == NULL)
@@ -117,7 +117,7 @@ static MODULE_HANDLE azureFunctions_Create(BROKER_HANDLE broker, const void* con
 /*
 * @brief	Destroy an identity map module.
 */
-static void azureFunctions_Destroy(MODULE_HANDLE moduleHandle)
+static void AzureFunctions_Destroy(MODULE_HANDLE moduleHandle)
 {
 	/* Codes_SRS_AZUREFUNCTIONS_04_008: [ If moduleHandle is NULL, azureFunctions_Destroy shall return. ] */
 	if (moduleHandle != NULL)
@@ -136,7 +136,7 @@ static void azureFunctions_Destroy(MODULE_HANDLE moduleHandle)
 /*
  * @brief	Receive a message from the message broker.
  */
-static void azureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	if (moduleHandle == NULL || messageHandle == NULL)
 	{
@@ -231,11 +231,11 @@ static void azureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS azureFunctions_APIS_all =
+static const MODULE_APIS AzureFunctions_APIS_all =
 {
-	azureFunctions_Create,
-	azureFunctions_Destroy,
-	azureFunctions_Receive
+	AzureFunctions_Create,
+	AzureFunctions_Destroy,
+	AzureFunctions_Receive
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -250,6 +250,6 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 	}
 	else
 	{
-		(*apis) = azureFunctions_APIS_all;
+		(*apis) = AzureFunctions_APIS_all;
 	}
 }

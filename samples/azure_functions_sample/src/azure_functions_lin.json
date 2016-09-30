@@ -7,9 +7,9 @@
     },
     {
       "module name": "azure_functions",
-      "module path": "./modules/functionshttptrigger/libazure_functions_hl.so",
+      "module path": "./modules/azure_functions/libazure_functions_hl.so",
       "args": {
-        "hostname": "<YourHosNameHere from Functions Portal>",
+        "hostname": "<YourHostNameHere from Functions Portal>",
         "relativePath": "api/<YourFunctionName>"
       }
     }
