@@ -250,6 +250,7 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 	}
 	else
 	{
+		/* Codes_SRS_AZUREFUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
 		(*apis) = AzureFunctions_APIS_all;
 	}
 }

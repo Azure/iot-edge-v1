@@ -113,7 +113,7 @@ TEST_FUNCTION_CLEANUP(method_cleanup)
 }
 
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetAPIS_returns_non_NULL)
 {
 	// arrange
@@ -129,7 +129,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetAPIS_returns_non_NULL)
 	ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path)
 {
 	// arrange
@@ -169,7 +169,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path)
 	apis.Module_Destroy(result);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_002: [ If the broker is NULL, this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_broker_is_NULL)
 {
 	// arrange
@@ -185,7 +185,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_broker_is_NULL)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_003: [ If the configuration is NULL, this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_configuration_is_NULL)
 {
 	// arrange
@@ -202,7 +202,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_configuration_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
 {
 	// arrange
@@ -224,7 +224,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_004: [ If any hostAddress or relativePath are NULL, this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
 {
 	// arrange
@@ -246,7 +246,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
 {
 	// arrange
@@ -272,7 +272,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_005: [ If azure_functions_Create fails to allocate a new AZURE_FUNCTIONS_DATA structure, then this function shall fail, and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configuration)
 {
 	// arrange
@@ -304,7 +304,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configurati
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_006: [ If azure_functions_Create fails to clone STRING for hostAddress, then this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_006: [ If azure_functions_Create fails to clone STRING for hostAddress, then this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 {
 	// arrange
@@ -342,7 +342,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_007: [ If azure_functions_Create fails to clone STRING for relativePath, then this function shall fail and return NULL. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_007: [ If azure_functions_Create fails to clone STRING for relativePath, then this function shall fail and return NULL. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 {
 	// arrange
@@ -386,7 +386,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_008: [ If moduleHandle is NULL, azure_functions_Destroy shall return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_008: [ If moduleHandle is NULL, azure_functions_Destroy shall return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_does_nothing_if_module_handle_null)
 {
 	// arrange
@@ -400,7 +400,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_does_nothing_if_module_handle_null)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_009: [ azure_functions_Destroy shall release all resources allocated for the module. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_009: [ azure_functions_Destroy shall release all resources allocated for the module. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path)
 {
 
@@ -450,7 +450,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path)
 
 
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_010: [If moduleHandle is NULL than azure_functions_Receive shall fail and return.] */
+/* Tests_SRS_AZUREFUNCTIONS_04_010: [If moduleHandle is NULL than azure_functions_Receive shall fail and return.] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_moduleHandleIsNull)
 {
 	// arrange
@@ -465,7 +465,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_moduleHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_011: [ If messageHandle is NULL than azure_functions_Receive shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_011: [ If messageHandle is NULL than azure_functions_Receive shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_messageHandleIsNull)
 {
 	// arrange
@@ -480,7 +480,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_messageHandleIsNull)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Message_getContent_fail)
 {
 	// arrange
@@ -498,7 +498,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Message_getContent_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
 {
 	// arrange
@@ -525,7 +525,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 {
 	// arrange
@@ -582,7 +582,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
 {
 	// arrange
@@ -647,7 +647,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
 {
 	// arrange
@@ -717,7 +717,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
 {
 	// arrange
@@ -793,7 +793,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat2_fails)
 {
 	// arrange
@@ -873,7 +873,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat2_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat3_fails)
 {
 	// arrange
@@ -961,7 +961,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat3_fails)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 {
 	// arrange
@@ -1058,14 +1058,14 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 	apis.Module_Destroy(moduleInfo);
 }
 
-/* Tests_SRS_AZURE_FUNCTIONS_04_019: [ azure_functions_Receive shall destroy any allocated memory before returning. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_018: [ Upon success azure_functions_Receive shall log the response from HTTP GET and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
-/* Tests_SRS_AZURE_FUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_019: [ azure_functions_Receive shall destroy any allocated memory before returning. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_018: [ Upon success azure_functions_Receive shall log the response from HTTP GET and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_014: [ azure_functions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_013: [ azure_functions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+/* Tests_SRS_AZUREFUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
 {
 	// arrange
