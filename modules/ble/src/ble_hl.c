@@ -181,6 +181,7 @@ static void BLE_HL_Start(MODULE_HANDLE module)
 
 	if (apis.Module_Start != NULL)
 	{
+        /*Codes_SRS_BLE_HL_17_003: [ BLE_HL_Start shall pass the received parameters to the underlying BLE module's Start function, if defined. ]*/
 		apis.Module_Start(module);
 	}
 }

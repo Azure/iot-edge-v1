@@ -358,6 +358,7 @@ GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
 	{
 		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
 
+		/*Codes_SRS_GATEWAY_LL_17_010: [ This function shall call Module_Start for every module which defines the start function. ]*/
 		size_t module_count = VECTOR_size(gateway_handle->modules);
 		size_t m;
 		for (m = 0; m < module_count; m++)
@@ -370,16 +371,14 @@ GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
 				(pfStart)((*module_data)->module);
 			}
 		}
-		/*Codes_SRS_GATEWAY_17_003: [ This function shall mark the gateway as started upon starting each module. ]*/
-		gateway_handle->broker_ready = 1;
-		/*Codes_SRS_GATEWAY_17_007: [ This function shall report a GATEWAY_STARTED event. ]*/
+		/*Codes_SRS_GATEWAY_LL_17_012: [ This function shall report a GATEWAY_STARTED event. ]*/
 		EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_STARTED);
-		/*Codes_SRS_GATEWAY_17_005: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]*/
+		/*Codes_SRS_GATEWAY_LL_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]*/
 		result = GATEWAY_START_SUCCESS;
 	}
 	else
 	{
-		/*Codes_SRS_GATEWAY_17_001: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]*/
+		/*Codes_SRS_GATEWAY_LL_17_009: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]*/
 		result = GATEWAY_START_INVALID_ARGS;
 	}
 	return result;

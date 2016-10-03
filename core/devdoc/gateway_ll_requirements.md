@@ -345,15 +345,13 @@ extern GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw);
 ```
 Gateway_LL_Start informs all modules that the gateway is ready to operate. This is a best effort attempt, all modules which implement a Module_Start function will be called.  The result of the attempt to start all modules will be reported in the `GATEWAY_START_RESULT`.
 
-**SRS_GATEWAY_17_001: [** This function shall return `GATEWAY_START_INVALID_ARGS` if a NULL gateway is received. **]**
+**SRS_GATEWAY_LL_17_009: [** This function shall return `GATEWAY_START_INVALID_ARGS` if a NULL gateway is received. **]**
 
-**SRS_GATEWAY_17_002: [** This function shall call `Module_Start` for every module which defines the start function. **]**
+**SRS_GATEWAY_LL_17_010: [** This function shall call `Module_Start` for every module which defines the start function. **]**
 
-**SRS_GATEWAY_17_003: [** This function shall mark the gateway as started upon starting each module. **]**
+**SRS_GATEWAY_LL_17_012: [** This function shall report a `GATEWAY_STARTED` event. **]**
 
-**SRS_GATEWAY_17_007: [** This function shall report a `GATEWAY_STARTED` event. **]**
-
-**SRS_GATEWAY_17_005: [** This function shall return `GATEWAY_START_SUCCESS` upon completion. **]**
+**SRS_GATEWAY_LL_17_013: [** This function shall return `GATEWAY_START_SUCCESS` upon completion. **]**
 
 
 ## Gateway_LL_Destroy

@@ -144,6 +144,7 @@ static void IotHub_HL_Start(MODULE_HANDLE moduleHandle)
 	MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(&apis);
 	if (apis.Module_Start != NULL)
 	{
+        /*Codes_SRS_IOTHUBMODULE_HL_17_013: [ IotHub_HL_Start shall pass the received parameters to the underlying IotHub module's start function, if defined. ]*/
 		apis.Module_Start(moduleHandle);
 	}
 }

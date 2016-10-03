@@ -713,6 +713,7 @@ TEST_FUNCTION(Gateway_Create_Traverses_JSON_Value_Success)
 	Gateway_LL_Destroy(gateway);
 }
 
+//Tests_SRS_GATEWAY_17_002: [ This function shall return NULL if starting the gateway fails. ]
 TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
 {
 	//Arrange

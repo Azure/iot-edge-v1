@@ -103,6 +103,7 @@ static void JavaModuleHost_HL_Start(MODULE_HANDLE module)
 	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
 	if (apis.Module_Start != NULL)
 	{
+		/*Codes_SRS_JAVA_MODULE_HOST_HL_17_001: [ This function shall pass the arguments to the underlying Java Module Host's _Start function, if defined. ]*/
 		apis.Module_Start(module);
 	}
 }

@@ -177,6 +177,7 @@ static void IdentityMap_HL_Start(MODULE_HANDLE moduleHandle)
 	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
 	if (apis.Module_Start != NULL)
 	{
+		/*Codes_SRS_IDMAP_HL_17_021: [ IdentityMap_HL_Start shall pass the received parameters to the underlying identity map module start function, if defined. ]*/
 		apis.Module_Start(moduleHandle);
 	}
 }

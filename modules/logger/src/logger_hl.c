@@ -101,6 +101,7 @@ static void Logger_HL_Start(MODULE_HANDLE moduleHandle)
 	MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
 	if (apis.Module_Start != NULL)
 	{
+        /*Codes_SRS_LOGGER_HL_17_001: [ Logger_HL_Start shall pass the received parameters to the underlying Logger's _Start function, if defined. ]*/
 		apis.Module_Start(moduleHandle);
 	}
 }

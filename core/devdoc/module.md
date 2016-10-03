@@ -94,7 +94,7 @@ extern "C"
 	/** @brief		The module may start activity.  This is called when the broker
 	*				is guaranteed to be ready to accept messages from this module.
 	*
-	*	@details	This function is to be implemented by the module creator.
+	*	@details	This function may be implemented by the module creator.
 	*
 	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
 	*								message.
@@ -186,5 +186,5 @@ called from the same thread.
 static void Module_Start(MODULE_HANDLE moduleHandle);
 ```
 
-This function is to be implemented by the module creator.  It is allowed to be `NULL` in the `MODULE_APIS` structure. If defined, this function is called by the framework when the message broker is guaranteed to be ready to accept messages from the module.
+This function may be implemented by the module creator.  It is allowed to be `NULL` in the `MODULE_APIS` structure. If defined, this function is called by the framework when the message broker is guaranteed to be ready to accept messages from the module.
 

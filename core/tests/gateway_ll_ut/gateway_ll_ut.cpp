@@ -4832,6 +4832,9 @@ TEST_FUNCTION(Gateway_LL_AddModule_malloc_name_fail)
 	Gateway_LL_Destroy(gateway);
 }
 
+//Tests_SRS_GATEWAY_LL_17_010: [ This function shall call Module_Start for every module which defines the start function. ]
+//Tests_SRS_GATEWAY_LL_17_012: [ This function shall report a GATEWAY_STARTED events. ]
+//Tests_SRS_GATEWAY_LL_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]
 TEST_FUNCTION(Gateway_LL_Start_starts_stuff)
 {
 	//Arrange
@@ -4889,6 +4892,7 @@ TEST_FUNCTION(Gateway_LL_Start_starts_stuff)
 	free(properties);
 }
 
+//Tests_SRS_GATEWAY_LL_17_009: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]
 TEST_FUNCTION(Gateway_LL_Start_null_gw_returns_error)
 {
 	//Arrange
@@ -4904,7 +4908,7 @@ TEST_FUNCTION(Gateway_LL_Start_null_gw_returns_error)
 	//Cleanup
 }
 
-
+//Tests_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]
 TEST_FUNCTION(Gateway_LL_StartModule_starts_module)
 {
 	//Arrange
@@ -4939,6 +4943,7 @@ TEST_FUNCTION(Gateway_LL_StartModule_starts_module)
 	free(properties);
 }
 
+//Tests_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]
 TEST_FUNCTION(Gateway_LL_StartModule_no_start_for_null_start_func)
 {
 	//Arrange
@@ -4981,6 +4986,7 @@ TEST_FUNCTION(Gateway_LL_StartModule_no_start_for_null_start_func)
 	free(properties);
 }
 
+//Tests_SRS_GATEWAY_LL_17_007: [ If module is not found in the gateway, this function shall do nothing. ]
 TEST_FUNCTION(Gateway_LL_StartModule_no_module)
 {
 	//Arrange
@@ -5012,6 +5018,7 @@ TEST_FUNCTION(Gateway_LL_StartModule_no_module)
 	free(properties);
 }
 
+//Tests_SRS_GATEWAY_LL_17_006: [ If gw is NULL, this function shall do nothing. ]
 TEST_FUNCTION(Gateway_LL_StartModule_no_gateway)
 {
 	//Arrange
