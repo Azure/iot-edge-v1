@@ -137,6 +137,7 @@ static void HelloWorld_Start(MODULE_HANDLE module)
 				LogError("failed to spawn a thread");
 				handleData->threadHandle = NULL;
 			}
+			(void)Unlock(handleData->lockHandle);
 		}
 	}
 }
