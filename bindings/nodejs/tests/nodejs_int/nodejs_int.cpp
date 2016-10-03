@@ -40,6 +40,7 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static pfModule_Create  NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start   NODEJS_Start   = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 using namespace nodejs_module;
 
@@ -311,7 +312,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 		Module_GetAPIS(&apis);
         NODEJS_Create = apis.Module_Create;
         NODEJS_Destroy = apis.Module_Destroy;
-        NODEJS_Receive = apis.Module_Receive;
+		NODEJS_Receive = apis.Module_Receive;
+		NODEJS_Start = apis.Module_Start;
 
         g_broker = Broker_Create();
 
@@ -1147,5 +1149,119 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
     }
+
+	TEST_FUNCTION(call_Start_before_nodejs_init_completes)
+	{
+		///arrange
+		const char* MODULE_START_IS_CALLED = ""                  \
+			"'use strict';"                                      \
+			"module.exports = {"                                 \
+			"    create: function (broker, configuration) {"	 \
+			"        return true;"                               \
+			"    },"                                             \
+			"    start: function() {"							 \
+			"        _integrationTest6.notify(true);"			 \
+			"    },"											 \
+			"    receive: function(message) {"                   \
+			"    },"                                             \
+			"    destroy: function () {"                         \
+			"    }"                                              \
+			"};";
+
+		TempFile js_file;
+		js_file.Write(MODULE_START_IS_CALLED);
+
+		NODEJS_MODULE_CONFIG config = {
+			js_file.js_file_path.c_str(),
+			"{}"
+		};
+
+		// setup a function to be called from the JS test code
+		NodeJSIdle::Get()->AddCallback([]() {
+			auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
+				"notify", notify_result
+			);
+			NodeJSUtils::AddObjectToGlobalContext("_integrationTest6", notify_result_obj);
+		});
+
+		auto result = NODEJS_Create(g_broker, &config);
+
+		///act
+
+		NODEJS_Start(result);
+
+		// wait for 15 seconds for the create to get done
+		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+		wait_for_predicate(15, [handle_data]() {
+			return handle_data->GetModuleState() != NodeModuleState::initializing;
+		});
+
+		///assert
+		wait_for_predicate(15, [handle_data]() {
+			return g_notify_result.WasCalled() == true;
+		});
+		ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+		ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
+
+		///cleanup
+		NODEJS_Destroy(result);
+	}
+
+	TEST_FUNCTION(call_Start_after_nodejs_init_completes)
+	{
+		///arrange
+		const char* MODULE_START_IS_CALLED = ""                  \
+			"'use strict';"                                      \
+			"module.exports = {"                                 \
+			"    create: function (broker, configuration) {"	 \
+			"        return true;"                               \
+			"    },"                                             \
+			"    start: function() {"							 \
+			"        _integrationTest6.notify(true);"			 \
+			"    },"											 \
+			"    receive: function(message) {"                   \
+			"    },"                                             \
+			"    destroy: function () {"                         \
+			"    }"                                              \
+			"};";
+
+		TempFile js_file;
+		js_file.Write(MODULE_START_IS_CALLED);
+
+		NODEJS_MODULE_CONFIG config = {
+			js_file.js_file_path.c_str(),
+			"{}"
+		};
+
+		// setup a function to be called from the JS test code
+		NodeJSIdle::Get()->AddCallback([]() {
+			auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
+				"notify", notify_result
+			);
+			NodeJSUtils::AddObjectToGlobalContext("_integrationTest6", notify_result_obj);
+		});
+
+		auto result = NODEJS_Create(g_broker, &config);
+
+		// wait for 15 seconds for the create to get done
+		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+		wait_for_predicate(15, [handle_data]() {
+			return handle_data->GetModuleState() != NodeModuleState::initializing;
+		});
+
+		///act
+
+		NODEJS_Start(result);
+
+		///assert
+		wait_for_predicate(15, [handle_data]() {
+			return g_notify_result.WasCalled() == true;
+		});
+		ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+		ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
+
+		///cleanup
+		NODEJS_Destroy(result);
+	}
 
 END_TEST_SUITE(nodejs_int)

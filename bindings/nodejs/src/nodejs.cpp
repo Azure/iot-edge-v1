@@ -63,6 +63,7 @@
 
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
 static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config);
+void call_start_on_module(NODEJS_MODULE_HANDLE_DATA* handle_data);
 
 static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration)
 {
@@ -868,6 +869,10 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             else
                             {
                                 handle_data->SetModuleState(NodeModuleState::initialized);
+								if (handle_data->GetStartPending() == true)
+								{
+									call_start_on_module(handle_data);
+								}
                             }
                         }
                     }
@@ -1187,6 +1192,88 @@ static void NODEJS_Destroy(MODULE_HANDLE module)
     }
 }
 
+static void on_start_callback(
+	v8::Isolate* isolate,
+	v8::Local<v8::Context> context,
+	size_t module_id
+)
+{
+	auto modules_manager = nodejs_module::ModulesManager::Get();
+
+	if (modules_manager->HasModule(module_id) == true)
+	{
+		auto& handle_data = modules_manager->GetModuleFromId(module_id);
+		if (handle_data.GetModuleState() == NodeModuleState::initializing)
+		{
+			handle_data.SetStartPending(true);
+		}
+		else if (handle_data.GetModuleState() == NodeModuleState::initialized)
+		{
+			if (handle_data.module_object.IsEmpty() == false)
+			{
+				auto gateway = handle_data.module_object.Get(isolate);
+
+				// invoke 'start' on the module object
+				auto start_method_name = v8::String::NewFromUtf8(isolate, "start");
+				if (start_method_name.IsEmpty() != true)
+				{
+					// we already verified that this exists and is a function when the module
+					// was registered
+					auto start_method_value = gateway->Get(context, start_method_name).ToLocalChecked();
+					if (start_method_value.IsEmpty() != true && start_method_value->IsFunction() == true)
+					{
+						auto start_method = start_method_value.As<v8::Function>();
+
+						/*Codes_SRS_NODEJS_13_040: [ NodeJS_Destroy shall invoke the destroy method on module's JS implementation. ]*/
+						start_method->Call(context, gateway, 0, nullptr);
+
+					}
+					//It's not an error if "start" is not defined.
+				}
+				else
+				{
+					LogError("Unable to allocate string for start method.");
+				}
+			}
+			else
+			{
+				LogError("Module does not have a JS object that needs to be destroyed.");
+			}
+			handle_data.SetStartPending(false);
+		}
+		else
+		{
+			LogError("Module is in error state");
+		}
+	}
+}
+
+void call_start_on_module(NODEJS_MODULE_HANDLE_DATA* handle_data)
+{
+	auto module_id = handle_data->module_id;
+
+	// run on node's event thread
+	nodejs_module::NodeJSIdle::Get()->AddCallback([module_id]() {
+		nodejs_module::NodeJSUtils::RunWithNodeContext([module_id](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+			on_start_callback(isolate, context, module_id);
+		});
+	});
+}
+void NODEJS_Start(MODULE_HANDLE module)
+{
+	/*Codes_SRS_NODEJS_13_020: [ NodeJS_Receive shall do nothing if module is NULL. ]*/
+	/*Codes_SRS_NODEJS_13_021: [ NodeJS_Receive shall do nothing if message is NULL. ]*/
+	if (module == nullptr)
+	{
+		LogError("module/message handle is nullptr");
+	}
+	else
+	{
+		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(module);
+
+		call_start_on_module(handle_data);
+	}
+}
 /*
 *	Required for all modules:  the public API and the designated implementation functions.
 */
@@ -1195,7 +1282,7 @@ static const MODULE_APIS NODEJS_APIS_all =
     NODEJS_Create,
     NODEJS_Destroy,
     NODEJS_Receive, 
-	NULL
+	NODEJS_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
