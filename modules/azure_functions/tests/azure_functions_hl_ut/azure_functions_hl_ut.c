@@ -295,6 +295,15 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__hostn
 		.IgnoreArgument(2)
 		.SetReturn("relativePath42");
 
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn("KeyCode42");
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((STRING_HANDLE)0x42);
+
+
 	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
 		.SetReturn(NULL);
@@ -302,6 +311,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__hostn
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG));
 
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG));
+
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 	
 	STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
@@ -335,6 +346,14 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__relat
 		.IgnoreArgument(2)
 		.SetReturn("relativePath42");
 
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn(NULL);
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn(NULL);
+
 	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
@@ -343,8 +362,9 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_STRING_construct__relat
 		.IgnoreAllArguments()
 		.SetReturn(NULL);
 
-	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG));
 
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG));
 
@@ -380,6 +400,13 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_ModuleCreate_fail)
 		.IgnoreArgument(2)
 		.SetReturn("relativePath42");
 
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn(NULL);
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
 	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
@@ -401,6 +428,9 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_ModuleCreate_fail)
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
 	STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
 	// act
@@ -411,6 +441,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_returns_NULL_when_ModuleCreate_fail)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
+/* Tests_SRS_AZUREFUNCTIONS_HL_04_019: [ If the array object contains a value named "key" then Azure_Functions_HL_Create shall create a securityKey based on input key ] */
 /* Tests_SRS_AZUREFUNCTIONS_HL_04_014: [ Azure_Functions_HL_Create shall release all data it allocated. ] */
 /* Tests_SRS_AZUREFUNCTIONS_HL_04_012: [ When the lower layer Azure Functions module create succeeds, Azure_Functions_HL_Create shall succeed and return a non-NULL value. ] */
 /* Tests_SRS_AZUREFUNCTIONS_HL_04_011: [ Azure_Functions_HL_Create shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
@@ -440,6 +471,14 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_happy_path)
 		.IgnoreArgument(2)
 		.SetReturn("relativePath42");
 
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn("codeKey42");
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+
+		.SetReturn((STRING_HANDLE)0x42);
 	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
@@ -454,6 +493,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Create_happy_path)
 	STRICT_EXPECTED_CALL(azure_functions_Create((BROKER_HANDLE)0x42, (const void*)0x42))
 		.IgnoreArgument(2)
 		.SetReturn((MODULE_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
 	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
@@ -505,6 +546,15 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Destroy_happy_path)
 		.IgnoreArgument(2)
 		.SetReturn("relativePath42");
 
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn(NULL);
+
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn(NULL);
+
 	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
 		.SetReturn((STRING_HANDLE)0x42);
@@ -519,6 +569,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Destroy_happy_path)
 	STRICT_EXPECTED_CALL(azure_functions_Create((BROKER_HANDLE)0x42, (const void*)0x42))
 		.IgnoreArgument(2)
 		.SetReturn((MODULE_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_delete(NULL));
 
 	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 

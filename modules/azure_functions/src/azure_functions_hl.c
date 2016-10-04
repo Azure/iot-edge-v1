@@ -69,10 +69,16 @@ static MODULE_HANDLE Azure_Functions_HL_Create(BROKER_HANDLE broker, const void*
 					}
 					else
 					{
+						const char* key = json_object_get_string(obj, "key");
+
 						AZURE_FUNCTIONS_CONFIG config;
+
+						/* Codes_SRS_AZUREFUNCTIONS_HL_04_019: [ If the array object contains a value named "key" then Azure_Functions_HL_Create shall create a securityKey based on input key ] */
+						config.securityKey = STRING_construct(key); //Doesn't need to test key. If key is null will mean we are sending an anonymous request.
 						config.relativePath = NULL;
 						/* Codes_SRS_AZUREFUNCTIONS_HL_04_008: [ Azure_Functions_HL_Create shall call STRING_construct to create hostAddress based on input host address. ] */
 						config.hostAddress = STRING_construct(hostAddress);
+						
 
 						if (config.hostAddress == NULL)
 						{
@@ -115,6 +121,7 @@ static MODULE_HANDLE Azure_Functions_HL_Create(BROKER_HANDLE broker, const void*
 						/* Codes_SRS_AZUREFUNCTIONS_HL_04_014: [ Azure_Functions_HL_Create shall release all data it allocated. ] */
 						STRING_delete(config.hostAddress);
 						STRING_delete(config.relativePath);
+						STRING_delete(config.securityKey);
 					}
                 }
             }

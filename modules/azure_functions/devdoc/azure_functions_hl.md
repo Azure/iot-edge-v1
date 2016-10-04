@@ -3,7 +3,7 @@
 ## Overview
 This document describes the Azure Functions high level module.  This module adapts
 the existing lower layer Azure Functions module for use with the Gateway HL library.  
-It is mostly a passthrough to the existing module, with a specialized create 
+It is mostly a pass through to the existing module, with a specialized create 
 function to interpret the serialized JSON module arguments.
 
 The Azure Functions module triggers an Azure Function by sending an http GET to it's trigger endpoint.
@@ -23,8 +23,9 @@ The Azure Functions module triggers an Azure Function by sending an http GET to 
 The arguments to this module is a JSON with the following values:
 ```json
 {
-        "hostname": "<YourHosNameHere from Functions Portal>",
-        "relativePath": "api/<YourFunctionName>"
+        "hostname": "<YourHosNameHere from Functions Portal>", <== Required
+        "relativePath": "api/<YourFunctionName>", <== Required
+        "key": "<your security code here>" <== Optional if Authentication requires it. Anonymous Authentication doesn't require key/code.
 }
 ```
 
@@ -68,6 +69,8 @@ NULL. **]**
 **SRS_AZUREFUNCTIONS_HL_04_007: [** If the array object does not contain a value 
 named "relativePath" then `Azure_Functions_HL_Create` shall fail and return 
 NULL. **]**
+
+**SRS_AZUREFUNCTIONS_HL_04_019: [** If the array object contains a value named "key" then `Azure_Functions_HL_Create` shall create a securityKey based on input key **]**
 
 **SRS_AZUREFUNCTIONS_HL_04_008: [** `Azure_Functions_HL_Create` shall call 
 STRING_construct to create hostAddress based on input host address. **]**

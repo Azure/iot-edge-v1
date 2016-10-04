@@ -103,8 +103,32 @@ static MODULE_HANDLE AzureFunctions_Create(BROKER_HANDLE broker, const void* con
 						}
 						else
 						{
-							/* Codes_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
-							result->broker = broker;
+							/* Codes_SRS_AZUREFUNCTIONS_04_022: [ if securityKey STRING is NULL AzureFunctions_Create shall do nothing, since this STRING is optional. ] */
+							if (config->securityKey != NULL)
+							{
+								result->azureFunctionsConfiguration->securityKey = STRING_clone(config->securityKey);
+								if (result->azureFunctionsConfiguration->securityKey == NULL)
+								{
+									/* Codes_SRS_AZUREFUNCTIONS_04_021: [ If AzureFunctions_Create fails to clone STRING for securityKey, then this function shall fail and return NULL. ] */
+									LogError("Error cloning string for securityKey.");
+									STRING_delete(result->azureFunctionsConfiguration->relativePath);
+									STRING_delete(result->azureFunctionsConfiguration->hostAddress);									
+									free(result->azureFunctionsConfiguration);
+									free(result);
+									result = NULL;
+								}
+								else
+								{
+									/* Codes_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+									result->broker = broker;
+								}
+							}
+							else
+							{
+								result->azureFunctionsConfiguration->securityKey = NULL;
+								/* Codes_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
+								result->broker = broker;
+							}
 						}
 					}
 				}
@@ -126,6 +150,7 @@ static void AzureFunctions_Destroy(MODULE_HANDLE moduleHandle)
 		AZURE_FUNCTIONS_DATA * moduleData = (AZURE_FUNCTIONS_DATA*)moduleHandle;
 		STRING_delete(moduleData->azureFunctionsConfiguration->hostAddress);
 		STRING_delete(moduleData->azureFunctionsConfiguration->relativePath);
+		STRING_delete(moduleData->azureFunctionsConfiguration->securityKey);
 
 		free(moduleData->azureFunctionsConfiguration);
 		free(moduleData);
@@ -147,81 +172,133 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 	else
 	{
 		AZURE_FUNCTIONS_DATA*module_data = (AZURE_FUNCTIONS_DATA*)moduleHandle;
+
 		/* Codes_SRS_AZUREFUNCTIONS_04_012: [ azureFunctions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
-		const CONSTBUFFER * content = Message_GetContent(messageHandle);
+		const CONSTBUFFER* content = Message_GetContent(messageHandle);
+
 		if (content == NULL)
 		{
-			LogError("Failed to get Message Content");
+			LogError("unable to get message content.");
 		}
 		else
 		{
-			/* Codes_SRS_AZUREFUNCTIONS_04_013: [ azureFunctions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
+			/* Codes_SRS_AZUREFUNCTIONS_04_013: [ AzureFunctions_Receive shall base64 encode by calling Base64_Encode_Bytes, if it fails it shall fail and return. ] */
 			STRING_HANDLE contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
 			if (contentAsJSON == NULL)
 			{
-				LogError("Failed to Base64 Encode Message Content.");
+				LogError("unable to Base64_Encode_Bytes");
 			}
 			else
 			{
-				/* Codes_SRS_AZUREFUNCTIONS_04_014: [ azureFunctions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
-				HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(module_data->azureFunctionsConfiguration->hostAddress));
-				if (myHTTPEXHandle == NULL)
+				STRING_HANDLE jsonToBeAppended = STRING_construct("{");
+				if (jsonToBeAppended == NULL)
 				{
-					LogError("Failed to create HTTPAPIEX handle.");
+					LogError("unable to STRING_construct");
 				}
 				else
 				{
-					/* Codes_SRS_AZUREFUNCTIONS_04_015: [ azureFunctions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
-					BUFFER_HANDLE myResponseBuffer = BUFFER_new();
-
-					if (myResponseBuffer == NULL)
+					/* Codes_SRS_AZUREFUNCTIONS_04_024: [ AzureFunctions_Receive shall create a JSON STRING with the content of the message received. If it fails it shall fail and return. ] */
+					if (!((STRING_concat(jsonToBeAppended, "\"content\":\"") == 0) &&
+						(STRING_concat_with_STRING(jsonToBeAppended, contentAsJSON) == 0) &&
+						(STRING_concat(jsonToBeAppended, "\"}") == 0)
+						))
 					{
-						LogError("Failed to create response Buffer.");
+						LogError("STRING concatenation error");
 					}
 					else
 					{
-						/* Codes_SRS_AZUREFUNCTIONS_04_016: [ azureFunctions_Receive shall add name and content parameter to relative path, if it fail it shall fail and return. ] */
-						STRING_HANDLE relativePathInfoForRequest = STRING_clone(module_data->azureFunctionsConfiguration->relativePath);
-
-						if (relativePathInfoForRequest == NULL)
+						/* Codes_SRS_AZUREFUNCTIONS_04_014: [ azureFunctions_Receive shall call HTTPAPIEX_Create, passing hostAddress, it if fails it shall fail and return. ] */
+						HTTPAPIEX_HANDLE myHTTPEXHandle = HTTPAPIEX_Create(STRING_c_str(module_data->azureFunctionsConfiguration->hostAddress));
+						if (myHTTPEXHandle == NULL)
 						{
-							LogError("Error building request String.");
+							LogError("Failed to create HTTPAPIEX handle.");
 						}
 						else
 						{
-							if ((STRING_concat(relativePathInfoForRequest, "?name=myGatewayDevice") != 0) ||
-								(STRING_concat(relativePathInfoForRequest, "&content=") != 0) ||
-								(STRING_concat(relativePathInfoForRequest, STRING_c_str(contentAsJSON)) != 0))
+							/* Codes_SRS_AZUREFUNCTIONS_04_015: [ azureFunctions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
+							BUFFER_HANDLE myResponseBuffer = BUFFER_new();
+
+							if (myResponseBuffer == NULL)
 							{
-								LogError("Error building request String.");
+								LogError("Failed to create response Buffer.");
 							}
 							else
 							{
-								unsigned int statuscodeBack;
-								/* Codes_SRS_AZUREFUNCTIONS_04_017: [ azureFunctions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP GET to Azure Functions. If it fail it shall fail and return. ] */
-								HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_GET, STRING_c_str(relativePathInfoForRequest), NULL, NULL, &statuscodeBack, NULL, myResponseBuffer);
+								/* Codes_SRS_AZUREFUNCTIONS_04_016: [ azureFunctions_Receive shall add name to relative path, if it fail it shall fail and return. ] */
+								STRING_HANDLE relativePathInfoForRequest = STRING_clone(module_data->azureFunctionsConfiguration->relativePath);
 
-								if (requestResult != HTTPAPIEX_OK)
+								if (relativePathInfoForRequest == NULL)
 								{
-									LogError("Error Sending REquest. Status Code: %d", statuscodeBack);
+									LogError("Error building request String.");
 								}
 								else
 								{
-									/* Codes_SRS_AZUREFUNCTIONS_04_018: [ Upon success azureFunctions_Receive shall log the response from HTTP GET and return. ] */
-									LogInfo("Request Sent to Function Succesfully. Response from Functions: %s", BUFFER_u_char(myResponseBuffer));
+									if ((STRING_concat(relativePathInfoForRequest, "?name=myGatewayDevice") != 0))
+									{
+										LogError("Error building request String.");
+									}
+									else
+									{
+										//Adding HTTP HEaders here. 
+										HTTP_HEADERS_HANDLE httpHeaders = HTTPHeaders_Alloc();
+
+										if (httpHeaders == NULL)
+										{
+											LogError("Error creating HttpHeaders");
+										}
+										else
+										{
+											/* Codes_SRS_AZUREFUNCTIONS_04_025: [ AzureFunctions_Receive shall add 2 HTTP Headers to POST Request. Content-Type:application/json and, if securityKey exists x-functions-key:securityKey. If it fails it shall fail and return. ] */
+											if (HTTPHeaders_AddHeaderNameValuePair(httpHeaders, "Content-Type", "application/json") != HTTP_HEADERS_OK)
+											{
+												LogError("Error Adding Content-Type header.");
+											}
+											else if (module_data->azureFunctionsConfiguration->securityKey != NULL &&
+												(HTTPHeaders_AddHeaderNameValuePair(httpHeaders, "x-functions-key", STRING_c_str(module_data->azureFunctionsConfiguration->securityKey)) != HTTP_HEADERS_OK))
+											{
+												LogError("Error Adding Content-Type.");
+											}
+											else
+											{
+
+												//Add here the content on the body.
+												BUFFER_HANDLE postContent = BUFFER_create(STRING_c_str(jsonToBeAppended), STRING_length(jsonToBeAppended));
+
+												if (postContent == NULL)
+												{
+													LogError("Error building post content.");
+												}
+												else
+												{
+													unsigned int statuscodeBack;
+													/* Codes_SRS_AZUREFUNCTIONS_04_017: [ azureFunctions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP POST to Azure Functions. If it fail it shall fail and return. ] */
+													HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_POST, STRING_c_str(relativePathInfoForRequest), httpHeaders, postContent, &statuscodeBack, NULL, myResponseBuffer);
+
+													if (requestResult != HTTPAPIEX_OK || statuscodeBack != 200)
+													{
+														LogError("Error Sending Request. Status Code: %d", statuscodeBack);
+													}
+													else
+													{
+														/* Codes_SRS_AZUREFUNCTIONS_04_018: [ Upon success azureFunctions_Receive shall log the response from HTTP POST and return. ] */
+														LogInfo("Request Sent to Function Succesfully. Response from Functions: %s", BUFFER_u_char(myResponseBuffer));
+													}
+													BUFFER_delete(postContent);
+												}
+											}
+										}
+									}
+									/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
+									STRING_delete(relativePathInfoForRequest);
 								}
+								/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
+								BUFFER_delete(myResponseBuffer);
 							}
 							/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
-							STRING_delete(relativePathInfoForRequest);
+							HTTPAPIEX_Destroy(myHTTPEXHandle);
 						}
-						/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
-						BUFFER_delete(myResponseBuffer);
 					}
-					/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
-					HTTPAPIEX_Destroy(myHTTPEXHandle);
 				}
-				/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
-				STRING_delete(contentAsJSON);
 			}
 		}
 	}

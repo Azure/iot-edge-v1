@@ -10,7 +10,8 @@
       "module path": "..\\..\\..\\modules\\azure_functions\\Debug\\azure_functions_hl.dll",
       "args": {
         "hostname": "<YourHostNameHere from Functions Portal>",
-        "relativePath": "api/<YourFunctionName>"
+        "relativePath": "api/<YourFunctionName>",
+        "key": "<yourSecurityCodeHere"
       }
     }
   ],
