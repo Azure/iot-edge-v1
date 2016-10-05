@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace E2ETestModule
 {
-    public class DotNetE2ETestModule : IGatewayModule
+    public class DotNetE2ETestModule : IGatewayModule, IGatewayModuleStart
     {
         private Broker broker;
         private string configuration;
@@ -20,6 +20,10 @@ namespace E2ETestModule
             this.broker = broker;
             this.configuration = System.Text.Encoding.UTF8.GetString(configuration); 
 
+        }
+
+        public void Start()
+        {
             Thread oThread = new Thread(new ThreadStart(this.threadBody));
             // Start the thread
             oThread.Start();

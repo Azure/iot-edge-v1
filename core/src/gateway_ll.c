@@ -44,9 +44,6 @@ typedef struct MODULE_DATA_TAG {
 
 	/** @brief The MODULE_HANDLE of the same module that lives on the message broker.*/
 	MODULE_HANDLE module;
-
-	/** @brief Flag to indicate we have started this module.*/
-	int module_started;
 } MODULE_DATA;
 
 #ifndef UWP_BINDING
@@ -691,7 +688,6 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 									name_copied,
 									module_library_handle,
 									module_handle,
-									0
 								};
 								*new_module_data = module_data;
 								/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
