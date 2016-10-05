@@ -10,7 +10,8 @@
       "module path": "./modules/azure_functions/libazure_functions_hl.so",
       "args": {
         "hostname": "<YourHostNameHere from Functions Portal>",
-        "relativePath": "api/<YourFunctionName>"
+        "relativePath": "/api/<YourFunctionName>",
+        "key": "<your Api Key Here>"
       }
     }
   ],

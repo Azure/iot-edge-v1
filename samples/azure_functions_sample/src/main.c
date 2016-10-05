@@ -4,10 +4,14 @@
 #include <stdio.h>
 
 #include "gateway.h"
+#include "azure_c_shared_utility/platform.h"
 
 int main(int argc, char** argv)
 {
     GATEWAY_HANDLE gateway;
+
+	platform_init();
+	
     if (argc != 2)
     {
         printf("usage: azure_functions_sample configFile\n");
