@@ -11,7 +11,7 @@
       "args": {
         "hostname": "<YourHostNameHere from Functions Portal>",
         "relativePath": "api/<YourFunctionName>",
-        "key": "<yourSecurityCodeHere"
+        "key": "<your Api Key Here>"
       }
     }
   ],

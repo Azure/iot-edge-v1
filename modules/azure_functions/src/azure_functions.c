@@ -286,6 +286,8 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 													BUFFER_delete(postContent);
 												}
 											}
+											/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
+											HTTPHeaders_Free(httpHeaders);
 										}
 									}
 									/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
@@ -298,7 +300,11 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 							HTTPAPIEX_Destroy(myHTTPEXHandle);
 						}
 					}
+					/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
+					STRING_delete(jsonToBeAppended);
 				}
+				/* Codes_SRS_AZUREFUNCTIONS_04_019: [ azureFunctions_Receive shall destroy any allocated memory before returning. ] */
+				STRING_delete(contentAsJSON);
 			}
 		}
 	}
