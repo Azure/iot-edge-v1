@@ -158,10 +158,17 @@ static void HelloWorld_Destroy(MODULE_HANDLE module)
         Unlock(handleData->lockHandle);
     }
 
-    if(ThreadAPI_Join(handleData->threadHandle, &notUsed) != THREADAPI_OK)
-    {
-        LogError("unable to ThreadAPI_Join, still proceeding in _Destroy");
-    }
+	if (handleData->threadHandle == NULL)
+	{
+		LogError("Hello World module not started, no thread");
+	}
+	else
+	{
+		if (ThreadAPI_Join(handleData->threadHandle, &notUsed) != THREADAPI_OK)
+		{
+			LogError("unable to ThreadAPI_Join, still proceeding in _Destroy");
+		}
+	}
     
     (void)Lock_Deinit(handleData->lockHandle);
     free(handleData);

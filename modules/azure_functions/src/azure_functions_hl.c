@@ -175,6 +175,30 @@ static void Azure_Functions_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDL
 	
 }
 
+/*
+* @brief	Module is informed Gateway is ready for Module.
+*/
+static void Azure_Functions_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	if (moduleHandle != NULL)
+	{
+		MODULE_APIS apis;
+		memset(&apis, 0, sizeof(MODULE_APIS));
+		MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(&apis);
+		if (apis.Module_Start != NULL)
+		{
+			/*Codes_SRS_AZUREFUNCTIONS_HL_17_001: [ Azure_Functions_HL_Start shall pass the received parameters to the underlying module start function, if defined. ]*/
+			apis.Module_Start(moduleHandle);
+		}
+	}
+	else
+	{
+		/* Codes_SRS_AZUREFUNCTIONS_HL_17_002: [ Azure_Functions_HL_Start shall do nothing if moduleHandle is NULL. */
+		LogError("'module' and/or 'message_handle' is NULL");
+	}
+
+}
+
 
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
@@ -183,7 +207,8 @@ static const MODULE_APIS Azure_functions_HL_APIS_all =
 {
 	Azure_Functions_HL_Create,
 	Azure_Functions_HL_Destroy,
-	Azure_Functions_HL_Receive
+	Azure_Functions_HL_Receive,
+	Azure_Functions_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

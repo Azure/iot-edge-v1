@@ -318,7 +318,8 @@ static const MODULE_APIS AzureFunctions_APIS_all =
 {
 	AzureFunctions_Create,
 	AzureFunctions_Destroy,
-	AzureFunctions_Receive
+	AzureFunctions_Receive,
+	NULL  /* No Start, this module acts on received messages. */
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC

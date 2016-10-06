@@ -129,6 +129,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetAPIS_returns_non_NULL)
 	ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
 	ASSERT_IS_TRUE(apis.Module_Create != NULL);
 	ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+	ASSERT_IS_TRUE(apis.Module_Start == NULL);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
@@ -923,6 +924,9 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 
 	//assert
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//Cleanup
+	apis.Module_Destroy(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */

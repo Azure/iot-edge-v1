@@ -35,11 +35,14 @@ void azure_functions_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void azure_functions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
+void azure_functions_Start(MODULE_HANDLE moduleHandle);
+
 static MODULE_APIS azure_functions_APIS_all =
 {
 	azure_functions_Create,
 	azure_functions_Destroy,
-	azure_functions_Receive
+	azure_functions_Receive,
+	azure_functions_Start
 };
 
 
@@ -55,6 +58,7 @@ MOCKABLE_FUNCTION(, void, azure_functions_Destroy, MODULE_HANDLE, moduleHandle);
 
 MOCKABLE_FUNCTION(, void, azure_functions_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
 
+MOCKABLE_FUNCTION(, void, azure_functions_Start, MODULE_HANDLE, moduleHandle);
 
 MOCK_FUNCTION_WITH_CODE(, void, MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE), MODULE_APIS*, apis)
      (*apis) = azure_functions_APIS_all;
@@ -640,6 +644,41 @@ TEST_FUNCTION(AZUREFUNCTIONS_HL_Receive_happyPath)
 
 	//act
 	apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+
+	//assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
+/* Tests_SRS_AZUREFUNCTIONS_HL_17_002: [ Azure_Functions_HL_Start shall do nothing if moduleHandle is NULL. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Start_doesNothing_if_moduleHandleIsNull)
+{
+	// arrange
+	MODULE_APIS apis;
+	memset(&apis, 0, sizeof(MODULE_APIS));
+	Module_GetAPIS(&apis);
+
+	//act
+	apis.Module_Start(NULL);
+
+	//assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
+/* Tests_SRS_AZUREFUNCTIONS_HL_17_001: [ Azure_Functions_HL_Start shall pass the received parameters to the underlying module start function, if defined. ] */
+TEST_FUNCTION(AZUREFUNCTIONS_HL_Start_happyPath)
+{
+	// arrange
+	MODULE_APIS apis;
+	memset(&apis, 0, sizeof(MODULE_APIS));
+	Module_GetAPIS(&apis);
+
+	STRICT_EXPECTED_CALL(MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	STRICT_EXPECTED_CALL(azure_functions_Start((MODULE_HANDLE)0x42));
+
+	//act
+	apis.Module_Start((MODULE_HANDLE)0x42);
 
 	//assert
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());

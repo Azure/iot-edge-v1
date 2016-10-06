@@ -114,6 +114,16 @@ static void Azure_Functions_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDL
 ```
 
 **SRS_AZUREFUNCTIONS_HL_04_016: [** `Azure_Functions_HL_Receive` shall pass the 
-received parameters to the underlying  identity map module receive function. **]**
+received parameters to the underlying module receive function. **]**
 
 **SRS_AZUREFUNCTIONS_HL_04_018: [** `Azure_Functions_HL_Receive` shall do nothing if any parameter is NULL. **]**
+
+## Azure_Functions_HL_Start
+```C
+static void Azure_Functions_HL_Start(MODULE_HANDLE moduleHandle);
+```
+
+**SRS_AZUREFUNCTIONS_HL_17_001: [** `Azure_Functions_HL_Start` shall pass the received parameters to the underlying module start function, if defined.
+ **]**
+
+**SRS_AZUREFUNCTIONS_HL_17_002: [** `Azure_Functions_HL_Start` shall do nothing if `moduleHandle` is NULL. **]**
