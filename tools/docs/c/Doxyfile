@@ -849,6 +849,10 @@ EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        = *_VALUES \
 			 BROKER_RESULTStrings \
 			 BROKER_RESULT_FromString \
+             GATEWAY_ADD_LINK_RESULTStrings \
+             GATEWAY_ADD_LINK_RESULT_FromString \
+             GATEWAY_START_RESULTStrings \
+             GATEWAY_START_RESULT_FromString \
 			 BROKER_offsetof_quit_worker \
 			 MODULE_EXPORT
 			 

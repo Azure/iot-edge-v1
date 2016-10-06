@@ -19,7 +19,11 @@
 
 /** @brief Represents a handle to a particular module.*/
 typedef struct MODULE_TAG MODULE;
+
+/** @brief Represents a handle to a particular module.*/
 typedef void* MODULE_HANDLE;
+
+/** @brief Represents a handle for the Module APIs*/
 typedef struct MODULE_APIS_TAG MODULE_APIS;
 
 #include "azure_c_shared_utility/macro_utils.h"
@@ -42,6 +46,7 @@ extern "C"
         virtual void Module_Receive(MESSAGE_HANDLE messageHandle) = 0;
     };
 
+    /** @brief Represents a handle to a particular module.*/
     typedef struct MODULE_TAG
     {
         /** @brief Interface implementation for module. */
