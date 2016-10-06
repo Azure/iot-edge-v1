@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.0-beta.3</span>
+   &#160;<span id="projectnumber">1.0.0-beta.4</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -125,6 +125,10 @@ Typedefs</h2></td></tr>
 typedef enum <a class="el" href="gateway__ll_8h.html#a6ec9185728e0666c89264cff5439ed9b">GATEWAY_ADD_LINK_RESULT_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a315cd329016ccba7844e0ddd8b05f082">GATEWAY_ADD_LINK_RESULT</a></td></tr>
 <tr class="memdesc:a315cd329016ccba7844e0ddd8b05f082"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration describing the result of <a class="el" href="gateway__ll_8h.html#ac88b07520890f2f7e85ae77ff721af45" title="Adds a link to a gateway message broker. ">Gateway_LL_AddLink</a>. <br /></td></tr>
 <tr class="separator:a315cd329016ccba7844e0ddd8b05f082"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad664beda78e10e50a0f7457bc6035990"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad664beda78e10e50a0f7457bc6035990"></a>
+typedef enum <a class="el" href="gateway__ll_8h.html#a08907b883f120e6db312046ca681f91b">GATEWAY_START_RESULT_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#ad664beda78e10e50a0f7457bc6035990">GATEWAY_START_RESULT</a></td></tr>
+<tr class="memdesc:ad664beda78e10e50a0f7457bc6035990"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration describing the result of <a class="el" href="gateway__ll_8h.html#af214405c31e0c573a61284cf4d5f6b9d" title="Tell the Gateway it&#39;s ready to start. ">Gateway_LL_Start</a>. <br /></td></tr>
+<tr class="separator:ad664beda78e10e50a0f7457bc6035990"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b9ee3bd6d18a10d16de102f3a1f2d29"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b9ee3bd6d18a10d16de102f3a1f2d29"></a>
 typedef struct <a class="el" href="struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html">GATEWAY_LINK_ENTRY_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a1b9ee3bd6d18a10d16de102f3a1f2d29">GATEWAY_LINK_ENTRY</a></td></tr>
 <tr class="memdesc:a1b9ee3bd6d18a10d16de102f3a1f2d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct representing a single link for a gateway. <br /></td></tr>
@@ -152,9 +156,9 @@ typedef enum <a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f
 <tr class="memitem:a63bd2c28a87fce05443f28c76ce59c29"><td class="memItemLeft" align="right" valign="top">typedef void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29">GATEWAY_EVENT_CTX</a></td></tr>
 <tr class="memdesc:a63bd2c28a87fce05443f28c76ce59c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context that is provided to the callback.  <a href="#a63bd2c28a87fce05443f28c76ce59c29">More...</a><br /></td></tr>
 <tr class="separator:a63bd2c28a87fce05443f28c76ce59c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68630162e1844bd991f470255bbbe1fe"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a68630162e1844bd991f470255bbbe1fe">GATEWAY_CALLBACK</a>) (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gateway, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29">GATEWAY_EVENT_CTX</a> context)</td></tr>
-<tr class="memdesc:a68630162e1844bd991f470255bbbe1fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function pointer that can be registered and will be called for gateway events.  <a href="#a68630162e1844bd991f470255bbbe1fe">More...</a><br /></td></tr>
-<tr class="separator:a68630162e1844bd991f470255bbbe1fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a670aaef4059f8e246018e9c3adbe553a"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a670aaef4059f8e246018e9c3adbe553a">GATEWAY_CALLBACK</a>) (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gateway, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29">GATEWAY_EVENT_CTX</a> context, void *user_param)</td></tr>
+<tr class="memdesc:a670aaef4059f8e246018e9c3adbe553a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function pointer that can be registered and will be called for gateway events.  <a href="#a670aaef4059f8e246018e9c3adbe553a">More...</a><br /></td></tr>
+<tr class="separator:a670aaef4059f8e246018e9c3adbe553a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -164,10 +168,19 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:a6ec9185728e0666c89264cff5439ed9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration describing the result of <a class="el" href="gateway__ll_8h.html#ac88b07520890f2f7e85ae77ff721af45" title="Adds a link to a gateway message broker. ">Gateway_LL_AddLink</a>. <br /></td></tr>
 </td></tr>
 <tr class="separator:a6ec9185728e0666c89264cff5439ed9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0804ed4ce586e426f2d1003e2f88424e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424e">GATEWAY_EVENT_TAG</a> { <a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424ea81d957044819636fa1cb6836c2e48867">GATEWAY_CREATED</a> = 0, 
+<tr class="memitem:a08907b883f120e6db312046ca681f91b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a08907b883f120e6db312046ca681f91b"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a08907b883f120e6db312046ca681f91b">GATEWAY_START_RESULT_TAG</a> { <b>GATEWAY_START_SUCCESS</b>, 
+<b>GATEWAY_START_INVALID_ARGS</b>
+ }<tr class="memdesc:a08907b883f120e6db312046ca681f91b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration describing the result of <a class="el" href="gateway__ll_8h.html#af214405c31e0c573a61284cf4d5f6b9d" title="Tell the Gateway it&#39;s ready to start. ">Gateway_LL_Start</a>. <br /></td></tr>
+</td></tr>
+<tr class="separator:a08907b883f120e6db312046ca681f91b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0804ed4ce586e426f2d1003e2f88424e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424e">GATEWAY_EVENT_TAG</a> { <br />
+&#160;&#160;<a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424ea81d957044819636fa1cb6836c2e48867">GATEWAY_CREATED</a> = 0, 
+<a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424ea66b60af011236c79c1ae76ca5f053df8">GATEWAY_STARTED</a>, 
 <a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424ea55c7eead823498d81edde519c83a8590">GATEWAY_MODULE_LIST_CHANGED</a>, 
 <a class="el" href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424ea16817920aed58d2ea3e7c5c37dff9837">GATEWAY_DESTROYED</a>, 
-<b>GATEWAY_EVENTS_COUNT</b>
+<br />
+&#160;&#160;<b>GATEWAY_EVENTS_COUNT</b>
+<br />
  }<tr class="memdesc:a0804ed4ce586e426f2d1003e2f88424e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enum representing different gateway events that have support for callbacks.  <a href="gateway__ll_8h.html#a0804ed4ce586e426f2d1003e2f88424e">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a0804ed4ce586e426f2d1003e2f88424e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,21 +190,27 @@ Functions</h2></td></tr>
 <tr class="memitem:ad39f3abdc982cc3cd6ecbe149a82160b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#ad39f3abdc982cc3cd6ecbe149a82160b">Gateway_LL_Create</a> (const <a class="el" href="gateway__ll_8h.html#a28fc4104517800be5e2d396fd5371a8c">GATEWAY_PROPERTIES</a> *properties)</td></tr>
 <tr class="memdesc:ad39f3abdc982cc3cd6ecbe149a82160b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new gateway using the provided <a class="el" href="gateway__ll_8h.html#a28fc4104517800be5e2d396fd5371a8c" title="Struct representing the properties that should be used when creating a module; each entry of the VECT...">GATEWAY_PROPERTIES</a>.  <a href="#ad39f3abdc982cc3cd6ecbe149a82160b">More...</a><br /></td></tr>
 <tr class="separator:ad39f3abdc982cc3cd6ecbe149a82160b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af214405c31e0c573a61284cf4d5f6b9d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gateway__ll_8h.html#ad664beda78e10e50a0f7457bc6035990">GATEWAY_START_RESULT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#af214405c31e0c573a61284cf4d5f6b9d">Gateway_LL_Start</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw)</td></tr>
+<tr class="memdesc:af214405c31e0c573a61284cf4d5f6b9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell the Gateway it's ready to start.  <a href="#af214405c31e0c573a61284cf4d5f6b9d">More...</a><br /></td></tr>
+<tr class="separator:af214405c31e0c573a61284cf4d5f6b9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d67ad00897609f152edb3f704bdfd30"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a9d67ad00897609f152edb3f704bdfd30">Gateway_LL_Destroy</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw)</td></tr>
 <tr class="memdesc:a9d67ad00897609f152edb3f704bdfd30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys the gateway and disposes of all associated data.  <a href="#a9d67ad00897609f152edb3f704bdfd30">More...</a><br /></td></tr>
 <tr class="separator:a9d67ad00897609f152edb3f704bdfd30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1077cbc6c6046aeb3df38f57cdfb52f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#ae1077cbc6c6046aeb3df38f57cdfb52f">Gateway_LL_AddModule</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, const <a class="el" href="gateway__ll_8h.html#abc96e2b7c756185cbedcfca06c423858">GATEWAY_MODULES_ENTRY</a> *entry)</td></tr>
 <tr class="memdesc:ae1077cbc6c6046aeb3df38f57cdfb52f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new module based on the GATEWAY_MODULES_ENTRY*.  <a href="#ae1077cbc6c6046aeb3df38f57cdfb52f">More...</a><br /></td></tr>
 <tr class="separator:ae1077cbc6c6046aeb3df38f57cdfb52f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9587ae49aee421028a85ca8d27405524"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a9587ae49aee421028a85ca8d27405524">Gateway_LL_StartModule</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a> module)</td></tr>
+<tr class="memdesc:a9587ae49aee421028a85ca8d27405524"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tells a module that the gateway is ready for it to start.  <a href="#a9587ae49aee421028a85ca8d27405524">More...</a><br /></td></tr>
+<tr class="separator:a9587ae49aee421028a85ca8d27405524"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfa1de88b36d0ec68d7ab533c56705fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#adfa1de88b36d0ec68d7ab533c56705fd">Gateway_LL_RemoveModule</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a> module)</td></tr>
 <tr class="memdesc:adfa1de88b36d0ec68d7ab533c56705fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the provided module from the gateway and all links that involves this module.  <a href="#adfa1de88b36d0ec68d7ab533c56705fd">More...</a><br /></td></tr>
 <tr class="separator:adfa1de88b36d0ec68d7ab533c56705fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9221b7160a2dfb2dfff6c8217cc14457"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a9221b7160a2dfb2dfff6c8217cc14457">Gateway_LL_RemoveModuleByName</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, const char *module_name)</td></tr>
 <tr class="memdesc:a9221b7160a2dfb2dfff6c8217cc14457"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes module by its unique name.  <a href="#a9221b7160a2dfb2dfff6c8217cc14457">More...</a><br /></td></tr>
 <tr class="separator:a9221b7160a2dfb2dfff6c8217cc14457"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43a72dab70c3e3e916a4ed4ffa7818c8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a43a72dab70c3e3e916a4ed4ffa7818c8">Gateway_LL_AddEventCallback</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a68630162e1844bd991f470255bbbe1fe">GATEWAY_CALLBACK</a> callback)</td></tr>
-<tr class="memdesc:a43a72dab70c3e3e916a4ed4ffa7818c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registers a function to be called on a callback thread when <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7" title="Enum representing different gateway events that have support for callbacks. ">GATEWAY_EVENT</a> happens.  <a href="#a43a72dab70c3e3e916a4ed4ffa7818c8">More...</a><br /></td></tr>
-<tr class="separator:a43a72dab70c3e3e916a4ed4ffa7818c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67f7ed396c88aef6cbe7f2c43b229dd7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a67f7ed396c88aef6cbe7f2c43b229dd7">Gateway_LL_AddEventCallback</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a670aaef4059f8e246018e9c3adbe553a">GATEWAY_CALLBACK</a> callback, void *user_param)</td></tr>
+<tr class="memdesc:a67f7ed396c88aef6cbe7f2c43b229dd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registers a function to be called on a callback thread when <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7" title="Enum representing different gateway events that have support for callbacks. ">GATEWAY_EVENT</a> happens.  <a href="#a67f7ed396c88aef6cbe7f2c43b229dd7">More...</a><br /></td></tr>
+<tr class="separator:a67f7ed396c88aef6cbe7f2c43b229dd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02ed0da0866f9d576276459a720f8e69"><td class="memItemLeft" align="right" valign="top">VECTOR_HANDLE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gateway__ll_8h.html#a02ed0da0866f9d576276459a720f8e69">Gateway_LL_GetModuleList</a> (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gw)</td></tr>
 <tr class="memdesc:a02ed0da0866f9d576276459a720f8e69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a snapshot copy of information about running modules.  <a href="#a02ed0da0866f9d576276459a720f8e69">More...</a><br /></td></tr>
 <tr class="separator:a02ed0da0866f9d576276459a720f8e69"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -209,12 +228,12 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Library that allows a user to create and configure a gateway. </p>
 <p>Gateway LL is the lower level library that allows a developer to create, configure, and manage a gateway. The library provides a mechanism for creating and destroying a gateway, as well as adding and removing modules. Developers looking for the high level library should see <a class="el" href="gateway_8h.html" title="Extends the Gateway_LL library with additional features. ">gateway.h</a>. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a class="anchor" id="a68630162e1844bd991f470255bbbe1fe"></a>
+<a class="anchor" id="a670aaef4059f8e246018e9c3adbe553a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef void(* GATEWAY_CALLBACK) (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gateway, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29">GATEWAY_EVENT_CTX</a> context)</td>
+          <td class="memname">typedef void(* GATEWAY_CALLBACK) (<a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a> gateway, <a class="el" href="gateway__ll_8h.html#a52428b8aa6599b3faaff9e3c13dbffd7">GATEWAY_EVENT</a> event_type, <a class="el" href="gateway__ll_8h.html#a63bd2c28a87fce05443f28c76ce59c29">GATEWAY_EVENT_CTX</a> context, void *user_param)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -255,9 +274,12 @@ Functions</h2></td></tr>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a0804ed4ce586e426f2d1003e2f88424ea81d957044819636fa1cb6836c2e48867"></a>GATEWAY_CREATED&#160;</td><td class="fielddoc">
 <p>Called when the gateway is created. </p>
 </td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a0804ed4ce586e426f2d1003e2f88424ea66b60af011236c79c1ae76ca5f053df8"></a>GATEWAY_STARTED&#160;</td><td class="fielddoc">
+<p>Called when the gateway is started. </p>
+</td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0804ed4ce586e426f2d1003e2f88424ea55c7eead823498d81edde519c83a8590"></a>GATEWAY_MODULE_LIST_CHANGED&#160;</td><td class="fielddoc">
 <p>Called every time a list of modules or links changed and during gateway creation. </p>
-<p>The <code>VECTOR_HANDLE</code> from <a class="el" href="gateway__ll_8h.html#a02ed0da0866f9d576276459a720f8e69" title="Returns a snapshot copy of information about running modules. ">Gateway_LL_GetModuleList</a> will be provided as the context to the callback, and be later cleaned-up automatically. </p>
+<p>The VECTOR_HANDLE from <a class="el" href="gateway__ll_8h.html#a02ed0da0866f9d576276459a720f8e69" title="Returns a snapshot copy of information about running modules. ">Gateway_LL_GetModuleList</a> will be provided as the context to the callback, and be later cleaned-up automatically. </p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0804ed4ce586e426f2d1003e2f88424ea16817920aed58d2ea3e7c5c37dff9837"></a>GATEWAY_DESTROYED&#160;</td><td class="fielddoc">
 <p>Called when the gateway is destroyed. </p>
@@ -267,7 +289,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a43a72dab70c3e3e916a4ed4ffa7818c8"></a>
+<a class="anchor" id="a67f7ed396c88aef6cbe7f2c43b229dd7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -286,8 +308,14 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="gateway__ll_8h.html#a68630162e1844bd991f470255bbbe1fe">GATEWAY_CALLBACK</a>&#160;</td>
-          <td class="paramname"><em>callback</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="gateway__ll_8h.html#a670aaef4059f8e246018e9c3adbe553a">GATEWAY_CALLBACK</a>&#160;</td>
+          <td class="paramname"><em>callback</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_param</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -303,6 +331,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">gw</td><td>Pointer to a <a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0" title="Struct representing a particular gateway. ">GATEWAY_HANDLE</a> to which register callback to </td></tr>
     <tr><td class="paramname">event_type</td><td>Enum stating on which event should the callback be called </td></tr>
     <tr><td class="paramname">callback</td><td>Pointer to a function that will be called when the event happens </td></tr>
+    <tr><td class="paramname">user_param</td><td>User defined parameter that will be later provided to the called callback </td></tr>
   </table>
   </dd>
 </dl>
@@ -341,7 +370,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="gateway__ll_8h.html#a315cd329016ccba7844e0ddd8b05f082" title="Enumeration describing the result of Gateway_LL_AddLink. ">GATEWAY_ADD_LINK_RESULT</a> with the operation result. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A GATEWAY_ADD_LINK_RESULT with the operation result. </dd></dl>
 
 </div>
 </div>
@@ -476,7 +505,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code>VECTOR_HANDLE</code> of pointers to <a class="el" href="gateway__ll_8h.html#aa08d409bd2c343e2d40c233dc6831ca3" title="Struct representing current information about a single module. ">GATEWAY_MODULE_INFO</a>. NULL if function errored. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A #VECTOR_HANDLE of pointers to <a class="el" href="gateway__ll_8h.html#aa08d409bd2c343e2d40c233dc6831ca3" title="Struct representing current information about a single module. ">GATEWAY_MODULE_INFO</a>. NULL if function errored. </dd></dl>
 
 </div>
 </div>
@@ -583,6 +612,66 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 on success and a non-zero value when an error occurs. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="af214405c31e0c573a61284cf4d5f6b9d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gateway__ll_8h.html#ad664beda78e10e50a0f7457bc6035990">GATEWAY_START_RESULT</a> Gateway_LL_Start </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a>&#160;</td>
+          <td class="paramname"><em>gw</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tell the Gateway it's ready to start. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">gw</td><td><a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0" title="Struct representing a particular gateway. ">GATEWAY_HANDLE</a> to be destroyed.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="gateway__ll_8h.html#ad664beda78e10e50a0f7457bc6035990" title="Enumeration describing the result of Gateway_LL_Start. ">GATEWAY_START_RESULT</a> to report the result of the start </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a9587ae49aee421028a85ca8d27405524"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Gateway_LL_StartModule </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0">GATEWAY_HANDLE</a>&#160;</td>
+          <td class="paramname"><em>gw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a>&#160;</td>
+          <td class="paramname"><em>module</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tells a module that the gateway is ready for it to start. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">gw</td><td>Pointer to a <a class="el" href="gateway__ll_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0" title="Struct representing a particular gateway. ">GATEWAY_HANDLE</a> from which to remove the Module. </td></tr>
+    <tr><td class="paramname">module</td><td>Pointer to a <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5" title="Represents a handle to a particular module. ">MODULE_HANDLE</a> that needs to be removed. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -12,5 +12,6 @@ var searchData=
   ['module_5fsink_5fhandle',['module_sink_handle',['../struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html#a04470e739e0ba90ecd8ac45241f6cc17',1,'BROKER_LINK_DATA_TAG']]],
   ['module_5fsource',['module_source',['../struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html#a702271f06fe380e76ad23edc52a5da96',1,'GATEWAY_LINK_ENTRY_TAG']]],
   ['module_5fsource_5fhandle',['module_source_handle',['../struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html#a3357dfccc1183e0f4a890493cc0aeecb',1,'BROKER_LINK_DATA_TAG']]],
-  ['module_5fsources',['module_sources',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#a83a2db5b1a5eda8a2a0dc32175a625d6',1,'GATEWAY_MODULE_INFO_TAG']]]
+  ['module_5fsources',['module_sources',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#a83a2db5b1a5eda8a2a0dc32175a625d6',1,'GATEWAY_MODULE_INFO_TAG']]],
+  ['module_5fstart',['Module_Start',['../struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#aca064f7596c1be0527c5b20e85ffaa95',1,'MODULE_APIS_TAG']]]
 ];

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.0-beta.3</span>
+   &#160;<span id="projectnumber">1.0.0-beta.4</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -110,7 +110,7 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure used to represent/abstract the idea of a module. May contain Hamdle/FxnPtrs or an interface ptr or some unforseen representation.  <a href="struct_m_o_d_u_l_e___t_a_g.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html">MODULE_APIS_TAG</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure returned by <a class="el" href="module_8h.html#a47e62de22990d392e0bc98a30748e9b0" title="This is the only function exported by a module under a &quot;by         convention&quot; name. Using the exported function, the caller learns the functions for the particular module. ">Module_GetAPIS</a> containing the function pointers of the module-specific implementations of the interface.  <a href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure returned by <a class="el" href="module_8h.html#a67cb1989e8448e83e1ecacce95290c71" title="This is the only function exported by a module under a &quot;by         convention&quot; name. Using the exported function, the caller learns the functions for the particular module. ">Module_GetAPIS</a> containing the function pointers of the module-specific implementations of the interface.  <a href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -126,8 +126,9 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a6ee84ec83b6f012c75135dc184317cf5"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_m_o_d_u_l_e___t_a_g.html">MODULE_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a6ee84ec83b6f012c75135dc184317cf5">MODULE</a></td></tr>
-<tr class="memdesc:a6ee84ec83b6f012c75135dc184317cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a tag for a particular module.  <a href="#a6ee84ec83b6f012c75135dc184317cf5">More...</a><br /></td></tr>
+<tr class="memitem:a6ee84ec83b6f012c75135dc184317cf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ee84ec83b6f012c75135dc184317cf5"></a>
+typedef struct <a class="el" href="struct_m_o_d_u_l_e___t_a_g.html">MODULE_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a6ee84ec83b6f012c75135dc184317cf5">MODULE</a></td></tr>
+<tr class="memdesc:a6ee84ec83b6f012c75135dc184317cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a handle to a particular module. <br /></td></tr>
 <tr class="separator:a6ee84ec83b6f012c75135dc184317cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d933e9ca562b9aa0dff10b0979ec7b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d933e9ca562b9aa0dff10b0979ec7b5"></a>
 typedef void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a></td></tr>
@@ -135,7 +136,7 @@ typedef void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 <tr class="separator:a9d933e9ca562b9aa0dff10b0979ec7b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4345bc84fa2cd4a24306d80caf06aff3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4345bc84fa2cd4a24306d80caf06aff3"></a>
 typedef struct <a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html">MODULE_APIS_TAG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3">MODULE_APIS</a></td></tr>
-<tr class="memdesc:a4345bc84fa2cd4a24306d80caf06aff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure returned by <a class="el" href="module_8h.html#a47e62de22990d392e0bc98a30748e9b0" title="This is the only function exported by a module under a &quot;by         convention&quot; name. Using the exported function, the caller learns the functions for the particular module. ">Module_GetAPIS</a> containing the function pointers of the module-specific implementations of the interface. <br /></td></tr>
+<tr class="memdesc:a4345bc84fa2cd4a24306d80caf06aff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a handle for the Module APIs. <br /></td></tr>
 <tr class="separator:a4345bc84fa2cd4a24306d80caf06aff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3132568b0f846040e5a6315eb102bd11"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a3132568b0f846040e5a6315eb102bd11">pfModule_Create</a>) (<a class="el" href="broker_8h.html#a2e5e8420f5c7121d56ae35c88897f5d4">BROKER_HANDLE</a> broker, const void *configuration)</td></tr>
 <tr class="memdesc:a3132568b0f846040e5a6315eb102bd11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a module using the specified configuration connecting to the specified message broker.  <a href="#a3132568b0f846040e5a6315eb102bd11">More...</a><br /></td></tr>
@@ -146,39 +147,27 @@ typedef struct <a class="el" href="struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html">MO
 <tr class="memitem:ad3a2b86fa831d95da8ce1f52fb0316ab"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#ad3a2b86fa831d95da8ce1f52fb0316ab">pfModule_Receive</a>) (<a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a> moduleHandle, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> messageHandle)</td></tr>
 <tr class="memdesc:ad3a2b86fa831d95da8ce1f52fb0316ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">The module's callback function that is called upon message receipt.  <a href="#ad3a2b86fa831d95da8ce1f52fb0316ab">More...</a><br /></td></tr>
 <tr class="separator:ad3a2b86fa831d95da8ce1f52fb0316ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4727177ae7853e7a166b569723a0288"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4727177ae7853e7a166b569723a0288"></a>
-typedef const <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3">MODULE_APIS</a> *(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#ad4727177ae7853e7a166b569723a0288">pfModule_GetAPIS</a>) (void)</td></tr>
-<tr class="memdesc:ad4727177ae7853e7a166b569723a0288"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the only function exported by a module. Using the exported function, the caller learns the functions for the particular module. <br /></td></tr>
-<tr class="separator:ad4727177ae7853e7a166b569723a0288"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a591b2f22e62e6c151217a95b86443289"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a591b2f22e62e6c151217a95b86443289">pfModule_Start</a>) (<a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a> moduleHandle)</td></tr>
+<tr class="memdesc:a591b2f22e62e6c151217a95b86443289"><td class="mdescLeft">&#160;</td><td class="mdescRight">The module may start activity. This is called when the broker is guaranteed to be ready to accept messages from this module.  <a href="#a591b2f22e62e6c151217a95b86443289">More...</a><br /></td></tr>
+<tr class="separator:a591b2f22e62e6c151217a95b86443289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686ebba845ffad34626905fe2bd07e1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a686ebba845ffad34626905fe2bd07e1f"></a>
+typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a686ebba845ffad34626905fe2bd07e1f">pfModule_GetAPIS</a>) (<a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3">MODULE_APIS</a> *apis)</td></tr>
+<tr class="memdesc:a686ebba845ffad34626905fe2bd07e1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the only function exported by a module. Using the exported function, the caller learns the functions for the particular module. <br /></td></tr>
+<tr class="separator:a686ebba845ffad34626905fe2bd07e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a47e62de22990d392e0bc98a30748e9b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a47e62de22990d392e0bc98a30748e9b0"></a>
-MODULE_EXPORT const <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3">MODULE_APIS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a47e62de22990d392e0bc98a30748e9b0">Module_GetAPIS</a> (void)</td></tr>
-<tr class="memdesc:a47e62de22990d392e0bc98a30748e9b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the only function exported by a module under a "by
+<tr class="memitem:a67cb1989e8448e83e1ecacce95290c71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67cb1989e8448e83e1ecacce95290c71"></a>
+MODULE_EXPORT void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="module_8h.html#a67cb1989e8448e83e1ecacce95290c71">Module_GetAPIS</a> (<a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3">MODULE_APIS</a> *apis)</td></tr>
+<tr class="memdesc:a67cb1989e8448e83e1ecacce95290c71"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the only function exported by a module under a "by
         convention" name. Using the exported function, the caller learns the functions for the particular module. <br /></td></tr>
-<tr class="separator:a47e62de22990d392e0bc98a30748e9b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a67cb1989e8448e83e1ecacce95290c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for modules which communicate with other modules via a message broker. </p>
 <p>Every module associated with the message broker must implement this interface. A module can only belong to one message broker; a message broker may have many modules associated with it.</p>
-<p>Every module library exports a function (Module_GetAPIs) that returns a pointer to the <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3" title="Structure returned by Module_GetAPIS containing the function pointers of the module-specific implemen...">MODULE_APIS</a> structure. </p>
+<p>Every module library exports a function (Module_GetAPIs) that returns a pointer to the <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3" title="Represents a handle for the Module APIs. ">MODULE_APIS</a> structure. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a class="anchor" id="a6ee84ec83b6f012c75135dc184317cf5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="struct_m_o_d_u_l_e___t_a_g.html">MODULE_TAG</a> <a class="el" href="module_8h.html#a6ee84ec83b6f012c75135dc184317cf5">MODULE</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Represents a tag for a particular module. </p>
-<p>Structure used to represent/abstract the idea of a module. May contain Hamdle/FxnPtrs or an interface ptr or some unforseen representation. </p>
-
-</div>
-</div>
 <a class="anchor" id="a3132568b0f846040e5a6315eb102bd11"></a>
 <div class="memitem">
 <div class="memproto">
@@ -194,7 +183,7 @@ MODULE_EXPORT const <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80c
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">broker</td><td>The <a class="el" href="broker_8h.html#a2e5e8420f5c7121d56ae35c88897f5d4" title="Struct representing a message broker. ">BROKER_HANDLE</a> onto which this module will connect. </td></tr>
-    <tr><td class="paramname">configureation</td><td>A pointer to the user-defined configuration structure for this module.</td></tr>
+    <tr><td class="paramname">configuration</td><td>A pointer to the user-defined configuration structure for this module.</td></tr>
   </table>
   </dd>
 </dl>
@@ -239,6 +228,27 @@ MODULE_EXPORT const <a class="el" href="module_8h.html#a4345bc84fa2cd4a24306d80c
   <table class="params">
     <tr><td class="paramname">moduleHandle</td><td>The <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5" title="Represents a handle to a particular module. ">MODULE_HANDLE</a> of the module receiving the message. </td></tr>
     <tr><td class="paramname">messageHandle</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> of the message being sent to the module. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a591b2f22e62e6c151217a95b86443289"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* pfModule_Start) (<a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5">MODULE_HANDLE</a> moduleHandle)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The module may start activity. This is called when the broker is guaranteed to be ready to accept messages from this module. </p>
+<p>This function is to be implemented by the module creator.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">moduleHandle</td><td>The <a class="el" href="module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5" title="Represents a handle to a particular module. ">MODULE_HANDLE</a> of the module receiving the message. </td></tr>
   </table>
   </dd>
 </dl>

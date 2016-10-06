@@ -23,7 +23,7 @@ var searchData=
   ['module_5fconfiguration',['module_configuration',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#ab3d3b4aba94c854cc6478462fc04fc92',1,'GATEWAY_MODULES_ENTRY_TAG']]],
   ['module_5fcreate',['Module_Create',['../struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#abe57f0199db79e9abb97e095f38ac9cd',1,'MODULE_APIS_TAG']]],
   ['module_5fdestroy',['Module_Destroy',['../struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#a35833110cbe9935a9e4f35412b55a2a9',1,'MODULE_APIS_TAG']]],
-  ['module_5fgetapis',['Module_GetAPIS',['../module_8h.html#a47e62de22990d392e0bc98a30748e9b0',1,'module.h']]],
+  ['module_5fgetapis',['Module_GetAPIS',['../module_8h.html#a67cb1989e8448e83e1ecacce95290c71',1,'module.h']]],
   ['module_5fgetapis_5fname',['MODULE_GETAPIS_NAME',['../module_8h.html#ac5c0c542f0b5285474947f8865e8ac43',1,'module.h']]],
   ['module_5fhandle',['module_handle',['../struct_m_o_d_u_l_e___t_a_g.html#a486cabc6145b907051e79fa6c8ecdea5',1,'MODULE_TAG::module_handle()'],['../module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5',1,'MODULE_HANDLE():&#160;module.h']]],
   ['module_5fname',['module_name',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#a67e5297fdb1fe276be40ad2197318d84',1,'GATEWAY_MODULES_ENTRY_TAG::module_name()'],['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#ac0cb5d549a16b9ba089e07c50923b4d4',1,'GATEWAY_MODULE_INFO_TAG::module_name()']]],
@@ -34,6 +34,7 @@ var searchData=
   ['module_5fsource',['module_source',['../struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html#a702271f06fe380e76ad23edc52a5da96',1,'GATEWAY_LINK_ENTRY_TAG']]],
   ['module_5fsource_5fhandle',['module_source_handle',['../struct_b_r_o_k_e_r___l_i_n_k___d_a_t_a___t_a_g.html#a3357dfccc1183e0f4a890493cc0aeecb',1,'BROKER_LINK_DATA_TAG']]],
   ['module_5fsources',['module_sources',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html#a83a2db5b1a5eda8a2a0dc32175a625d6',1,'GATEWAY_MODULE_INFO_TAG']]],
+  ['module_5fstart',['Module_Start',['../struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html#aca064f7596c1be0527c5b20e85ffaa95',1,'MODULE_APIS_TAG']]],
   ['module_5fstatic_5fgetapis',['MODULE_STATIC_GETAPIS',['../module_8h.html#af769556faf1627807e187e7c14b1fcb8',1,'module.h']]],
   ['module_5ftag',['MODULE_TAG',['../struct_m_o_d_u_l_e___t_a_g.html',1,'']]]
 ];
