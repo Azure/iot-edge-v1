@@ -1,2 +1,0 @@
-IOTHUB DEVICE PING MODULE
-===========

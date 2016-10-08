@@ -96,8 +96,6 @@ linkSharedUtil(iothubdeviceping_static)
 
 add_module_to_solution(iothubdeviceping)
 
-#add_subdirectory(tests)
-
 if(install_executables)
     install(TARGETS iothubdeviceping LIBRARY DESTINATION lib)
     install(TARGETS iothubdeviceping_hl LIBRARY DESTINATION lib)
