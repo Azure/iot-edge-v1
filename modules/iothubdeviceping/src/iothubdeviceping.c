@@ -717,15 +717,23 @@ static const MODULE_APIS Module_GetAPIS_Impl =
     /*Codes_SRS_IOTHUBHTTP_02_026: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
     IoTHubDevicePing_Create,
     IoTHubDevicePing_Destroy,
-    IoTHubDevicePing_Receive
+    IoTHubDevicePing_Receive,
+    NULL
 };
 
-/*Codes_SRS_IOTHUBHTTP_02_025: [Module_GetAPIS shall return a non-NULL pointer.]*/
+/*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS *MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS *Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    return &Module_GetAPIS_Impl;
+    if (!apis)
+    {
+        LogError("NULL passed to Module_GetAPIS");
+    }
+    else
+    {
+        (*apis) = Module_GetAPIS_Impl;
+    }
 }
