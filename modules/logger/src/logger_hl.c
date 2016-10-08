@@ -62,8 +62,10 @@ static MODULE_HANDLE Logger_HL_Create(BROKER_HANDLE broker, const void* configur
                     config.selector = LOGGING_TO_FILE;
                     config.selectee.loggerConfigFile.name = fileNameValue;
                     
+					MODULE_APIS apis;
+					MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
                     /*Codes_SRS_LOGGER_HL_02_005: [ Logger_HL_Create shall pass broker and the filename to Logger_Create. ]*/
-                    result = MODULE_STATIC_GETAPIS(LOGGER_MODULE)()->Module_Create(broker, &config);
+                    result = apis.Module_Create(broker, &config);
 
                     if (result == NULL)
                     {
@@ -87,14 +89,29 @@ static MODULE_HANDLE Logger_HL_Create(BROKER_HANDLE broker, const void* configur
 
 static void Logger_HL_Destroy(MODULE_HANDLE module)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
     /*Codes_SRS_LOGGER_HL_02_009: [ Logger_HL_Destroy shall destroy all used resources. ]*/ /*in this case "all" is "none"*/
-    MODULE_STATIC_GETAPIS(LOGGER_MODULE)()->Module_Destroy(module);
+    apis.Module_Destroy(module);
+}
+
+static void Logger_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+        /*Codes_SRS_LOGGER_HL_17_001: [ Logger_HL_Start shall pass the received parameters to the underlying Logger's _Start function, if defined. ]*/
+		apis.Module_Start(moduleHandle);
+	}
 }
 
 static void Logger_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(LOGGER_MODULE)(&apis);
     /*Codes_SRS_LOGGER_HL_02_008: [ Logger_HL_Receive shall pass the received parameters to the underlying Logger's _Receive function. ]*/
-    MODULE_STATIC_GETAPIS(LOGGER_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+    apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 /*
@@ -104,15 +121,23 @@ static const MODULE_APIS Logger_HL_APIS_all =
 {
 	Logger_HL_Create,
 	Logger_HL_Destroy,
-	Logger_HL_Receive
+	Logger_HL_Receive,
+	Logger_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(LOGGER_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(LOGGER_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_LOGGER_HL_02_010: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
-	return &Logger_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_LOGGER_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+		(*apis) = Logger_HL_APIS_all;
+	}
 }

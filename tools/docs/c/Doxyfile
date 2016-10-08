@@ -38,7 +38,7 @@ PROJECT_NAME           = "Microsoft Azure IoT Gateway SDK"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = 1.0.0-beta.3
+PROJECT_NUMBER         = 1.0.0-beta.4
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -849,6 +849,10 @@ EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        = *_VALUES \
 			 BROKER_RESULTStrings \
 			 BROKER_RESULT_FromString \
+             GATEWAY_ADD_LINK_RESULTStrings \
+             GATEWAY_ADD_LINK_RESULT_FromString \
+             GATEWAY_START_RESULTStrings \
+             GATEWAY_START_RESULT_FromString \
 			 BROKER_offsetof_quit_worker \
 			 MODULE_EXPORT
 			 

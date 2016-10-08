@@ -7,11 +7,12 @@ set -e
 build_clean=
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 log_dir=$build_root
-run_unit_tests=ON
+skip_unittests=OFF
 run_e2e_tests=ON
 run_valgrind=0
 enable_java_binding=OFF
 enable_nodejs_binding=OFF
+toolchainfile=
 
 cd "$build_root"
 usage ()
@@ -23,9 +24,11 @@ usage ()
     echo " -cl, --compileoption <value>  specify a compile option to be passed to gcc"
     echo "   Example: -cl -O1 -cl ..."
     echo " -rv, --run-valgrind           will execute ctest with valgrind"
+    echo " --skip-unittests              skip the running of unit tests (unit tests are run by default)"
     echo " --skip-e2e-tests              skip the running of end-to-end tests (e2e tests are run by default)"
     echo " --enable-java-binding         enables building of Java binding; environment variable JAVA_HOME must be defined"
     echo " --enable-nodejs-binding       enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined"
+    echo " --toolchain-file <file>       pass cmake a toolchain file for cross compiling"
     exit 1
 }
 
@@ -40,21 +43,34 @@ process_args ()
       if [ $save_next_arg == 1 ]
       then
         # save arg to pass to gcc
-        extracloptions="$extracloptions $arg"
+        extracloptions="$arg $extracloptions"
         save_next_arg=0
+      elif [ $save_next_arg == 2 ]
+      then
+        # save arg to pass as toolchain file
+        toolchainfile="$arg"
+		save_next_arg=0
       else
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;
               "-c" | "--clean" ) build_clean=1;;
+              "--skip-unittests" ) skip_unittests=ON;;
               "--skip-e2e-tests" ) run_e2e_tests=OFF;;
               "-cl" | "--compileoption" ) save_next_arg=1;;
               "-rv" | "--run-valgrind" ) run_valgrind=1;;
-	      "--enable-java-binding" ) enable_java_binding=ON;;
+              "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
+              "--toolchain-file" ) save_next_arg=2;;
               * ) usage;;
           esac
       fi
     done
+
+    if [ -n "$toolchainfile" ]
+    then
+      toolchainfile=$(readlink -f $toolchainfile)
+      toolchainfile="-DCMAKE_TOOLCHAIN_FILE=$toolchainfile"
+    fi
 }
 
 process_args $*
@@ -69,7 +85,10 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -DCMAKE_BUILD_TYPE=Debug \
+cmake $toolchainfile \
+      -DcompileOption_C:STRING="$extracloptions" \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -Dskip_unittests:BOOL=$skip_unittests \
       -Drun_e2e_tests:BOOL=$run_e2e_tests \
       -Denable_java_binding:BOOL=$enable_java_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \

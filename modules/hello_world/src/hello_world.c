@@ -113,21 +113,33 @@ static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configu
             {
                 result->stopThread = 0;
                 result->broker = broker;
-                if (ThreadAPI_Create(&result->threadHandle, helloWorldThread, result) != THREADAPI_OK)
-                {
-                    LogError("failed to spawn a thread");
-                    (void)Lock_Deinit(result->lockHandle);
-                    free(result);
-                    result = NULL;
-                }
-                else
-                {
-                    /*all is fine apparently*/
-                }
+				result->threadHandle = NULL;
             }
         }
 	}
     return result;
+}
+
+static void HelloWorld_Start(MODULE_HANDLE module)
+{
+	HELLOWORLD_HANDLE_DATA* handleData = module;
+	if (handleData != NULL)
+	{
+		if (Lock(handleData->lockHandle) != LOCK_OK)
+		{
+			LogError("not able to Lock, still setting the thread to finish");
+			handleData->stopThread = 1;
+		}
+		else
+		{
+			if (ThreadAPI_Create(&handleData->threadHandle, helloWorldThread, handleData) != THREADAPI_OK)
+			{
+				LogError("failed to spawn a thread");
+				handleData->threadHandle = NULL;
+			}
+			(void)Unlock(handleData->lockHandle);
+		}
+	}
 }
 
 static void HelloWorld_Destroy(MODULE_HANDLE module)
@@ -164,14 +176,22 @@ static const MODULE_APIS HelloWorld_APIS_all =
 {
 	HelloWorld_Create,
 	HelloWorld_Destroy,
-	HelloWorld_Receive
+	HelloWorld_Receive,
+	HelloWorld_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &HelloWorld_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = HelloWorld_APIS_all;
+	}
 }

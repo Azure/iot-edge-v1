@@ -46,9 +46,16 @@ given to `Gateway_Create_From_JSON`.
 **SRS_IOTHUBMODULE_HL_17_009: [** When the lower layer IotHub module creation succeeds, `IotHub_HL_Create` shall succeed and return a non-NULL value. **]**
 **SRS_IOTHUBMODULE_HL_17_010: [** If the lower layer IotHub module creation fails, `IotHub_HL_Create` shall fail and return NULL. **]**
 
+### IotHub_HL_Start
+```c
+void IotHub_HL_Start(MODULE_HANDLE moduleHandle)
+```
+
+**SRS_IOTHUBMODULE_HL_17_013: [** `IotHub_HL_Start` shall pass the received parameters to the underlying IotHub module's start function, if defined. **]**
+
 ### IotHub_HL_Receive
 ```C
-MODULE_HANDLE IotHub_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void IotHub_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
 
 **SRS_IOTHUBMODULE_HL_17_011: [** `IotHub_HL_Receive` shall pass the received parameters to the underlying IotHub module's receive function. **]**
@@ -65,5 +72,4 @@ void IotHub_HL_Destroy(MODULE_HANDLE moduleHandle);
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 
-**SRS_IOTHUBMODULE_HL_17_013: [** `Module_GetAPIS` shall return a non-NULL pointer. **]**
-**SRS_IOTHUBMODULE_HL_17_014: [** The MODULE_APIS structure shall have non-NULL `Module_Create`, `Module_Destroy`, and `Module_Receive` fields. **]**
+**SRS_IOTHUBMODULE_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

@@ -15,7 +15,7 @@
 typedef struct MODULE_LIBRARY_HANDLE_DATA_TAG
 {
     void* library;
-    const MODULE_APIS* apis;
+    MODULE_APIS* apis;
 }MODULE_LIBRARY_HANDLE_DATA;
 
 
@@ -54,31 +54,49 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName)
           }
           else
           {
-              /* Codes_SRS_MODULE_LOADER_17_003: [ModuleLoader_Load shall locate the function defined by MODULE_GETAPIS_NAME in the open library.] */
-              pfModule_GetAPIS pfnGetAPIS = (pfModule_GetAPIS)DynamicLibrary_FindSymbol(result->library, MODULE_GETAPIS_NAME);
-              if (pfnGetAPIS == NULL)
-              {
-                  /* Codes_SRS_MODULE_LOADER_17_013: [If locating the function is not successful, the load shall fail, and it shall return NULL.]*/
-                  DynamicLibrary_UnloadLibrary(result->library); 
-                  free(result);
-                  result = NULL;
-                  LogError("ModuleLoader_Load() - DynamicLibrary_FindSymbol() returned NULL");
-              }
-              else
-              {
-                  /* Codes_SRS_MODULE_LOADER_17_004: [ModuleLoader_Load shall call the function defined by MODULE_GETAPIS_NAME in the open library.]*/
-                  result->apis = pfnGetAPIS();
+              /*Codes_SRS_MODULE_LOADER_26_002: [`ModulerLoader_Load` shall allocate memory for the structure `MODULE_APIS`.]*/
+			  result->apis = malloc(sizeof(MODULE_APIS));
+			  if (result->apis == NULL)
+			  {
+                  /*Codes_SRS_MODULE_LOADER_26_003: [If memory allocation is not successful, the load shall fail, and it shall return `NULL`.]*/
+				  DynamicLibrary_UnloadLibrary(result->library);
+				  free(result);
+				  result = NULL;
+				  LogError("ModuleLoader_Load() - malloc of MODULE_APIS returned NULL");
+			  }
+			  else
+			  {
+				  memset(result->apis, 0, sizeof(MODULE_APIS));
+				  /* Codes_SRS_MODULE_LOADER_17_003: [ModuleLoader_Load shall locate the function defined by MODULE_GETAPIS_NAME in the open library.] */
+				  pfModule_GetAPIS pfnGetAPIS = (pfModule_GetAPIS)DynamicLibrary_FindSymbol(result->library, MODULE_GETAPIS_NAME);
+				  if (pfnGetAPIS == NULL)
+				  {
+					  /* Codes_SRS_MODULE_LOADER_17_013: [If locating the function is not successful, the load shall fail, and it shall return NULL.]*/
+					  DynamicLibrary_UnloadLibrary(result->library);
+					  free(result->apis);
+					  free(result);
+					  result = NULL;
+					  LogError("ModuleLoader_Load() - DynamicLibrary_FindSymbol() returned NULL");
+				  }
+				  else
+				  {
+					  /* Codes_SRS_MODULE_LOADER_17_004: [ModuleLoader_Load shall call the function defined by MODULE_GETAPIS_NAME in the open library.]*/
+					  pfnGetAPIS(result->apis);
 
-                  /* if "apis" is NULL then we have a misbehaving module */
-                  if (result->apis == NULL)
-                  {
-                      /* Codes_SRS_MODULE_LOADER_17_015: [If the get API call returns NULL, the load shall fail, and it shall return NULL.]*/
-                      DynamicLibrary_UnloadLibrary(result->library);
-                      free(result);
-                      result = NULL;
-                      LogError("ModuleLoader_Load() - pfnGetAPIS() returned NULL");
-                  }
-              }
+					  /* if any of the required functions is NULL then we have a misbehaving module */
+					  if (result->apis->Module_Create == NULL ||
+						  result->apis->Module_Destroy == NULL ||
+						  result->apis->Module_Receive == NULL)
+					  {
+                          /*Codes_SRS_MODULE_LOADER_26_001: [ If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`. ]*/
+						  DynamicLibrary_UnloadLibrary(result->library);
+						  free(result->apis);
+						  free(result);
+						  result = NULL;
+						  LogError("ModuleLoader_Load() - pfnGetAPIS() returned NULL");
+					  }
+				  }
+			  }
           }
       }
   }
@@ -117,7 +135,9 @@ void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
     if (moduleLibraryHandle != NULL)
     {
         MODULE_LIBRARY_HANDLE_DATA* loader_data = moduleLibraryHandle;
-            DynamicLibrary_UnloadLibrary(loader_data->library);
+		DynamicLibrary_UnloadLibrary(loader_data->library);
+        /*Codes_SRS_MODULE_LOADER_26_004: [`ModulerLoader_Unload` shall deallocate memory for the structure `MODULE_APIS`.]*/
+		free(loader_data->apis);
         free(loader_data);
     }
     else

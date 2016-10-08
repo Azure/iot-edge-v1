@@ -265,9 +265,11 @@ BEGIN_TEST_SUITE(logger_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        Logger_Create = Module_GetAPIS()->Module_Create;
-        Logger_Destroy = Module_GetAPIS()->Module_Destroy;
-        Logger_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        Logger_Create = apis.Module_Create;
+        Logger_Destroy = apis.Module_Destroy;
+        Logger_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -1922,18 +1924,19 @@ BEGIN_TEST_SUITE(logger_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_LOGGER_02_016: [Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL.]*/
+    /*Tests_SRS_LOGGER_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrrange
 
         ///act
-        auto result = Module_GetAPIS();
+		MODULE_APIS result;
+		memset(&result, 0, sizeof(MODULE_APIS));
+        Module_GetAPIS(&result);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-        ASSERT_IS_NOT_NULL(result->Module_Create);
-        ASSERT_IS_NOT_NULL(result->Module_Destroy);
-        ASSERT_IS_NOT_NULL(result->Module_Receive);
+		ASSERT_IS_TRUE(result.Module_Create != NULL);
+		ASSERT_IS_TRUE(result.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(result.Module_Receive != NULL);
     }
 END_TEST_SUITE(logger_ut)

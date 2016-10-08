@@ -8,6 +8,7 @@ add_subdirectory(hello_world)
 add_subdirectory(device_ping)
 add_subdirectory(simulated_device_cloud_upload)
 add_subdirectory(callbacks_sample)
+add_subdirectory(azure_functions_sample)
 
 if(${enable_dotnet_binding})
     add_subdirectory(dotnet_binding_sample)

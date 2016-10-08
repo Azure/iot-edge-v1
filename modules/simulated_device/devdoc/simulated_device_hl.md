@@ -32,10 +32,10 @@ MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
 
 ## Module_GetAPIs
 
-This is the primary public interface for the module.  It returns a pointer to 
-the `MODULE_APIS` structure containing the implementation functions for this
-module. `Module_GetAPIs` returns a non-`NULL` pointer to a MODULE_APIS structure.
-The `MODULE_APIS` structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, 
+This is the primary public interface for the module.  It fills out the
+provided `MODULE_APIS` structure containing the implementation functions for this
+module.
+The `MODULE_APIS` structure shall have non-`NULL` `Module_Create`, `Module_Start`, `Module_Destroy`, 
 and `Module_Receive` fields.
 
 ## SimulatedDevice_HL_Create
@@ -44,6 +44,13 @@ MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE broker, const void* config
 ```
 This function creates the SIMULATED DEVICE HL module. This module reads a JSON 
 object and passes the macAddress to the underlying SIMULATED DEVICE module's _Create.
+
+## SimulatedDevice_HL_Start
+```C
+static void SimulatedDevice_HL_Start(MODULE_HANDLE moduleHandle);
+```
+
+Calls underlying module (SIMULATED DEVICE) _Start function.
 
 ## SimulatedDevice_HL_Destroy
 ```C

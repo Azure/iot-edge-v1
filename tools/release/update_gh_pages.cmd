@@ -10,17 +10,6 @@ cd %build-root%
 set gh_pages_dir=%temp%\gw_temp_gh_pages
 
 rem ---------------------------------------------------------------------------
-rem -- Make sure current git branch is 'develop'. If it isn't check out that
-rem -- branch.
-rem ---------------------------------------------------------------------------
-for /f "delims=" %%i in ('git rev-parse --abbrev-ref HEAD') do set current_git_branch=%%i
-if "%current_git_branch%" neq "develop" (
-	echo Switching git branch to 'develop'
-	git checkout develop
-	if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
-)
-
-rem ---------------------------------------------------------------------------
 rem -- Checking out gh-pages branch to temporary location
 rem ---------------------------------------------------------------------------
 if exist %gh_pages_dir% rd /s /q %gh_pages_dir%

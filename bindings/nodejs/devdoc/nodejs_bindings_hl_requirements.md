@@ -62,6 +62,14 @@ The JSON should conform to the following structure:
 
 **SRS_NODEJS_HL_13_008: [** If `NODEJS_Create` fail then the value `NULL` shall be returned. **]**
 
+NODEJS_HL_Start
+---------------
+```c
+void NODEJS_HL_Start(MODULE_HANDLE module)
+```
+
+**SRS_NODEJS_HL_17_001: [** `NODEJS_HL_Start` shall pass the received parameters to the underlying module's `_Start` function, if defined. **]**
+
 NODEJS_HL_Receive
 -----------------
 ```c
@@ -82,4 +90,5 @@ void NODEJS_HL_Destroy(MODULE_HANDLE module)
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_NODEJS_HL_13_011: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type `MODULE_APIS` that has all fields non-`NULL`. **]**
+
+**SRS_NODEJS_HL_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**

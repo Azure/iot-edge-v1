@@ -85,6 +85,7 @@ static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_stri
 static void deinit_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE options_strings);
 static jobject NewObjectInternal(JNIEnv* env, jclass clazz, jmethodID methodID, int args_count, ...);
 static void CallVoidMethodInternal(JNIEnv* env, jobject obj, jmethodID methodID, int args_count, ...);
+static jmethodID get_module_method(JAVA_MODULE_HANDLE_DATA* module, const char* method_name, const char* method_descriptor);
 
 static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration)
 {
@@ -293,49 +294,38 @@ static void JavaModuleHost_Destroy(MODULE_HANDLE module)
 		else
 		{
 			/*Codes_SRS_JAVA_MODULE_HOST_14_038: [This function shall find get the user-defined Java module class using the module parameter and get the destroy(). ]*/
-			jclass jModule_class = JNIFunc(moduleHandle->env, GetObjectClass, moduleHandle->module);
-			if (jModule_class == NULL)
+			/*Codes_SRS_JAVA_MODULE_HOST_14_041: [ This function shall exit if any JNI function fails. ]*/
+			jmethodID jModule_destroy = get_module_method(moduleHandle, MODULE_DESTROY_METHOD_NAME, MODULE_DESTROY_DESCRIPTOR);
+			if (jModule_destroy == NULL)
 			{
 				/*Codes_SRS_JAVA_MODULE_HOST_14_041: [ This function shall exit if any JNI function fails. ]*/
-				LogError("Could not find class (%s) for the module Java object. destroy() will not be called on this object.", moduleHandle->moduleName);
+				LogError("Failed to get the %s destroy() method.", moduleHandle->moduleName);
 			}
 			else
 			{
-				jmethodID jModule_destroy = JNIFunc(moduleHandle->env, GetMethodID, jModule_class, MODULE_DESTROY_METHOD_NAME, MODULE_DESTROY_DESCRIPTOR);
+				/*Codes_SRS_JAVA_MODULE_HOST_14_020: [This function shall call the void destroy() method of the Java module object and delete the global reference to this object.]*/
+				//Destruction will continue even if there is an exception in the Java destroy method
+				CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_destroy, 0);
 				jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-				if (jModule_destroy == NULL || exception)
+				if (exception)
 				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_041: [ This function shall exit if any JNI function fails. ]*/
-					LogError("Failed to find the %s destroy() method. destroy() will not be called on this object.", moduleHandle->moduleName);
+					LogError("Exception occurred in destroy() of %s.", moduleHandle->moduleName);
 					JNIFunc(moduleHandle->env, ExceptionDescribe);
 					JNIFunc(moduleHandle->env, ExceptionClear);
 				}
-				else
+
+				JNIFunc(moduleHandle->env, DeleteGlobalRef, moduleHandle->module);
+
+				/*Codes_SRS_JAVA_MODULE_HOST_14_040: [This function shall detach the JVM from the current thread.]*/
+				jni_result = JNIFunc(moduleHandle->jvm, DetachCurrentThread);
+				if (jni_result != JNI_OK)
 				{
-					/*Codes_SRS_JAVA_MODULE_HOST_14_020: [This function shall call the void destroy() method of the Java module object and delete the global reference to this object.]*/
-					//Destruction will continue even if there is an exception in the Java destroy method
-					CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_destroy, 0);
-					exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-					if (exception)
-					{
-						LogError("Exception occurred in destroy() of %s.", moduleHandle->moduleName);
-						JNIFunc(moduleHandle->env, ExceptionDescribe);
-						JNIFunc(moduleHandle->env, ExceptionClear);
-					}
-
-					JNIFunc(moduleHandle->env, DeleteGlobalRef, moduleHandle->module);
-
-					/*Codes_SRS_JAVA_MODULE_HOST_14_040: [This function shall detach the JVM from the current thread.]*/
-					jni_result = JNIFunc(moduleHandle->jvm, DetachCurrentThread);
-					if (jni_result != JNI_OK)
-					{
-						LogError("Could not detach the current thread from the JVM. (Result: %i)", jni_result);
-					}
-
-					/*Codes_SRS_JAVA_MODULE_HOST_14_029: [This function shall destroy the JVM if it the last module to be disconnected from the gateway.]*/
-					/*Codes_SRS_JAVA_MODULE_HOST_14_021: [This function shall free all resources associated with this module.]*/
-					destroy_module_internal(moduleHandle, true);
+					LogError("Could not detach the current thread from the JVM. (Result: %i)", jni_result);
 				}
+
+				/*Codes_SRS_JAVA_MODULE_HOST_14_029: [This function shall destroy the JVM if it the last module to be disconnected from the gateway.]*/
+				/*Codes_SRS_JAVA_MODULE_HOST_14_021: [This function shall free all resources associated with this module.]*/
+				destroy_module_internal(moduleHandle, true);
 			}
 		}
 	}
@@ -394,35 +384,23 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 						else
 						{
 							/*Codes_SRS_JAVA_MODULE_HOST_14_045: [This function shall get the user - defined Java module class using the module parameter and get the receive() method.]*/
-							jclass jModule_class = JNIFunc(moduleHandle->env, GetObjectClass, moduleHandle->module);
-							if (jModule_class == NULL)
+							jmethodID jModule_receive = get_module_method(moduleHandle, MODULE_RECEIVE_METHOD_NAME, MODULE_RECEIVE_DESCRIPTOR);
+							if (jModule_receive == NULL)
 							{
 								/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-								LogError("Could not find class (%s) for the module Java object. destroy() will not be called on this object.", moduleHandle->moduleName);
+								LogError("Failed to get the %s receive() method.", moduleHandle->moduleName);
 							}
 							else
 							{
-								jmethodID jModule_receive = JNIFunc(moduleHandle->env, GetMethodID, jModule_class, MODULE_RECEIVE_METHOD_NAME, MODULE_RECEIVE_DESCRIPTOR);
+								/*Codes_SRS_JAVA_MODULE_HOST_14_024: [This function shall call the void receive(byte[] source) method of the Java module object passing the serialized message.]*/
+								CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_receive, 1, arr);
 								exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-								if (jModule_receive == NULL || exception)
+								if (exception)
 								{
 									/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-									LogError("Failed to find the %s destroy() method. destroy() will not be called on this object.", moduleHandle->moduleName);
+									LogError("Exception occurred in receive() of %s.", moduleHandle->moduleName);
 									JNIFunc(moduleHandle->env, ExceptionDescribe);
 									JNIFunc(moduleHandle->env, ExceptionClear);
-								}
-								else
-								{
-									/*Codes_SRS_JAVA_MODULE_HOST_14_024: [This function shall call the void receive(byte[] source) method of the Java module object passing the serialized message.]*/
-									CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_receive, 1, arr);
-									exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
-									if (exception)
-									{
-										/*Codes_SRS_JAVA_MODULE_HOST_14_047: [This function shall exit if any underlying function fails.]*/
-										LogError("Exception occurred in receive() of %s.", moduleHandle->moduleName);
-										JNIFunc(moduleHandle->env, ExceptionDescribe);
-										JNIFunc(moduleHandle->env, ExceptionClear);
-									}
 								}
 							}
 						}
@@ -436,6 +414,54 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 		}
 	}
 
+}
+
+static void JavaModuleHost_Start(MODULE_HANDLE module)
+{
+	/*Codes_SRS_JAVA_MODULE_HOST_14_049: [This function shall do nothing if module is NULL.]*/
+	if (module != NULL)
+	{
+		JAVA_MODULE_HANDLE_DATA* moduleHandle = (JAVA_MODULE_HANDLE_DATA*)module;
+
+		/*Codes_SRS_JAVA_MODULE_HOST_14_050: [This function shall attach the JVM to the current thread.]*/
+		jint jni_result = JNIFunc(moduleHandle->jvm, AttachCurrentThread, (void**)(&(moduleHandle->env)), NULL);
+		if (jni_result != JNI_OK)
+		{
+			/*Codes_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+			LogError("Could not attach the current thread to the JVM. (Result: %i)", jni_result);
+		}
+		else
+		{
+			/*Codes_SRS_JAVA_MODULE_HOST_14_051: [This function shall get the user-defined Java module class using the module parameter and get the start() method.]*/
+			/*Codes_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+			jmethodID jModule_start = get_module_method(moduleHandle, MODULE_START_METHOD_NAME, MODULE_START_DESCRIPTOR);
+			if (jModule_start == NULL)
+			{
+				/*Codes_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+				LogError("Failed to find the %s start() method. start() will not be called on this object.", moduleHandle->moduleName);
+			}
+			else
+			{
+				/*Codes_SRS_JAVA_MODULE_HOST_14_052: [This function shall call the void start() method of the Java module object.]*/
+				CallVoidMethodInternal(moduleHandle->env, moduleHandle->module, jModule_start, 0);
+				jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
+				if (exception)
+				{
+					/*Codes_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+					LogError("Exception occurred in start() of %s.", moduleHandle->moduleName);
+					JNIFunc(moduleHandle->env, ExceptionDescribe);
+					JNIFunc(moduleHandle->env, ExceptionClear);
+				}
+			}
+			/*Codes_SRS_JAVA_MODULE_HOST_14_053: [This function shall detach the JVM from the current thread.]*/
+			jni_result = JNIFunc(moduleHandle->jvm, DetachCurrentThread);
+			if (jni_result != JNI_OK)
+			{
+				/*Codes_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+				LogError("Could not detach the current thread from the JVM. (Result: %i)", jni_result);
+			}
+		}
+	}
 }
 
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
@@ -496,6 +522,30 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessa
 }
 
 //Internal functions
+static jmethodID get_module_method(JAVA_MODULE_HANDLE_DATA* module, const char* method_name, const char* method_descriptor)
+{
+	jmethodID jModule_method;
+	jclass jModule_class = JNIFunc(module->env, GetObjectClass, module->module);
+	if (jModule_class == NULL)
+	{
+		LogError("Could not find class (%s) for the module Java object. %s() will not be called on this object.", module->moduleName, method_name);
+		jModule_method = NULL;
+	}
+	else
+	{
+		jModule_method = JNIFunc(module->env, GetMethodID, jModule_class, method_name, method_descriptor);
+		jthrowable exception = JNIFunc(module->env, ExceptionOccurred);
+		if (jModule_method == NULL || exception)
+		{
+			LogError("Failed to find the %s %s() method. %s() will not be called on this object.", module->moduleName, method_name, method_name);
+			JNIFunc(module->env, ExceptionDescribe);
+			JNIFunc(module->env, ExceptionClear);
+			jModule_method = NULL;
+		}
+	}
+	return jModule_method;
+}
+
 static int JVM_Create(JavaVM** jvm, JNIEnv** env, JVM_OPTIONS* options)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_14_007: [This function shall initialize a JavaVMInitArgs structure using the JVM_OPTIONS structure configuration->options.]*/
@@ -858,15 +908,23 @@ static const MODULE_APIS JavaModuleHost_APIS =
 {
 	JavaModuleHost_Create,
 	JavaModuleHost_Destroy,
-	JavaModuleHost_Receive
+	JavaModuleHost_Receive,
+	JavaModuleHost_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	/*Codes_SRS_JAVA_MODULE_HOST_14_028: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
-	return &JavaModuleHost_APIS;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/* Codes_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = JavaModuleHost_APIS;
+	}
 }

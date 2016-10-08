@@ -1,3 +1,4 @@
+
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -240,12 +241,14 @@ MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration);
 void NODEJS_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void NODEJS_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void NODEJS_Start(MODULE_HANDLE moduleHandle);
 
 static MODULE_APIS NODEJS_APIS =
 {
     NODEJS_Create,
     NODEJS_Destroy,
-    NODEJS_Receive
+    NODEJS_Receive,
+	NODEJS_Start
 };
 
 TYPED_MOCK_CLASS(CNODEJSHLMocks, CGlobalMock)
@@ -332,10 +335,11 @@ public:
 
     MOCK_STATIC_METHOD_1(, void, gballoc_free, void*, ptr)
         BASEIMPLEMENTATION::gballoc_free(ptr);
-    MOCK_VOID_METHOD_END()
+	MOCK_VOID_METHOD_END()
 
-    MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE))
-    MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&NODEJS_APIS);
+	MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(NODEJS_MODULE), MODULE_APIS*, apis)
+		(*apis) = NODEJS_APIS;
+	MOCK_VOID_METHOD_END();
 
     MOCK_STATIC_METHOD_2( , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, broker, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
@@ -345,6 +349,9 @@ public:
         free(moduleHandle);
     }
     MOCK_VOID_METHOD_END()
+
+	MOCK_STATIC_METHOD_1(, void, NODEJS_Start, MODULE_HANDLE, moduleHandle);
+	MOCK_VOID_METHOD_END()
     
     MOCK_STATIC_METHOD_2(, void, NODEJS_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle)
     MOCK_VOID_METHOD_END()
@@ -365,17 +372,19 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, json_free_serialized_string
 DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, gballoc_free, void*, ptr);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CNODEJSHLMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(NODEJS_MODULE));
+DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, MODULE_STATIC_GETAPIS(NODEJS_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , MODULE_HANDLE, NODEJS_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, NODEJS_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CNODEJSHLMocks, , void, NODEJS_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CNODEJSHLMocks, , void, NODEJS_Start, MODULE_HANDLE, moduleHandle);
 
 MODULE_HANDLE (*NODEJS_HL_Create)(BROKER_HANDLE broker, const void* configuration);
 /*this destroys (frees resources) of the module parameter*/
 void (*NODEJS_HL_Destroy)(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 void (*NODEJS_HL_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+void(*NODEJS_HL_Start)(MODULE_HANDLE moduleHandle);
 
 static BROKER_HANDLE validBrokerHandle = (BROKER_HANDLE)0x1;
 static MESSAGE_HANDLE VALID_MESSAGE_HANDLE  = (MESSAGE_HANDLE)0x02;
@@ -396,10 +405,12 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        NODEJS_HL_Create = Module_GetAPIS()->Module_Create;
-        NODEJS_HL_Destroy = Module_GetAPIS()->Module_Destroy;
-        NODEJS_HL_Receive = Module_GetAPIS()->Module_Receive;
-
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        NODEJS_HL_Create = apis.Module_Create;
+        NODEJS_HL_Destroy = apis.Module_Destroy;
+		NODEJS_HL_Receive = apis.Module_Receive;
+		NODEJS_HL_Start = apis.Module_Start;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -480,7 +491,7 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         STRICT_EXPECTED_CALL(mocks, json_serialize_to_string(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)()));
+        EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)(IGNORED_PTR_ARG)));
         STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBrokerHandle, IGNORED_PTR_ARG))
             .IgnoreArgument(2);
 
@@ -518,7 +529,7 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         STRICT_EXPECTED_CALL(mocks, json_serialize_to_string(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)()));
+        EXPECTED_CALL(mocks, C1(MODULE_STATIC_GETAPIS(NODEJS_MODULE)(IGNORED_PTR_ARG)));
         STRICT_EXPECTED_CALL(mocks, NODEJS_Create(validBrokerHandle, IGNORED_PTR_ARG))
             .IgnoreArgument(2)
             .SetFailReturn((MODULE_HANDLE)NULL);
@@ -606,6 +617,27 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         ///cleanup
     }
 
+	/*Tests_SRS_NODEJS_HL_17_001: [ NODEJS_HL_Start shall pass the received parameters to the underlying module's _Start function, if defined. ]*/
+	TEST_FUNCTION(NODEJS_HL_Start_passthrough_succeeds)
+	{
+		///arrage
+		CNODEJSHLMocks mocks;
+		MODULE_HANDLE handle = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
+		mocks.ResetAllCalls();
+
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, NODEJS_Start(handle));
+
+		///act
+		NODEJS_HL_Start(handle);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+		NODEJS_HL_Destroy(handle);
+	}
+
     /*Tests_SRS_NODEJS_HL_13_009: [ NODEJS_HL_Receive shall pass the received parameters to the underlying module's _Receive function. ]*/
     TEST_FUNCTION(NODEJS_HL_Receive_passthrough_succeeds)
     {
@@ -614,7 +646,7 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         MODULE_HANDLE handle = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)(IGNORED_PTR_ARG));
         STRICT_EXPECTED_CALL(mocks, NODEJS_Receive(handle, VALID_MESSAGE_HANDLE));
 
         ///act
@@ -635,7 +667,7 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         MODULE_HANDLE handle = NODEJS_HL_Create(validBrokerHandle, VALID_CONFIG_STRING);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)());
+        EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(NODEJS_MODULE)(IGNORED_PTR_ARG));
         STRICT_EXPECTED_CALL(mocks, NODEJS_Destroy(handle));
 
         ///act
@@ -647,20 +679,21 @@ BEGIN_TEST_SUITE(nodejs_hl_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_NODEJS_HL_13_011: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+    /* Tests_SRS_NODEJS_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
     {
         ///arrage
         CNODEJSHLMocks mocks;
         
         ///act
-        const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
         ///assert
-        ASSERT_IS_NOT_NULL(apis);
-        ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-        ASSERT_IS_NOT_NULL(apis->Module_Create);
-        ASSERT_IS_NOT_NULL(apis->Module_Receive);
+        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+		ASSERT_IS_TRUE(apis.Module_Start != NULL);
 
         ///cleanup
     }

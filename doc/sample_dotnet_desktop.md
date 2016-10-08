@@ -32,9 +32,20 @@ You can find the diagram for Receiving a message and publishing a message on thi
 
 Building the sample
 -------------------
-At this point, gateways containing .NET modules are only supported on Windows Desktop. The sample Gateway gets built when you build the SDK by running `tools/build.cmd`.  The
-[devbox setup](devbox_setup.md) guide has information on how you can build the SDK.
-To build .NET Modules you should build solution here (../bindings/dotnet/dotnet-binding/dotnet-binding.sln).
+At this point, gateways containing .NET modules are only supported on Windows 
+Desktop. The sample Gateway gets built when you build the SDK by first running
+``` 
+tools\build_dotnet.cmd
+```
+then running 
+```
+tools\build.cmd --enable-dotnet-binding
+```
+
+The
+[devbox setup](devbox_setup.md) guide has more information on how you can build the SDK.
+
+The `build_dotnet.cmd` script builds the .NET Modules in the solution located here (../bindings/dotnet/dotnet-binding/dotnet-binding.sln).
 Today the Solution has: 
 1. Microsoft.Azure.IoT.Gateway ==> DLL you shall reference on your module project.
 2. Microsoft.Azure.IoT.Gateway.Test ==> Unit tests for the implementation of Message and Broker Classes.
@@ -136,6 +147,8 @@ namespace PrinterModule
     }
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Modules may also implement the `IGatewayModuleStart` interface.  The Start method is called when the Gateway's Broker is ready for the module to send and receive messages. 
 
 4. Add your new module on Json configuration:
 ```json

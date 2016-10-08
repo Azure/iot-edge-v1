@@ -49,18 +49,24 @@ void my_JavaModuleHost_Destroy(MODULE_HANDLE module)
 	free(module);
 }
 
+MOCKABLE_FUNCTION(, void, JavaModuleHost_Start, MODULE_HANDLE, module);
+void my_JavaModuleHost_Start(MODULE_HANDLE module)
+{
+}
+
 MOCKABLE_FUNCTION(, void, JavaModuleHost_Receive, MODULE_HANDLE, module, MESSAGE_HANDLE, message);
 
 static const MODULE_APIS JavaModuleHost_APIS =
 {
 	JavaModuleHost_Create,
 	JavaModuleHost_Destroy,
-	JavaModuleHost_Receive
+	JavaModuleHost_Receive,
+	JavaModuleHost_Start
 };
 
-const MODULE_APIS* MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(void)
+void MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(MODULE_APIS* apis)
 {
-	return &JavaModuleHost_APIS;
+	(*apis) = JavaModuleHost_APIS;
 }
 
 //parson mocks
@@ -228,6 +234,7 @@ void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 static pfModule_Create  JavaModuleHost_HL_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy JavaModuleHost_HL_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive JavaModuleHost_HL_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start JavaModuleHost_HL_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 BEGIN_TEST_SUITE(JavaModuleHost_HL_UnitTests)
 
@@ -237,9 +244,12 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	g_testByTest = TEST_MUTEX_CREATE();
 	ASSERT_IS_NOT_NULL(g_testByTest);
 
-	JavaModuleHost_HL_Create = Module_GetAPIS()->Module_Create;
-	JavaModuleHost_HL_Destroy = Module_GetAPIS()->Module_Destroy;
-	JavaModuleHost_HL_Receive = Module_GetAPIS()->Module_Receive;
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
+	JavaModuleHost_HL_Create = apis.Module_Create;
+	JavaModuleHost_HL_Destroy = apis.Module_Destroy;
+	JavaModuleHost_HL_Receive = apis.Module_Receive;
+	JavaModuleHost_HL_Start = apis.Module_Start;
 
 	umock_c_init(on_umock_c_error);
 	umocktypes_charptr_register_types();
@@ -511,6 +521,30 @@ TEST_FUNCTION(JavaModuleHost_HL_Create_success)
 	JavaModuleHost_HL_Destroy(module);
 }
 
+/*Tests_SRS_JAVA_MODULE_HOST_HL_17_001: [ This function shall pass the arguments to the underlying Java Module Host's _Start function, if defined. ]*/
+TEST_FUNCTION(JavaModuleHost_HL_Start_LL_function_call_test)
+{
+	//Arrange
+	BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+	const void* configuration = "{\"json\": \"string\"}";
+	MODULE_HANDLE module = JavaModuleHost_HL_Create(broker, configuration);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(JavaModuleHost_Start(module));
+
+	//Act
+
+	JavaModuleHost_HL_Start(module);
+
+	//Assert
+
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//Cleanup
+	JavaModuleHost_HL_Destroy(module);
+}
+
+
 /*Tests_SRS_JAVA_MODULE_HOST_HL_14_009: [ This function shall call the underlying Java Module Host's _Receive function using this module MODULE_HANDLE and message MESSAGE_HANDLE. ]*/
 TEST_FUNCTION(JavaModuleHost_HL_Receive_LL_function_call_test)
 {
@@ -557,20 +591,19 @@ TEST_FUNCTION(JavaModuleHostHL_Destroy_LL_function_call_test)
 	//Cleanup
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_HL_14_001: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
 TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
 {
 	//Arrange
 
 	//Act
-
-	const MODULE_APIS* apis = Module_GetAPIS();
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
 
 	//Assert
-	ASSERT_IS_NOT_NULL(apis);
-	ASSERT_IS_NOT_NULL(apis->Module_Create);
-	ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-	ASSERT_IS_NOT_NULL(apis->Module_Receive);
+	ASSERT_IS_NOT_NULL(apis.Module_Create);
+	ASSERT_IS_NOT_NULL(apis.Module_Destroy);
+	ASSERT_IS_NOT_NULL(apis.Module_Receive);
 }
 
 END_TEST_SUITE(JavaModuleHost_HL_UnitTests)

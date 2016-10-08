@@ -43,7 +43,8 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
             }
         }
     ]
-}```
+}
+```
 
 
 **SRS_DOTNET_HL_04_001: [** If `broker` is NULL then `DotNET_HL_Create` shall fail and return NULL. **]**
@@ -64,6 +65,13 @@ and call the entry class called `mycsharpmodule.classname` and passing as config
 
 **SRS_DOTNET_HL_04_009: [** If `DotNET_Create` fails then `DotNET_HL_Create` shall fail and return NULL. **]**
 
+
+DotNET_HL_Start
+---------------
+```c
+void DotNET_HL_Start(MODULE_HANDLE module);
+```
+**SRS_DOTNET_HL_17_001: [** `DotNET_HL_Start` shall pass the received parameters to the underlying DotNET Host Module's `_Start` function, if defined. **]**
 
 DotNET_HL_Receive
 ---------------
@@ -87,4 +95,5 @@ Module_GetAPIs
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_DOTNET_HL_04_012: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. **]**
+
+**SRS_DOTNET_HL_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**

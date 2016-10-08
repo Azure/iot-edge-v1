@@ -21,7 +21,6 @@
 typedef struct E2E_MODULE_DATA_TAG
 {
 	BROKER_HANDLE       broker;
-    THREAD_HANDLE       e2eModulethread;
 	char*               fakeMacAddress;
 	char*               dataToSend;
 } E2E_MODULE_DATA;
@@ -45,26 +44,18 @@ static void E2EModule_Destroy(MODULE_HANDLE moduleHandle)
 		E2E_MODULE_DATA* module_data = (E2E_MODULE_DATA*)moduleHandle;
 		int result;
 
-		/* join the thread */
-        if (ThreadAPI_Join(module_data->e2eModulethread, &result) != THREADAPI_OK)
-		{
-			LogError("Attempt to ThreadAPI_Join Failed.");
-		}		
-
 		free((void*)module_data->fakeMacAddress);
 		free((void*)module_data->dataToSend);
 		free(module_data);
 	}
 }
 
-static int e2e_module_worker(void * user_data)
+static void E2EModule_Start(MODULE_HANDLE module)
 {
-    E2E_MODULE_DATA* module_data = (E2E_MODULE_DATA*)user_data;
+	E2E_MODULE_DATA* module_data = (E2E_MODULE_DATA*)module;
 
 	MESSAGE_CONFIG newMessageCfg;
 	MAP_HANDLE newProperties = Map_Create(NULL);
-
-	ThreadAPI_Sleep(500);
 
 	if (newProperties == NULL)
 	{
@@ -104,10 +95,7 @@ static int e2e_module_worker(void * user_data)
 		}
 		Map_Destroy(newProperties);
 	}
-
-	return 0;
 }
-
 
 static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
@@ -153,22 +141,7 @@ static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configur
 				}
 				else
 				{
-					/* Create a fake data thread.  */
-					if (ThreadAPI_Create(
-						&(result->e2eModulethread),
-						e2e_module_worker,
-						(void*)result) != THREADAPI_OK)
-					{
-						LogError("ThreadAPI_Create failed");
-						free(result->dataToSend);
-						free(result->fakeMacAddress);
-						free(result);
-						result = NULL;
-					}
-					else
-					{
-						/* Thread started, module created, all complete.*/
-					}
+					/* Module created, all complete.*/
 				}				
 			}
         }
@@ -183,10 +156,11 @@ static const MODULE_APIS E2EModule_APIS_all =
 {
 	E2EModule_Create,
 	E2EModule_Destroy,
-	E2EModule_Receive
+	E2EModule_Receive,
+	E2EModule_Start
 };
 
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 {
-	return &E2EModule_APIS_all;
+	(*apis) = E2EModule_APIS_all;
 }

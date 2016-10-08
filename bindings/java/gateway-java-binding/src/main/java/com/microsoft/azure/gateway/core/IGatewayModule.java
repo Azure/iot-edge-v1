@@ -17,6 +17,14 @@ public interface IGatewayModule {
     void create(long moduleAddr, Broker broker, String configuration);
 
     /**
+     * The start method is called when the native Gateway has created all modules to notify each module that it is safe
+     * to start sending messages.
+     *
+     * This method is optional, but it is recommended that any long-running processes get started in this method.
+     */
+    void start();
+
+    /**
      * The receive method is called on a {@link GatewayModule} whenever it receives a message.
      *
      * The destroy() and receive() methods are guaranteed to not be called simultaneously.

@@ -79,7 +79,7 @@ static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
  */
 static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
-	MODULE_HANDLE *result;
+	MODULE_HANDLE result;
 	if ((broker == NULL) || (configuration == NULL))
 	{
 		/*Codes_SRS_IDMAP_HL_17_003: [ If broker is NULL then IdentityMap_HL_Create shall fail and return NULL. ]*/
@@ -139,10 +139,12 @@ static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* con
 					}
 					else
 					{
+						MODULE_APIS apis;
+						MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
 						/*Codes_SRS_IDMAP_HL_17_013: [ IdentityMap_HL_Create shall invoke identity map module's create, passing in the message broker handle and the input vector. ]*/
 						/*Codes_SRS_IDMAP_HL_17_014: [ When the lower layer identity map module create succeeds, IdentityMap_HL_Create shall succeed and return a non-NULL value. ]*/
 						/*Codes_SRS_IDMAP_HL_17_015: [ If the lower layer identity map module create fails, IdentityMap_HL_Create shall fail and return NULL. ]*/
-						result = MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Create(broker, inputVector);
+						result = apis.Module_Create(broker, inputVector);
 					}
 					/*Codes_SRS_IDMAP_HL_17_016: [ IdentityMap_HL_Create shall release all data it allocated. ]*/
 					VECTOR_destroy(inputVector);
@@ -160,38 +162,55 @@ static MODULE_HANDLE IdentityMap_HL_Create(BROKER_HANDLE broker, const void* con
 */
 static void IdentityMap_HL_Destroy(MODULE_HANDLE moduleHandle)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
 	/*Codes_SRS_IDMAP_HL_17_017: [ IdentityMap_HL_Destroy shall free all used resources. ]*/
-	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Destroy(moduleHandle);
+	apis.Module_Destroy(moduleHandle);
 }
 
+/*
+* @brief	Start the Module.
+*/
+static void IdentityMap_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		/*Codes_SRS_IDMAP_HL_17_021: [ IdentityMap_HL_Start shall pass the received parameters to the underlying identity map module start function, if defined. ]*/
+		apis.Module_Start(moduleHandle);
+	}
+}
 
 /*
  * @brief	Receive a message from the message broker.
  */
 static void IdentityMap_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(&apis);
 	/*Codes_SRS_IDMAP_HL_17_018: [ IdentityMap_HL_Receive shall pass the received parameters to the underlying identity map module receive function. ]*/
-	MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-/*Codes_SRS_IDMAP_HL_17_002: [ The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields. ]*/
 static const MODULE_APIS IdentityMap_HL_APIS_all =
 {
 	IdentityMap_HL_Create,
 	IdentityMap_HL_Destroy,
-	IdentityMap_HL_Receive
+	IdentityMap_HL_Receive,
+	IdentityMap_HL_Start
 };
 
-/*Codes_SRS_IDMAP_HL_17_001: [Module_GetAPIs shall return a non-NULL pointer to a MODULE_APIS structure.]*/
+/*Codes_SRS_IDMAP_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &IdentityMap_HL_APIS_all;
+	(*apis) = IdentityMap_HL_APIS_all;
 }

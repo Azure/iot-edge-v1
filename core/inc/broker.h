@@ -29,8 +29,14 @@ extern "C"
 #include <stddef.h>
 #endif
 
+/** @brief	Link Data with #MODULE_HANDLE for source and sink. 
+*/
 typedef struct BROKER_LINK_DATA_TAG {
+    /** @brief	#MODULE_HANDLE representing the module generating/publishing messages. 
+    */
     MODULE_HANDLE module_source_handle;
+    /** @brief	#MODULE_HANDLE representing the module receiving messages. 
+    */
     MODULE_HANDLE module_sink_handle;
 } BROKER_LINK_DATA;
 
@@ -121,7 +127,7 @@ extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* mod
 *
 *	@param		broker          The #BROKER_HANDLE onto which the module will be
 *								added.
-*	@param		route			The #BROKER_LINK_DATA for the route that will be added
+*	@param		link			The #BROKER_LINK_DATA for the link that will be added
 *								to this message broker.
 *
 *	@return		A #BROKER_RESULT describing the result of the function.
@@ -130,8 +136,8 @@ extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA
 
 /** @brief	    Removes a route from the message broker.
 *
-*	@param	    broker	The #BROKER_HANDLE from which the module will be removed.
-*	@param	    route	The #BROKER_LINK_DATA of the module to be removed.
+*	@param	    broker	The #BROKER_HANDLE from which the link will be removed.
+*	@param	    link	The #BROKER_LINK_DATA of the link to be removed.
 *
 *	@return	    A #BROKER_RESULT describing the result of the function.
 */

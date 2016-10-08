@@ -19,7 +19,7 @@ typedef struct IOTHUB_CONFIG_TAG
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(void);
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(MODULE_APIS* apis);
 
 #ifdef __cplusplus
 }

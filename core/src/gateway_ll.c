@@ -30,11 +30,14 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	/** @brief Vector of LINK_DATA links that the Gateway must track */
 	VECTOR_HANDLE links;
+
+	/** @brief flag to indicate that the broker is ready to accept messages. */
+	int broker_ready;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct MODULE_DATA_TAG {
 	/** @brief The name of the module added. This name is unique on a gateway. */
-	const char* module_name;
+	char* module_name;
 
 	/** @brief The MODULE_LIBRARY_HANDLE associated with 'module'*/
 	MODULE_LIBRARY_HANDLE module_library_handle;
@@ -47,11 +50,11 @@ typedef struct MODULE_DATA_TAG {
 
 typedef struct LINK_DATA_TAG {
 	bool from_any_source;
-	MODULE_DATA module_source;
-	MODULE_DATA module_sink;
+	MODULE_DATA *module_source;
+	MODULE_DATA *module_sink;
 } LINK_DATA;
 
-static MODULE_DATA no_module = { NULL };
+static MODULE_DATA *no_module = NULL;
 
 static bool module_info_name_find(const void* element, const void* module_name);
 
@@ -59,7 +62,7 @@ static void gateway_destroymodulelist_internal(GATEWAY_MODULE_INFO* infos, size_
 
 static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name);
 
-static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module);
+static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA** module);
 
 static void gateway_destroy_internal(GATEWAY_HANDLE gw);
 
@@ -133,7 +136,7 @@ VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw)
 					/*Codes_SRS_GATEWAY_LL_26_007: [ This function shall return a snapshot copy of information about current gateway modules. ]*/
 					for (size_t i = 0; i < module_count; i++)
 					{
-						MODULE_DATA *module_data = (MODULE_DATA*)VECTOR_element(gw->modules, i);
+						MODULE_DATA *module_data = *(MODULE_DATA**)VECTOR_element(gw->modules, i);
 						GATEWAY_MODULE_INFO *info = (GATEWAY_MODULE_INFO*)VECTOR_element(result, i);
 						info->module_name = module_data->module_name;
 						info->module_sources = VECTOR_create(sizeof(GATEWAY_MODULE_INFO*));
@@ -158,12 +161,12 @@ VECTOR_HANDLE Gateway_LL_GetModuleList(GATEWAY_HANDLE gw)
 						{
 							LINK_DATA *link_data = (LINK_DATA*)VECTOR_element(gw->links, i);
 
-							GATEWAY_MODULE_INFO *sink = VECTOR_find_if(result, module_info_name_find, link_data->module_sink.module_name);
+							GATEWAY_MODULE_INFO *sink = VECTOR_find_if(result, module_info_name_find, link_data->module_sink->module_name);
 							assert(sink != NULL);
 
 							if (!link_data->from_any_source)
 							{
-								GATEWAY_MODULE_INFO *src = VECTOR_find_if(result, module_info_name_find, link_data->module_source.module_name);
+								GATEWAY_MODULE_INFO *src = VECTOR_find_if(result, module_info_name_find, link_data->module_source->module_name);
 								assert(src != NULL);
 
 								if (VECTOR_push_back(sink->module_sources, &src, 1) != 0)
@@ -198,7 +201,7 @@ void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list)
 	VECTOR_destroy(module_list);
 }
 
-void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback)
+void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param)
 {
 	/* Codes_SRS_GATEWAY_LL_26_006: [ This function shall log a failure and do nothing else when `gw` parameter is NULL. ] */
 	if (gw == NULL)
@@ -207,7 +210,7 @@ void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GA
 	}
 	else
 	{
-		EventSystem_AddEventCallback(gw->event_system, event_type, callback);
+		EventSystem_AddEventCallback(gw->event_system, event_type, callback, user_param);
 	}
 }
 
@@ -233,7 +236,7 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 		else
 		{
 			/*Codes_SRS_GATEWAY_LL_14_033: [ The function shall create a vector to store each MODULE_DATA. ]*/
-			gateway->modules = VECTOR_create(sizeof(MODULE_DATA));
+			gateway->modules = VECTOR_create(sizeof(MODULE_DATA*));
 			if (gateway->modules == NULL)
 			{
 				/*Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
@@ -345,6 +348,39 @@ GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties)
 	return gateway;
 }
 
+GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
+{
+	GATEWAY_START_RESULT result;
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+
+		/*Codes_SRS_GATEWAY_LL_17_010: [ This function shall call Module_Start for every module which defines the start function. ]*/
+		size_t module_count = VECTOR_size(gateway_handle->modules);
+		size_t m;
+		for (m = 0; m < module_count; m++)
+		{
+			MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				/*Codes_SRS_GATEWAY_17_002: [ This function shall call Module_Start for every module which defines the start function. ]*/
+				(pfStart)((*module_data)->module);
+			}
+		}
+		/*Codes_SRS_GATEWAY_LL_17_012: [ This function shall report a GATEWAY_STARTED event. ]*/
+		EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_STARTED);
+		/*Codes_SRS_GATEWAY_LL_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]*/
+		result = GATEWAY_START_SUCCESS;
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_LL_17_009: [ This function shall return GATEWAY_START_INVALID_ARGS if a NULL gateway is received. ]*/
+		result = GATEWAY_START_INVALID_ARGS;
+	}
+	return result;
+}
+
 void Gateway_LL_Destroy(GATEWAY_HANDLE gw)
 {
 	gateway_destroy_internal(gw);
@@ -377,6 +413,35 @@ MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTR
 	return module;
 }
 
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
+{
+	if (gw != NULL)
+	{
+		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
+		MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
+		if (module_data != NULL)
+		{
+			pfModule_Start pfStart = ModuleLoader_GetModuleAPIs((*module_data)->module_library_handle)->Module_Start;
+			if (pfStart != NULL)
+			{
+				/*Codes_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/
+				(pfStart)((*module_data)->module);
+			}
+		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_LL_17_007: [ If module is not found in the gateway, this function shall do nothing. ]*/
+			LogError("Gateway_LL_StartModule(): Failed to start module because the MODULE_DATA not found.");
+		}
+	}
+	else
+	{
+		/*Codes_SRS_GATEWAY_LL_17_006: [ If gw is NULL, this function shall do nothing. ]*/
+		LogError("Gateway_LL_StartModule(): Failed to start module because the GATEWAY_HANDLE is NULL.");
+	}
+}
+
+
 void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 {
 	/*Codes_SRS_GATEWAY_LL_14_020: [ If gw or module is NULL the function shall return. ]*/
@@ -385,7 +450,7 @@ void Gateway_LL_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
 
 		/*Codes_SRS_GATEWAY_LL_14_023: [The function shall locate the MODULE_DATA object in GATEWAY_HANDLE_DATA's modules containing module and return if it cannot be found. ]*/
-		MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
+		MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
 
 		if (module_data != NULL)
 		{
@@ -409,7 +474,7 @@ int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name)
 	int result;
 	if (gw != NULL && module_name != NULL)
 	{
-		MODULE_DATA *module_data = (MODULE_DATA*)VECTOR_find_if(gw->modules, module_name_find, module_name);
+		MODULE_DATA **module_data = (MODULE_DATA**)VECTOR_find_if(gw->modules, module_name_find, module_name);
 		if (module_data != NULL)
 		{
 			/* Codes_SRS_GATEWAY_LL_26_016: [** The function shall return 0 if the module was found. ] */
@@ -455,6 +520,8 @@ GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK
 		{
 			/*Codes_SRS_GATEWAY_LL_04_013: [ If adding the link succeed this function shall return GATEWAY_ADD_LINK_SUCCESS ]*/
 			result = GATEWAY_ADD_LINK_SUCCESS;
+			/*Codes_SRS_GATEWAY_LL_26_019: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the link. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
 		}
 	}
 
@@ -478,6 +545,8 @@ void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLin
 		if (link_data != NULL)
 		{
 			gateway_removelink_internal(gateway_handle, link_data);
+			/*Codes_SRS_GATEWAY_LL_26_018: [ The function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ]*/
+			EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_MODULE_LIST_CHANGED);
 		}
 		else
 		{
@@ -506,7 +575,7 @@ bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module
 {
 	bool exists = false;
 
-	MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, module_name);
+	MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, module_name);
 
 	return module_data == NULL ? false : true;
 }
@@ -544,93 +613,128 @@ static MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_han
 
 		if (!moduleExist)
 		{
-			/*Codes_SRS_GATEWAY_LL_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
-			MODULE_LIBRARY_HANDLE module_library_handle = ModuleLoader_Load(module_path);
-			/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
-			if (module_library_handle == NULL)
+			MODULE_DATA * new_module_data =(MODULE_DATA*)malloc(sizeof(MODULE_DATA));
+			if (new_module_data == NULL)
 			{
+				/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
 				module_result = NULL;
-				LogError("Failed to add module because the module located at [%s] could not be loaded.", module_path);
+				LogError("Failed to add module because it could not allocate memory.");
 			}
 			else
 			{
-				//Should always be a safe call.
-				/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
-				const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
-
-				/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
-				MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->broker, module_configuration);
-				/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
-				if (module_handle == NULL)
+				/*Codes_SRS_GATEWAY_LL_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
+				MODULE_LIBRARY_HANDLE module_library_handle = ModuleLoader_Load(module_path);
+				/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
+				if (module_library_handle == NULL)
 				{
+					free(new_module_data);
 					module_result = NULL;
-					ModuleLoader_Unload(module_library_handle);
-					LogError("Module_Create failed.");
+					LogError("Failed to add module because the module located at [%s] could not be loaded.", module_path);
 				}
 				else
 				{
-					/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
-					MODULE module;
-					module.module_apis = module_apis;
-					module.module_handle = module_handle;
+					//Should always be a safe call.
+					/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
+					const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
 
-				    /*Codes_SRS_GATEWAY_LL_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
-					/*Codes_SRS_GATEWAY_LL_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
-					if (Broker_AddModule(gateway_handle->broker, &module) != BROKER_OK)
+					/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
+					MODULE_HANDLE module_handle = module_apis->Module_Create(gateway_handle->broker, module_configuration);
+					/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
+					if (module_handle == NULL)
 					{
+						free(new_module_data);
 						module_result = NULL;
-						LogError("Failed to add module to the gateway's broker.");
+						ModuleLoader_Unload(module_library_handle);
+						LogError("Module_Create failed.");
 					}
 					else
 					{
-					    /*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
-						Broker_IncRef(gateway_handle->broker);
-						/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully attached to the message broker.]*/
-						MODULE_DATA module_data =
+						/*Codes_SRS_GATEWAY_LL_99_011: [The function shall assign `module_apis` to `MODULE::module_apis`. ]*/
+						MODULE module;
+						module.module_apis = module_apis;
+						module.module_handle = module_handle;
+
+						/*Codes_SRS_GATEWAY_LL_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
+						/*Codes_SRS_GATEWAY_LL_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
+						if (Broker_AddModule(gateway_handle->broker, &module) != BROKER_OK)
 						{
-							module_name,
-							module_library_handle,
-							module_handle
-						};
-						/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
-						if (VECTOR_push_back(gateway_handle->modules, &module_data, 1) != 0)
-						{
-							Broker_DecRef(gateway_handle->broker);
+							free(new_module_data);
 							module_result = NULL;
-							if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
-							{
-								LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
-							}
-							LogError("Unable to add MODULE_DATA* to the gateway module vector.");
+							LogError("Failed to add module to the gateway's broker.");
 						}
 						else
 						{
-							if (add_module_to_any_source(gateway_handle, (MODULE_DATA*)VECTOR_back(gateway_handle->modules)) != 0)
+							char* name_copied = NULL;
+							/*Codes_SRS_GATEWAY_LL_26_020: [ The function shall make a copy of the name of the module for internal use. ]*/
+							mallocAndStrcpy_s(&name_copied, module_name);
+							if (name_copied == NULL)
 							{
-								Broker_DecRef(gateway_handle->broker);
+								free(new_module_data);
 								module_result = NULL;
 								if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
 								{
 									LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
 								}
-								VECTOR_erase(gateway_handle->modules, VECTOR_back(gateway_handle->modules), 1);
-								LogError("Unable to add MODULE_DATA* to existing broker links.");
+								LogError("Unable to malloc for module name");
 							}
 							else
 							{
-								/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
-								module_result = module_handle;
+								strcpy(name_copied, module_name);
+								/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
+								Broker_IncRef(gateway_handle->broker);
+								/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully attached to the message broker.]*/
+								MODULE_DATA module_data =
+								{
+									name_copied,
+									module_library_handle,
+									module_handle,
+								};
+								*new_module_data = module_data;
+								/*Codes_SRS_GATEWAY_LL_14_032: [The function shall add the new MODULE_DATA to GATEWAY_HANDLE_DATA's modules if the module was successfully attached to the message broker. ]*/
+								if (VECTOR_push_back(gateway_handle->modules, &new_module_data, 1) != 0)
+								{
+									/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+									Broker_DecRef(gateway_handle->broker);
+									free(new_module_data);
+									free(name_copied);
+									module_result = NULL;
+									if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
+									{
+										LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
+									}
+									LogError("Unable to add MODULE_DATA* to the gateway module vector.");
+								}
+								else
+								{
+									if (add_module_to_any_source(gateway_handle, *(MODULE_DATA**)VECTOR_back(gateway_handle->modules)) != 0)
+									{
+										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+										Broker_DecRef(gateway_handle->broker);
+										module_result = NULL;
+										if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
+										{
+											LogError("Failed to remove module [%p] from the gateway message broker. This module will remain attached.", &module);
+										}
+										VECTOR_erase(gateway_handle->modules, VECTOR_back(gateway_handle->modules), 1);
+										free(new_module_data);
+										free(name_copied);
+										LogError("Unable to add MODULE_DATA* to existing broker links.");
+									}
+									else
+									{
+										/*Codes_SRS_GATEWAY_LL_14_019: [The function shall return the newly created MODULE_HANDLE only if each API call returns successfully.]*/
+										module_result = module_handle;
+									}
+								}
 							}
-
-
 						}
-					}
 
-					/*Codes_SRS_GATEWAY_LL_14_030: [If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed.]*/
-					if (module_result == NULL)
-					{
-						module_apis->Module_Destroy(module_handle);
-						ModuleLoader_Unload(module_library_handle);
+						/*Codes_SRS_GATEWAY_LL_14_030: [If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed.]*/
+						if (module_result == NULL)
+						{
+							module_apis->Module_Destroy(module_handle);
+							ModuleLoader_Unload(module_library_handle);
+						}
 					}
 				}
 			}
@@ -695,16 +799,16 @@ static int add_module_to_any_source(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_
 		LINK_DATA * link_data = VECTOR_element(gateway_handle->links, link);
 		if (link_data->from_any_source)
 		{
-			MODULE_DATA* module_sink = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink.module_name);
+			MODULE_DATA** module_sink = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink->module_name);
 			if (module_sink == NULL)
 			{
-				LogError("Link failure between [%s] and [%s]", link_data->module_sink.module_name, module->module_name);
+				LogError("Link failure between [%s] and [%s]", link_data->module_sink->module_name, module->module_name);
 				result = __LINE__;
 				break;
 			}
 			else
 			{
-				if (add_one_link_to_broker(gateway_handle, module->module, module_sink->module) != 0)
+				if (add_one_link_to_broker(gateway_handle, module->module, (*module_sink)->module) != 0)
 				{
 					result = __LINE__;
 					break;
@@ -723,7 +827,7 @@ static int add_module_to_any_source(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_
 
 static bool module_data_find(const void* element, const void* value)
 {
-	return ((MODULE_DATA*)element)->module == value;
+	return (*(MODULE_DATA**)element)->module == value;
 }
 
 static bool module_info_name_find(const void* element, const void* module_name)
@@ -735,7 +839,7 @@ static bool module_info_name_find(const void* element, const void* module_name)
 static bool module_name_find(const void* element, const void* module_name)
 {
 	const char* module_name_casted = (const char*)module_name;
-	return (strcmp(((MODULE_DATA*)element)->module_name, module_name_casted) == 0);
+	return (strcmp((*(MODULE_DATA**)element)->module_name, module_name_casted) == 0);
 }
 
 /* Searches both sources and sinks. */
@@ -744,8 +848,8 @@ static bool link_name_both_find(const void* link_void, const void* name_void)
 	const char* name = (const char*)name_void;
 	const LINK_DATA *link = (LINK_DATA*)link_void;
 	return
-			strcmp(link->module_sink.module_name, name) == 0 ||
-			(!link->from_any_source && strcmp(link->module_source.module_name, name) == 0);
+			strcmp(link->module_sink->module_name, name) == 0 ||
+			(!link->from_any_source && strcmp(link->module_source->module_name, name) == 0);
 }
 
 static bool link_data_find(const void* element, const void* linkEntry)
@@ -758,7 +862,7 @@ static bool link_data_find(const void* element, const void* linkEntry)
 	{
 		if (element_casted->from_any_source)
 		{
-			result = (strcmp(element_casted->module_sink.module_name, link_entry_casted->module_sink) == 0);
+			result = (strcmp(element_casted->module_sink->module_name, link_entry_casted->module_sink) == 0);
 		}
 		else
 		{
@@ -773,8 +877,8 @@ static bool link_data_find(const void* element, const void* linkEntry)
 		}
 		else
 		{
-			result = ((strcmp(element_casted->module_sink.module_name, link_entry_casted->module_sink) == 0) && 
-				(strcmp(element_casted->module_source.module_name, link_entry_casted->module_source) == 0));
+			result = ((strcmp(element_casted->module_sink->module_name, link_entry_casted->module_sink) == 0) && 
+				(strcmp(element_casted->module_source->module_name, link_entry_casted->module_source) == 0));
 		}
 	}
 
@@ -815,8 +919,8 @@ static void gateway_destroy_internal(GATEWAY_HANDLE gw)
 			/*Codes_SRS_GATEWAY_LL_14_028: [The function shall remove each module in GATEWAY_HANDLE_DATA's modules vector and destroy GATEWAY_HANDLE_DATA's modules.]*/
 			while (VECTOR_size(gateway_handle->modules) > 0)
 			{
-				MODULE_DATA* module_data = (MODULE_DATA*)VECTOR_front(gateway_handle->modules);
-				//By design, there will be no NULL module_data pointers in the vector
+				MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_front(gateway_handle->modules);
+				//By design, there will be no NULL module_data_pptr pointers in the vector
 				/*Codes_SRS_GATEWAY_LL_14_037: [If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing the modules from the GATEWAY_HANDLE. ]*/
 				gateway_removemodule_internal(gateway_handle, module_data);
 			}
@@ -847,14 +951,14 @@ static void remove_module_from_any_source(GATEWAY_HANDLE_DATA* gateway_handle, M
 		LINK_DATA * link_data = VECTOR_element(gateway_handle->links, link);
 		if (link_data->from_any_source)
 		{
-			MODULE_DATA* module_sink = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink.module_name);
+			MODULE_DATA** module_sink = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink->module_name);
 			if (module_sink == NULL)
 			{
 				LogError("Could not find sink for link [%s]", link_data->module_sink);
 			}
 			else
 			{
-				if (remove_one_link_from_broker(gateway_handle, module->module, module_sink->module) != 0)
+				if (remove_one_link_from_broker(gateway_handle, module->module, (*module_sink)->module) != 0)
 				{
 					LogError("Unable to remove link to Broker.");
 				}
@@ -863,38 +967,42 @@ static void remove_module_from_any_source(GATEWAY_HANDLE_DATA* gateway_handle, M
 	}
 }
 
-static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module_data)
+static void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA** module_data_pptr)
 {
 	MODULE module;
 	module.module_apis = NULL;
-	module.module_handle = module_data->module;
+	module.module_handle = (*module_data_pptr)->module;
 
-	remove_module_from_any_source(gateway_handle, module_data);
+	remove_module_from_any_source(gateway_handle, *module_data_pptr);
 	LINK_DATA *link;
 	/* Codes_SRS_GATEWAY_LL_26_018: [ This function shall remove any links that contain the removed module either as a source or sink. ] */
-	while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, module_data->module_name)) != NULL)
+	while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, (*module_data_pptr)->module_name)) != NULL)
 		gateway_removelink_internal(gateway_handle, link);
+
+	free((*module_data_pptr)->module_name);
 
 	/*Codes_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 	/*Codes_SRS_GATEWAY_LL_14_022: [ If GATEWAY_HANDLE_DATA's broker cannot detach module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 	if (Broker_RemoveModule(gateway_handle->broker, &module) != BROKER_OK)
 	{
-		LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module_data->module);
+		LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", (*module_data_pptr)->module);
 	}
 	/*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
 	Broker_DecRef(gateway_handle->broker);
 	/*Codes_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
-	ModuleLoader_GetModuleAPIs(module_data->module_library_handle)->Module_Destroy(module_data->module);
+	ModuleLoader_GetModuleAPIs((*module_data_pptr)->module_library_handle)->Module_Destroy((*module_data_pptr)->module);
 	/*Codes_SRS_GATEWAY_LL_14_025: [The function shall unload MODULE_DATA's module_library_handle. ]*/
-	ModuleLoader_Unload(module_data->module_library_handle);
+	ModuleLoader_Unload((*module_data_pptr)->module_library_handle);
 	/*Codes_SRS_GATEWAY_LL_14_026:[The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
-	VECTOR_erase(gateway_handle->modules, module_data, 1);
+	MODULE_DATA * module_data_ptr = *module_data_pptr;
+	VECTOR_erase(gateway_handle->modules, module_data_pptr, 1);
+	free(module_data_ptr);
 }
 
 static int add_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
 {
 	int result;
-	MODULE_DATA* module_sink_data = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
+	MODULE_DATA** module_sink_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
 
 	/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 	if (module_sink_data == NULL)
@@ -926,10 +1034,10 @@ static int add_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWA
 			result = 0;
 			for (m = 0; m < num_modules; m++)
 			{
-				MODULE_DATA *source_module_data = (MODULE_DATA *)VECTOR_element(gateway_handle->modules, m);
+				MODULE_DATA **source_module_data = (MODULE_DATA **)VECTOR_element(gateway_handle->modules, m);
 				/*Codes_SRS_GATEWAY_LL_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]*/
-				if (source_module_data->module != module_sink_data->module &&
-					add_one_link_to_broker(gateway_handle, source_module_data->module, module_sink_data->module) != 0)
+				if ((*source_module_data)->module != (*module_sink_data)->module &&
+					add_one_link_to_broker(gateway_handle, (*source_module_data)->module, (*module_sink_data)->module) != 0)
 				{
 					result = __LINE__;
 					break;
@@ -948,7 +1056,7 @@ static int add_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWA
 static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
 {
 	int result;
-	MODULE_DATA* module_source_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_source);
+	MODULE_DATA** module_source_handle = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_source);
 
 	//Check of Source Module exists.
 	/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
@@ -959,7 +1067,7 @@ static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_L
 	}
 	else
 	{
-		MODULE_DATA* module_sink_handle = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
+		MODULE_DATA** module_sink_handle = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink);
 		/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 		if (module_sink_handle == NULL)
 		{
@@ -968,7 +1076,7 @@ static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_L
 		}
 		else
 		{
-			if (add_one_link_to_broker(gateway_handle, module_source_handle->module, module_sink_handle->module) != 0)
+			if (add_one_link_to_broker(gateway_handle, (*module_source_handle)->module, (*module_sink_handle)->module) != 0)
 			{
 				LogError("Unable to add link to Broker.");
 				result = __LINE__;
@@ -986,7 +1094,7 @@ static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_L
 				if (VECTOR_push_back(gateway_handle->links, &link_data, 1) != 0)
 				{
 					LogError("Unable to add LINK_DATA* to the gateway links vector.");
-					remove_one_link_from_broker(gateway_handle, module_source_handle->module, module_sink_handle->module);
+					remove_one_link_from_broker(gateway_handle, (*module_source_handle)->module, (*module_sink_handle)->module);
 					result = __LINE__;
 				}
 				else
@@ -1046,7 +1154,7 @@ static bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const 
 }
 static void remove_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_entry)
 {
-	MODULE_DATA* module_sink_data = (MODULE_DATA*)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink.module_name);
+	MODULE_DATA** module_sink_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_entry->module_sink->module_name);
 
 	/*Codes_SRS_GATEWAY_LL_04_011: [If the module referenced by the entryLink->module_source or entryLink->module_sink doesn't exists this function shall return GATEWAY_ADD_LINK_ERROR ] */
 	if (module_sink_data != NULL)
@@ -1055,9 +1163,9 @@ static void remove_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DAT
 		size_t num_modules = VECTOR_size(gateway_handle->modules);
 		for (m = 0; m < num_modules; m++)
 		{
-			MODULE_DATA *source_module_data = (MODULE_DATA *)VECTOR_element(gateway_handle->modules, m);
-			if (source_module_data->module != module_sink_data->module &&
-				remove_one_link_from_broker(gateway_handle, source_module_data->module, module_sink_data->module) != 0)
+			MODULE_DATA **source_module_data = (MODULE_DATA **)VECTOR_element(gateway_handle->modules, m);
+			if ((*source_module_data)->module != (*module_sink_data)->module &&
+				remove_one_link_from_broker(gateway_handle, (*source_module_data)->module, (*module_sink_data)->module) != 0)
 			{
 				LogError("Unable to remove link to Broker.");
 			}
@@ -1083,8 +1191,8 @@ static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LIN
 
 		BROKER_LINK_DATA broker_data =
 		{
-			link_data->module_source.module,
-			link_data->module_sink.module
+			link_data->module_source->module,
+			link_data->module_sink->module
 		};
 
 		Broker_RemoveLink(gateway_handle->broker, &broker_data);
@@ -1165,7 +1273,7 @@ void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
 		{
 			MODULE* module = (MODULE*)VECTOR_element(gateway_handle->modules, index);
 
-			//By design, there will be no NULL module_data pointers in the vector
+			//By design, there will be no NULL module_data_pptr pointers in the vector
 			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's broker cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
 			if (Broker_RemoveModule(gateway_handle->broker, module) != BROKER_OK)

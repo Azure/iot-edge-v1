@@ -412,15 +412,23 @@ static const MODULE_APIS Logger_APIS_all =
 {
     Logger_Create,
     Logger_Destroy,
-    Logger_Receive
+    Logger_Receive,
+	NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(LOGGER_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(LOGGER_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_LOGGER_02_016: [Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL.]*/
-    return &Logger_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_LOGGER_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+		(*apis) = Logger_APIS_all;
+	}
 }

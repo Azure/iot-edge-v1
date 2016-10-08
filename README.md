@@ -1,10 +1,28 @@
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments
 
-# Beta Azure IoT Gateway SDK - Readme
-This repository contains the infrastructure and modules to create IoT gateway solutions. The SDK can be extended to create gateways tailored to any end to end scenario.
+# Beta Azure IoT Gateway SDK
+Using this SDK, developers write applications that enable gateway-connected devices to communicate with Azure IoT Hub. Such applications use a collection of **modules** to aggregate and transform data, process commands, or perform any number of related tasks. Modules communicate with one another via a message broker. Developers can choose from available modules or write their own to create gateways tailored to any scenario.
 
 Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
 
+## SDK Modules
+The following modules are available in this repository:
+>| Name             | Description                                                             |
+>|------------------|-------------------------------------------------------------------------|
+>| ble              | Represents a Bluetooth low energy (BLE) device connected to the gateway |
+>| hello_world      | Sends a "hello world" message periodically                              |
+>| identitymap      | Maps MAC addresses to IoT Hub device IDs/keys                           |
+>| iothub           | Sends/receives messages to/from mapped devices and IoT Hub              |
+>| logger           | Writes received message content to a file                               |
+>| simulated_device | Simulates a gateway-connected BLE device                                | 
+
+## Featured Modules
+Other people are creating modules for the gateway SDK too! See the **More information** link for a module to find out how to get it, who supports it, etc.
+>| Name         | More information | Targets gateway SDK version |
+>|--------------|------------------|-----------------------------|
+>| placeholder  |                  |                             |
+
+We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for more info.
 
 ## Operating system compatibility
 The SDK is designed to be used with a broad range of operating system platforms. The Beta version of the Azure IoT Gateway SDK has been tested by means of development on the following operating systems:

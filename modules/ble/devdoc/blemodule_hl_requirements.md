@@ -114,6 +114,13 @@ Creates a new BLE Module HL instance. `configuration` is a `const char*` that co
 
 **SRS_BLE_HL_13_023: [** `BLE_HL_Create` shall return a non-`NULL` handle if calling the underlying module's `create` function succeeds. **]**
 
+## BLE_HL_Start
+```c
+void BLE_HL_Start(MODULE_HANDLE module)
+```
+
+**SRS_BLE_HL_17_003: [** `BLE_HL_Start` shall pass the received parameters to the underlying BLE module's Start function, if defined. **]**
+
 ## BLE_HL_Destroy
 ```c
 void BLE_HL_Destroy(MODULE_HANDLE module)
@@ -139,4 +146,4 @@ void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 
-**SRS_BLE_HL_13_019: [** `Module_GetAPIS` shall return a non-`NULL` pointer to a structure of type `MODULE_APIS` that has all fields initialized to non-`NULL` values. **]**
+**SRS_BLE_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

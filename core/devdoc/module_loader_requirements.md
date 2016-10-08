@@ -22,13 +22,20 @@ extern MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName
 
 **SRS_MODULE_LOADER_17_001: [**`ModuleLoader_Load` shall validate the moduleLibraryFileName, if it is `NULL`, it shall return NULL.**]** 
 	
-**SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by the moduleLibraryFileName.**]** **SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
+**SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by the moduleLibraryFileName.**]**
+**SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
 	
-**SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPIS_NAME` in the open library.**]** **SRS_MODULE_LOADER_17_013: [**If locating the function is not successful, the load shall fail, and it shall return `NULL`.**]**
- 
-**SRS_MODULE_LOADER_17_004: [**`ModuleLoader_Load` shall call the function defined by `MODULE_GETAPIS_NAME` in the open library.**]** **SRS_MODULE_LOADER_17_015: [**If the get API call returns `NULL`, the load shall fail, and it shall return `NULL`.**]**
- 
-**SRS_MODULE_LOADER_17_005: [**`ModuleLoader_Load` shall allocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]** **SRS_MODULE_LOADER_17_014: [**If memory allocation is not successful, the load shall fail, and it shall return `NULL`.**]**
+**SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPIS_NAME` in the open library.**]**
+**SRS_MODULE_LOADER_17_013: [**If locating the function is not successful, the load shall fail, and it shall return `NULL`.**]**
+
+**SRS_MODULE_LOADER_26_002: [**`ModulerLoader_Load` shall allocate memory for the structure `MODULE_APIS`.**]**
+**SRS_MODULE_LOADER_26_003: [**If memory allocation is not successful, the load shall fail, and it shall return `NULL`.**]**
+
+**SRS_MODULE_LOADER_17_004: [**`ModuleLoader_Load` shall call the function defined by `MODULE_GETAPIS_NAME` in the open library.**]**
+**SRS_MODULE_LOADER_26_001: [** If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`. **]**
+
+**SRS_MODULE_LOADER_17_005: [**`ModuleLoader_Load` shall allocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
+**SRS_MODULE_LOADER_17_014: [**If memory allocation is not successful, the load shall fail, and it shall return `NULL`. **]**
  
 **SRS_MODULE_LOADER_17_006: [**`ModuleLoader_Load` shall return a non-NULL handle to a `MODULE_LIBRARY_DATA_TAG` upon success.**]**
  
@@ -52,4 +59,6 @@ extern void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
  
 **SRS_MODULE_LOADER_17_010: [**`ModuleLoader_Unload` shall unload the library.**]**
  
-**SRS_MODULE_LOADER_17_011: [**`ModuleLoader_Unload` shall deallocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]** 
+**SRS_MODULE_LOADER_17_011: [**`ModuleLoader_Unload` shall deallocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
+
+**SRS_MODULE_LOADER_26_004: [**`ModulerLoader_Unload` shall deallocate memory for the structure `MODULE_APIS`.**]**

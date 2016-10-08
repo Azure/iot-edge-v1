@@ -55,11 +55,7 @@ This is the primary public interface for the module.  It returns a pointer to
 the `MODULE_APIS` structure containing the implementation functions for this
 module. The following functions are the implementation of those APIs.
 
-**SRS_IDMAP_HL_17_001: [**`Module_GetAPIs` shall return a non-`NULL` pointer
-to a MODULE_APIS structure.**]**
-
-**SRS_IDMAP_HL_17_002: [** The `MODULE_APIS` structure shall have non-`NULL`
-`Module_Create`, `Module_Destroy`, and `Module_Receive` fields. **]**
+**SRS_IDMAP_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
 
 ## IdentityMap_HL_Create
 ```C
@@ -125,6 +121,12 @@ fails, `IdentityMap_HL_Create` shall fail and return NULL. **]**
 **SRS_IDMAP_HL_17_016: [** `IdentityMap_HL_Create` shall release 
 all data it allocated. **]**
 
+## IdentityMap_HL_Start
+```C
+static void IdentityMap_HL_Start(MODULE_HANDLE moduleHandle);
+```
+
+**SRS_IDMAP_HL_17_021: [** `IdentityMap_HL_Start` shall pass the received parameters to the underlying identity map module start function, if defined. **]**
 
 ## IdentityMap_HL_Destroy
 ```C

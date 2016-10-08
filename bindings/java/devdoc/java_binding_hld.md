@@ -39,7 +39,7 @@ this module will be similar to the configuration for the Node Module Host:
             "module path": "/path/to/java_module_host_hl.so|.dll",
             "args": {
                 "class_path": "/path/to/relevant/class/files",
-                "library_path": "/path/to/dir/with/java_module_host_hl.so|.dll"
+                "library_path": "/path/to/dir/with/java_module_host_hl.so|.dll",
                 "class_name": "Poller",
                 "args": {
                     "frequency": 30
@@ -90,6 +90,15 @@ public interface IGatewayModule {
     void create(long moduleAddr, Broker broker, String configuration);
 
     /**
+     * The start method is called when the native Gateway has created all modules 
+     * to notify each module that it is safe to start sending messages.
+     *
+     * This method is optional, but it is recommended that any long-running 
+     * processes get started in this method.
+     */
+    void start();
+
+    /**
      * The destroy method is called on a {@link GatewayModule} before it is about 
      * to be "destroyed" and removed from the gateway.
      * Once a module is removed from the gateway, it may no longer send or receive 
@@ -120,10 +129,10 @@ should extend this abstract class when creating a module.
  
 
 Exactly like a standard gateway module written in C, the gateway will handle
-making calls to `Module_Create`, `Module_Receive`, and `Module_Destroy`. These
-three functions are implemented by the **Java Module Host** which handles the
-communication to the gateway module written in Java. Below is a description of
-what the **Java Module Host** will do in each of these cases:
+making calls to `Module_Create`, `Module_Start`, `Module_Receive`, and 
+`Module_Destroy`. These three functions are implemented by the **Java Module Host** 
+which handles the communication to the gateway module written in Java. Below is 
+a description of what the **Java Module Host** will do in each of these cases:
 
 ### Module\_Create
 
@@ -142,6 +151,15 @@ gateway, it:
 
 -   Gets a global reference to the newly created `GatewayModule` object to be
     saved by the `JAVA_MODULE_HOST_HANDLE`.
+
+### Module\_Start
+
+When the **Java Module Host**’s `Module_Start` function is invoked by the
+gateway, it:
+
+-   Attaches the current thread to the JVM
+
+-   Invokes the `start` method implemented by the Java module if it exists.
 
 ### Module\_Receive
 

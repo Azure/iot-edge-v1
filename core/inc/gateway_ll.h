@@ -34,6 +34,14 @@ extern "C"
 */
 DEFINE_ENUM(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
 
+#define GATEWAY_START_RESULT_VALUES \
+    GATEWAY_START_SUCCESS, \
+	GATEWAY_START_INVALID_ARGS
+
+/** @brief	Enumeration describing the result of ::Gateway_LL_Start.
+*/
+DEFINE_ENUM(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
+
 /** @brief Struct representing a single link for a gateway. */
 typedef struct GATEWAY_LINK_ENTRY_TAG
 {
@@ -92,7 +100,8 @@ typedef enum GATEWAY_EVENT_TAG
 {
 	/** @brief Called when the gateway is created. */
 	GATEWAY_CREATED = 0,
-
+	/** @brief Called when the gateway is started. */
+	GATEWAY_STARTED,
 	/** @brief  Called every time a list of modules or links changed and during gateway creation.
 	 *
 	 * The VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
@@ -118,7 +127,7 @@ typedef void* GATEWAY_EVENT_CTX;
  *
  * @c context may be NULL if the #GATEWAY_EVENT does not provide a context.
  */
-typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context);
+typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param);
 
 /** @brief		Creates a new gateway using the provided #GATEWAY_PROPERTIES.
 *
@@ -129,6 +138,14 @@ typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type
 *				gateway or @c NULL on failure.
 */
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
+
+/** @brief		Tell the Gateway it's ready to start.
+*
+*	@param		gw		#GATEWAY_HANDLE to be destroyed.
+*
+*	@return		A #GATEWAY_START_RESULT to report the result of the start
+*/
+extern GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw);
 
 /** @brief		Destroys the gateway and disposes of all associated data.
 *
@@ -147,6 +164,13 @@ extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 */
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry);
 
+/** @brief		Tells a module that the gateway is ready for it to start.
+*
+*	@param		gw		Pointer to a #GATEWAY_HANDLE from which to remove the
+*						Module.
+*	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
+*/
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 
 /** @brief		Removes the provided module from the gateway and all links that involves this module.
@@ -173,8 +197,9 @@ int Gateway_LL_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
 *   @param		gw			Pointer to a #GATEWAY_HANDLE to which register callback to
 *   @param		event_type 	Enum stating on which event should the callback be called
 *   @param		callback	Pointer to a function that will be called when the event happens
+*   @param		user_param	User defined parameter that will be later provided to the called callback
 */
-extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback);
+extern void Gateway_LL_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
 
 /** @brief		Returns a snapshot copy of information about running modules.
 *

@@ -19,7 +19,11 @@
 
 /** @brief Represents a handle to a particular module.*/
 typedef struct MODULE_TAG MODULE;
+
+/** @brief Represents a handle to a particular module.*/
 typedef void* MODULE_HANDLE;
+
+/** @brief Represents a handle for the Module APIs*/
 typedef struct MODULE_APIS_TAG MODULE_APIS;
 
 #include "azure_c_shared_utility/macro_utils.h"
@@ -42,6 +46,7 @@ extern "C"
         virtual void Module_Receive(MESSAGE_HANDLE messageHandle) = 0;
     };
 
+    /** @brief Represents a handle to a particular module.*/
     typedef struct MODULE_TAG
     {
         /** @brief Interface implementation for module. */
@@ -54,13 +59,13 @@ extern "C"
     *			contain Hamdle/FxnPtrs or an interface ptr or some unforseen
     *			representation.
     */
-    typedef struct MODULE_TAG
+    struct MODULE_TAG
     {
         /** @brief Struct containing function pointers */
         const MODULE_APIS* module_apis;
         /** @brief HANDLE for module. */
         MODULE_HANDLE module_handle;
-    }MODULE;
+    };
 
     /** @brief		Creates a module using the specified configuration connecting
     *				to the specified message broker.
@@ -69,7 +74,7 @@ extern "C"
     *
     *	@param		broker		The #BROKER_HANDLE onto which this module
     *								will connect.
-    *	@param		configureation	A pointer to the user-defined configuration 
+    *	@param		configuration	A pointer to the user-defined configuration 
     *								structure for this module.
     *
     *	@return		A non-NULL #MODULE_HANDLE upon success, or @c NULL upon 
@@ -97,10 +102,20 @@ extern "C"
     */
     typedef void(*pfModule_Receive)(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
+	/** @brief		The module may start activity.  This is called when the broker
+	*				is guaranteed to be ready to accept messages from this module.
+	*
+	*	@details	This function is to be implemented by the module creator.
+	*
+	*	@param		moduleHandle	The #MODULE_HANDLE of the module receiving the
+	*								message.
+	*/
+	typedef void(*pfModule_Start)(MODULE_HANDLE moduleHandle);
+
     /** @brief	Structure returned by ::Module_GetAPIS containing the function
     *			pointers of the module-specific implementations of the interface.
     */
-    typedef struct MODULE_APIS_TAG
+    struct MODULE_APIS_TAG
     {
         /** @brief Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;
@@ -110,13 +125,16 @@ extern "C"
 
         /** @brief Function pointer to the #Module_Receive function. */
         pfModule_Receive Module_Receive;
-    }MODULE_APIS;
+
+		/** @brief Function pointer to the #Module_Start function (optional). */
+		pfModule_Start Module_Start;
+    };
 
     /** @brief	This is the only function exported by a module. Using the
     *			exported function, the caller learns the functions for the 
     *			particular module.
     */
-    typedef const MODULE_APIS* (*pfModule_GetAPIS)(void);
+    typedef void (*pfModule_GetAPIS)(MODULE_APIS* apis);
 
     /** @brief Returns the module APIS name.*/
 #define MODULE_GETAPIS_NAME ("Module_GetAPIS")
@@ -136,7 +154,7 @@ extern "C"
 *			convention" name. Using the exported function, the caller learns
 *			the functions for the particular module.
 */
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis);
 #endif // UWP_BINDING
 
 #ifdef __cplusplus

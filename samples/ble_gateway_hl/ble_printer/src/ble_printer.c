@@ -159,9 +159,15 @@ static const MODULE_APIS Module_GetAPIS_Impl =
     BLEPrinter_Receive
 };
 
-const MODULE_APIS* Module_GetAPIS(void)
+void Module_GetAPIS(MODULE_APIS* apis)
 {
-    return &Module_GetAPIS_Impl;
+    if (!apis)
+    {
+        LogError("NULL passed to Module_GetAPIS");
+    } else
+    {
+        (*apis) = Module_GetAPIS_Impl;
+    }
 }
 
 static void print_string(const char* name, const char* timestamp, const CONSTBUFFER* buffer)

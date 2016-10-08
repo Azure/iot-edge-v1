@@ -18,7 +18,7 @@ This is the primary public interface for the module. It returns a pointer to
 the `MODULE_APIS` structure containing the implementation functions for this module.
 The following functions are the implementation of those APIs.
 
-**SRS_JAVA_MODULE_HOST_HL_14_001: [** This function shall return a non-`NULL` pointer to a structure of type `MODULE_APIS` that has all fields non-`NULL`. **]**
+**SRS_JAVA_MODULE_HOST_HL_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 ##JavaModuleHost_HL_Create
 ```C
@@ -94,6 +94,14 @@ The JVM options to be used when creating the JVM. Specify the version, debug opt
 static void JavaModuleHost_HL_Destroy(MODULE_HANDLE module);
 ```
 **SRS_JAVA_MODULE_HOST_HL_14_008: [** This function shall call the underlying Java Module Host's `_Destroy` function using this `module` `MODULE_HANDLE`. **]**
+
+##JavaModuleHost_HL_Start
+```c
+static void JavaModuleHost_HL_Start(MODULE_HANDLE module);
+```
+
+**SRS_JAVA_MODULE_HOST_HL_17_001: [** This function shall pass the arguments to the underlying Java Module Host's `_Start` function, if defined. **]**
+
 
 ##JavaModuleHost_HL_Receive
 ```C

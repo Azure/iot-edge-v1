@@ -25,6 +25,7 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static pfModule_Create Module_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy Module_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive Module_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start Module_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 #define GBALLOC_H
 
@@ -63,12 +64,14 @@ static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* config
 static void IdentityMap_Destroy(MODULE_HANDLE moduleHandle);
 /*this is the module's callback function - gets called when a message is to be received by the module*/
 static void IdentityMap_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
+static void IdentityMap_Start(MODULE_HANDLE moduleHandle);
 
 static const MODULE_APIS IoTHubModuleHttp_GetAPIS_Impl =
 {
 	IdentityMap_Create,
 	IdentityMap_Destroy,
-	IdentityMap_Receive
+	IdentityMap_Receive,
+	IdentityMap_Start
 };
 
 typedef struct json_value_t
@@ -87,11 +90,15 @@ TYPED_MOCK_CLASS(CIdentitymapHlMocks, CGlobalMock)
 	public:
 
 		// IdentityMap LL mocks
-		MOCK_STATIC_METHOD_0(, const MODULE_APIS*, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE))
-			MOCK_METHOD_END(const MODULE_APIS*, (const MODULE_APIS*)&IoTHubModuleHttp_GetAPIS_Impl);
+		MOCK_STATIC_METHOD_1(, void, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE), MODULE_APIS*, apis)
+			(*apis) = IoTHubModuleHttp_GetAPIS_Impl;
+		MOCK_VOID_METHOD_END();
 
 		MOCK_STATIC_METHOD_2(, MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, broker, const void*, configuration)
 			MOCK_METHOD_END(MODULE_HANDLE, malloc(1));
+
+		MOCK_STATIC_METHOD_1(, void, IdentityMap_Start, MODULE_HANDLE, moduleHandle)
+		MOCK_VOID_METHOD_END();
 
 		MOCK_STATIC_METHOD_1(, void, IdentityMap_Destroy, MODULE_HANDLE, moduleHandle)
 			free(moduleHandle);
@@ -198,11 +205,12 @@ TYPED_MOCK_CLASS(CIdentitymapHlMocks, CGlobalMock)
 	};
 
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CIdentitymapHlMocks, , const MODULE_APIS*, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE));
+DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapHlMocks, , void, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE), MODULE_APIS*, apis);
 
 DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , MODULE_HANDLE, IdentityMap_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapHlMocks, , void, IdentityMap_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , void, IdentityMap_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapHlMocks, , void, IdentityMap_Start, MODULE_HANDLE, moduleHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CIdentitymapHlMocks, , JSON_Value*, json_parse_string, const char *, filename);
 DECLARE_GLOBAL_MOCK_METHOD_2(CIdentitymapHlMocks, , JSON_Object *, json_array_get_object, const JSON_Array *, array, size_t, index);
@@ -233,9 +241,12 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		Module_Create = Module_GetAPIS()->Module_Create;
-		Module_Destroy = Module_GetAPIS()->Module_Destroy;
-		Module_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+		Module_Create = apis.Module_Create;
+		Module_Destroy = apis.Module_Destroy;
+		Module_Receive = apis.Module_Receive;
+		Module_Start = apis.Module_Start;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -262,21 +273,22 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 
     }
 
-	//Tests_SRS_IDMAP_HL_17_001: [Module_GetAPIs shall return a non-NULL pointer to a MODULE_APIS structure.]
-	//Tests_SRS_IDMAP_HL_17_002: [ The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields. ]
+	/*Tests_SRS_IDMAP_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 	TEST_FUNCTION(IdentityMap_HL_GetAPIs_Success)
 	{
 		///Arrange
 		CIdentitymapHlMocks mocks;
 
 		///Act
-		const MODULE_APIS* theAPIS = Module_GetAPIS();
+		MODULE_APIS apis;
+		memset(&apis, 0, sizeof(MODULE_APIS));
+		Module_GetAPIS(&apis);
 
 		///Assert
-		ASSERT_IS_NOT_NULL(theAPIS);
-		ASSERT_IS_NOT_NULL((void*)theAPIS->Module_Create);
-		ASSERT_IS_NOT_NULL((void*)theAPIS->Module_Destroy);
-		ASSERT_IS_NOT_NULL((void*)theAPIS->Module_Receive);
+		ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+		ASSERT_IS_TRUE(apis.Module_Start != NULL);
 
 		///Ablution
 	}
@@ -354,7 +366,7 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 		STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 			.IgnoreArgument(1)
 			.IgnoreArgument(2);
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
@@ -420,7 +432,7 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 				.IgnoreArgument(2);
 		}
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2);
 
@@ -468,7 +480,7 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 		STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
 			.IgnoreArgument(1)
 			.IgnoreArgument(2);
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, IdentityMap_Create(broker, IGNORED_PTR_ARG))
 			.IgnoreArgument(2)
 			.SetFailReturn((MODULE_HANDLE)NULL);
@@ -755,6 +767,29 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 		///Cleanup
 	}
 
+	//Tests_SRS_IDMAP_HL_17_021: [ IdentityMap_HL_Start shall pass the received parameters to the underlying identity map module start function, if defined. ]
+	TEST_FUNCTION(IdentityMap_HL_Start_does_everything)
+	{
+		///arrange
+		CIdentitymapHlMocks mocks;
+		const char * validJsonString = "calling it valid makes it so";
+		BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+		auto result = Module_Create(broker, validJsonString);
+		mocks.ResetAllCalls();
+
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, IdentityMap_Start(result));
+
+		///act
+		Module_Start(result);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+		Module_Destroy(result);
+	}
+
 	//Tests_SRS_IDMAP_HL_17_017: [ IdentityMap_HL_Destroy shall free all used resources. ]
 	TEST_FUNCTION(IdentityMap_HL_Destroy_does_everything)
 	{
@@ -765,7 +800,7 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 		auto result = Module_Create(broker, validJsonString);
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, IdentityMap_Destroy(result));
 
 		///act
@@ -787,7 +822,7 @@ BEGIN_TEST_SUITE(idmap_hl_ut)
 		auto result = Module_Create(broker, validJsonString);
 		mocks.ResetAllCalls();
 
-		STRICT_EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)());
+		EXPECTED_CALL(mocks, MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(IGNORED_PTR_ARG));
 		STRICT_EXPECTED_CALL(mocks, IdentityMap_Receive(result, messageHandle));
 
 		///act

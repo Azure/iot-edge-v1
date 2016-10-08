@@ -153,21 +153,8 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 			else
 			{
 				result->fakeMacAddress = newFakeAdress;
-				/* OK to start */
-				/* Create a fake data thread.  */
-				if (ThreadAPI_Create(
-					&(result->simulatedDeviceThread),
-					simulated_device_worker,
-					(void*)result) != THREADAPI_OK)
-				{
-					LogError("ThreadAPI_Create failed");
-					free(result);
-					result = NULL;
-				}
-				else
-				{
-					/* Thread started, module created, all complete.*/
-				}
+				result->simulatedDeviceThread = NULL;
+
 			}
 
         }
@@ -175,6 +162,32 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 	return result;
 }
 
+
+static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
+{
+	if (moduleHandle == NULL)
+	{
+		LogError("Attempt to start NULL module");
+	}
+	else
+	{
+		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+		/* OK to start */
+		/* Create a fake data thread.  */
+		if (ThreadAPI_Create(
+			&(module_data->simulatedDeviceThread),
+			simulated_device_worker,
+			(void*)module_data) != THREADAPI_OK)
+		{
+			LogError("ThreadAPI_Create failed");
+			module_data->simulatedDeviceThread = NULL;
+		}
+		else
+		{
+			/* Thread started, module created, all complete.*/
+		}
+	}
+}
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
@@ -182,14 +195,22 @@ static const MODULE_APIS SimulatedDevice_APIS_all =
 {
 	SimulatedDevice_Create,
 	SimulatedDevice_Destroy,
-	SimulatedDevice_Receive
+	SimulatedDevice_Receive,
+	SimulatedDevice_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &SimulatedDevice_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = SimulatedDevice_APIS_all;
+	}
 }

@@ -113,8 +113,10 @@ static MODULE_HANDLE BLE_HL_Create(BROKER_HANDLE broker, const void* configurati
                                     ble_config.device_config.ble_controller_index = controller_index;
                                     ble_config.instructions = ble_instructions;
 
+									MODULE_APIS apis;
+									MODULE_STATIC_GETAPIS(BLE_MODULE)(&apis);
                                     /*Codes_SRS_BLE_HL_13_014: [ BLE_HL_Create shall call the underlying module's 'create' function. ]*/
-                                    result = MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Create(
+                                    result = apis.Module_Create(
                                         broker, (const void*)&ble_config
                                     );
                                     if (result == NULL)
@@ -142,8 +144,10 @@ static void BLE_HL_Destroy(MODULE_HANDLE module)
 {
     if(module != NULL)
     {
+		MODULE_APIS apis;
+		MODULE_STATIC_GETAPIS(BLE_MODULE)(&apis);
         /*Codes_SRS_BLE_HL_13_015: [ BLE_HL_Destroy shall destroy all used resources. ]*/
-        MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Destroy(module);
+        apis.Module_Destroy(module);
     }
     else
     {
@@ -158,8 +162,10 @@ static void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
     /*Codes_SRS_BLE_HL_17_001: [ BLE_HL_Receive shall do nothing if message_handle is NULL. ]*/
     if(module != NULL && message_handle != NULL)
     {
+		MODULE_APIS apis;
+		MODULE_STATIC_GETAPIS(BLE_MODULE)(&apis);
         /*Codes_SRS_BLE_HL_13_024: [ BLE_HL_Receive shall pass the received parameters to the underlying BLE module's receive function. ]*/
-        MODULE_STATIC_GETAPIS(BLE_MODULE)()->Module_Receive(module, message_handle);
+        apis.Module_Receive(module, message_handle);
     }
     else
     {
@@ -168,6 +174,17 @@ static void BLE_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
     }
 }
 
+static void BLE_HL_Start(MODULE_HANDLE module)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(BLE_MODULE)(&apis);
+
+	if (apis.Module_Start != NULL)
+	{
+        /*Codes_SRS_BLE_HL_17_003: [ BLE_HL_Start shall pass the received parameters to the underlying BLE module's Start function, if defined. ]*/
+		apis.Module_Start(module);
+	}
+}
 /*
  *	Required for all modules: the public API and the designated implementation functions.
  */
@@ -175,15 +192,23 @@ static const MODULE_APIS BLE_HL_APIS_all =
 {
     BLE_HL_Create,
     BLE_HL_Destroy,
-    BLE_HL_Receive
+    BLE_HL_Receive,
+	BLE_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(BLE_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_BLE_HL_13_019: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ]*/
-    return &BLE_HL_APIS_all;
+    /*Codes_SRS_BLE_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = BLE_HL_APIS_all;
+	}
 }
