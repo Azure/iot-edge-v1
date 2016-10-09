@@ -52,7 +52,6 @@ static MODULE_HANDLE IoTHubDevicePing_HL_Create(BROKER_HANDLE brokerHandle, cons
                     (eventHubCompatibleName = json_object_get_string(obj, "EH_COMP_NAME")) == "NULL" ||
                     (eventHubPartitionNum = json_object_get_string(obj, "EH_PARTITION_NUM")) == "NULL") // NULL
                 {
-                    /*Codes_SRS_IOTHUBHTTP_HL_17_006: [ If the JSON object does not contain a value named "IoTHubName" then IoTHubHttp_HL_Create shall fail and return NULL. ]*/
                     LogError("Did not find expected configuration");
                     result = NULL;
                 }
@@ -60,7 +59,6 @@ static MODULE_HANDLE IoTHubDevicePing_HL_Create(BROKER_HANDLE brokerHandle, cons
                 {
                     MODULE_APIS apis;
                     MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(&apis);
-                    /*Codes_SRS_IOTHUBHTTP_HL_17_008: [ IoTHubHttp_HL_Create shall invoke iothubhttp Module's create, using the brokerHandle, IotHubName, and IoTHubSuffix. ]*/
                     IOTHUBDEVICEPING_CONFIG llConfiguration;
                     llConfiguration.DeviceConnectionString = DeviceConnectionString;
                     llConfiguration.EH_HOST = eventHubHost;
@@ -79,7 +77,6 @@ static MODULE_HANDLE IoTHubDevicePing_HL_Create(BROKER_HANDLE brokerHandle, cons
 
 static void IoTHubDevicePing_HL_Destroy(MODULE_HANDLE moduleHandle)
 {
-    /*Codes_SRS_IOTHUBHTTP_HL_17_012: [ IoTHubHttp_HL_Destroy shall free all used resources. ]*/
     MODULE_APIS apis;
     MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(&apis);
     apis.Module_Destroy(moduleHandle);
@@ -87,13 +84,11 @@ static void IoTHubDevicePing_HL_Destroy(MODULE_HANDLE moduleHandle)
 
 static void IoTHubDevicePing_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-    /*Codes_SRS_IOTHUBHTTP_HL_17_011: [ IoTHubHttp_HL_Receive shall pass the received parameters to the underlying IoTHubHttp receive function. ]*/
     MODULE_APIS apis;
     MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(&apis);
     apis.Module_Receive(moduleHandle, messageHandle);
 }
 
-/*Codes_SRS_IOTHUBHTTP_HL_17_014: [ The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields. ]*/
 static const MODULE_APIS IoTHubDevicePing_HL_GetAPIS_Impl =
 {
     IoTHubDevicePing_HL_Create,
@@ -113,7 +108,6 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
     }
     else
     {
-        /*Codes_SRS_IOTHUBMODULE_HL_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
         (*apis) = IoTHubDevicePing_HL_GetAPIS_Impl;
     }
 }
