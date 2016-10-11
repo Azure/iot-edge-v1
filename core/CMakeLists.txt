@@ -163,10 +163,6 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
-export(EXPORT gatewayTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
-)
-
 configure_file("${PROJECT_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
     COPYONLY
