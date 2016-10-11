@@ -68,8 +68,8 @@ add_subdirectory(tests)
 
 
 
-if(install_executables)
-	install(TARGETS logger LIBRARY DESTINATION lib) 
-    install(TARGETS logger_hl LIBRARY DESTINATION lib) 
+if(install_modules)
+	install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS logger_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

@@ -28,7 +28,7 @@ include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 include_directories(../../modules/common)
 
-add_executable(java_sample ${java_sample_headers} ${modules_path_file} ${java_sample_sources})
+add_executable(java_sample ${java_sample_headers} ${java_sample_sources})
 
 target_link_libraries(java_sample gateway)
 linkSharedUtil(java_sample)

@@ -18,7 +18,7 @@ set(dotnet_binding_sample_headers
 include_directories(${GW_INC})
 include_directories(../../modules/common)
 
-add_executable(dotnet_binding_sample ${dotnet_binding_sample_headers} ${modules_path_file} ${dotnet_binding_sample_sources})
+add_executable(dotnet_binding_sample ${dotnet_binding_sample_headers} ${dotnet_binding_sample_sources})
 
 add_dependencies(dotnet_binding_sample dotnet_hl logger_hl)
 

@@ -46,6 +46,14 @@ function(includeHttp)
 #function body to be similar to includeProton
 endfunction(includeHttp)
 
+#nanomsg lib check macro (temporary)
+macro (nn_check_lib LIB SYM DEF)
+    check_library_exists (${LIB} ${SYM} "" ${DEF})
+    if (${DEF})
+        add_definitions (-D${DEF}=1)
+        set(NN_REQUIRED_LIBRARIES ${NN_REQUIRED_LIBRARIES} ${LIB})
+    endif ()
+endmacro (nn_check_lib)
 
 set(gateway_c_sources
     ./src/message.c
@@ -84,6 +92,22 @@ add_library(gateway
 )
 
 if(WIN32)
+    target_link_libraries(gateway "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Debug/aziotsharedutil.lib" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Debug/nanomsg.lib" parson ${dynamic_loader_library})
+else()
+    target_link_libraries(gateway "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/libaziotsharedutil.a" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/libnanomsg.a" parson ${dynamic_loader_library})
+    
+    nn_check_lib (anl getaddrinfo_a NN_HAVE_GETADDRINFO_A)
+    nn_check_lib (rt clock_gettime  NN_HAVE_CLOCK_GETTIME)
+    nn_check_lib (rt sem_wait NN_HAVE_SEMAPHORE_RT)
+    nn_check_lib (pthread sem_wait  NN_HAVE_SEMAPHORE_PTHREAD)
+    nn_check_lib (nsl gethostbyname NN_HAVE_LIBNSL)
+    nn_check_lib (socket socket NN_HAVE_LIBSOCKET)
+
+    target_link_libraries(gateway ${NN_REQUIRED_LIBRARIES})
+    target_link_libraries(gateway m)
+endif()
+
+if(WIN32)
     target_link_libraries(gateway rpcrt4.lib)
 else()
     find_package(PkgConfig REQUIRED)
@@ -92,8 +116,73 @@ else()
     target_link_libraries(gateway uuid)
 endif()
 
-target_link_libraries(gateway aziotsharedutil parson ${dynamic_loader_library})
-link_broker(gateway)
 #this adds the tests to the build process
-
 add_subdirectory(tests)
+
+#############################################################
+########################INSTALL STUFF########################
+#############################################################
+
+#installs the gateway libs and headers
+if (CMAKE_INSTALL_LIBDIR) 
+    set (LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}") 
+else () 
+    set (LIB_INSTALL_DIR "lib") 
+endif () 
+
+# (re)set the include and lib dirs for the install based on platform
+if(WIN32)
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
+    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE INTERNAL "Library install dir") 
+    set(package_location "cmake")
+else()
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}")
+    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}/${VERSION_PREFIX}" CACHE INTERNAL "Library install dir") 
+    set(package_location "${LIB_INSTALL_DIR}/cmake")
+endif()
+
+# Set the include dirs for the gatewayTargets includes destination
+if(WIN32)
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/azureiot)
+else()
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/../azureiot)
+endif()
+
+install(TARGETS gateway EXPORT gatewayTargets
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+    RUNTIME DESTINATION ${LIB_INSTALL_DIR}/../bin
+    INCLUDES DESTINATION ${AIG_INCLUDE_DIRS}
+)
+install(FILES ${gateway_h_sources} DESTINATION ${AIG_HEADER_INSTALL_PREFIX})
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${GATEWAY_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT gatewayTargets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
+)
+
+configure_file("${PROJECT_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
+    COPYONLY
+)
+
+install(EXPORT gatewayTargets
+    FILE
+        "${PROJECT_NAME}Targets.cmake"
+    DESTINATION
+        ${package_location}
+)
+install(
+    FILES
+        "${PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION
+        ${package_location}
+)

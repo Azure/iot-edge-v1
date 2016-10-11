@@ -127,7 +127,7 @@ add_module_to_solution(java_module_host)
 
 add_subdirectory(tests)
 
-if(install_executables)
-    install(TARGETS java_module_host LIBRARY DESTINATION lib)
-    install(TARGETS java_module_host_hl LIBRARY DESTINATION lib)
+if(install_modules)
+    install(TARGETS java_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
+    install(TARGETS java_module_host_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
 endif()

@@ -10,11 +10,11 @@ The identity map module maps MAC addresses to device ids and keys.
 
 ## Reference
 
-[module.h](../../../../devdoc/module.md)
+[module.h](../../../core/devdoc/module.md)
 
 [Identity Map Module](identity_map.md)
 
-[vector.h](../../../../azure-c-shared-utility/c/inc/vector.h)
+[vector.h](../../../deps/c-utility/c/inc/vector.h)
 
 IEEE Std 802-2014, section 8.1 (MAC Address canonical form)
 

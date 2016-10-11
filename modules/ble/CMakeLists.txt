@@ -157,6 +157,6 @@ add_module_to_solution(ble)
 
 add_subdirectory(tests)
 
-if(install_executables)
-    install(TARGETS ble LIBRARY DESTINATION lib) 
+if(install_modules)
+    install(TARGETS ble LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()

@@ -98,7 +98,7 @@ add_module_to_solution(iothub)
 
 add_subdirectory(tests)
 
-if(install_executables)
-	install(TARGETS iothub LIBRARY DESTINATION lib) 
-    install(TARGETS iothub_hl LIBRARY DESTINATION lib) 
+if(install_modules)
+	install(TARGETS iothub LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS iothub_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()

@@ -4,9 +4,27 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(azure_iot_gateway_sdk)
 
+set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
+set(COMPANY_NAME "Microsoft")
+
+if(WIN32)
+    set(VERSION_PREFIX "${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
+else()
+    set(VERSION_PREFIX "${PROJECT_NAME}-${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
+endif()
+
+message(STATUS "Version prefix is ${VERSION_PREFIX}")
+
+if(WIN32)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}-${VERSION_PREFIX}/" CACHE INTERNAL "CMake install prefix")
+endif()
+
+message(STATUS "CMake Install Prefix is ${CMAKE_INSTALL_PREFIX}")
+
 #the following variables are project-wide and can be used with cmake-gui
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always build]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
+option(install_modules "should cmake install the default gateway modules" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
@@ -125,10 +143,10 @@ enable_testing()
 compileAsC99()
 
 #this adds the C shared utility
-add_subdirectory(./deps/azure-c-shared-utility)
+add_subdirectory(./deps/c-utility)
 
 #this adds the C IoTHubClient
-add_subdirectory(./deps/azure-iot-sdks/c)
+add_subdirectory(./deps/iot-sdk/c)
 
 #this makes available from now on the includes of azure-c-shared-utility
 include_directories(${SHARED_UTIL_INC_FOLDER})
@@ -152,7 +170,6 @@ endif()
 
 option(NN_TESTS "" OFF )
 option(NN_ENABLE_NANOCAT "" OFF)
-set(ENV{CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_BINARY_DIR} )
 set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
 add_subdirectory(./deps/nanomsg)
 include_directories(./deps/nanomsg/src)
