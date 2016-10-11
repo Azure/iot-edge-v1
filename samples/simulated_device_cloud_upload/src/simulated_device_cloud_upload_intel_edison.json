@@ -3,7 +3,9 @@
     [ 
         {
             "module name" : "IotHub",
-            "module path" : "libiothub.so",
+            "loading args": {
+                "module path" : "libiothub.so"
+            },
             "args" : 
             {
                 "IoTHubName" : "<<insert here IoTHubName>>",
@@ -13,7 +15,9 @@
         },
         {
             "module name" : "mapping",
-            "module path" : "libidentity_map.so",
+            "loading args": {
+                "module path" : "libidentity_map.so"
+            },
             "args" : 
             [
                 {
@@ -30,7 +34,9 @@
         },
         {
             "module name":"BLE1",
-            "module path" : "libsimulated_device.so",
+            "loading args": {
+                "module path" : "libsimulated_device.so"
+            },
             "args":
             {
                 "macAddress" : "01:01:01:01:01:01"
@@ -38,7 +44,9 @@
         },
         {
             "module name":"BLE2",
-            "module path" : "libsimulated_device.so",
+            "loading args": {
+                "module path" : "libsimulated_device.so"
+            },
             "args":
             {
                 "macAddress" : "02:02:02:02:02:02"
@@ -46,7 +54,9 @@
         },
         {
             "module name":"Logger",
-            "module path" : "liblogger.so",
+            "loading args": {
+                "module path" : "liblogger.so"
+            },
             "args":
             {
                 "filename":"deviceCloudUploadGatewaylog.log"

@@ -3,12 +3,16 @@
     [
         {
             "module name" : "logger",
-            "module path" : "./modules/logger/liblogger.so",
+            "loading args": {
+                "module path" : "./modules/logger/liblogger.so"
+            },
             "args" : {"filename":"log.txt"}
         },
         {
             "module name" : "hello_world",
-            "module path" : "./modules/hello_world/libhello_world.so",
+            "loading args": {
+                "module path" : "./modules/hello_world/libhello_world.so"
+            },
             "args" : null
         }
     ],

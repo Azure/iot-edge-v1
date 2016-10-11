@@ -44,7 +44,7 @@ Each module that is connected to the broker is represented using a structure of 
 typedef struct MODULE_INFO_TAG
 {
     MODULE_HANDLE           module;
-    MODULE_APIS             module_apis;
+    MODULE_API             module_api;
     THREAD_HANDLE           thread;
     int                     receive_socket;
     LOCK_HANDLE				socket_lock;
@@ -57,7 +57,7 @@ typedef struct MODULE_INFO_TAG
 >| Field                 | Description                                                          |
 >|-----------------------|----------------------------------------------------------------------|
 >| module                | Reference to the module.                                             |
->| module_apis           | The function dispatch table for this module.                         |
+>| module_api           | The function dispatch table for this module.                         |
 >| thread                | Handle to the thread on which this module's message loop is running. |
 >| receive\_socket       | The delivery socket for this module.                                 |
 >| socket\_lock          | A mutex used to synchronize access to the nanomsg read function.     |

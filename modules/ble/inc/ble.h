@@ -51,7 +51,7 @@ typedef struct BLE_CONFIG_TAG
     VECTOR_HANDLE       instructions;   // array of BLE_INSTRUCTION objects to be executed
 }BLE_CONFIG;
 
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE)(MODULE_APIS* apis);
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE)(const MODULE_API_VERSION gateway_api_version);
 
 #ifdef __cplusplus
 }

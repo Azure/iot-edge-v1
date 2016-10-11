@@ -78,17 +78,17 @@ typedef struct IDENTITY_MAP_CONFIG_TAG
     const char* deviceKey;
 } IDENTITY_MAP_CONFIG;
 
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 
 ```
 
 ## Module_GetAPIs
 
 This is the primary public interface for the module.  It returns a pointer to 
-the `MODULE_APIS` structure containing the implementation functions for this module.  
+the `MODULE_API` structure containing the implementation functions for this module.  
 The following functions are the implementation of those APIs.
 
-**SRS_IDMAP_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
+**SRS_IDMAP_26_001: [** `Module_GetApi` shall return a pointer to a `MODULE_API` structure. **]**
 
 
 ## IdentityMap_CreateFromJson

@@ -238,7 +238,7 @@ void BLE_Destroy(MODULE_HANDLE module);
 
 ## Module_GetAPIs
 ```c
-extern const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 ```
 
-**SRS_BLE_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
+**SRS_BLE_26_001: [** `Module_GetApi` return a pointer to a `MODULE_API` structure. **]**

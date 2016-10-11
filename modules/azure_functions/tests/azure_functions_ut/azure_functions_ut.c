@@ -30,6 +30,7 @@ static void my_gballoc_free(void* s)
 
 #define ENABLE_MOCKS
 #include "module.h"
+#include "module_access.h"
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/httpapiex.h"
 #include "message.h"
@@ -119,34 +120,30 @@ TEST_FUNCTION_CLEANUP(method_cleanup)
 }
 
 
-/* Tests_SRS_AZUREFUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
-TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetAPIS_returns_non_NULL)
+/* Tests_SRS_AZUREFUNCTIONS_04_020: [ Module_GetApi shall return the MODULE_API structure. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetApi_returns_non_NULL)
 {
     // arrange
 
     // act
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     //assert
-    ASSERT_IS_TRUE(apis.Module_CreateFromJson != NULL);
-    ASSERT_IS_TRUE(apis.Module_Create != NULL);
-    ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
-    ASSERT_IS_TRUE(apis.Module_Receive != NULL);
-    ASSERT_IS_TRUE(apis.Module_Start == NULL);
+    ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+    ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
+    ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
+    ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
+    ASSERT_IS_TRUE(MODULE_START(apis) == NULL);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_05_002: [ If broker is NULL then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_broker_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson(NULL, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)(NULL, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -156,12 +153,11 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_broker_is_NULL)
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, NULL);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -173,15 +169,14 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_N
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_not_validJson)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)NULL);
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -193,9 +188,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_n
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_failedToRetrieveJsonObject)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -204,7 +198,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_failedToRetrieveJs
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -215,9 +209,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_failedToRetrieveJs
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_hostAddress_not_present)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -231,7 +224,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_hostAddress_not_pr
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -242,9 +235,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_hostAddress_not_pr
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_helativePath_not_present)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -262,7 +254,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_helativePath_not_p
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -274,9 +266,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_helativePath_not_p
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__hostname_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -312,7 +303,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -324,9 +315,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__relativepath_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -367,7 +357,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -379,9 +369,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -433,7 +422,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -452,9 +441,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_happy_path)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
         .SetReturn((JSON_Value*)0x42);
@@ -510,22 +498,20 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_happy_path)
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = apis.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)0x42);
+    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
     //assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-    //cleanup
-    apis.Module_Destroy(result);
+	//cleanup
+	MODULE_DESTROY(apis)(result);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_with_key)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -552,7 +538,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_with_key)
         .SetReturn((STRING_HANDLE)0x42);
 
   //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42,  (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42,  (const void*)&config);
 
     //assert
     ASSERT_IS_NOT_NULL(result);
@@ -561,7 +547,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_with_key)
     //cleanup
     STRING_delete(config.relativePath);
     STRING_delete(config.hostAddress);
-    apis.Module_Destroy(result);
+    MODULE_DESTROY(apis)(result);
 }
 
 
@@ -570,9 +556,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_with_key)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_without_key)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -595,7 +580,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_without_key)
         .SetReturn((STRING_HANDLE)0x42);
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NOT_NULL(result);
@@ -604,7 +589,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_without_key)
     //cleanup
     STRING_delete(config.relativePath);
     STRING_delete(config.hostAddress);
-    apis.Module_Destroy(result);
+    MODULE_DESTROY(apis)(result);
 }
 
 
@@ -613,12 +598,11 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_happy_Path_without_key)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_broker_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     //act
-    MODULE_HANDLE result = apis.Module_Create(NULL, (BROKER_HANDLE)0x42);
+    MODULE_HANDLE result = MODULE_CREATE(apis)(NULL, (BROKER_HANDLE)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -629,13 +613,11 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_broker_is_NULL)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_configuration_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, NULL);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, NULL);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -646,9 +628,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_configuration_is_NULL)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -657,7 +638,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
     umock_c_reset_all_calls();
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -668,9 +649,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_hostAddress_is_NULL)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = NULL;
@@ -679,7 +659,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
     umock_c_reset_all_calls();
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -690,9 +670,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_when_relativePath_is_NULL)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -705,7 +684,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
         .SetReturn(NULL);
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -716,9 +695,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_Handle)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configuration)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -737,7 +715,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configurati
 
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -748,9 +726,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_To_Allocate_configurati
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -775,7 +752,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -786,9 +763,8 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_hostAddress)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -819,7 +795,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -830,9 +806,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_relativePath)
 TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_securityKey)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -870,7 +844,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_securityKey)
 
 
     //act
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -881,11 +855,9 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Create_returns_NULL_failed_to_clone_securityKey)
 TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_does_nothing_if_module_handle_null)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
-    apis.Module_Destroy(NULL);
+    MODULE_DESTROY(apis)(NULL);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -896,9 +868,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_with_securityKey)
 {
 
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -922,7 +892,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_with_securityKey)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
     ASSERT_IS_NOT_NULL(result);
 
     umock_c_reset_all_calls();
@@ -939,7 +909,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_with_securityKey)
 
 
     //act
-    apis.Module_Destroy(result);
+    MODULE_DESTROY(apis)(result);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -950,9 +920,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_without_securityKey)
 {
 
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
@@ -972,7 +940,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_without_securityKey)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE result = apis.Module_Create((BROKER_HANDLE)0x42, (const void*)&config);
+    MODULE_HANDLE result = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, (const void*)&config);
     ASSERT_IS_NOT_NULL(result);
 
     umock_c_reset_all_calls();
@@ -989,7 +957,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_without_securityKey)
 
 
     //act
-    apis.Module_Destroy(result);
+    MODULE_DESTROY(apis)(result);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1000,12 +968,10 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Destroy_happy_path_without_securityKey)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_moduleHandleIsNull)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     //act
-    apis.Module_Receive(NULL, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(NULL, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1015,12 +981,10 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_moduleHandleIsNull)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_messageHandleIsNull)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, NULL);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1030,15 +994,13 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_doesNothing_if_messageHandleIsNull)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Message_getContent_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     STRICT_EXPECTED_CALL(Message_GetContent((MESSAGE_HANDLE)0x42))
         .SetReturn(NULL);
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1048,9 +1010,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Message_getContent_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1065,7 +1025,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
         .SetReturn(NULL);
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1076,9 +1036,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_Base64_Encode_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_construct_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1100,7 +1058,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_construct_fail)
 
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1110,9 +1068,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_construct_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat1_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1140,7 +1096,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat1_fail)
 
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1150,9 +1106,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat1_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat_with_STRING_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1183,7 +1137,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat_with_STRING_fail)
 
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1193,9 +1147,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat_with_STRING_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat2_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1230,7 +1182,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat2_fail)
 
 
     //act
-    apis.Module_Receive((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)((MODULE_HANDLE)0x42, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1240,9 +1192,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fails_when_STRING_concat2_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1270,7 +1220,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1308,22 +1258,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //Cleanup
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_015: [ azure_functions_Receive shall call allocate memory to receive data from HTTPAPI by calling BUFFER_new, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1351,7 +1299,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1394,22 +1342,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_if_buffer_new_fails)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1437,7 +1383,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1486,22 +1432,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_clone_fails)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_016: [ azure_functions_Receive shall add name parameter to relative path, if it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1529,7 +1473,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1583,22 +1527,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_String_concat1_fails)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_025: [ AzureFunctions_Receive shall add 2 HTTP Headers to POST Request. Content-Type:application/json and, if securityKey exists x-functions-key:securityKey. If it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_Alloc_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1626,7 +1568,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_Alloc_fails)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1683,22 +1625,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_Alloc_fails)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_025: [ AzureFunctions_Receive shall add 2 HTTP Headers to POST Request. Content-Type:application/json and, if securityKey exists x-functions-key:securityKey. If it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePair_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1726,7 +1666,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePa
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1789,22 +1729,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePa
     STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_025: [ AzureFunctions_Receive shall add 2 HTTP Headers to POST Request. Content-Type:application/json and, if securityKey exists x-functions-key:securityKey. If it fails it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePair2_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1832,7 +1770,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePa
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -1903,22 +1841,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPHeaders_AddHeaderNameValuePa
     STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP POST to Azure Functions. If it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_BUFFER_create_PostContent_fails)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -1946,7 +1882,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_BUFFER_create_PostContent_fails)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -2029,22 +1965,20 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_BUFFER_create_PostContent_fails)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_017: [ azure_functions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP POST to Azure Functions. If it fail it shall fail and return. ] */
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -2072,7 +2006,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -2165,13 +2099,13 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_025: [ AzureFunctions_Receive shall add 2 HTTP Headers to POST Request. Content-Type:application/json and, if securityKey exists x-functions-key:securityKey. If it fails it shall fail and return. ] */
@@ -2187,9 +2121,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_httpapiex_executeRequest_fail)
 TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
 {
     // arrange
-    MODULE_APIS apis;
-    memset(&apis, 0, sizeof(MODULE_APIS));
-    Module_GetAPIS(&apis);
+    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     CONSTBUFFER buffer;
     buffer.buffer = (const unsigned char*)"12345";
@@ -2217,7 +2149,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
         .IgnoreArgument(1)
         .SetReturn((STRING_HANDLE)0x42);
 
-    MODULE_HANDLE moduleInfo = apis.Module_Create((BROKER_HANDLE)0x42, &config);
+    MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
 
     umock_c_reset_all_calls();
 
@@ -2309,13 +2241,13 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
     STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
     //act
-    apis.Module_Receive(moduleInfo, (MESSAGE_HANDLE)0x42);
+    MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //cleanup 
-    apis.Module_Destroy(moduleInfo);
+    MODULE_DESTROY(apis)(moduleInfo);
 }
 
 END_TEST_SUITE(azure_functions_ut)

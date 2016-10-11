@@ -480,28 +480,25 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS Logger_APIS_all =
+static const MODULE_API_1 Logger_APIS_all =
 {
+	{MODULE_API_VERSION_1},
+
     Logger_CreateFromJson,
     Logger_Create,
     Logger_Destroy,
     Logger_Receive,
-	NULL
+    NULL
 };
 
+
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(LOGGER_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(LOGGER_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		/*Codes_SRS_LOGGER_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-		(*apis) = Logger_APIS_all;
-	}
+    /*Codes_SRS_LOGGER_26_001: [ Module_GetApi shall return a pointer to a MODULE_API structure with the required function pointers. */
+    (void)gateway_api_version;
+    return (const MODULE_API *)&Logger_APIS_all;
 }

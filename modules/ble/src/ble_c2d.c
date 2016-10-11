@@ -268,27 +268,24 @@ static void BLE_C2D_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 /*
  *	Required for all modules: the public API and the designated implementation functions.
  */
-static const MODULE_APIS BLE_C2D_APIS_all =
+static const MODULE_API_1 BLE_C2D_APIS_all =
 {
-    BLE_C2D_CreateFromJson,
-    BLE_C2D_Create,
-    BLE_C2D_Destroy,
-    BLE_C2D_Receive,
-    NULL
+	{MODULE_API_VERSION_1},
+	BLE_C2D_CreateFromJson,
+	BLE_C2D_Create,
+	BLE_C2D_Destroy,
+	BLE_C2D_Receive,
+	NULL
 };
 
+
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE_C2D)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE_C2D)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-    if (!apis)
-    {
-        LogError("NULL passed to Module_GetAPIS");
-    } else
-    {
-        /*Codes_SRS_BLE_CTOD_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-	    (*apis) = BLE_C2D_APIS_all;
-    }
+    /*Codes_SRS_BLE_CTOD_26_001: [ Module_GetApi shall return a pointer to the MODULE_API structure. ]*/
+    (void)gateway_api_version;
+    return (const MODULE_API*)&BLE_C2D_APIS_all;
 }

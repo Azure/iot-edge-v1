@@ -234,9 +234,11 @@ static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const 
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS SimulatedDevice_APIS_all =
+static const MODULE_API_1 SimulatedDevice_APIS_all =
 {
-    SimulatedDevice_CreateFromJson,
+	{MODULE_API_VERSION_1},
+
+	SimulatedDevice_CreateFromJson,
 	SimulatedDevice_Create,
 	SimulatedDevice_Destroy,
 	SimulatedDevice_Receive,
@@ -244,17 +246,11 @@ static const MODULE_APIS SimulatedDevice_APIS_all =
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(SIMULATED_DEVICE_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		(*apis) = SimulatedDevice_APIS_all;
-	}
+	(void)gateway_api_version;
+	return (const MODULE_API *)&SimulatedDevice_APIS_all;
 }

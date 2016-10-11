@@ -24,16 +24,15 @@ The argument to this module is a JSON object with the following structure:
 
 ##Exposed API
 ```c
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 ```
 
-## Module_GetAPIs
+## Module_GetApi
 
 This is the primary public interface for the module.  It fills out the
-provided `MODULE_APIS` structure containing the implementation functions for this
+provided `MODULE_API` structure containing the implementation functions for this
 module.
-The `MODULE_APIS` structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, 
-and `Module_Receive` fields.
+The `MODULE_API` structure shall have non-`NULL` `Module_Create`, `Module_Start`, `Module_Destroy`, and `Module_Receive` fields.
 
 ## SimulatedDevice_CreateFromJson
 ```C

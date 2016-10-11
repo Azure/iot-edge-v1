@@ -11,6 +11,7 @@
 #include "micromockcharstararenullterminatedstrings.h"
 
 #include "module_loader.h"
+#include "module_access.h"
 #include "dynamic_library.h"
 #include "dynamic_loader.h"
 
@@ -60,7 +61,28 @@ static pfModuleLoader_GetApi ModuleLoader_Get_Api;
 // Value for a library that does not load.
 #define TEST_MODULE_LIBRARY_BAD_NAME ("bad")
 
+MODULE_API_1 test_module_Api = 
+{
+	{MODULE_API_VERSION_1},
 
+	(pfModule_CreateFromJson)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Create)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Destroy)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Receive)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	NULL
+};
+
+MODULE_API_1 test_module_Api2 =
+{
+	{(MODULE_API_VERSION)2},
+
+	(pfModule_CreateFromJson)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Create)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Destroy)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	(pfModule_Receive)TEST_MODULE_LIBRARY_GOOD_HANDLE,
+	NULL
+
+};
 
 static bool test_getApi_func_success = true;
 
@@ -117,18 +139,14 @@ public:
 	MOCK_METHOD_END(void*, result2)
 
     // Mock GetAPIS function, returned on successful call of FindSymbol.
-	MOCK_STATIC_METHOD_1(,void, test_getApi_func, MODULE_APIS*, apis)
+	MOCK_STATIC_METHOD_1(,const MODULE_API*, test_getApi_func, MODULE_API_VERSION, gateway_api_version)
+		const MODULE_API* result2 = NULL;
 		if (test_getApi_func_success == true)
 		{
-			MODULE_APIS tmp = {
-                (pfModule_CreateFromJson)TEST_MODULE_LIBRARY_GOOD_HANDLE,
-				(pfModule_Create)TEST_MODULE_LIBRARY_GOOD_HANDLE,
-				(pfModule_Destroy)TEST_MODULE_LIBRARY_GOOD_HANDLE,
-				(pfModule_Receive)TEST_MODULE_LIBRARY_GOOD_HANDLE
-			};
-			(*apis) = tmp;
+
+			result2 = reinterpret_cast< const MODULE_API *>(&test_module_Api);
 		}
-	MOCK_VOID_METHOD_END();
+	MOCK_METHOD_END(const MODULE_API*, result2)
 
 	MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
 		void* result2;
@@ -161,7 +179,7 @@ public:
 DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , void*, DynamicLibrary_LoadLibrary, const char*, dynamicLibraryFileName);
 DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , void, DynamicLibrary_UnloadLibrary, void*, library);
 DECLARE_GLOBAL_MOCK_METHOD_2(CModuleLoaderMocks, , void*, DynamicLibrary_FindSymbol, void*, library, const char*, symbolName);
-DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , void, test_getApi_func, MODULE_APIS*, apis);
+DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , const MODULE_API* , test_getApi_func, MODULE_API_VERSION, gateway_api_version);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_2(CModuleLoaderMocks, , void*, gballoc_realloc, void*, ptr, size_t, size);
@@ -305,13 +323,11 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		///arrange
 		const char* moduleFileName = TEST_MODULE_LIBRARY_BAD_SYM_NAME;
 		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
-		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 
 		///act
@@ -335,14 +351,42 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		test_getApi_func_success = false;
 		const char* moduleFileName = TEST_MODULE_LIBRARY_GOOD_NAME;
 		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
-		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME)).IgnoreArgument(1);
-		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME)).IgnoreArgument(1);
+		EXPECTED_CALL(mocks, test_getApi_func(MODULE_API_VERSION_1));
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-			.ExpectedTimesExactly(2)
+			.IgnoreArgument(1);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+		///act
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
+
+		///assert
+		ASSERT_IS_NULL(moduleHandle);
+		mocks.AssertActualAndExpectedCalls();
+
+		///cleanup
+	}
+
+	//Tests_SRS_MODULE_LOADER_17_015: [ ModuleLoader_Load shall compare the module's api_version with the current gateway, and if the api_version is greater than the current version, it shall fail and it shall return NULL. ]
+	TEST_FUNCTION(ModuleLoader_Load_GetAPIs_returns_higher_version_fails)
+	{
+		CModuleLoaderMocks mocks;
+		///arrange
+		test_getApi_func_success = false;
+		const char* moduleFileName = TEST_MODULE_LIBRARY_GOOD_NAME;
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME)).IgnoreArgument(1);
+		EXPECTED_CALL(mocks, test_getApi_func(MODULE_API_VERSION_1))
+			.SetReturn((const MODULE_API *)&test_module_Api2);
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
 		DYNAMIC_LOADER_CONFIG loader_args =
 		{
@@ -358,12 +402,11 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		///cleanup
 	}
     /* Tests_SRS_MODULE_LOADER_17_002: [ModuleLoader_Load shall load the library as a file, the filename given by the moduleLibraryFileName.] */
-	/* Tests_SRS_MODULE_LOADER_17_003: [ModuleLoader_Load shall locate the function defined by MODULE_GETAPIS_NAME in the open library.] */
-	/* Tests_SRS_MODULE_LOADER_17_004: [ModuleLoader_Load shall call the function defined by MODULE_GETAPIS_NAME in the open library.]*/
+	/* Tests_SRS_MODULE_LOADER_17_003: [ModuleLoader_Load shall locate the function defined by MODULE_GETAPI_NAME in the open library.] */
+	/* Tests_SRS_MODULE_LOADER_17_004: [ModuleLoader_Load shall call the function defined by MODULE_GETAPI_NAME in the open library.]*/
 	/* Tests_SRS_MODULE_LOADER_17_005: [ModuleLoader_Load shall allocate memory for the structure MODULE_LIBRARY_HANDLE.] */
 	/* Tests_SRS_MODULE_LOADER_17_006: [ModuleLoader_Load shall return a non-NULL handle to a MODULE_LIBRARY_DATA_TAG upon success.]*/
 	/* Tests_SRS_MODULE_LOADER_26_001: [If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`.]*/
-	/* Tests_SRS_MODULE_LOADER_26_002: [`ModulerLoader_Load` shall allocate memory for the structure `MODULE_APIS`.] */
 	/* Tests_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ] */
 	TEST_FUNCTION(ModuleLoader_Success)
 	{
@@ -372,11 +415,10 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		const char* moduleFileName = TEST_MODULE_LIBRARY_GOOD_NAME;
 		test_getApi_func_success = true;
 		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
-		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME)).IgnoreArgument(1);
-		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME)).IgnoreArgument(1);
+		EXPECTED_CALL(mocks, test_getApi_func(MODULE_API_VERSION_1));
 		DYNAMIC_LOADER_CONFIG loader_args =
 		{
 			moduleFileName
@@ -401,7 +443,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		MODULE_LIBRARY_HANDLE moduleLibrary  = NULL;
 
 		///act
-		const MODULE_APIS* apisHandle = ModuleLoader_Get_Api(moduleLibrary);
+		const MODULE_API* apisHandle = ModuleLoader_Get_Api(moduleLibrary);
 
 		///assert
 		ASSERT_IS_NULL(apisHandle);
@@ -409,7 +451,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_MODULE_LOADER_17_008: [ModuleLoader_Get_Api shall return a valid pointer to MODULE_APIS on success.]*/
+	/*Tests_SRS_MODULE_LOADER_17_008: [ModuleLoader_Get_Api shall return a valid pointer to MODULE_API on success.]*/
 	/*Tests_SRS_MODULE_LOADER_17_020: [ DynamicLoader_GetApi shall return a non-NULL pointer to a MODULER_LOADER structure. ]*/
 	TEST_FUNCTION(ModuleLoader_Get_Api_Name_Is_Good)
 	{
@@ -421,9 +463,10 @@ BEGIN_TEST_SUITE(module_loader_ut)
 			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
-		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME))
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
 			.IgnoreArgument(1);
-		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
+		EXPECTED_CALL(mocks, test_getApi_func(MODULE_API_VERSION_1));
+
 		DYNAMIC_LOADER_CONFIG loader_args =
 		{
 			moduleFileName
@@ -433,12 +476,12 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		mocks.ResetAllCalls();
 		
 		///act
-		const MODULE_APIS* apisHandle = ModuleLoader_Get_Api(moduleHandle );
+		const MODULE_API* apisHandle = ModuleLoader_Get_Api(moduleHandle );
 
 		///assert
-		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)apisHandle->Module_Create);
-		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)apisHandle->Module_Receive);
-		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)apisHandle->Module_Destroy);
+		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)MODULE_CREATE(apisHandle));
+		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)MODULE_RECEIVE(apisHandle));
+		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)MODULE_DESTROY(apisHandle));
 
 		mocks.AssertActualAndExpectedCalls();
 
@@ -464,7 +507,6 @@ BEGIN_TEST_SUITE(module_loader_ut)
 
 	/*Tests_SRS_MODULE_LOADER_17_010 : [ModuleLoader_Unload shall attempt to unload the library.]*/
 	/*Tests_SRS_MODULE_LOADER_17_011 : [ModuleLoader_UnLoad shall deallocate memory for the structure MODULE_LIBRARY_HANDLE.]*/
-	/*Tests_SRS_MODULE_LOADER_26_004 : [`ModulerLoader_Unload` shall deallocate memory for the structure `MODULE_APIS`.] */
 	TEST_FUNCTION(ModuleLoader_UnLoad_Success)
 	{
 		CModuleLoaderMocks mocks;
@@ -475,8 +517,8 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
 			.IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
-		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME));
-		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
+		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME));
+		EXPECTED_CALL(mocks, test_getApi_func(MODULE_API_VERSION_1));
 		DYNAMIC_LOADER_CONFIG loader_args =
 		{
 			moduleFileName
@@ -487,42 +529,12 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(TEST_MODULE_LIBRARY_GOOD_HANDLE)).IgnoreArgument(1);
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
 
 		///act
 		ModuleLoader_Unload(moduleHandle);
 
 		///assert
-		mocks.AssertActualAndExpectedCalls();
-
-		///cleanup
-	}
-
-	/*Tests_SRS_MODULE_LOADER_26_003: [If memory allocation is not successful, the load shall fail, and it shall return `NULL`.]*/
-	TEST_FUNCTION(ModuleLoader_Get_Api_module_apis_malloc_fail)
-	{
-		CModuleLoaderMocks mocks;
-		///arrange
-		const char* moduleFileName = TEST_MODULE_LIBRARY_GOOD_NAME;
-
-		whenShallmalloc_fail = 2;
-		EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(IGNORED_PTR_ARG));
-		EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-			.ExpectedTimesExactly(2);
-		EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
-		EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG));
-
-		DYNAMIC_LOADER_CONFIG loader_args =
-		{
-			moduleFileName
-		};
-
-		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
-
-		///assert
-		ASSERT_IS_NULL(moduleHandle);
 		mocks.AssertActualAndExpectedCalls();
 
 		///cleanup

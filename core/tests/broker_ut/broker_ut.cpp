@@ -141,17 +141,19 @@ static void FakeModule_Receive(MODULE_HANDLE module, MESSAGE_HANDLE messageHandl
     ASSERT_ARE_EQUAL(void_ptr, module, call_status_for_FakeModule_Receive.module);
 }
 
-static MODULE_APIS fake_module_apis =
+static MODULE_API_1 fake_module_apis =
 {
-    NULL,
-    FakeModule_Create,
-    FakeModule_Destroy,
-    FakeModule_Receive
+	{ MODULE_API_VERSION_1 },
+	NULL,
+	FakeModule_Create,
+	FakeModule_Destroy,
+	FakeModule_Receive,
+	NULL
 };
 
 MODULE fake_module =
 {
-	&fake_module_apis,
+	(const MODULE_API *)&fake_module_apis,
 	fake_module_handle
 };
 
@@ -1072,7 +1074,7 @@ TEST_FUNCTION(Broker_AddModule_fails_with_null_module_handle)
 
 	MODULE module =
 	{
-		&fake_module_apis,
+		(const MODULE_API *)&fake_module_apis,
 		NULL
 	};
 

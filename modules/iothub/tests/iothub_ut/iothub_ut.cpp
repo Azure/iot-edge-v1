@@ -11,6 +11,7 @@
 #include "micromockcharstararenullterminatedstrings.h"
 
 #include "module.h"
+#include "module_access.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/strings.h"
@@ -704,12 +705,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
-        Module_CreateFromJson = apis.Module_CreateFromJson;
-        Module_Create = apis.Module_Create;
-        Module_Destroy = apis.Module_Destroy;
-        Module_Receive = apis.Module_Receive;
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+        Module_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        Module_Create = MODULE_CREATE(apis);
+        Module_Destroy = MODULE_DESTROY(apis);
+        Module_Receive = MODULE_RECEIVE(apis);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -775,21 +775,21 @@ BEGIN_TEST_SUITE(iothub_ut)
         }
     }
 
-    /*Tests_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_fields)
+    /*Tests_SRS_IOTHUBMODULE_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure with the required function pointers. ]*/
+    TEST_FUNCTION(Module_GetApi_returns_non_NULL_fields)
     {
         ///arrange
         IotHubMocks mocks;
         
         ///act
-		MODULE_APIS MODULEAPIS;
-		Module_GetAPIS(&MODULEAPIS);
+		const MODULE_API* MODULEAPIS = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-        ASSERT_IS_TRUE(MODULEAPIS.Module_CreateFromJson != NULL);
-        ASSERT_IS_TRUE(MODULEAPIS.Module_Create != NULL);
-        ASSERT_IS_TRUE(MODULEAPIS.Module_Destroy != NULL);
-        ASSERT_IS_TRUE(MODULEAPIS.Module_Receive != NULL);
+        ASSERT_IS_NOT_NULL(MODULEAPIS);
+        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(MODULEAPIS) != NULL);
+        ASSERT_IS_TRUE(MODULE_CREATE(MODULEAPIS) != NULL);
+        ASSERT_IS_TRUE(MODULE_DESTROY(MODULEAPIS) != NULL);
+        ASSERT_IS_TRUE(MODULE_RECEIVE(MODULEAPIS) != NULL);
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup

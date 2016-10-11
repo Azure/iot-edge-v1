@@ -782,28 +782,24 @@ static void IdentityMap_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messa
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS IdentityMap_APIS_all =
+static const MODULE_API_1 IdentityMap_APIS_all =
 {
-    IdentityMap_CreateFromJson,
+	{MODULE_API_VERSION_1},
+
+	IdentityMap_CreateFromJson,
 	IdentityMap_Create,
 	IdentityMap_Destroy,
 	IdentityMap_Receive,
 	NULL
 };
 
-/*Codes_SRS_IDMAP_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+/*Codes_SRS_IDMAP_26_001: [ `Module_GetApi` shall return a pointer to `MODULE_API` structure. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IDENTITYMAP_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		(*apis) = IdentityMap_APIS_all;
-	}
+	(void)gateway_api_version;
+	return (const MODULE_API *)&IdentityMap_APIS_all;
 }

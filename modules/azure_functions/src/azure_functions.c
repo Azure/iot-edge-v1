@@ -429,28 +429,31 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 /*
  *    Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS AzureFunctions_APIS_all =
+static const MODULE_API_1 AzureFunctions_APIS_all =
 {
-    AzureFunctions_CreateFromJson,
-    AzureFunctions_Create,
-    AzureFunctions_Destroy,
-    AzureFunctions_Receive,
-    NULL  /* No Start, this module acts on received messages. */
+	{MODULE_API_VERSION_1},
+	AzureFunctions_CreateFromJson,
+	AzureFunctions_Create,
+	AzureFunctions_Destroy,
+	AzureFunctions_Receive,
+	NULL  /* No Start, this module acts on received messages. */
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(AZUREFUNCTIONS_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(AZUREFUNCTIONS_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-    if (!apis)
+	const MODULE_API* result;
+    if (gateway_api_version >= AzureFunctions_APIS_all.base.version)
     {
-        LogError("NULL passed to Module_GetAPIS");
+		/* Codes_SRS_AZUREFUNCTIONS_04_020: [ Module_GetApi shall return the MODULE_API structure. ] */
+		result = (const MODULE_API*)&AzureFunctions_APIS_all;
     }
     else
     {
-        /* Codes_SRS_AZUREFUNCTIONS_04_020: [ Module_GetAPIS shall fill the provided MODULE_APIS function with the required function pointers. ] */
-        (*apis) = AzureFunctions_APIS_all;
+		result = NULL;
     }
+	return result;
 }

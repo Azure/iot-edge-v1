@@ -26,6 +26,7 @@ FOR_EACH_1(DEFINE_FAIL_VARIABLES, LIST_OF_COUNTED_APIS)
 
 #include "azure_c_shared_utility/lock.h"
 #include "module.h"
+#include "module_access.h"
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/map.h"
@@ -338,12 +339,11 @@ BEGIN_TEST_SUITE(logger_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        MODULE_APIS apis;
-        Module_GetAPIS(&apis);
-        Logger_CreateFromJson = apis.Module_CreateFromJson;
-        Logger_Create = apis.Module_Create;
-        Logger_Destroy = apis.Module_Destroy;
-        Logger_Receive = apis.Module_Receive;
+        const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+        Logger_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        Logger_Create = MODULE_CREATE(apis);
+        Logger_Destroy = MODULE_DESTROY(apis);
+        Logger_Receive = MODULE_RECEIVE(apis);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -2142,20 +2142,20 @@ BEGIN_TEST_SUITE(logger_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_LOGGER_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
+    /*Tests_SRS_LOGGER_26_001: [ `Module_GetApi` shall return a pointer to a  `MODULE_API` structure with the required function pointers. ]*/
+    TEST_FUNCTION(Module_GetApi_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrrange
 
         ///act
-        MODULE_APIS result;
-        memset(&result, 0, sizeof(MODULE_APIS));
-        Module_GetAPIS(&result);
+        const MODULE_API* result = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-        ASSERT_IS_TRUE(result.Module_CreateFromJson != NULL);
-        ASSERT_IS_TRUE(result.Module_Create != NULL);
-        ASSERT_IS_TRUE(result.Module_Destroy != NULL);
-        ASSERT_IS_TRUE(result.Module_Receive != NULL);
+		ASSERT_IS_NOT_NULL(result);
+
+        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(result) != NULL);
+        ASSERT_IS_TRUE(MODULE_CREATE(result) != NULL);
+        ASSERT_IS_TRUE(MODULE_DESTROY(result) != NULL);
+        ASSERT_IS_TRUE(MODULE_RECEIVE(result) != NULL);
     }
 END_TEST_SUITE(logger_ut)

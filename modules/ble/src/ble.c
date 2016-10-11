@@ -883,28 +883,23 @@ static void BLE_Destroy(MODULE_HANDLE module)
     }
 }
 
-static const MODULE_APIS Module_GetAPIS_Impl =
+static const MODULE_API_1 Module_GetApi_Impl =
 {
+	{MODULE_API_VERSION_1},
     BLE_CreateFromJson,
     BLE_Create,
     BLE_Destroy,
     BLE_Receive, 
-	NULL
+    NULL
 };
 
-/*Codes_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+/*Codes_SRS_BLE_26_001: [ `Module_GetApi` return a pointer to a `MODULE_API` structure. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		(*apis) = Module_GetAPIS_Impl;
-	}
+    (void)gateway_api_version;
+    return (const MODULE_API*)&Module_GetApi_Impl;
 }

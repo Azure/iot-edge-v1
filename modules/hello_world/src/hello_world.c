@@ -178,27 +178,30 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
     /*no action, HelloWorld is not interested in any messages*/
 }
 
-static const MODULE_APIS HelloWorld_APIS_all =
+static const MODULE_API_1 HelloWorld_API_all =
 {
-    HelloWorld_CreateFromJson,
-    HelloWorld_Create,
-    HelloWorld_Destroy,
-    HelloWorld_Receive,
-    HelloWorld_Start
+	{MODULE_API_VERSION_1},
+	HelloWorld_CreateFromJson,
+	HelloWorld_Create,
+	HelloWorld_Destroy,
+	HelloWorld_Receive,
+	HelloWorld_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(HELLOWORLD_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-    if (!apis)
-    {
-        LogError("NULL passed to Module_GetAPIS");
-    }
-    else
-    {
-        (*apis) = HelloWorld_APIS_all;
-    }
+	const MODULE_API * api;
+	if (gateway_api_version >= HelloWorld_API_all.base.version)
+	{
+		api= (const MODULE_API*)&HelloWorld_API_all;
+	}
+	else
+	{
+		api = NULL;
+	}
+	return api;
 }

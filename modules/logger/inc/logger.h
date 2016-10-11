@@ -28,7 +28,7 @@ extern "C"
 {
 #endif
 
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(LOGGER_MODULE)(MODULE_APIS* apis);
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(LOGGER_MODULE)(const MODULE_API_VERSION gateway_api_version);
 
 #ifdef __cplusplus
 }

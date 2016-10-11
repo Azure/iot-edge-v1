@@ -58,6 +58,7 @@ typedef signed char jbyte;
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "java_module_host_manager.h"
+#include "module_access.h"
 
 #include <parson.h>
 
@@ -1031,28 +1032,24 @@ static void CallVoidMethodInternal(JNIEnv* env, jobject obj, jmethodID methodID,
 	va_end(args);
 }
 
-static const MODULE_APIS JavaModuleHost_APIS =
+static const MODULE_API_1 JavaModuleHost_APIS =
 {
-    JavaModuleHost_CreateFromJson,
+	{MODULE_API_VERSION_1},
+
+	JavaModuleHost_CreateFromJson,
 	JavaModuleHost_Create,
 	JavaModuleHost_Destroy,
 	JavaModuleHost_Receive,
 	JavaModuleHost_Start
 };
 
+
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(JAVA_MODULE_HOST)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		/* Codes_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-		(*apis) = JavaModuleHost_APIS;
-	}
+	(void)gateway_api_version;
+	return (const MODULE_API *)&JavaModuleHost_APIS;
 }

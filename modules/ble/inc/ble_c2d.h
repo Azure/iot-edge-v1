@@ -11,7 +11,7 @@ extern "C"
 {
 #endif
 
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE_C2D)(MODULE_APIS* apis);
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE_C2D)(const MODULE_API_VERSION gateway_api_version);
 
 #ifdef __cplusplus
 }

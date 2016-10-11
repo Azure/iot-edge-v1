@@ -24,6 +24,7 @@
 #include "azure_c_shared_utility/strings.h"
 #include "java_module_host.h"
 #include "java_module_host_common.h"
+#include "module_access.h"
 
 #include <parson.h>
 
@@ -551,13 +552,12 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	g_testByTest = TEST_MUTEX_CREATE();
 	ASSERT_IS_NOT_NULL(g_testByTest);
 
-	MODULE_APIS apis;
-	Module_GetAPIS(&apis);
-    JavaModuleHost_CreateFromJson = apis.Module_CreateFromJson;
-	JavaModuleHost_Create = apis.Module_Create;
-	JavaModuleHost_Destroy = apis.Module_Destroy;
-	JavaModuleHost_Receive = apis.Module_Receive;
-	JavaModuleHost_Start = apis.Module_Start;
+	const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+    JavaModuleHost_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+	JavaModuleHost_Create = MODULE_CREATE(apis);
+	JavaModuleHost_Destroy = MODULE_DESTROY(apis);
+	JavaModuleHost_Receive = MODULE_RECEIVE(apis);
+	JavaModuleHost_Start = MODULE_START(apis);
 
 	umock_c_init(on_umock_c_error);
 	umocktypes_charptr_register_types();
@@ -2949,20 +2949,21 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_Broker_publishMessage_failur
 	JavaModuleHost_Destroy(module);
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
+/*Tests_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetApi` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+TEST_FUNCTION(Module_GetApi_returns_non_NULL)
 {
 	//Arrange
 
 	//Act
 
-	MODULE_APIS apis;
-	Module_GetAPIS(&apis);
+	const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
 	//Assert
-	ASSERT_IS_NOT_NULL(apis.Module_Create);
-	ASSERT_IS_NOT_NULL(apis.Module_Destroy);
-	ASSERT_IS_NOT_NULL(apis.Module_Receive);
+	ASSERT_IS_NOT_NULL(MODULE_CREATE_FROM_JSON(apis));
+	ASSERT_IS_NOT_NULL(MODULE_CREATE(apis));
+	ASSERT_IS_NOT_NULL(MODULE_DESTROY(apis));
+	ASSERT_IS_NOT_NULL(MODULE_RECEIVE(apis));
+	ASSERT_IS_NOT_NULL(MODULE_START(apis));
 }
 
 END_TEST_SUITE(JavaModuleHost_UnitTests);

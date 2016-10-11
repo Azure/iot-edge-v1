@@ -15,6 +15,7 @@
 #include "broker.h"
 #include "module_loader.h"
 #include "internal/event_system.h"
+#include "module_access.h"
 #include "gateway_internal.h"
 
 static bool module_info_name_find(const void* element, const void* module_name);
@@ -168,7 +169,7 @@ GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw)
 		for (m = 0; m < module_count; m++)
 		{
 			MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
-			pfModule_Start pfStart = (*module_data)->module_loader->GetApi((*module_data)->module_library_handle)->Module_Start;
+			pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->GetApi((*module_data)->module_library_handle));
 			if (pfStart != NULL)
 			{
 				/*Codes_SRS_GATEWAY_17_002: [ This function shall call Module_Start for every module which defines the start function. ]*/
@@ -228,7 +229,7 @@ extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
 		MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
 		if (module_data != NULL)
 		{
-			pfModule_Start pfStart = (*module_data)->module_loader->GetApi((*module_data)->module_library_handle)->Module_Start;
+			pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->GetApi((*module_data)->module_library_handle));
 			if (pfStart != NULL)
 			{
 				/*Codes_SRS_GATEWAY_LL_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/

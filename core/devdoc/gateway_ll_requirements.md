@@ -353,9 +353,9 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_031: [** If unsuccessful, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_013: [** The function shall get the `const MODULE_APIS*` from the `loader_api`. **]**
+**SRS_GATEWAY_LL_14_013: [** The function shall get the `const MODULE_API*` from the `MODULE_LIBRARY_HANDLE`. **]**
 
-**SRS_GATEWAY_LL_14_015: [** The function shall use the `MODULE_APIS` to create a `MODULE_HANDLE` using the `GATEWAY_MODULES_ENTRY`'s `module_configuration`. **]**
+**SRS_GATEWAY_LL_14_015: [** The function shall use the `MODULE_API` to create a `MODULE_HANDLE` using the `GATEWAY_MODULES_ENTRY`'s `module_properties`. **]**
 
 **SRS_GATEWAY_LL_14_016: [** If the module creation is unsuccessful, the function shall return `NULL`. **]**
 
@@ -373,7 +373,7 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_019: [** The function shall return the newly created `MODULE_HANDLE` only if each API call returns successfully. **]**
 
-**SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
+**SRS_GATEWAY_LL_99_011: [** The function shall assign `module_api` to `MODULE::module_api`. **]**
 
 **SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
 
@@ -408,7 +408,7 @@ Gateway_RemoveModule will remove the specified `module` from the message broker.
 
 **SRS_GATEWAY_LL_14_038: [** The function shall decrement the `BROKER_HANDLE` reference count. **]**
 
-**SRS_GATEWAY_LL_14_024: [** The function shall use the `MODULE_DATA`'s `library_handle` to retrieve the `MODULE_APIS` and destroy `module`. **]**
+**SRS_GATEWAY_LL_14_024: [** The function shall use the `MODULE_DATA`'s `library_handle` to retrieve the `MODULE_API` and destroy `module`. **]**
 
 **SRS_GATEWAY_LL_14_025: [** The function shall unload `MODULE_DATA`'s `library_handle`. **]**
 

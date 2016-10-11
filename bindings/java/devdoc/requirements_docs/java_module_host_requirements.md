@@ -46,12 +46,12 @@ typedef struct JAVA_MODULE_HANDLE_DATA_TAG
 }JAVA_MODULE_HANDLE_DATA;
 ```
 
-## Module_GetAPIs
+## Module_GetApi
 This is the primary public interface for the module. It returns a pointer to the
-`MODULE_APIS` structure containing the implementation functions for this module.
+`MODULE_API` structure containing the implementation functions for this module.
 The following functions are the implementation of those APIs.
 
-**SRS_JAVA_MODULE_HOST_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
+**SRS_JAVA_MODULE_HOST_26_001: [** `Module_GetAApi` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 
 ## JavaModuleHost_CreateFromJson

@@ -79,18 +79,20 @@ static void E2EModule_Destroy(MODULE_HANDLE module)
 {
 
 }
-static const MODULE_APIS E2E_APIS_all =
+static const MODULE_API_1 E2E_APIS_all =
 {
+	{MODULE_API_VERSION_1},
+
     E2EModule_CreateFromJson,
     E2EModule_Create,
     E2EModule_Destroy,
     E2EModule_Receive,
-	NULL
+    NULL
 };
 
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 {
-    return &E2E_APIS_all;
+    return reinterpret_cast<const MODULE_API *>(&E2E_APIS_all);
 }
 
 BEGIN_TEST_SUITE(dotnet_e2e)
@@ -175,7 +177,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
     MODULE myProbeTestModule;
 
-    myProbeTestModule.module_apis = &E2E_APIS_all;
+    myProbeTestModule.module_apis = (const MODULE_API* )&E2E_APIS_all;
     myProbeTestModule.module_handle = E2EModule_Create(gatewayHandleData->broker, NULL);
 
     BROKER_RESULT myBrokerResult = Broker_AddModule(gatewayHandleData->broker, &myProbeTestModule);

@@ -250,7 +250,7 @@ int             json_boolean(const JSON_Value *value);
 #undef parson_parson_h
 #include "parson.h"
 
-static MODULE_APIS dummyAPIs;
+static MODULE_API_1 dummyAPIs;
 static size_t currentBroker_ref_count;
 static MODULE_LOADER_API default_module_loader;
 
@@ -400,9 +400,9 @@ public:
     MOCK_STATIC_METHOD_1(, MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const void*, moduleLibraryFileName)
     MOCK_METHOD_END(MODULE_LIBRARY_HANDLE, (MODULE_LIBRARY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
 
-    MOCK_STATIC_METHOD_1(, const MODULE_APIS*, DynamicModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle)
-        const MODULE_APIS* apis = &dummyAPIs;
-    MOCK_METHOD_END(const MODULE_APIS*, apis);
+    MOCK_STATIC_METHOD_1(, const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle)
+        const MODULE_API* apis = reinterpret_cast<const MODULE_API*>(&dummyAPIs);
+    MOCK_METHOD_END(const MODULE_API*, apis);
 
     MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
         BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
@@ -519,7 +519,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , BROKER_RESULT, Broker_RemoveLink, 
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , const MODULE_LOADER_API*, DynamicLoader_GetApi);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const void*, moduleLibraryFileName);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , const MODULE_APIS*, DynamicModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
@@ -561,17 +561,21 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	ASSERT_IS_NOT_NULL(g_testByTest);
     currentBroker_ref_count = 0;
 
-    dummyAPIs = {
-        mock_Module_CreateFromJson,
-        mock_Module_Create,
-        mock_Module_Destroy,
-        mock_Module_Receive
-    };
+	dummyAPIs =
+	{
+		{ MODULE_API_VERSION_1 },
+
+		mock_Module_CreateFromJson,
+		mock_Module_Create,
+		mock_Module_Destroy,
+		mock_Module_Receive
+	};
+
 	default_module_loader =
 	{
 		DynamicModuleLoader_Load,
 		DynamicModuleLoader_Unload,
-		DynamicModuleLoader_GetModuleAPIs
+		DynamicModuleLoader_GetModuleApi
 	};
 }
 
@@ -761,7 +765,7 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG, "[serialized string]"))
         .IgnoreArgument(1);
@@ -788,7 +792,7 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
 	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG, "[serialized string]"))
         .IgnoreArgument(1);
@@ -992,7 +996,7 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
 	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG,"[serialized string]"))
         .IgnoreArgument(1);
@@ -1019,7 +1023,7 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
 	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG,"[serialized string]"))
         .IgnoreArgument(1);
@@ -1197,9 +1201,9 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Unload(IGNORED_PTR_ARG))
         .IgnoreArgument(1);

@@ -2,14 +2,18 @@
   "modules": [
     {
       "module name": "logger",
-      "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
+      "loading args": {
+        "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+      },
       "args": { "filename": "log.txt" }
     },
     {
       "module name": "hello_world",
-      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll",
-      "args": null
-    }
+      "loading args": {
+        "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
+      },
+        "args": null
+      }
   ],
   "links": [
     {

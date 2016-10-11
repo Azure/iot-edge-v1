@@ -25,6 +25,7 @@
 
 #include "message.h"
 #include "module.h"
+#include "module_access.h"
 #include "broker.h"
 
 /* minimum size for a guid string, 36 characters + null terminator */
@@ -272,7 +273,7 @@ static int module_worker(void * user_data)
 				if (msg != NULL)
 				{
 					/*Codes_SRS_BROKER_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
-					module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
+					MODULE_RECEIVE(module_info->module->module_apis)(module_info->module->module_handle, msg);
 					/*Codes_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]*/
 					Message_Destroy(msg);
 				}

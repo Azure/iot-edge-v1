@@ -70,12 +70,14 @@ set(gateway_h_sources
     ./inc/message.h
     ./inc/broker.h
     ./inc/module.h
+    ./inc/module_access.h
     ./inc/internal/event_system.h
     ./inc/gateway_ll.h
     ./inc/gateway.h
     ./inc/module_loader.h
 	./inc/dynamic_loader.h
     ./inc/dynamic_library.h
+    ./src/gateway_internal.h
 )
 
 include_directories(./inc)

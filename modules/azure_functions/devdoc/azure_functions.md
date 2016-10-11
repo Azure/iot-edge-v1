@@ -27,17 +27,17 @@ typedef struct AZURE_FUNCTIONS_CONFIG_TAG
 	STRING_HANDLE securityKey;
 } AZURE_FUNCTIONS_CONFIG;
 
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 
 ```
 
-## Module_GetAPIs
+## Module_GetApi
 
 This is the primary public interface for the module.  It returns a pointer to 
-the `MODULE_APIS` structure containing the implementation functions for this module.  
+the `MODULE_API` structure containing the implementation functions for this module.  
 The following functions are the implementation of those APIs.
 
-**SRS_AZUREFUNCTIONS_04_020: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
+**SRS_AZUREFUNCTIONS_04_020: [** `Module_GetApi` shall return the `MODULE_API` structure. **]**
 
 ## AzureFunctions_CreateFromJson
 ```C

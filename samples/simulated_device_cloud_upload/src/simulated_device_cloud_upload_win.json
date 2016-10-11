@@ -1,57 +1,62 @@
 {
     "modules" :
-    [ 
-        {
-            "module name" : "IotHub",
-            "module path" : "..\\..\\..\\modules\\iothub\\Debug\\iothub.dll",
-            "args" : 
-            {
-                "IoTHubName" : "<<insert here IoTHubName>>",
-                "IoTHubSuffix" : "<<insert here IoTHubSuffix>>",
-                "Transport" : "HTTP"
-            }
+    [
+      {
+        "module name": "IotHub",
+        "loading args": {
+          "module path": "..\\..\\..\\modules\\iothub\\Debug\\iothub.dll"
         },
-        {
-            "module name" : "mapping",
-            "module path" : "..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll",
-            "args" : 
-            [
-                {
-                    "macAddress" : "01:01:01:01:01:01",
-                    "deviceId"   : "<<insert here deviceId>>",
-                    "deviceKey"  : "<<insert here deviceKey>>"
-                },
-                {
-                    "macAddress" : "02:02:02:02:02:02",
-                    "deviceId"   : "<<insert here deviceId>>",
-                    "deviceKey"  : "<<insert here deviceKey>>"
-                }
-            ]
-        },
-        {
-            "module name":"BLE1",
-            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll",
-            "args":
-            {
-                "macAddress" : "01:01:01:01:01:01"
-            }
-        },
-        {
-            "module name":"BLE2",
-            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll",
-            "args":
-            {
-                "macAddress" : "02:02:02:02:02:02"
-            }
-        },
-        {
-            "module name":"Logger",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
-            "args":
-            {
-                "filename":"deviceCloudUploadGatewaylog.log"
-            }
+        "args": {
+          "IoTHubName": "<<insert here IoTHubName>>",
+          "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
+          "Transport": "HTTP"
         }
+      },
+      {
+        "module name": "mapping",
+        "loading args": {
+          "module path": "..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll"
+        },
+        "args": [
+          {
+            "macAddress": "01:01:01:01:01:01",
+            "deviceId": "<<insert here deviceId>>",
+            "deviceKey": "<<insert here deviceKey>>"
+          },
+          {
+            "macAddress": "02:02:02:02:02:02",
+            "deviceId": "<<insert here deviceId>>",
+            "deviceKey": "<<insert here deviceKey>>"
+          }
+        ]
+      },
+      {
+        "module name": "BLE1",
+        "loading args": {
+          "module path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
+        },
+        "args": {
+          "macAddress": "01:01:01:01:01:01"
+        }
+      },
+      {
+        "module name": "BLE2",
+        "loading args": {
+          "module path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
+        },
+        "args": {
+          "macAddress": "02:02:02:02:02:02"
+        }
+      },
+      {
+        "module name": "Logger",
+        "loading args": {
+          "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+        },
+        "args": {
+          "filename": "deviceCloudUploadGatewaylog.log"
+        }
+      }
     ],
     "links" : [
         { "source" : "*", "sink" : "Logger" },

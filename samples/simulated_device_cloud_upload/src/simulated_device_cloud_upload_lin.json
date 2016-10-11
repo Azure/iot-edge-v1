@@ -1,62 +1,78 @@
 {
-    "modules" :
-    [ 
+    "modules": [
         {
-            "module name" : "IotHub",
-            "module path" : "./modules/iothub/libiothub.so",
-            "args" : 
-            {
-                "IoTHubName" : "<<insert here IoTHubName>>",
-                "IoTHubSuffix" : "<<insert here IoTHubSuffix>>",
-                "Transport" : "HTTP"
+            "module name": "IotHub",
+            "loading args": {
+                "module path": "./modules/iothub/libiothub.so"
+            },
+            "args": {
+                "IoTHubName": "<<insert here IoTHubName>>",
+                "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
+                "Transport": "HTTP"
             }
         },
         {
-            "module name" : "mapping",
-            "module path" : "./modules/identitymap/libidentity_map.so",
-            "args" : 
-            [
+            "module name": "mapping",
+            "loading args": {
+                "module path": "./modules/identitymap/libidentity_map.so"
+            },
+            "args": [
                 {
-                    "macAddress" : "01:01:01:01:01:01",
-                    "deviceId"   : "<<insert here deviceId>>",
-                    "deviceKey"  : "<<insert here deviceKey>>"
+                    "macAddress": "01:01:01:01:01:01",
+                    "deviceId": "<<insert here deviceId>>",
+                    "deviceKey": "<<insert here deviceKey>>"
                 },
                 {
-                    "macAddress" : "02:02:02:02:02:02",
-                    "deviceId"   : "<<insert here deviceId>>",
-                    "deviceKey"  : "<<insert here deviceKey>>"
+                    "macAddress": "02:02:02:02:02:02",
+                    "deviceId": "<<insert here deviceId>>",
+                    "deviceKey": "<<insert here deviceKey>>"
                 }
             ]
         },
         {
-            "module name":"BLE1",
-            "module path" : "./modules/simulated_device/libsimulated_device.so",
-            "args":
-            {
-                "macAddress" : "01:01:01:01:01:01"
+            "module name": "BLE1",
+            "loading args": {
+                "module path": "./modules/simulated_device/libsimulated_device.so"
+            },
+            "args": {
+                "macAddress": "01:01:01:01:01:01"
             }
         },
         {
-            "module name":"BLE2",
-            "module path" : "./modules/simulated_device/libsimulated_device.so",
-            "args":
-            {
-                "macAddress" : "02:02:02:02:02:02"
+            "module name": "BLE2",
+            "loading args": {
+                "module path": "./modules/simulated_device/libsimulated_device.so"
+            },
+            "args": {
+                "macAddress": "02:02:02:02:02:02"
             }
         },
         {
-            "module name":"Logger",
-            "module path" : "./modules/logger/liblogger.so",
-            "args":
-            {
-                "filename":"deviceCloudUploadGatewaylog.log"
+            "module name": "Logger",
+            "loading args": {
+                "module path": "./modules/logger/liblogger.so"
+            },
+            "args": {
+                "filename": "deviceCloudUploadGatewaylog.log"
             }
         }
     ],
-    "links" : [
-        { "source" : "*", "sink" : "Logger" },
-        { "source" : "BLE1", "sink" : "mapping" },
-        { "source" : "BLE2", "sink" : "mapping" },
-        { "source" : "mapping", "sink" : "IotHub" }
+    "links": [
+        {
+            "source": "*",
+            "sink": "Logger"
+        },
+        {
+            "source": "BLE1",
+            "sink": "mapping"
+        },
+        {
+            "source": "BLE2",
+            "sink": "mapping"
+        },
+        {
+            "source": "mapping",
+            "sink": "IotHub"
+        }
     ]
 }

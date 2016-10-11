@@ -667,28 +667,24 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
     /*Codes_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
 }
 
-static const MODULE_APIS moduleInterface = 
+static const MODULE_API_1 moduleInterface = 
 {
-    IotHub_CreateFromJson,
-    IotHub_Create,
-    IotHub_Destroy,
-    IotHub_Receive,
+	{MODULE_API_VERSION_1},
+
+	IotHub_CreateFromJson,
+	IotHub_Create,
+	IotHub_Destroy,
+	IotHub_Receive,
 	NULL
 };
 
-/*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+/*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUB_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IOTHUB_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		(*apis) = moduleInterface;
-	}
+    (void)gateway_api_version;
+    return (const MODULE_API *)&moduleInterface;
 }

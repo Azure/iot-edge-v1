@@ -16,15 +16,15 @@ default module loader when the gateway is created using
 `Gateway_CreateFromJson`. Then this document will describe the necessary 
 components to provide a new loader for the gateway.
 
-### MODULE\_APIS
+### MODULE\_API
 
-The entry point for all modules in the Azure IoT Gateway is the `MODULE_APIS` 
-structure, received by calling the `Module_GetApis` function, the only exported 
+The entry point for all modules in the Azure IoT Gateway is the `MODULE_API` 
+structure, received by calling the `Module_GetApi` function, the only exported 
 function in the shared library.  The point of all module loaders is to provide 
-this `MODULE_APIS` for the gateway.
+this `MODULE_API` for the gateway.
 
 Please see [the module requirements](module.md) for more information on the 
-`MODULE_APIS` usage.
+`MODULE_API` usage.
 
 
 ### Default Module Loader Operation
@@ -64,7 +64,7 @@ call `Gateway_LL_Create`.
 
 ### Gateway\_LL\_Create
 
-In order to get the `MODULE_APIS` for each module, `Gateway_LL_Create` 
+In order to get the `MODULE_API` for each module, `Gateway_LL_Create` 
 will call the `GATEWAY_MODULES_ENTRY::loader_api->Load` function, passing in  
 `GATEWAY_MODULES_ENTRY::loader_configuration`, to get the library handle.  Then 
 it will call the `GetApi` function with the new library handle.
@@ -75,7 +75,7 @@ it will call the `GetApi` function with the new library handle.
 called, it will take the module path and load the shared library using the 
 OS-specific function, and return a `MODULE_LIBRARY_HANDLE`.
 
-When `GetApi` is called, it will return a pointer to a MODULE_APIS structure.
+When `GetApi` is called, it will return a pointer to a MODULE_API structure.
 
 When `Unload` is called, it will unload the shared libray using the OS-specific 
 function, and deallocate the `MODULE_LIBRARY_HANDLE`.
@@ -96,8 +96,8 @@ typedef struct MODULE_LOADER_API
     MODULE_LIBRARY_HANDLE (*Load)(void* config);
     /** @brief Unload function, unloads the library from the gateway */    
     void (*Unload)(MODULE_LIBRARY_HANDLE handle);
-    /** @brief GetApi function, gets the MODULE_APIS for the loaded module */  
-    const MODULE_APIS * (*GetApi)(MODULE_LIBRARY_HANDLE handle)
+    /** @brief GetApi function, gets the MODULE_API for the loaded module */  
+    const MODULE_API * (*GetApi)(MODULE_LIBRARY_HANDLE handle)
 } MODULE_LOADER_API;
 ```
 
@@ -129,7 +129,7 @@ action.
 This function is to be implemented by the module loader creator. 
 
 `MODULE_LOADER_API::GetApi` takes a `MODULE_LIBRARY_HANDLE` as input and returns a 
-pointer to the `MODULE_APIS` structure needed for the gateway to access the 
+pointer to the `MODULE_API` structure needed for the gateway to access the 
 module's functions.
 
 If the function fails internally, it should return `NULL`.

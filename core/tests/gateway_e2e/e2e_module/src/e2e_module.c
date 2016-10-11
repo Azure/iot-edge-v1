@@ -150,16 +150,20 @@ static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configur
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
-static const MODULE_APIS E2EModule_APIS_all =
+static const MODULE_API_1 E2EModule_APIS_all =
 {
+	{MODULE_API_VERSION_1},
+
 	NULL,
 	E2EModule_Create,
 	E2EModule_Destroy,
 	E2EModule_Receive,
 	E2EModule_Start
+
 };
 
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 {
-	(*apis) = E2EModule_APIS_all;
+	(void)gateway_api_version;
+	return (const MODULE_API *)&E2EModule_APIS_all;
 }

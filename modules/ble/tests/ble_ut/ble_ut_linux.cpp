@@ -30,6 +30,7 @@
 #include "bleio_seq.h"
 #include "messageproperties.h"
 #include "ble.h"
+#include "module_access.h"
 
 #include <parson.h>
 
@@ -751,13 +752,12 @@ BEGIN_TEST_SUITE(ble_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        MODULE_APIS apis;
-        Module_GetAPIS(&apis);
+        const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
-        BLE_CreateFromJson = apis.Module_CreateFromJson;
-        BLE_Create = apis.Module_Create;
-        BLE_Destroy = apis.Module_Destroy;
-        BLE_Receive = apis.Module_Receive;
+        BLE_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        BLE_Create = MODULE_CREATE(apis);
+        BLE_Destroy = MODULE_DESTROY(apis);
+        BLE_Receive = MODULE_RECEIVE(apis);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -3977,20 +3977,20 @@ BEGIN_TEST_SUITE(ble_ut)
         STRING_delete(instr1.characteristic_uuid);
     }
 
-    /*Tests_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
+    /*Tests_SRS_BLE_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure. ]*/
+    TEST_FUNCTION(Module_GetApi_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrrange
 
         ///act
-        MODULE_APIS apis;
-        Module_GetAPIS(&apis);
+        const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-        ASSERT_IS_TRUE(apis.Module_CreateFromJson != NULL);
-        ASSERT_IS_TRUE(apis.Module_Create != NULL);
-        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
-        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+        ASSERT_IS_NOT_NULL(apis);
+        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
     }
 
     /*Tests_SRS_BLE_13_018: [ BLE_Receive shall do nothing if module is NULL or if message is NULL. ]*/

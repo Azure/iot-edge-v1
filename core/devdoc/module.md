@@ -14,7 +14,7 @@ Every module needs to implement the same interface. However, the implementation 
 /** @brief Represents a handle to a particular module.*/
 typedef struct MODULE_TAG MODULE;
 typedef void* MODULE_HANDLE;
-typedef struct MODULE_APIS_TAG MODULE_APIS;
+typedef struct MODULE_API_TAG MODULE_API;
 
 #include "azure_c_shared_utility/macro_utils.h"
 #include "broker.h"
@@ -32,7 +32,7 @@ extern "C"
     struct MODULE_TAG
     {
         /** @brief Struct containing function pointers */
-        const MODULE_APIS* module_apis;
+        const MODULE_API* module_api;
         /** @brief HANDLE for module. */
         MODULE_HANDLE module_handle;
     };
@@ -82,10 +82,18 @@ extern "C"
 	*/
 	typedef void(*pfModule_Start)(MODULE_HANDLE moduleHandle);
 
-    /** @brief	Structure returned by ::Module_GetAPIS containing the function
-    *			pointers of the module-specific implementations of the interface.
+    /** @brief	Module API version.
     */
-    struct MODULE_APIS_TAG
+    typdef enum MODULE_API_VERSION_TAG
+    {
+        MODULE_API_VERSION_1
+    } MODULE_API_VERSION;
+
+    /** @brief	Module APIs corresponding to Version 1.0 of the gateway. This
+    *           contains function pointers to the module specific 
+    *           implementations of the interface.
+    */
+    struct MODULE_API_1
     {
         /** @brief Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;
@@ -100,14 +108,39 @@ extern "C"
 		pfModule_Start Module_Start;
     };
 
+    /** @brief	Union of all Module API versions.
+    */
+    typedef union MODULE_API_UNION_TAG
+    {
+        /** @brief reference to 1.0 gateway version. */
+        struct MODULE_API_1 api1;
+    } MODULE_API_UNION;
+
+    /** @brief	Structure returned by ::Module_GetApi containing the API 
+    *           version and module specific implementation of the interface. By
+    *           convention, api_version is always an enum and always the first
+    *            element of this structure.
+    */
+    struct MODULE_API_TAG
+    {
+        /** @brief The version of the MODULES_API, shall always be the first
+        *          element of this structure
+        */
+        MODULE_API_VERSION api_version;
+        
+        /** @brief The module API.  The elements of the union correspond 1:1 
+        *          with the elements of the MODULE_API_VERSION enum.
+        */
+        MODULE_API_UNION api;
+    };
+
     /** @brief	This is the only function exported by a module. Using the
     *			exported function, the caller learns the functions for the 
     *			particular module.
+    *	@param	gateway_api_version	The current API version of the gateway.
+    *	@return NULL in failure, MODULE_API* pointer on success.
     */
-    typedef void (*pfModule_GetAPIS)(MODULE_APIS* apis);
-
-    /** @brief Returns the module APIS name.*/
-#define MODULE_GETAPIS_NAME ("Module_GetAPIS")
+    typedef MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_version);
 
 #ifdef _WIN32
 #define MODULE_EXPORT __declspec(dllexport)
@@ -118,13 +151,13 @@ extern "C"
 /** @brief	Forms a new name that is by convention the name of the (only) exported 
 *			function from a static module library.
 */
-#define MODULE_STATIC_GETAPIS(MODULE_NAME) C2(Module_GetAPIS_, MODULE_NAME)
+#define MODULE_STATIC_GETAPI(MODULE_NAME) C2(Module_GetApi_, MODULE_NAME)
 
 /** @brief	This is the only function exported by a module under a "by
 *			convention" name. Using the exported function, the caller learns
 *			the functions for the particular module.
 */
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis);
+MODULE_EXPORT  MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 
 #ifdef __cplusplus
 }
@@ -132,6 +165,15 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis);
 
 #endif // MODULE_H
 ```
+## Module_GetApi
+```c
+typedef MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_version);
+```
+
+This function is to be implemented by the module creator. It will return a 
+pointer to a MODULES_API, or NULL if not successful.
+
+The `MODULE_API` structure shall contain the `api_version` and shall fill in the corresponding api structure in the `api` union. The `gateway_api_version` is passed to the module so a module may decide how to fill in the `MODULE_API` structure.
 
 ##Module_Create
 ```C
@@ -166,5 +208,5 @@ called from the same thread.
 static void Module_Start(MODULE_HANDLE moduleHandle);
 ```
 
-This function may be implemented by the module creator.  It is allowed to be `NULL` in the `MODULE_APIS` structure. If defined, this function is called by the framework when the message broker is guaranteed to be ready to accept messages from the module.
+This function may be implemented by the module creator.  It is allowed to be `NULL` in the `MODULE_API` structure. If defined, this function is called by the framework when the message broker is guaranteed to be ready to accept messages from the module.
 

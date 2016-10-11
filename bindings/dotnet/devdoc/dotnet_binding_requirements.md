@@ -194,10 +194,10 @@ void DotNet_Destroy(MODULE_HANDLE module);
 Module_GetAPIs
 --------------
 ```c
-extern const MODULE_APIS* Module_GetAPIS(void);
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 ```
 
-**SRS_DOTNET_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
+**SRS_DOTNET_26_001: [** `Module_GetApi` shall return out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 Module_DotNetHost_PublishMessage
 --------------------------------

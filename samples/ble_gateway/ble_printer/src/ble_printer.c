@@ -157,23 +157,21 @@ void BLEPrinter_Destroy(MODULE_HANDLE module)
     // Nothing to do here
 }
 
-static const MODULE_APIS Module_GetAPIS_Impl =
+static const MODULE_API_1 Module_GetApi_Impl =
 {
+	{MODULE_API_VERSION_1},
+
     BLEPrinter_CreateFromJson,
     BLEPrinter_Create,
     BLEPrinter_Destroy,
     BLEPrinter_Receive
+
 };
 
-void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 {
-    if (!apis)
-    {
-        LogError("NULL passed to Module_GetAPIS");
-    } else
-    {
-        (*apis) = Module_GetAPIS_Impl;
-    }
+    (void)gateway_api_version;
+    return (const MODULE_API*)&Module_GetApi_Impl;
 }
 
 static void print_string(const char* name, const char* timestamp, const CONSTBUFFER* buffer)

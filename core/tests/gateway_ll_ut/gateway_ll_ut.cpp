@@ -72,7 +72,7 @@ static size_t whenShallVECTOR_push_back_fail;
 static size_t currentVECTOR_find_if_call;
 static size_t whenShallVECTOR_find_if_fail;
 
-static MODULE_APIS dummyAPIs;
+static MODULE_API_1 dummyAPIs;
 
 TYPED_MOCK_CLASS(CGatewayLLMocks, CGlobalMock)
 {
@@ -191,9 +191,9 @@ public:
         }
     MOCK_METHOD_END(MODULE_LIBRARY_HANDLE, handle);
 
-    MOCK_STATIC_METHOD_1(, const MODULE_APIS*, DynamicModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle)
-        const MODULE_APIS* apis = &dummyAPIs;
-    MOCK_METHOD_END(const MODULE_APIS*, apis);
+    MOCK_STATIC_METHOD_1(, const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle)
+        const MODULE_API* apis = reinterpret_cast<const MODULE_API*>(&dummyAPIs);
+    MOCK_METHOD_END(const MODULE_API*, apis);
 
     MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
         BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
@@ -317,7 +317,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_IncRef, BROKER_HAND
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, Broker_DecRef, BROKER_HANDLE, broker);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const void*, moduleLibraryFileName);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_APIS*, DynamicModuleLoader_GetModuleAPIs, MODULE_LIBRARY_HANDLE, module_library_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayLLMocks, , void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
@@ -350,7 +350,7 @@ static MODULE_LOADER_API module_loader_api =
 {
 	DynamicModuleLoader_Load,
 	DynamicModuleLoader_Unload,
-	DynamicModuleLoader_GetModuleAPIs
+	DynamicModuleLoader_GetModuleApi
 };
 
 static int sampleCallbackFuncCallCount;
@@ -426,13 +426,16 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     currentVECTOR_find_if_call = 0;
     whenShallVECTOR_find_if_fail = 0;
 
-    dummyAPIs = {
-        mock_Module_CreateFromJson,
-        mock_Module_Create,
-        mock_Module_Destroy,
-        mock_Module_Receive,
-        mock_Module_Start
-    };
+	dummyAPIs =
+	{
+		{MODULE_API_VERSION_1},
+
+		mock_Module_CreateFromJson,
+		mock_Module_Create,
+		mock_Module_Destroy,
+		mock_Module_Receive,
+		mock_Module_Start
+	};
 
 	GATEWAY_MODULES_ENTRY dummyEntry = {
 		"dummy module",
@@ -698,7 +701,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -727,7 +730,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -765,7 +768,7 @@ TEST_FUNCTION(Gateway_LL_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Pro
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
@@ -834,7 +837,7 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -861,7 +864,7 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -889,7 +892,7 @@ TEST_FUNCTION(Gateway_LL_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Pro
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
@@ -961,7 +964,7 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -998,7 +1001,7 @@ TEST_FUNCTION(Gateway_LL_Create_AddModule_WithDuplicatedModuleName_Fails)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1071,7 +1074,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -1097,7 +1100,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_In_Props_Success)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -1150,13 +1153,18 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     };
 
     // indirectly test that it's ok to set Module_CreateFromJson to NULL
-    const MODULE_APIS noCreateFromJson = {
-        NULL,
+    const MODULE_API_1 noCreateFromJson =
+    {
+		{MODULE_API_VERSION_1},
+
+		NULL,
         mock_Module_Create,
         mock_Module_Destroy,
         mock_Module_Receive,
         mock_Module_Start
+        
     };
+	const MODULE_API* noCreateFromJsonApi = reinterpret_cast<const MODULE_API *>(&noCreateFromJson);
 
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink, 1);
@@ -1181,9 +1189,9 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
-        .SetReturn(&noCreateFromJson);
+        .SetReturn(noCreateFromJsonApi);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1208,9 +1216,9 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
-        .SetReturn(&noCreateFromJson);
+        .SetReturn(noCreateFromJsonApi);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1289,7 +1297,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -1331,7 +1339,7 @@ TEST_FUNCTION(Gateway_LL_Create_Adds_All_Modules_And_Links_fromNonExistingModule
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1415,7 +1423,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1439,7 +1447,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fail
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1516,7 +1524,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1539,7 +1547,7 @@ TEST_FUNCTION(Gateway_LL_Destroy_Removes_All_Modules_And_Destroys_Vector_Success
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
@@ -1668,7 +1676,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Returns_Null_For_star_module_name)
 }
 
 /*Tests_SRS_GATEWAY_LL_14_012: [ The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE. ]*/
+/*Tests_SRS_GATEWAY_LL_14_013: [ The function shall get the const MODULE_API* from the MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_17_015: [ The function shall use GATEWAY_PROPERTIES::loader_api->Load and each GATEWAY_PROPERTIES::loader_configuration to get each module's MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_LL_14_017: [ The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
 /*Tests_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containing the MODULE_HANDLE, MODULE_LOADER_API and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
@@ -1693,7 +1701,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -1781,7 +1789,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Fails)
     Gateway_LL_Destroy(gw);
 }
 
-/*Tests_SRS_GATEWAY_LL_14_015: [ The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_properties. ]*/
+/*Tests_SRS_GATEWAY_LL_14_015: [ The function shall use the MODULE_API to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_properties. ]*/
 /*Tests_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
 TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
 {
@@ -1807,7 +1815,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_Using_Module_Properties)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, properties))
         .IgnoreArgument(1);
@@ -1895,7 +1903,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -1932,7 +1940,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Broker_AddModule_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -1977,7 +1985,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
 	.IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
         .IgnoreArgument(1);
@@ -2057,7 +2065,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Does_Nothing_If_Module_NULL)
 
 /*Tests_SRS_GATEWAY_LL_14_023: [ The function shall locate the MODULE_DATA object in GATEWAY_HANDLE_DATA's modules containing module and return if it cannot be found. ]*/
 /*Tests_SRS_GATEWAY_LL_14_021: [ The function shall detach module from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
-/*Tests_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
+/*Tests_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_API and destroy module. ]*/
 /*Tests_SRS_GATEWAY_LL_14_025: [ The function shall unload MODULE_DATA's module_library_handle. ]*/
 /*Tests_SRS_GATEWAY_LL_14_026: [ The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
 /*Tests_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
@@ -2081,7 +2089,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Finds_Module_Data_Success)
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(handle))
         .IgnoreArgument(1);
@@ -2154,7 +2162,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_Broker_RemoveModule_Failure)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -3260,7 +3268,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_with_star_links)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -3352,7 +3360,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_addLink_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -3475,7 +3483,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_Creates_Module_star_2nd_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -3838,7 +3846,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links)
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(module_handle))
         .IgnoreArgument(1);
@@ -3927,7 +3935,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModule_with_star_links_has_errors)
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(module_handle))
         .IgnoreArgument(1);
@@ -4775,7 +4783,7 @@ TEST_FUNCTION(Gateway_LL_RemoveModuleByName_success)
     EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG));
-    EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, DynamicModuleLoader_Unload(IGNORED_PTR_ARG));
@@ -5002,7 +5010,7 @@ TEST_FUNCTION(Gateway_LL_AddModule_malloc_name_fail)
     EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG));
-    EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -5046,13 +5054,18 @@ TEST_FUNCTION(Gateway_LL_Start_starts_stuff)
 		&module_loader_api,
 		properties
     };
-    const MODULE_APIS dummyAPIs_nostart = {
+    const MODULE_API_1 dummyAPIs_nostart = 
+    {
+		{MODULE_API_VERSION_1},
+
         mock_Module_CreateFromJson,
         mock_Module_Create,
         mock_Module_Destroy,
         mock_Module_Receive,
         NULL
     };
+	const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
+
     MODULE_HANDLE handle1 = Gateway_LL_AddModule(gw, &entry1);
     MODULE_HANDLE handle2 = Gateway_LL_AddModule(gw, &entry2);
     mocks.ResetAllCalls();
@@ -5061,13 +5074,13 @@ TEST_FUNCTION(Gateway_LL_Start_starts_stuff)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
-        .SetReturn(&dummyAPIs_nostart);
+        .SetReturn(dummy_nostart_api);
 
     STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Start(handle2));
 
@@ -5122,7 +5135,7 @@ TEST_FUNCTION(Gateway_LL_StartModule_starts_module)
 
     STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, handle))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Start(handle));
 
@@ -5154,22 +5167,27 @@ TEST_FUNCTION(Gateway_LL_StartModule_no_start_for_null_start_func)
 		properties
     };
 
-    const MODULE_APIS dummyAPIs_nostart = {
+    const MODULE_API_1 dummyAPIs_nostart = 
+	{
+		{MODULE_API_VERSION_1},
+
         mock_Module_CreateFromJson,
         mock_Module_Create,
         mock_Module_Destroy,
         mock_Module_Receive,
         NULL
     };
+	const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
+
     MODULE_HANDLE handle = Gateway_LL_AddModule(gw, &entry);
     mocks.ResetAllCalls();
 
 
     STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, handle))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
-        .SetReturn(&dummyAPIs_nostart);
+        .SetReturn(dummy_nostart_api);
 
     //Act
     Gateway_LL_StartModule(gw, handle);

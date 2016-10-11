@@ -17,6 +17,7 @@
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/map.h"
 #include "messageproperties.h"
+#include "module_access.h"
 
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
@@ -521,12 +522,11 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
-        BLE_C2D_CreateFromJson = apis.Module_CreateFromJson;
-        BLE_C2D_Create = apis.Module_Create;
-        BLE_C2D_Destroy = apis.Module_Destroy;
-        BLE_C2D_Receive = apis.Module_Receive;
+		const MODULE_API *apis = Module_GetApi(MODULE_API_VERSION_1);
+        BLE_C2D_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        BLE_C2D_Create = MODULE_CREATE(apis);
+        BLE_C2D_Destroy = MODULE_DESTROY(apis);
+        BLE_C2D_Receive = MODULE_RECEIVE(apis);
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -663,22 +663,21 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         BLE_C2D_Destroy(result);
     }
 
-    /*Tests_SRS_BLE_CTOD_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
+    /*Tests_SRS_BLE_CTOD_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure. ]*/
+    TEST_FUNCTION(Module_GetApi_returns_non_NULL)
     {
         ///arrage
         CBLEC2DMocks mocks;
 
         ///act
-		MODULE_APIS apis;
-		memset(&apis, 0, sizeof(MODULE_APIS));
-		Module_GetAPIS(&apis);
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
 
         ///assert
-        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
-		ASSERT_IS_TRUE(apis.Module_Create != NULL);
-		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+        ASSERT_IS_NOT_NULL(apis);
+        ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
+		ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
+		ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
 
         ///cleanup
     }

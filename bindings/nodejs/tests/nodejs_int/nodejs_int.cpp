@@ -25,6 +25,7 @@
 #include "azure_c_shared_utility/agenttime.h"
 #include "azure_c_shared_utility/map.h"
 #include "module.h"
+#include "module_access.h"
 #include "message.h"
 #include "broker.h"
 
@@ -143,11 +144,15 @@ static void MockModule_Destroy(MODULE_HANDLE moduleHandle)
     g_mock_module.destroy(moduleHandle);
 }
 
-MODULE_APIS g_fake_module_apis = {
-    MockModule_CreateFromJson,
+MODULE_API_1 g_fake_module_apis = 
+{
+	{MODULE_API_VERSION_1},
+
+	MockModule_CreateFromJson,
     MockModule_Create,
     MockModule_Destroy,
-    MockModule_Receive
+    MockModule_Receive,
+    NULL
 };
 
 MODULE g_module =
@@ -316,20 +321,19 @@ BEGIN_TEST_SUITE(nodejs_int)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
-        NODEJS_CreateFromJson = apis.Module_CreateFromJson;
-        NODEJS_Create = apis.Module_Create;
-        NODEJS_Destroy = apis.Module_Destroy;
-		NODEJS_Receive = apis.Module_Receive;
-		NODEJS_Start = apis.Module_Start;
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+        NODEJS_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        NODEJS_Create = MODULE_CREATE(apis);
+        NODEJS_Destroy = MODULE_DESTROY(apis);
+		NODEJS_Receive = MODULE_RECEIVE(apis);
+		NODEJS_Start = MODULE_START(apis);
 
         g_broker = Broker_Create();
 
         g_mock_module_handle = MockModule_Create(g_broker, nullptr);
         
         g_module.module_handle = g_mock_module_handle;
-        g_module.module_apis = &g_fake_module_apis;
+        g_module.module_apis = reinterpret_cast< const MODULE_API *>(&g_fake_module_apis);
         Broker_AddModule(g_broker, &g_module);
     }
 
@@ -375,20 +379,20 @@ BEGIN_TEST_SUITE(nodejs_int)
         }
     }
 
-    /* Tests_SRS_NODEJS_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-    TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
+    /* Tests_SRS_NODEJS_26_001: [ `Module_GetApi` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+    TEST_FUNCTION(Module_GetApi_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrange
 
         ///act
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-        ASSERT_IS_TRUE(apis.Module_CreateFromJson != NULL);
-        ASSERT_IS_TRUE(apis.Module_Create != NULL);
-        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
-        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
+        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+		ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
+		ASSERT_IS_TRUE(MODULE_START(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
     }
 
     /*Tests_SRS_NODEJS_05_001: [ NODEJS_CreateFromJson shall return NULL if broker is NULL. ]*/
@@ -698,10 +702,10 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///act
         auto result = NODEJS_Create(g_broker, &config);
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 		MODULE module = {
-			&apis,
+			apis,
             result
         };
         Broker_AddModule(g_broker, &module);
@@ -1174,10 +1178,10 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///act
         auto result = NODEJS_Create(g_broker, &config);
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
+		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
 		MODULE module = {
-            &apis,
+            apis,
             result
         };
         Broker_AddModule(g_broker, &module);

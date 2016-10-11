@@ -16,7 +16,7 @@ typedef struct MODULE_LIBRARY_HANDLE_DATA_TAG* MODULE_LIBRARY_HANDLE;
 
 typedef MODULE_LIBRARY_HANDLE(*pfModuleLoader_Load)(const void * config);
 typedef void(*pfModuleLoader_Unload)(MODULE_LIBRARY_HANDLE handle);
-typedef const MODULE_APIS*(*pfModuleLoader_GetApi)(MODULE_LIBRARY_HANDLE handle);
+typedef const MODULE_API*(*pfModuleLoader_GetApi)(MODULE_LIBRARY_HANDLE handle);
 
 
 /** @brief function table for loading modules into a gateway */
@@ -26,7 +26,7 @@ typedef struct MODULE_LOADER_API_TAG
 	pfModuleLoader_Load Load;
     /** @brief Unload function, unloads the library from the gateway */    
 	pfModuleLoader_Unload Unload;
-    /** @brief GetApi function, gets the MODULE_APIS for the loaded module */  
+    /** @brief GetApi function, gets the MODULE_API for the loaded module */  
 	pfModuleLoader_GetApi GetApi;
 } MODULE_LOADER_API;
 

@@ -26,7 +26,7 @@ typedef struct BROKER_MODULEINFO_TAG
     /**
      * The function dispatch table for this module.
      */
-    CONST MODULE_APIS*        module_apis;
+    CONST MODULE_API*        module_api;
     
     /**
      * Handle to the thread on which this module’s message processing loop is
@@ -164,7 +164,7 @@ static void module_worker(void* user_data)
 
 **SRS_BROKER_17_018: [** If the deserialization is not successful, the message loop shall continue. **]**
 
-**SRS_BROKER_13_092: [** The function shall deliver the message to the module's callback function via `module_info->module_apis`. **]**
+**SRS_BROKER_13_092: [** The function shall deliver the message to the module's callback function via `module_info->module_api`. **]**
 
 **SRS_BROKER_13_093: [** The function shall destroy the message that was dequeued by calling `Message_Destroy`. **]**
 
@@ -234,7 +234,7 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
 
 **SRS_BROKER_13_047: [** This function shall return `BROKER_ERROR` if an underlying API call to the platform causes an error or `BROKER_OK` otherwise. **]**
 
-**SRS_BROKER_99_014: [** If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`. **]**
+**SRS_BROKER_99_014: [** If `module_handle` or `module_api` are `NULL` the function shall return `BROKER_INVALIDARG`. **]**
 
 
 ## Broker_RemoveModule

@@ -13,6 +13,7 @@
 
 #include "internal/event_system.h"
 #include "broker.h"
+#include "module_access.h"
 
 #include "gateway_internal.h"
 
@@ -384,13 +385,13 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 				else
 				{
 					//Should always be a safe call.
-					/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
-					const MODULE_APIS* module_apis = loader_api->GetApi(module_library_handle);
+					/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_API* from the MODULE_LIBRARY_HANDLE.]*/
+					const MODULE_API* module_apis = loader_api->GetApi(module_library_handle);
 
-					/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
+					/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_API to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
                     MODULE_HANDLE module_handle = use_json
-                        ? module_apis->Module_CreateFromJson(gateway_handle->broker, module_configuration)
-                        : module_apis->Module_Create(gateway_handle->broker, module_configuration);
+                        ? MODULE_CREATE_FROM_JSON(module_apis)(gateway_handle->broker, module_configuration)
+                        : MODULE_CREATE(module_apis)(gateway_handle->broker, module_configuration);
 					/*Codes_SRS_GATEWAY_LL_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
 					if (module_handle == NULL)
 					{
@@ -485,7 +486,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 						/*Codes_SRS_GATEWAY_LL_14_030: [If any internal API call is unsuccessful after a module is created, the library will be unloaded and the module destroyed.]*/
 						if (module_result == NULL)
 						{
-							module_apis->Module_Destroy(module_handle);
+							MODULE_DESTROY(module_apis)(module_handle);
 							loader_api->Unload(module_library_handle);
 						}
 					}
@@ -524,8 +525,8 @@ void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_D
     }
     /*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
     Broker_DecRef(gateway_handle->broker);
-    /*Codes_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
-	(*module_data_pptr)->module_loader->GetApi((*module_data_pptr)->module_library_handle)->Module_Destroy((*module_data_pptr)->module);
+    /*Codes_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_API and destroy module. ]*/
+	MODULE_DESTROY((*module_data_pptr)->module_loader->GetApi((*module_data_pptr)->module_library_handle))((*module_data_pptr)->module);
     /*Codes_SRS_GATEWAY_LL_14_025: [The function shall unload MODULE_DATA's module_library_handle. ]*/
 	(*module_data_pptr)->module_loader->Unload((*module_data_pptr)->module_library_handle);
     /*Codes_SRS_GATEWAY_LL_14_026:[The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/

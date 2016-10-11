@@ -5,7 +5,7 @@
 ## Overview
 module_loader allows a user to dynamically load modules into a gateway.  The module in this case is represented by a file name of a shared library (a DLL or SO file, depending on operating system).  The library name given is expected to implement a gateway module, so it is expected to export the API as defined in module.h.
 ## References
-module.h – defines `MODULE_APIS`, `MODULE_GETAPIS_NAME`, and `Module_GetAPIS` function declaration.
+module.h – defines `MODULE_API`, `MODULE_GETAPI_NAME`, and `Module_GetApi` function declaration.
 
 dynamic_library.h - used for operating system specific loading of dynamically linked libraries.
 
@@ -42,13 +42,11 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const void* loader_configuration);
 **SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by`DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`.**]**
 **SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
 	
-**SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPIS_NAME` in the open library.**]**
+**SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPI_NAME` in the open library.**]**
 **SRS_MODULE_LOADER_17_013: [**If locating the function is not successful, the load shall fail, and it shall return `NULL`.**]**
 
-**SRS_MODULE_LOADER_26_002: [**`ModulerLoader_Load` shall allocate memory for the structure `MODULE_APIS`.**]**
-**SRS_MODULE_LOADER_26_003: [**If memory allocation is not successful, the load shall fail, and it shall return `NULL`.**]**
-
-**SRS_MODULE_LOADER_17_004: [**`ModuleLoader_Load` shall call the function defined by `MODULE_GETAPIS_NAME` in the open library.**]**
+**SRS_MODULE_LOADER_17_004: [**`ModuleLoader_Load` shall call the function defined by `MODULE_GETAPI_NAME` in the open library.**]**   
+**SRS_MODULE_LOADER_17_015: [** `ModuleLoader_Load` shall compare the module's `api_version` with the current gateway, and if the `api_version` is greater than the current version, it shall fail and it shall return `NULL`. **]**   
 **SRS_MODULE_LOADER_26_001: [** If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`. **]**
 
 **SRS_MODULE_LOADER_17_005: [**`ModuleLoader_Load` shall allocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
@@ -56,16 +54,16 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const void* loader_configuration);
  
 **SRS_MODULE_LOADER_17_006: [**`ModuleLoader_Load` shall return a non-NULL handle to a `MODULE_LIBRARY_DATA_TAG` upon success.**]**
  
-The contents of the structure `MODULE_LIBRARY_DATA_TAG` will be operating system specific.  The structure is expected to have at least one element: an opaque handle to the loaded library.  The structure may also to keep a reference to the `MODULE_APIS` provided by the library to improve performance.
+The contents of the structure `MODULE_LIBRARY_DATA_TAG` will be operating system specific.  The structure is expected to have at least one element: an opaque handle to the loaded library.  The structure may also to keep a reference to the `MODULE_API` provided by the library to improve performance.
 
-### ModuleLoader_GetModuleAPIs
+### ModuleLoader_GetModuleApi
 ```C
-const MODULE_APIS* `ModuleLoader_GetModuleAPIs`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+extern const MODULE_API* `ModuleLoader_GetModuleApi`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
-**SRS_MODULE_LOADER_17_007: [**`ModuleLoader_GetModuleAPIs` shall return `NULL` if the moduleLibraryHandle is `NULL`.**]**
+**SRS_MODULE_LOADER_17_007: [**`ModuleLoader_GetModuleApi` shall return `NULL` if the moduleLibraryHandle is `NULL`.**]**
  
-**SRS_MODULE_LOADER_17_008: [**`ModuleLoader_GetModuleAPIs` shall return a valid pointer to `MODULE_APIS` on success.**]** 
+**SRS_MODULE_LOADER_17_008: [**`ModuleLoader_GetModuleApi` shall return a valid pointer to `MODULE_API` on success.**]** 
 
 ### ModuleLoader_Unload
 ```C
@@ -78,4 +76,3 @@ void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
  
 **SRS_MODULE_LOADER_17_011: [**`ModuleLoader_Unload` shall deallocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
 
-**SRS_MODULE_LOADER_26_004: [**`ModulerLoader_Unload` shall deallocate memory for the structure `MODULE_APIS`.**]**

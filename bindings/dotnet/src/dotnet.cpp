@@ -771,9 +771,11 @@ static void DotNet_Start(MODULE_HANDLE module)
 	}
 }
 
-static const MODULE_APIS DOTNET_APIS_all =
+static const MODULE_API_1 DOTNET_APIS_all =
 {
-    DotNet_CreateFromJson,
+	{MODULE_API_VERSION_1},
+
+	DotNet_CreateFromJson,
 	DotNet_Create,
 	DotNet_Destroy,
 	DotNet_Receive,
@@ -781,20 +783,12 @@ static const MODULE_APIS DOTNET_APIS_all =
 };
 
 
-
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(DOTNET_HOST)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(DOTNET_HOST)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		/*Codes_SRS_DOTNET_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-		(*apis) = DOTNET_APIS_all;
-	}
+	(void)gateway_api_version;
+	return (const MODULE_API *)&DOTNET_APIS_all;
 }

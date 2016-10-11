@@ -1355,28 +1355,24 @@ void NODEJS_Start(MODULE_HANDLE module)
 /*
 *	Required for all modules:  the public API and the designated implementation functions.
 */
-static const MODULE_APIS NODEJS_APIS_all =
+static const MODULE_API_1 NODEJS_APIS_all =
 {
+	{MODULE_API_VERSION_1},
+
     NODEJS_CreateFromJson,
     NODEJS_Create,
     NODEJS_Destroy,
     NODEJS_Receive, 
-	NODEJS_Start
+    NODEJS_Start
 };
 
+
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(NODEJS_MODULE)(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(NODEJS_MODULE)(const MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-        /* Codes_SRS_NODEJS_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-		(*apis) = NODEJS_APIS_all;
-	}
+    (void)gateway_api_version;
+    return reinterpret_cast< const MODULE_API *>(&NODEJS_APIS_all);
 }
