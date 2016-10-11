@@ -24,6 +24,8 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "module_config_resources.h"
 
+DEFINE_MICROMOCK_ENUM_TO_STRING(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
+
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
@@ -215,11 +217,12 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		m6GatewayProperties.gateway_modules = gatewayProps;
 		m6GatewayProperties.gateway_links = gatewayLinks; 
 		e2eGatewayInstance = Gateway_LL_Create(&m6GatewayProperties);
-
-
+		auto start_result = Gateway_LL_Start(e2eGatewayInstance);
 
         ///assert
 		ASSERT_IS_NOT_NULL(e2eGatewayInstance);
+		ASSERT_ARE_EQUAL(GATEWAY_START_RESULT, start_result, GATEWAY_START_SUCCESS);
+
 
 		ThreadAPI_Sleep(MAX_CLOUD_TRAVEL_TIME * 1000);
 

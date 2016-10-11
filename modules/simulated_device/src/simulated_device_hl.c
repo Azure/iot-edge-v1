@@ -15,14 +15,28 @@
 #include "broker.h"
 #include "parson.h"
 
+static void SimulatedDevice_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void SimulatedDevice_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(&apis);
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 static void SimulatedDevice_HL_Destroy(MODULE_HANDLE moduleHandle)
 {
-	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Destroy(moduleHandle);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(&apis);
+	apis.Module_Destroy(moduleHandle);
 }
 
 static MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE broker, const void* configuration)
@@ -59,7 +73,9 @@ static MODULE_HANDLE SimulatedDevice_HL_Create(BROKER_HANDLE broker, const void*
                 }
                 else
                 {
-                    result = MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)()->Module_Create(broker, macAddress);
+					MODULE_APIS apis;
+					MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_MODULE)(&apis);
+                    result = apis.Module_Create(broker, macAddress);
                 }
             }
             json_value_free(json);
@@ -75,14 +91,22 @@ static const MODULE_APIS SimulatedDevice_HL_APIS_all =
 {
 	SimulatedDevice_HL_Create,
 	SimulatedDevice_HL_Destroy,
-	SimulatedDevice_HL_Receive
+	SimulatedDevice_HL_Receive, 
+	SimulatedDevice_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_HL_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(SIMULATED_DEVICE_HL_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &SimulatedDevice_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+    else
+	{
+		(*apis) = SimulatedDevice_HL_APIS_all;
+	}
 }

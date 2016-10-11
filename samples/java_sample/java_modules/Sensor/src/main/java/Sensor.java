@@ -25,7 +25,10 @@ public class Sensor extends GatewayModule {
     public Sensor(long address, Broker broker, String configuration) {
         super(address, broker, configuration);
         this.threadStop = false;
+    }
 
+    @Override
+    public void start(){
         new Thread(() -> {
             while(!this.threadStop) {
                 try {

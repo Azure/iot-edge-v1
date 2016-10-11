@@ -60,6 +60,15 @@ extern "C"
 */
 DEFINE_ENUM(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
 
+#define GATEWAY_START_RESULT_VALUES \
+    GATEWAY_START_SUCCESS, \
+    GATEWAY_START_MODULE_FAIL, \
+	GATEWAY_START_INVALID_ARGS
+
+/** @brief	Enumeration describing the result of ::Gateway_LL_Start.
+*/
+DEFINE_ENUM(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
+
 /** @brief Struct representing a single link for a gateway. */
 typedef struct GATEWAY_LINK_ENTRY_TAG
 {
@@ -113,8 +122,10 @@ typedef struct GATEWAY_MODULE_INFO_TAG
 /** @brief  Enum representing different gateway events that have support for callbacks. */
 typedef enum GATEWAY_EVENT_TAG
 {
+	/** @brief Called when the gateway is created. */
 	GATEWAY_CREATED = 0,
-	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
+	/** @brief Called when the gateway is started. */
+	GATEWAY_STARTED,	/** @brief  Called everytime a list of modules or links changed, also during gateway creation
 	 * VECTOR_HANDLE from #Gateway_LL_GetModuleList will be provided as the context to the callback,
 	 * and be later cleaned-up automatically.
 	 */
@@ -144,6 +155,15 @@ typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type
 */
 extern GATEWAY_HANDLE Gateway_LL_Create(const GATEWAY_PROPERTIES* properties);
 
+/** @brief		Tell the Gateway it's ready to start.
+*
+*	@param		gw		#GATEWAY_HANDLE to be destroyed.
+*
+*	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
+*				gateway or @c NULL on failure.
+*/
+extern GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw);
+
 /** @brief		Destroys the gateway and disposes of all associated data.
 *
 *	@param		gw		#GATEWAY_HANDLE to be destroyed.
@@ -161,7 +181,13 @@ extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
 */
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry);
 
-
+/** @brief		Tells a module that the gateway is ready for it to start.
+*
+*	@param		gw		Pointer to a #GATEWAY_HANDLE from which to remove the
+*						Module.
+*	@param		module	Pointer to a #MODULE_HANDLE that needs to be removed.
+*/
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 /** @brief		Removes the provided module from the gateway and all links that involves this module.
 *
@@ -313,6 +339,21 @@ Gateway_LL_UwpCreate creates a new gateway using modules in the `VECTOR_HANDLE` 
 
 **SRS_GATEWAY_LL_99_005: [** The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. **]**
 
+## Gateway_LL_Start
+```
+extern GATEWAY_START_RESULT Gateway_LL_Start(GATEWAY_HANDLE gw);
+```
+Gateway_LL_Start informs all modules that the gateway is ready to operate. This is a best effort attempt, all modules which implement a Module_Start function will be called.  The result of the attempt to start all modules will be reported in the `GATEWAY_START_RESULT`.
+
+**SRS_GATEWAY_LL_17_009: [** This function shall return `GATEWAY_START_INVALID_ARGS` if a NULL gateway is received. **]**
+
+**SRS_GATEWAY_LL_17_010: [** This function shall call `Module_Start` for every module which defines the start function. **]**
+
+**SRS_GATEWAY_LL_17_012: [** This function shall report a `GATEWAY_STARTED` event. **]**
+
+**SRS_GATEWAY_LL_17_013: [** This function shall return `GATEWAY_START_SUCCESS` upon completion. **]**
+
+
 ## Gateway_LL_Destroy
 ```
 extern void Gateway_LL_Destroy(GATEWAY_HANDLE gw);
@@ -383,6 +424,21 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 **SRS_GATEWAY_LL_99_011: [** The function shall assign `module_apis` to `MODULE::module_apis`. **]**
 
 **SRS_GATEWAY_LL_26_011: [** The function shall report `GATEWAY_MODULE_LIST_CHANGED` event after successfully adding the module. **]**
+
+**SRS_GATEWAY_LL_26_020: [** The function shall make a copy of the name of the module for internal use. **]**
+
+## Gateway_LL_StartModule
+```
+extern void Gateway_LL_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+```
+When a module is added to the Gateway after it has been started, `Gateway_LL_StartModule` informs a module when the broker is ready for the module to send and receive messages (i.e. after `Gateway_LL_AddModule` and all `Gateway_LL_AddLink` have been called).  This informational to the module, and the module is not required to implement a Module_Start function. 
+
+**SRS_GATEWAY_LL_17_006: [** If `gw` is `NULL`, this function shall do nothing. **]**
+
+**SRS_GATEWAY_LL_17_007: [** If `module` is not found in the gateway, this function shall do nothing. **]**
+
+**SRS_GATEWAY_LL_17_008: [** When `module` is found, if the `Module_Start` function is defined for this module, the `Module_Start` function shall be called. **]**
+
 
 ## Gateway_LL_RemoveModule
 ```

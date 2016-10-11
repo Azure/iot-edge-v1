@@ -746,15 +746,23 @@ static const MODULE_APIS Module_GetAPIS_Impl =
 {
     BLE_Create,
     BLE_Destroy,
-    BLE_Receive
+    BLE_Receive, 
+	NULL
 };
 
-/*Codes_SRS_BLE_13_007: [Module_GetAPIS shall return a non - NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non - NULL values.]*/
+/*Codes_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(BLE_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE)(MODULE_APIS* apis)
 #else
-const MODULE_APIS* Module_GetAPIS(void)
+void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    return &Module_GetAPIS_Impl;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = Module_GetAPIS_Impl;
+	}
 }

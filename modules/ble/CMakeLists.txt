@@ -51,7 +51,6 @@ if(LINUX)
        ./inc/bleio_seq.h
        ./inc/ble_gatt_io_linux_common.h
        ./inc/bleio_seq_linux_common.h
-       ./inc/ble.h
     )
 elseif(WIN32)
     set(ble_sources
@@ -64,6 +63,7 @@ endif()
 
 set(ble_headers
     ${ble_headers}
+    ./inc/ble.h
     ./inc/ble_gatt_io.h
     ./inc/ble_utils.h
     ../common/messageproperties.h

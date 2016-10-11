@@ -646,16 +646,23 @@ static const MODULE_APIS IdentityMap_APIS_all =
 {
 	IdentityMap_Create,
 	IdentityMap_Destroy,
-	IdentityMap_Receive
+	IdentityMap_Receive,
+	NULL
 };
 
-/*Codes_SRS_IDMAP_17_001 [ Module_GetAPIs shall return a non-NULL pointer to a MODULE_APIS structure.]*/
-/*Codes_SRS_IDMAP_17_002: [The MODULE_APIS structure shall have non-NULL Module_Create, Module_Destroy, and Module_Receive fields.]*/
+/*Codes_SRS_IDMAP_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(IDENTITYMAP_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &IdentityMap_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = IdentityMap_APIS_all;
+	}
 }

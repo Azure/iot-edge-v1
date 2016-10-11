@@ -14,7 +14,6 @@
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/lock.h"
-#include "azure_c_shared_utility/condition.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/refcount.h"
@@ -209,11 +208,9 @@ void Broker_IncRef(BROKER_HANDLE broker)
 }
 
 /**
-* This is the worker function that runs for each module. The module_worker
-* function is passed in a pointer to the relevant MODULE_INFO object as it's
-* thread context parameter. The function's job is to basically wait on the
-* mq_cond condition variable and process messages in module.mq when the
-* condition is signaled.
+* This function runs for each module. It receives a pointer to a MODULE_INFO
+* object that describes the module. Its job is to call the Receive function on
+* the associated module whenever it receives a message.
 */
 static int module_worker(void * user_data)
 {

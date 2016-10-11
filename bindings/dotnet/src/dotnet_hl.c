@@ -82,7 +82,9 @@ static MODULE_HANDLE DotNET_HL_Create(BROKER_HANDLE broker, const void* configur
 								dotNet_config.dotnet_module_args = dotnet_module_args_string;
 
 								/* Codes_SRS_DOTNET_HL_04_007: [ DotNET_HL_Create shall pass broker and const char* configuration (dotnet_module_path, dotnet_module_entry_class and dotnet_module_args as string) to DotNET_Create. ] */
-								result = MODULE_STATIC_GETAPIS(DOTNET_HOST)()->Module_Create(broker, (const void*)&dotNet_config);
+								MODULE_APIS apis;
+								MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
+								result = apis.Module_Create(broker, (const void*)&dotNet_config);
 
 								/* Codes_SRS_DOTNET_HL_04_008: [ If DotNET_Create succeeds then DotNET_HL_Create shall succeed and return a non-NULL value. ] */
 								if (result == NULL)
@@ -105,7 +107,9 @@ static void DotNET_HL_Destroy(MODULE_HANDLE module)
 	if (module != NULL)
 	{
 		/* Codes_SRS_DOTNET_HL_04_011: [ DotNET_HL_Destroy shall destroy all used resources for the associated module. ] */
-		MODULE_STATIC_GETAPIS(DOTNET_HOST)()->Module_Destroy(module);
+		MODULE_APIS apis;
+		MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
+		apis.Module_Destroy(module);
 	}
 	else
 	{
@@ -114,26 +118,47 @@ static void DotNET_HL_Destroy(MODULE_HANDLE module)
 	}
 }
 
+static void DotNET_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		/*Codes_SRS_DOTNET_HL_17_001: [ DotNET_HL_Start shall pass the received parameters to the underlying DotNET Host Module's _Start function, if defined. ] */
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void DotNET_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 
 	/* Codes_SRS_DOTNET_HL_04_010: [ DotNET_HL_Receive shall pass the received parameters to the underlying DotNET Host Module's _Receive function. ] */
-    MODULE_STATIC_GETAPIS(DOTNET_HOST)()->Module_Receive(moduleHandle, messageHandle);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(DOTNET_HOST)(&apis);
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 static const MODULE_APIS DotNET_HL_APIS_all =
 {
 	DotNET_HL_Create,
 	DotNET_HL_Destroy,
-	DotNET_HL_Receive
+	DotNET_HL_Receive,
+	DotNET_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_HOST_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(DOTNET_HOST_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	/* Codes_SRS_DOTNET_HL_04_012: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ] */
-	return &DotNET_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to ModuleGetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_DOTNET_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = DotNET_HL_APIS_all;
+	}
 }

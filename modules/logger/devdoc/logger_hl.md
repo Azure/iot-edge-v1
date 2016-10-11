@@ -55,6 +55,13 @@ the file deviceCloudUploadGatewaylog.txt
 **SRS_LOGGER_HL_02_006: [** If `Logger_Create` succeeds then `Logger_HL_Create` shall succeed and return a non-NULL value. **]**
 **SRS_LOGGER_HL_02_007: [** If `Logger_Create` fails then `Logger_HL_Create` shall fail and return NULL. **]**
     
+###Logger_HL_Start
+```c
+void Logger_HL_Start(MODULE_HANDLE moduleHandle);
+```
+
+**SRS_LOGGER_HL_17_001: [** `Logger_HL_Start` shall pass the received parameters to the underlying Logger's `_Start` function, if defined. **]**
+
 ###Logger_HL_Receive
 ```c
 void Logger_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
@@ -72,4 +79,5 @@ void Logger_HL_Destroy(MODULE_HANDLE moduleHandle);
 ```c
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
-**SRS_LOGGER_HL_02_010: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. **]**
+
+**SRS_LOGGER_HL_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**

@@ -44,6 +44,8 @@ pointer to a `NODEJS_MODULE_CONFIG` object.
 
 **SRS_NODEJS_13_019: [** `NodeJS_Create` shall return `NULL` if `configuration->configuration_json` is not valid JSON. **]**
 
+**SRS_NODEJS_05_001: [** `NodeJS_Create` shall interpret a `NULL` value for `configuration->configuration_json` as the JSON string `"\"args\": null"`. **]**
+
 **SRS_NODEJS_13_003: [** `NodeJS_Create` shall return `NULL` if `configuration->main_path` is `NULL`. **]**
 
 **SRS_NODEJS_13_013: [** `NodeJS_Create` shall return `NULL` if `configuration->main_path` is an invalid file system path. **]**
@@ -186,4 +188,4 @@ Module_GetAPIs
 extern const MODULE_APIS* Module_GetAPIS(void);
 ```
 
-**SRS_NODEJS_13_026: [** `Module_GetAPIS` shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. **]**
+**SRS_NODEJS_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**

@@ -56,6 +56,19 @@ GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path)
                     {
                         LogError("Failed to create gateway using lower level library.");
                     }
+					else
+					{
+						/*Codes_SRS_GATEWAY_17_001: [ Upon successful creation, this function shall start the gateway. ]*/
+						GATEWAY_START_RESULT start_result;
+						start_result = Gateway_LL_Start(gw);
+						if (start_result != GATEWAY_START_SUCCESS)
+						{
+							/*Codes_SRS_GATEWAY_17_002: [ This function shall return NULL if starting the gateway fails. ]*/
+							LogError("failed to start gateway");
+							Gateway_LL_Destroy(gw);
+							gw = NULL;
+						}
+					}
                 }
                 /*Codes_SRS_GATEWAY_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
                 else

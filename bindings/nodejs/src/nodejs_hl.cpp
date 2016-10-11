@@ -66,7 +66,9 @@ static MODULE_HANDLE NODEJS_HL_Create(BROKER_HANDLE broker, const void* configur
                     };
 
                     /*Codes_SRS_NODEJS_HL_13_005: [ NODEJS_HL_Create shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
-                    result = MODULE_STATIC_GETAPIS(NODEJS_MODULE)()->Module_Create(broker, (const void*)&config);
+					MODULE_APIS apis;
+					MODULE_STATIC_GETAPIS(NODEJS_MODULE)(&apis);
+					result = apis.Module_Create(broker, (const void*)&config);
                     if (result == NULL)
                     {
                         /*Codes_SRS_NODEJS_HL_13_008: [ If NODEJS_Create fail then the value NULL shall be returned. ]*/
@@ -93,13 +95,28 @@ static MODULE_HANDLE NODEJS_HL_Create(BROKER_HANDLE broker, const void* configur
 static void NODEJS_HL_Destroy(MODULE_HANDLE module)
 {
     /*Codes_SRS_NODEJS_HL_13_010: [ NODEJS_HL_Destroy shall destroy all used resources. ]*/
-    MODULE_STATIC_GETAPIS(NODEJS_MODULE)()->Module_Destroy(module);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(NODEJS_MODULE)(&apis);
+	apis.Module_Destroy(module);
+}
+
+static void NODEJS_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(NODEJS_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+
+	}
 }
 
 static void NODEJS_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     /*Codes_SRS_NODEJS_HL_13_009: [ NODEJS_HL_Receive shall pass the received parameters to the underlying module's _Receive function. ]*/
-    MODULE_STATIC_GETAPIS(NODEJS_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(NODEJS_MODULE)(&apis);
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 /*
@@ -109,15 +126,23 @@ static const MODULE_APIS NODEJS_HL_APIS_all =
 {
     NODEJS_HL_Create,
     NODEJS_HL_Destroy,
-    NODEJS_HL_Receive
+    NODEJS_HL_Receive,
+    NODEJS_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(NODEJS_MODULE_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(NODEJS_MODULE_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_NODEJS_HL_13_011: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
-    return &NODEJS_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+    else
+	{
+        /* Codes_SRS_NODEJS_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = NODEJS_HL_APIS_all;
+	}
 }

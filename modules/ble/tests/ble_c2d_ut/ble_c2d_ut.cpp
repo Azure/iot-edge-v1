@@ -520,9 +520,11 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        BLE_C2D_Create = Module_GetAPIS()->Module_Create;
-        BLE_C2D_Destroy = Module_GetAPIS()->Module_Destroy;
-        BLE_C2D_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        BLE_C2D_Create = apis.Module_Create;
+        BLE_C2D_Destroy = apis.Module_Destroy;
+        BLE_C2D_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -603,20 +605,22 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         BLE_C2D_Destroy(result);
     }
 
-    /*Tests_SRS_BLE_CTOD_13_019: [Module_GetAPIS shall return a non - NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non - NULL values.]*/
+    /*Tests_SRS_BLE_CTOD_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
     {
         ///arrage
         CBLEC2DMocks mocks;
 
         ///act
-        const MODULE_APIS* apis = Module_GetAPIS();
+		MODULE_APIS apis;
+		memset(&apis, 0, sizeof(MODULE_APIS));
+		Module_GetAPIS(&apis);
+
 
         ///assert
-        ASSERT_IS_NOT_NULL(apis);
-        ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-        ASSERT_IS_NOT_NULL(apis->Module_Create);
-        ASSERT_IS_NOT_NULL(apis->Module_Receive);
+        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+		ASSERT_IS_TRUE(apis.Module_Create != NULL);
+		ASSERT_IS_TRUE(apis.Module_Receive != NULL);
 
         ///cleanup
     }

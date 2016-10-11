@@ -15,7 +15,9 @@
 static MODULE_HANDLE HelloWorld_HL_Create(BROKER_HANDLE broker, const void* configuration)
 {
     MODULE_HANDLE result;
-    if((result = MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)()->Module_Create(broker, configuration))==NULL)
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(&apis);
+    if((result = apis.Module_Create(broker, configuration))==NULL)
     {
         LogError("unable to Module_Create HELLOWORLD static");
     }
@@ -26,28 +28,50 @@ static MODULE_HANDLE HelloWorld_HL_Create(BROKER_HANDLE broker, const void* conf
     return result;
 }
 
+static void HelloWorld_HL_Start(MODULE_HANDLE moduleHandle)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		apis.Module_Start(moduleHandle);
+	}
+}
+
 static void HelloWorld_HL_Destroy(MODULE_HANDLE module)
 {
-    MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)()->Module_Destroy(module);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(&apis);
+	apis.Module_Destroy(module);
 }
 
 static void HelloWorld_HL_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-    MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)()->Module_Receive(moduleHandle, messageHandle);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(&apis);
+	apis.Module_Receive(moduleHandle, messageHandle);
 }
 
 static const MODULE_APIS HelloWorld_HL_APIS_all =
 {
 	HelloWorld_HL_Create,
 	HelloWorld_HL_Destroy,
-	HelloWorld_HL_Receive
+	HelloWorld_HL_Receive,
+	HelloWorld_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(HELLOWORLD_HL_MODULE)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(HELLOWORLD_HL_MODULE)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	return &HelloWorld_HL_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		(*apis) = HelloWorld_HL_APIS_all;
+	}
 }

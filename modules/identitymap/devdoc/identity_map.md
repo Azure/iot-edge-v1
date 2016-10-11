@@ -88,7 +88,7 @@ This is the primary public interface for the module.  It returns a pointer to
 the `MODULE_APIS` structure containing the implementation functions for this module.  
 The following functions are the implementation of those APIs.
 
-**SRS_IDMAP_17_001 [** `Module_GetAPIs` shall return a non-`NULL` pointer to a MODULE_APIS structure.**]** **SRS_IDMAP_17_002: [**The `MODULE_APIS` structure shall have non-`NULL` `Module_Create`, `Module_Destroy`, and `Module_Receive` fields.**]**
+**SRS_IDMAP_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
 
 ##IdentityMap_Create
 ```C

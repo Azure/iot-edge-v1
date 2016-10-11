@@ -10,7 +10,7 @@
 #include "testrunnerswitcher.h"
 #include "micromock.h"
 #include "micromockcharstararenullterminatedstrings.h"
-#include "azure_c_shared_utility/condition.h"
+#include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/list.h"
 #include "message.h"
@@ -238,43 +238,7 @@ public:
         auto result2 = LOCK_OK;
     MOCK_METHOD_END(LOCK_RESULT, result2)
 
-    MOCK_STATIC_METHOD_0(, COND_HANDLE, Condition_Init)
-        COND_HANDLE result2;
-        ++currentCond_Init_call;
-        if ((whenShallCond_Init_fail > 0) &&
-            (currentCond_Init_call == whenShallCond_Init_fail))
-        {
-            result2 = NULL;
-        }
-        else
-        {
-            result2 = (COND_HANDLE)malloc(2);
-        }
-    MOCK_METHOD_END(COND_HANDLE, result2)
-
-    MOCK_STATIC_METHOD_1(, COND_RESULT, Condition_Post, COND_HANDLE, handle)
-        COND_RESULT result2;
-        ++currentCond_Post_call;
-        if ((whenShallCond_Post_fail > 0) &&
-            (currentCond_Post_call == whenShallCond_Post_fail))
-        {
-            result2 = COND_ERROR;
-        }
-        else
-        {
-            result2 = COND_OK;
-        }
-    MOCK_METHOD_END(COND_RESULT, result2)
-
-    MOCK_STATIC_METHOD_3(, COND_RESULT, Condition_Wait, COND_HANDLE, handle, LOCK_HANDLE, lock, int, timeout_milliseconds)
-        auto result2 = COND_OK;
-    MOCK_METHOD_END(COND_RESULT, result2)
-
-    MOCK_STATIC_METHOD_1(, void, Condition_Deinit, COND_HANDLE, handle)
-        free(handle);
-    MOCK_VOID_METHOD_END()
-
-    MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
+        MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
         VECTOR_HANDLE result2;
         ++currentVECTOR_create_call;
         if ((whenShallVECTOR_create_fail > 0) &&
@@ -623,11 +587,6 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, VECTOR_front, VECTOR_HANDLE,
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, VECTOR_back, VECTOR_HANDLE, vector);
 DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , void*, VECTOR_find_if, VECTOR_HANDLE, vector, PREDICATE_FUNCTION, pred, const void*, value);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , size_t, VECTOR_size, VECTOR_HANDLE, vector);
-
-DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , COND_HANDLE, Condition_Init);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , COND_RESULT, Condition_Post, COND_HANDLE, handle);
-DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , COND_RESULT, Condition_Wait, COND_HANDLE, handle, LOCK_HANDLE, lock, int, timeout_milliseconds);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, Condition_Deinit, COND_HANDLE, handle);
 
 DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , THREADAPI_RESULT, ThreadAPI_Create, THREAD_HANDLE*, threadHandle, THREAD_START_FUNC, func, void*, arg);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , THREADAPI_RESULT, ThreadAPI_Join, THREAD_HANDLE, threadHandle, int*, res);

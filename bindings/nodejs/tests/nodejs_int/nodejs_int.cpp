@@ -40,6 +40,7 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static pfModule_Create  NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start   NODEJS_Start   = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 using namespace nodejs_module;
 
@@ -286,6 +287,19 @@ static void publish_mock_message(const v8::FunctionCallbackInfo<v8::Value>& info
     g_mock_module.publish_mock_message();
 }
 
+static const char * NOOP_JS_MODULE = "module.exports = { "   \
+"create: function(broker, configuration) { "       \
+"  console.log('create'); "                            \
+"  return true; "                                      \
+"}, "                                                  \
+"receive: function(msg) { "                            \
+"  console.log('receive'); "                           \
+"}, "                                                  \
+"destroy: function() { "                               \
+"  console.log('destroy'); "                           \
+"} "                                                   \
+"};";
+
 BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_SUITE_INITIALIZE(TestClassInitialize)
@@ -294,9 +308,12 @@ BEGIN_TEST_SUITE(nodejs_int)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        NODEJS_Create = Module_GetAPIS()->Module_Create;
-        NODEJS_Destroy = Module_GetAPIS()->Module_Destroy;
-        NODEJS_Receive = Module_GetAPIS()->Module_Receive;
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+        NODEJS_Create = apis.Module_Create;
+        NODEJS_Destroy = apis.Module_Destroy;
+		NODEJS_Receive = apis.Module_Receive;
+		NODEJS_Start = apis.Module_Start;
 
         g_broker = Broker_Create();
 
@@ -349,18 +366,19 @@ BEGIN_TEST_SUITE(nodejs_int)
         }
     }
 
+    /* Tests_SRS_NODEJS_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrrange
 
         ///act
-        auto result = Module_GetAPIS();
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-        ASSERT_IS_NOT_NULL(result->Module_Create);
-        ASSERT_IS_NOT_NULL(result->Module_Destroy);
-        ASSERT_IS_NOT_NULL(result->Module_Receive);
+        ASSERT_IS_TRUE(apis.Module_Create != NULL);
+        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_broker_handle)
@@ -427,21 +445,41 @@ BEGIN_TEST_SUITE(nodejs_int)
         ASSERT_IS_NULL(result);
     }
 
+    TEST_FUNCTION(NODEJS_Create_returns_handle_for_NULL_config_json)
+    {
+        ///arrange
+
+        TempFile js_file;
+        js_file.Write(NOOP_JS_MODULE);
+
+        NODEJS_MODULE_CONFIG config = {
+            js_file.js_file_path.c_str(),
+            NULL
+        };
+
+        ///act
+        auto result = NODEJS_Create(g_broker, &config);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+
+        // wait for 15 seconds for the create to get done
+        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+        wait_for_predicate(15, [handle_data]() {
+            return handle_data->GetModuleState() == NodeModuleState::initialized;
+        });
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
+        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+
+        ///cleanup
+        NODEJS_Destroy(result);
+    }
+
+
+
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)
     {
-        ///arrrange
-        const char* NOOP_JS_MODULE = "module.exports = { "   \
-            "create: function(broker, configuration) { "       \
-            "  console.log('create'); "                            \
-            "  return true; "                                      \
-            "}, "                                                  \
-            "receive: function(msg) { "                            \
-            "  console.log('receive'); "                           \
-            "}, "                                                  \
-            "destroy: function() { "                               \
-            "  console.log('destroy'); "                           \
-            "} "                                                   \
-            "};";
+        ///arrange
 
         TempFile js_file;
         js_file.Write(NOOP_JS_MODULE);
@@ -468,6 +506,44 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///cleanup
         NODEJS_Destroy(result);
     }
+
+	TEST_FUNCTION(NODEJS_Create_returns_handle_for_adding_same_nodejs_module_twice)
+	{
+		///arrange
+
+		TempFile js_file;
+		js_file.Write(NOOP_JS_MODULE);
+
+		NODEJS_MODULE_CONFIG config = {
+			js_file.js_file_path.c_str(),
+			"{}"
+		};
+
+		///act
+		auto result1 = NODEJS_Create(g_broker, &config);
+		auto result2 = NODEJS_Create(g_broker, &config);
+
+		///assert
+		ASSERT_IS_NOT_NULL(result1);
+		ASSERT_IS_NOT_NULL(result2);
+		ASSERT_IS_TRUE(result1 != result2);
+
+		// wait for 15 seconds for the create to get done
+		NODEJS_MODULE_HANDLE_DATA* handle_data1 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result1);
+		NODEJS_MODULE_HANDLE_DATA* handle_data2 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result2);
+		wait_for_predicate(15, [handle_data1, handle_data2]() {
+			return handle_data1->GetModuleState() == NodeModuleState::initialized && 
+				   handle_data2->GetModuleState() == NodeModuleState::initialized;
+		});
+		ASSERT_IS_TRUE(handle_data1->GetModuleState() == NodeModuleState::initialized);
+		ASSERT_IS_TRUE(handle_data1->module_object.IsEmpty() == false);
+		ASSERT_IS_TRUE(handle_data2->GetModuleState() == NodeModuleState::initialized);
+		ASSERT_IS_TRUE(handle_data2->module_object.IsEmpty() == false);
+
+		///cleanup
+		NODEJS_Destroy(result1);
+		NODEJS_Destroy(result2);
+	}
 
     TEST_FUNCTION(nodejs_module_publishes_message)
     {
@@ -511,8 +587,10 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///act
         auto result = NODEJS_Create(g_broker, &config);
-        MODULE module = {
-            Module_GetAPIS(),
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+		MODULE module = {
+			&apis,
             result
         };
         Broker_AddModule(g_broker, &module);
@@ -985,8 +1063,10 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///act
         auto result = NODEJS_Create(g_broker, &config);
-        MODULE module = {
-            Module_GetAPIS(),
+		MODULE_APIS apis;
+		Module_GetAPIS(&apis);
+		MODULE module = {
+            &apis,
             result
         };
         Broker_AddModule(g_broker, &module);
@@ -1069,5 +1149,119 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
     }
+
+	TEST_FUNCTION(call_Start_before_nodejs_init_completes)
+	{
+		///arrange
+		const char* MODULE_START_IS_CALLED = ""                  \
+			"'use strict';"                                      \
+			"module.exports = {"                                 \
+			"    create: function (broker, configuration) {"	 \
+			"        return true;"                               \
+			"    },"                                             \
+			"    start: function() {"							 \
+			"        _integrationTest6.notify(true);"			 \
+			"    },"											 \
+			"    receive: function(message) {"                   \
+			"    },"                                             \
+			"    destroy: function () {"                         \
+			"    }"                                              \
+			"};";
+
+		TempFile js_file;
+		js_file.Write(MODULE_START_IS_CALLED);
+
+		NODEJS_MODULE_CONFIG config = {
+			js_file.js_file_path.c_str(),
+			"{}"
+		};
+
+		// setup a function to be called from the JS test code
+		NodeJSIdle::Get()->AddCallback([]() {
+			auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
+				"notify", notify_result
+			);
+			NodeJSUtils::AddObjectToGlobalContext("_integrationTest6", notify_result_obj);
+		});
+
+		auto result = NODEJS_Create(g_broker, &config);
+
+		///act
+
+		NODEJS_Start(result);
+
+		// wait for 15 seconds for the create to get done
+		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+		wait_for_predicate(15, [handle_data]() {
+			return handle_data->GetModuleState() != NodeModuleState::initializing;
+		});
+
+		///assert
+		wait_for_predicate(15, [handle_data]() {
+			return g_notify_result.WasCalled() == true;
+		});
+		ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+		ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
+
+		///cleanup
+		NODEJS_Destroy(result);
+	}
+
+	TEST_FUNCTION(call_Start_after_nodejs_init_completes)
+	{
+		///arrange
+		const char* MODULE_START_IS_CALLED = ""                  \
+			"'use strict';"                                      \
+			"module.exports = {"                                 \
+			"    create: function (broker, configuration) {"	 \
+			"        return true;"                               \
+			"    },"                                             \
+			"    start: function() {"							 \
+			"        _integrationTest6.notify(true);"			 \
+			"    },"											 \
+			"    receive: function(message) {"                   \
+			"    },"                                             \
+			"    destroy: function () {"                         \
+			"    }"                                              \
+			"};";
+
+		TempFile js_file;
+		js_file.Write(MODULE_START_IS_CALLED);
+
+		NODEJS_MODULE_CONFIG config = {
+			js_file.js_file_path.c_str(),
+			"{}"
+		};
+
+		// setup a function to be called from the JS test code
+		NodeJSIdle::Get()->AddCallback([]() {
+			auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
+				"notify", notify_result
+			);
+			NodeJSUtils::AddObjectToGlobalContext("_integrationTest6", notify_result_obj);
+		});
+
+		auto result = NODEJS_Create(g_broker, &config);
+
+		// wait for 15 seconds for the create to get done
+		NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+		wait_for_predicate(15, [handle_data]() {
+			return handle_data->GetModuleState() != NodeModuleState::initializing;
+		});
+
+		///act
+
+		NODEJS_Start(result);
+
+		///assert
+		wait_for_predicate(15, [handle_data]() {
+			return g_notify_result.WasCalled() == true;
+		});
+		ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+		ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
+
+		///cleanup
+		NODEJS_Destroy(result);
+	}
 
 END_TEST_SUITE(nodejs_int)

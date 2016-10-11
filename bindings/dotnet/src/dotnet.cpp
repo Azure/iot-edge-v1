@@ -640,21 +640,76 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE
 	return returnValue;
 }
 
+static void DotNET_Start(MODULE_HANDLE module)
+{
+	/*Codes_SRS_DOTNET_17_001: [ DotNET_Start shall do nothing if module is NULL. ]*/
+	if (module != NULL)
+	{
+		DOTNET_HOST_HANDLE_DATA* handleData = (DOTNET_HOST_HANDLE_DATA*)module;
+		try
+		{
+			bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+			_Type * if_type = NULL;
+			HRESULT hrResult;
+			
+			/*Codes_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ]*/
+			if (FAILED(hrResult = handleData->spClientModuleType->GetInterface(bstrStartClientIFName, VARIANT_TRUE, &if_type)))
+			{
+				LogError("Failed to discover type");
+			}
+			else
+			{
+				if (if_type)
+				{
+					bstr_t bstrStartClientMethodName(L"Start");
+					variant_t vt_Empty;
+
+					/*Codes_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ]*/
+					if (FAILED(hrResult = handleData->spClientModuleType->InvokeMember_3
+					(
+						bstrStartClientMethodName,
+						static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
+						NULL,
+						handleData->vtClientModuleObject,
+						NULL,
+						&vt_Empty
+					)))
+					{
+						LogError("Failed to Invoke Start method. w/hr 0x%08lx\n", hrResult);
+					}
+				}
+			}	
+		}
+		catch (const _com_error& e)
+		{
+			LogError("Exception Thrown. Message: %s ", e.ErrorMessage());
+		};
+	}
+}
+
 static const MODULE_APIS DOTNET_APIS_all =
 {
 	DotNET_Create,
 	DotNET_Destroy,
-	DotNET_Receive
+	DotNET_Receive, 
+	DotNET_Start
 };
 
 
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(DOTNET_HOST)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(DOTNET_HOST)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	/* Codes_SRS_DOTNET_04_021: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ] */
-	return &DOTNET_APIS_all;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/*Codes_SRS_DOTNET_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = DOTNET_APIS_all;
+	}
 }

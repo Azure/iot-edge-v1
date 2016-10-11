@@ -64,6 +64,14 @@ gateway process, it:
 
 -   Loads the .NET module from the path indicated on the configuration (dotnet_module_path) into Default App domain, by calling `ExecuteInDefaultAppDomain`, invokes default constructor at the class (dotnet_module_entry_class) and calls `Create` method, implemented by the `IGatewayModule` interface;
 
+### Module\_Start
+
+When the **.NET Module Host**’s `Module_Destroy` function is invoked by the
+gateway, it:
+
+- Checks to see if the .NET module has implemented the `Start` method.
+- If defined, invokes the `Start` method implemented by the .NET module.
+
 ### Module\_Receive
 
 When the **.NET Module Host**’s `Module_Receive` function is invoked by the
@@ -163,6 +171,18 @@ The high level design of these objects and interfaces is documented below:
             /// <param name="received_message">The message being sent to the module.</param>
             /// <returns></returns>                
             void Receive(Message received_message);                
+    }
+    
+    /// <summary> Optional Start Interface to be implemented by the .NET Module </summary>
+    public interface IGatewayModuleStart
+    {
+
+        /// <summary>
+        ///     Informs module the gateway is ready to send and receive messages.
+        /// </summary>
+        /// <returns></returns>
+        void Start(); 
+        
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

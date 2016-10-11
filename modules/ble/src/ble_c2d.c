@@ -264,15 +264,22 @@ static const MODULE_APIS BLE_C2D_APIS_all =
 {
     BLE_C2D_Create,
     BLE_C2D_Destroy,
-    BLE_C2D_Receive
+    BLE_C2D_Receive,
+    NULL
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(BLE_MODULE_C2D)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(BLE_MODULE_C2D)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-    /*Codes_SRS_BLE_CTOD_13_019: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ]*/
-    return &BLE_C2D_APIS_all;
+    if (!apis)
+    {
+        LogError("NULL passed to Module_GetAPIS");
+    } else
+    {
+        /*Codes_SRS_BLE_CTOD_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
+	    (*apis) = BLE_C2D_APIS_all;
+    }
 }

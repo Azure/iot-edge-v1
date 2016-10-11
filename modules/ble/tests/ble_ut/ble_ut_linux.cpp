@@ -578,9 +578,12 @@ BEGIN_TEST_SUITE(ble_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-        BLE_Create = Module_GetAPIS()->Module_Create;
-        BLE_Destroy = Module_GetAPIS()->Module_Destroy;
-        BLE_Receive = Module_GetAPIS()->Module_Receive;
+        MODULE_APIS apis;
+        Module_GetAPIS(&apis);
+
+        BLE_Create = apis.Module_Create;
+        BLE_Destroy = apis.Module_Destroy;
+        BLE_Receive = apis.Module_Receive;
     }
 
     TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -2473,19 +2476,19 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_destroy(instructions);
     }
 
-    /*Tests_SRS_BLE_13_007: [ Module_GetAPIS shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields initialized to non-NULL values. ]*/
+    /*Tests_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
     {
         ///arrrange
 
         ///act
-        auto result = Module_GetAPIS();
+        MODULE_APIS apis;
+        Module_GetAPIS(&apis);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-        ASSERT_IS_NOT_NULL(result->Module_Create);
-        ASSERT_IS_NOT_NULL(result->Module_Destroy);
-        ASSERT_IS_NOT_NULL(result->Module_Receive);
+        ASSERT_IS_TRUE(apis.Module_Create != NULL);
+        ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(apis.Module_Receive != NULL);
     }
 
     /*Tests_SRS_BLE_13_018: [ BLE_Receive shall do nothing if module is NULL or if message is NULL. ]*/

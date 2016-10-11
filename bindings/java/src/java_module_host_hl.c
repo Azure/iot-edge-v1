@@ -63,7 +63,9 @@ static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE broker, const void* 
 					else
 					{
 						/*Codes_SRS_JAVA_MODULE_HOST_HL_14_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
-						result = MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)()->Module_Create(broker, &config);
+						MODULE_APIS apis;
+						MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
+						result = apis.Module_Create(broker, &config);
 
 						/*Codes_SRS_JAVA_MODULE_HOST_HL_14_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
 						if (result == NULL)
@@ -90,13 +92,28 @@ static MODULE_HANDLE JavaModuleHost_HL_Create(BROKER_HANDLE broker, const void* 
 static void JavaModuleHost_HL_Destroy(MODULE_HANDLE module)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_HL_14_008: [ This function shall call the underlying Java Module Host's _Destroy function using this module MODULE_HANDLE. ]*/
-	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)()->Module_Destroy(module);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
+	apis.Module_Destroy(module);
+}
+
+static void JavaModuleHost_HL_Start(MODULE_HANDLE module)
+{
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
+	if (apis.Module_Start != NULL)
+	{
+		/*Codes_SRS_JAVA_MODULE_HOST_HL_17_001: [ This function shall pass the arguments to the underlying Java Module Host's _Start function, if defined. ]*/
+		apis.Module_Start(module);
+	}
 }
 
 static void JavaModuleHost_HL_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 {
 	/*Codes_SRS_JAVA_MODULE_HOST_HL_14_009: [ This function shall call the underlying Java Module Host's _Receive function using this module MODULE_HANDLE and message MESSAGE_HANDLE. ]*/
-	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)()->Module_Receive(module, message);
+	MODULE_APIS apis;
+	MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST)(&apis);
+	apis.Module_Receive(module, message);
 }
 
 static int parse_jvm_options_internal(JAVA_MODULE_HOST_CONFIG* config, JSON_Object* obj)
@@ -154,15 +171,23 @@ static const MODULE_APIS JavaModuleHost_HL_APIS =
 {
 	JavaModuleHost_HL_Create,
 	JavaModuleHost_HL_Destroy,
-	JavaModuleHost_HL_Receive
+	JavaModuleHost_HL_Receive,
+	JavaModuleHost_HL_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_APIS* MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST_HL)(void)
+MODULE_EXPORT void MODULE_STATIC_GETAPIS(JAVA_MODULE_HOST_HL)(MODULE_APIS* apis)
 #else
-MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void)
+MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	/*Codes_SRS_JAVA_MODULE_HOST_HL_14_001: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
-	return &JavaModuleHost_HL_APIS;
+	if (!apis)
+	{
+		LogError("NULL passed to Module_GetAPIS");
+	}
+	else
+	{
+		/* Codes_SRS_JAVA_MODULE_HOST_HL_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
+		(*apis) = JavaModuleHost_HL_APIS;
+	}
 }

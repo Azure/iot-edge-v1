@@ -435,6 +435,7 @@ void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 static pfModule_Create  JavaModuleHost_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy JavaModuleHost_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive JavaModuleHost_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start	JavaModuleHost_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 IMPLEMENT_UMOCK_C_ENUM_TYPE(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT_VALUES);
 IMPLEMENT_UMOCK_C_ENUM_TYPE(BROKER_RESULT, BROKER_RESULT_VALUES);
@@ -447,9 +448,12 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	g_testByTest = TEST_MUTEX_CREATE();
 	ASSERT_IS_NOT_NULL(g_testByTest);
 
-	JavaModuleHost_Create = Module_GetAPIS()->Module_Create;
-	JavaModuleHost_Destroy = Module_GetAPIS()->Module_Destroy;
-	JavaModuleHost_Receive = Module_GetAPIS()->Module_Receive;
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
+	JavaModuleHost_Create = apis.Module_Create;
+	JavaModuleHost_Destroy = apis.Module_Destroy;
+	JavaModuleHost_Receive = apis.Module_Receive;
+	JavaModuleHost_Start = apis.Module_Start;
 
 	umock_c_init(on_umock_c_error);
 	umocktypes_charptr_register_types();
@@ -2287,6 +2291,221 @@ TEST_FUNCTION(JavaModuleHost_Destroy_CallVoidMethod_fails)
 }
 
 //=============================================================================
+//JavaModuleHost_Start tests
+//=============================================================================
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_050: [This function shall attach the JVM to the current thread.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_051: [This function shall get the user - defined Java module class using the module parameter and get the start() method.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_052: [This function shall call the void start() method of the Java module object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_053: [This function shall detach the JVM from the current thread.]*/
+TEST_FUNCTION(JavaModuleHost_Start_success)
+{
+	//Arrange
+
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(GetObjectClass(global_env, IGNORED_PTR_ARG))
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(GetMethodID(global_env, IGNORED_PTR_ARG, MODULE_START_METHOD_NAME, MODULE_START_DESCRIPTOR))
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ExceptionOccurred(global_env));
+	STRICT_EXPECTED_CALL(CallVoidMethodV(global_env, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.IgnoreArgument(4);
+	STRICT_EXPECTED_CALL(ExceptionOccurred(global_env));
+	STRICT_EXPECTED_CALL(DetachCurrentThread(global_vm));
+
+	//Act
+	JavaModuleHost_Start(module);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//Cleanup
+	JavaModuleHost_Destroy(module);
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_049: [This function shall do nothing if module is NULL.]*/
+TEST_FUNCTION(JavaModuleHost_Start_module_null_failure)
+{
+	//Arrange
+	umock_c_reset_all_calls();
+
+	//Act
+	JavaModuleHost_Start(NULL);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+TEST_FUNCTION(JavaModuleHost_Start_attach_fails)
+{
+	//Arrange
+
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	int result = 0;
+	result = umock_c_negative_tests_init();
+	ASSERT_ARE_EQUAL(int, 0, result);
+
+	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
+		.IgnoreArgument(2);
+
+	umock_c_negative_tests_snapshot();
+
+	//Act
+	umock_c_negative_tests_fail_call(0);
+	JavaModuleHost_Start(module);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	umock_c_negative_tests_deinit();
+
+	//Cleanup
+	JavaModuleHost_Destroy(module);
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_053: [This function shall detach the JVM from the current thread.]*/
+TEST_FUNCTION(JavaModuleHost_Start_GetObjectClass_fails)
+{
+	//Arrange
+
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	int result = 0;
+	result = umock_c_negative_tests_init();
+	ASSERT_ARE_EQUAL(int, 0, result);
+
+	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(GetObjectClass(global_env, IGNORED_PTR_ARG))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(DetachCurrentThread(global_vm));
+
+	umock_c_negative_tests_snapshot();
+
+	//Act
+	umock_c_negative_tests_fail_call(1);
+	JavaModuleHost_Start(module);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	umock_c_negative_tests_deinit();
+
+	//Cleanup
+	JavaModuleHost_Destroy(module);
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_053: [This function shall detach the JVM from the current thread.]*/
+TEST_FUNCTION(JavaModuleHost_Start_GetMethodID_fails)
+{
+	//Arrange
+
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	int result = 0;
+	result = umock_c_negative_tests_init();
+	ASSERT_ARE_EQUAL(int, 0, result);
+
+	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(GetObjectClass(global_env, IGNORED_PTR_ARG))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(GetMethodID(global_env, IGNORED_PTR_ARG, MODULE_START_METHOD_NAME, MODULE_START_DESCRIPTOR))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(ExceptionOccurred(global_env));
+
+	STRICT_EXPECTED_CALL(ExceptionDescribe(global_env));
+
+	STRICT_EXPECTED_CALL(ExceptionClear(global_env));
+
+	STRICT_EXPECTED_CALL(DetachCurrentThread(global_vm));
+
+	umock_c_negative_tests_snapshot();
+
+	//Act
+	umock_c_negative_tests_fail_call(2);
+	JavaModuleHost_Start(module);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	umock_c_negative_tests_deinit();
+
+	//Cleanup
+	JavaModuleHost_Destroy(module);
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_054: [This function shall exit if any JNI function fails.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_053: [This function shall detach the JVM from the current thread.]*/
+TEST_FUNCTION(JavaModuleHost_Start_CallVoidMethod_fails)
+{
+	//Arrange
+
+	MODULE_HANDLE module = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	int result = 0;
+	result = umock_c_negative_tests_init();
+	ASSERT_ARE_EQUAL(int, 0, result);
+
+	STRICT_EXPECTED_CALL(AttachCurrentThread(global_vm, IGNORED_PTR_ARG, NULL))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(GetObjectClass(global_env, IGNORED_PTR_ARG))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(GetMethodID(global_env, IGNORED_PTR_ARG, MODULE_START_METHOD_NAME, MODULE_START_DESCRIPTOR))
+		.IgnoreArgument(2);
+
+	STRICT_EXPECTED_CALL(ExceptionOccurred(global_env));
+
+	STRICT_EXPECTED_CALL(CallVoidMethodV(global_env, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.IgnoreArgument(4);
+
+	STRICT_EXPECTED_CALL(ExceptionOccurred(global_env));
+
+	STRICT_EXPECTED_CALL(ExceptionDescribe(global_env));
+
+	STRICT_EXPECTED_CALL(ExceptionClear(global_env));
+
+	STRICT_EXPECTED_CALL(DetachCurrentThread(global_vm));
+
+	umock_c_negative_tests_snapshot();
+
+	//Act
+	umock_c_negative_tests_fail_call(5);
+	JavaModuleHost_Start(module);
+
+	//Assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	umock_c_negative_tests_deinit();
+
+	//Cleanup
+	JavaModuleHost_Destroy(module);
+}
+
+//=============================================================================
 //Java_com_microsoft_azure_gateway_core_Broker_publishMessage tests
 //=============================================================================
 
@@ -2409,20 +2628,20 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_core_Broker_publishMessage_failur
 	JavaModuleHost_Destroy(module);
 }
 
-/*Tests_SRS_JAVA_MODULE_HOST_14_028: [ This function shall return a non-NULL pointer to a structure of type MODULE_APIS that has all fields non-NULL. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
 TEST_FUNCTION(Module_GetAPIS_returns_non_NULL)
 {
 	//Arrange
 
 	//Act
 
-	const MODULE_APIS* apis = Module_GetAPIS();
+	MODULE_APIS apis;
+	Module_GetAPIS(&apis);
 
 	//Assert
-	ASSERT_IS_NOT_NULL(apis);
-	ASSERT_IS_NOT_NULL(apis->Module_Create);
-	ASSERT_IS_NOT_NULL(apis->Module_Destroy);
-	ASSERT_IS_NOT_NULL(apis->Module_Receive);
+	ASSERT_IS_NOT_NULL(apis.Module_Create);
+	ASSERT_IS_NOT_NULL(apis.Module_Destroy);
+	ASSERT_IS_NOT_NULL(apis.Module_Receive);
 }
 
 END_TEST_SUITE(JavaModuleHost_UnitTests);

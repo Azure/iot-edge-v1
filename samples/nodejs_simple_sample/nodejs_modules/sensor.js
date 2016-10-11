@@ -8,6 +8,10 @@ module.exports = {
         this.broker = broker;
         this.configuration = configuration;
 
+        return true;
+    },
+
+    start: function () {
         setInterval(() => {
             this.broker.publish({
                 properties: {
@@ -19,8 +23,6 @@ module.exports = {
                 ])
             });
         }, 500);
-
-        return true;
     },
 
     receive: function(message) {

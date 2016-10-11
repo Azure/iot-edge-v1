@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace SensorModule
 {
-    public class DotNetSensorModule : IGatewayModule
+    public class DotNetSensorModule : IGatewayModule, IGatewayModuleStart
     {
         private Broker broker;
         private string configuration;
@@ -18,10 +18,13 @@ namespace SensorModule
         public void Create(Broker broker, byte[] configuration)
         {
 
-
             this.broker = broker;
             this.configuration = System.Text.Encoding.UTF8.GetString(configuration);
 
+        }
+
+        public void Start()
+        {
             Thread oThread = new Thread(new ThreadStart(this.threadBody));
             // Start the thread
             oThread.Start();
