@@ -126,7 +126,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +143,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,7 +160,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -177,7 +177,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -194,7 +194,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -211,7 +211,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\azure-c-shared-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\..\..\core\inc;..\..\..\..\core\inc\windows;..\..\..\..\deps\c-utility\inc;..\..\..\..\core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -259,57 +259,57 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\condition_win32.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\adapters\condition_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\lock_win32.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\adapters\lock_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\adapters\threadapi_win32.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\adapters\threadapi_win32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\buffer.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\buffer.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\list.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\list.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\strings.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\strings.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constbuffer.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\constbuffer.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\map.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\map.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\constmap.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\constmap.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\crt_abstractions.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\crt_abstractions.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\deps\azure-c-shared-utility\src\vector.c">
+    <ClCompile Include="..\..\..\..\deps\c-utility\src\vector.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>

@@ -28,7 +28,7 @@ include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 include_directories(../../modules/common)
 
-add_executable(hello_world_sample ${hello_world_headers} ${modules_path_file} ${hello_world_sources})
+add_executable(hello_world_sample ${hello_world_headers} ${hello_world_sources})
 
 add_dependencies(hello_world_sample logger_hl)
 

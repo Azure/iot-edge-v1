@@ -63,8 +63,8 @@ linkSharedUtil(hello_world_hl)
 linkSharedUtil(hello_world_hl_static)
 
 add_module_to_solution(hello_world)
-if(install_executables)
-	install(TARGETS hello_world LIBRARY DESTINATION lib) 
-    install(TARGETS hello_world_hl LIBRARY DESTINATION lib) 
+if(install_modules)
+	install(TARGETS hello_world LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS hello_world_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

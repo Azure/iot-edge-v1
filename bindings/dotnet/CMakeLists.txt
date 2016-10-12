@@ -66,3 +66,8 @@ linkSharedUtil(dotnet_hl_static)
 add_subdirectory(tests)
 
 add_module_to_solution(dotnet)
+
+if(install_modules)
+    install(TARGETS dotnet LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
+    install(TARGETS dotnet_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
+endif()
