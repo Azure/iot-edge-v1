@@ -64,8 +64,8 @@ linkSharedUtil(simulated_device_hl_static)
 
 add_module_to_solution(simulated_device)
 
-if(install_executables)
-	install(TARGETS simulated_device LIBRARY DESTINATION lib) 
-    install(TARGETS simulated_device_hl LIBRARY DESTINATION lib) 
+if(install_modules)
+	install(TARGETS simulated_device LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS simulated_device_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

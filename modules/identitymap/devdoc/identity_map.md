@@ -62,9 +62,9 @@ case-insenstive.
 
 ##References
 
-[module.h](../../../../devdoc/module.md)
+[module.h](../../../core/devdoc/module.md)
 
-[vector.h](../../../../azure-c-shared-utility/c/inc/vector.h)
+[vector.h](../../../deps/c-utility/c/inc/vector.h)
 
 IEEE Std 802-2014, section 8.1 (MAC Address canonical form)
 

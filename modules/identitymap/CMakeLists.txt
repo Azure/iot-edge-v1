@@ -64,9 +64,9 @@ linkSharedUtil(identity_map_hl_static)
 
 add_module_to_solution(identity_map)
 
-if(install_executables)
-	install(TARGETS identity_map LIBRARY DESTINATION lib) 
-    install(TARGETS identity_map_hl LIBRARY DESTINATION lib) 
+if(install_modules)
+	install(TARGETS identity_map LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS identity_map_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 
 add_subdirectory(tests)

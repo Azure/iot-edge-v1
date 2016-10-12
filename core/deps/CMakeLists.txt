@@ -21,3 +21,9 @@ add_library(parson
     ${parson_c_sources}
     ${parson_h_sources}
 )
+
+install(TARGETS parson EXPORT gatewayTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/../bin
+)

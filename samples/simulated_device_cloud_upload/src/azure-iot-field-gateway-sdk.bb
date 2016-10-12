@@ -2,7 +2,7 @@ DESCRIPTION = ""
 LICENSE = "MI"
 SRC_URI = "file:///home/<<userName>>/azure-iot-gateway-sdk"
 
-LIC_FILES_CHKSUM = "file:///home/<<userName>>/azure-iot-gateway-sdk/deps/azure-iot-sdks/LICENSE;md5=4283671594edec4c13aeb073c219237a"
+LIC_FILES_CHKSUM = "file:///home/<<userName>>/azure-iot-gateway-sdk/deps/iot-sdk/LICENSE;md5=4283671594edec4c13aeb073c219237a"
 
 PROVIDES = "azure-iot-gateway-sdk"
 
