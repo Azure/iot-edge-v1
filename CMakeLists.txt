@@ -22,16 +22,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set( MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --suppressions=${CMAKE_CURRENT_LIST_DIR}/core/valgrind_suppressions.txt --error-exitcode=1" )
 endif()
 
-if(NOT GW_BROKER_TYPE)
-  set(GW_BROKER_TYPE "PubSub" CACHE STRING "Specfic which message broker the gateway will use [PubSub|Broadcast], default PubSub")
-else()
-  if(NOT GW_BROKER_TYPE STREQUAL "Broadcast")
-    if (NOT GW_BROKER_TYPE STREQUAL "PubSub")
-      message( FATAL_ERROR "Broker type may only be PubSub or Broadcast" )
-    endif()
-  endif()
-endif()
-
 include (CTest)
 
 include(CheckSymbolExists)
@@ -143,7 +133,7 @@ include_directories(./deps/parson)
 
 #this adds nanomsg
 option(NN_ENABLE_DOC "" OFF )
-if (WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
+if (WIN32)
   option(NN_STATIC_LIB "" OFF )
 else()
   option(NN_STATIC_LIB "" ON )
@@ -164,13 +154,13 @@ foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
 endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)
-  if (GW_BROKER_TYPE STREQUAL "PubSub")
-    target_link_libraries(${whatIsBuilding} nanomsg )
-  endif()
+
+target_link_libraries(${whatIsBuilding} nanomsg )
+  
 endfunction(link_broker)
 
 function(install_broker whatIsBuilding whatIsBuildingLocation)
-  if(WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
+  if(WIN32)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           ${nanomsg_target_dll}
