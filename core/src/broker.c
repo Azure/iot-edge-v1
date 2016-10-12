@@ -271,14 +271,8 @@ static int module_worker(void * user_data)
 				/*Codes_SRS_BROKER_17_018: [ If the deserialization is not successful, the message loop shall continue. ]*/
 				if (msg != NULL)
 				{
-					/*Codes_SRS_BROKER_13_092: [ The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
-#ifdef UWP_BINDING
-					/*Codes_SRS_BROKER_99_012: [The function shall deliver the message to the module's Receive function via the IInternalGatewayModule interface. ]*/
-					module_info->module->module_instance->Module_Receive(msg);
-#else
 					/*Codes_SRS_BROKER_13_092: [The function shall deliver the message to the module's callback function via module_info->module_apis. ]*/
 					module_info->module->module_apis->Module_Receive(module_info->module->module_handle, msg);
-#endif // UWP_BINDING
 					/*Codes_SRS_BROKER_13_093: [ The function shall destroy the message that was dequeued by calling Message_Destroy. ]*/
 					Message_Destroy(msg);
 				}
@@ -304,14 +298,8 @@ static BROKER_RESULT init_module(BROKER_MODULEINFO* module_info, const MODULE* m
     }
 	else
 	{
-
-#ifdef UWP_BINDING
-		module_info->module->module_instance = module->module_instance;
-#else
 		module_info->module->module_apis = module->module_apis;
 		module_info->module->module_handle = module->module_handle;
-#endif // UWP_BINDING
-
 
 		/*Codes_SRS_BROKER_13_099: [The function shall initialize BROKER_MODULEINFO::socket_lock with a valid lock handle.]*/
 		module_info->socket_lock = Lock_Init();
@@ -490,21 +478,12 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
         result = BROKER_INVALIDARG;
         LogError("invalid parameter (NULL).");
     }
-#ifdef UWP_BINDING
-	/*Codes_SRS_BROKER_99_015: [If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`.]*/
-	else if (module->module_instance == NULL)
-	{
-		result = BROKER_INVALIDARG;
-		LogError("invalid parameter (NULL).");
-	}
-#else
 	/*Codes_SRS_BROKER_99_014: [If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`.]*/
 	else if (module->module_apis == NULL || module->module_handle == NULL)
 	{
 		result = BROKER_INVALIDARG;
 		LogError("invalid parameter (NULL).");
 	}
-#endif // UWP_BINDING
     else
     {
         BROKER_MODULEINFO* module_info = (BROKER_MODULEINFO*)malloc(sizeof(BROKER_MODULEINFO));
@@ -578,11 +557,7 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
 static bool find_module_predicate(LIST_ITEM_HANDLE list_item, const void* value)
 {
     BROKER_MODULEINFO* element = (BROKER_MODULEINFO*)list_item_get_value(list_item);
-#ifdef UWP_BINDING
-	return element->module->module_instance == ((MODULE*)value)->module_instance;
-#else
 	return element->module->module_handle == ((MODULE*)value)->module_handle;
-#endif // UWP_BINDING
 }
 
 BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)

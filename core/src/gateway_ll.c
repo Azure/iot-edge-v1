@@ -46,8 +46,6 @@ typedef struct MODULE_DATA_TAG {
 	MODULE_HANDLE module;
 } MODULE_DATA;
 
-#ifndef UWP_BINDING
-
 typedef struct LINK_DATA_TAG {
 	bool from_any_source;
 	MODULE_DATA *module_source;
@@ -555,11 +553,7 @@ void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLin
 	}
 }
 
-#endif // !UWP_BINDING
-
 /*Private*/
-
-#ifndef UWP_BINDING
 
 static void gateway_destroymodulelist_internal(GATEWAY_MODULE_INFO* infos, size_t count)
 {
@@ -1200,102 +1194,5 @@ static void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LIN
 
 	VECTOR_erase(gateway_handle->links, link_data, 1);
 }
-#else
-
-GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker)
-{
-	/*Codes_SRS_GATEWAY_LL_99_001: [This function shall create a `GATEWAY_HANDLE` representing the newly created gateway.]*/
-	GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
-	if (gateway != NULL)
-	{
-		/* For now event system in UWP is not supported */
-		gateway->event_system = NULL;
-		gateway->broker = broker;
-		if (gateway->broker == NULL)
-		{
-			/*Codes_SRS_GATEWAY_LL_99_003: [This function shall return `NULL` if a `NULL` `BROKER_HANDLE` is received.]*/
-			free(gateway);
-			gateway = NULL;
-			LogError("Gateway_LL_UwpCreate(): broker must be non-NULL.");
-		}
-		else
-		{
-			gateway->modules = modules;
-			if (gateway->modules == NULL)
-			{
-				/*Codes_SRS_GATEWAY_LL_99_004: [This function shall return `NULL` if a `NULL` `VECTOR_HANDLE` is received.]*/
-				free(gateway);
-				gateway = NULL;
-				LogError("Gateway_LL_UwpCreate(): modules must be non-NULL.");
-			}
-			else
-			{
-				size_t entries_count = VECTOR_size(gateway->modules);
-				//Continue adding modules until all are added or one fails
-				for (size_t index = 0; index < entries_count; ++index)
-				{
-					MODULE* module = (MODULE*)VECTOR_element(gateway->modules, index);
-					auto result = Broker_AddModule(gateway->broker, module);
-					if (result != BROKER_OK)
-					{
-						free(gateway);
-						gateway = NULL;
-						LogError("Failed to attach module to the gateway's broker.");
-					}
-					else
-					{
-						/*Codes_SRS_GATEWAY_LL_99_005: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully linked to the GATEWAY_HANDLE_DATA's message broker. ]*/
-						Broker_IncRef(gateway->broker);
-					}
-				}
-			}
-		}
-	}
-	/*Codes_SRS_GATEWAY_LL_99_002: [This function shall return `NULL` upon any memory allocation failure.]*/
-	else
-	{
-		LogError("Gateway_LL_Create(): malloc failed.");
-	}
-
-	return gateway;
-}
-
-void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw)
-{
-	/*Codes_SRS_GATEWAY_LL_99_006: [If gw is NULL the function shall do nothing.]*/
-	if (gw != NULL)
-	{
-		GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
-
-		size_t entries_count = VECTOR_size(gateway_handle->modules);
-		//Iterate through gateway modules and remove
-		for (size_t index = 0; index < entries_count; ++index)
-		{
-			MODULE* module = (MODULE*)VECTOR_element(gateway_handle->modules, index);
-
-			//By design, there will be no NULL module_data_pptr pointers in the vector
-			/*Codes_SRS_GATEWAY_LL_99_007: [ The function shall detach modules from the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
-			/*Codes_SRS_GATEWAY_LL_99_008: [ If GATEWAY_HANDLE_DATA's broker cannot detach a module, the function shall log the error and continue unloading the module from the GATEWAY_HANDLE. ]*/
-			if (Broker_RemoveModule(gateway_handle->broker, module) != BROKER_OK)
-			{
-				LogError("Failed to remove module [%p] from the message broker. This module will remain linked to the broker but will be removed from the gateway.", module);
-			}
-			/*Codes_SRS_GATEWAY_LL_99_009: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
-			Broker_DecRef(gateway_handle->broker);
-		}
-
-		/*Codes_SRS_GATEWAY_LL_99_010: [The function shall destroy the GATEWAY_HANDLE_DATA's `broker` `BROKER_HANDLE`. ]*/
-		Broker_Destroy(gateway_handle->broker);
-
-		free(gateway_handle);
-	}
-	else
-	{
-		LogError("Gateway_LL_UwpDestroy(): The GATEWAY_HANDLE is null.");
-	}
-}
-
-#endif // UWP_BINDING
-
 
 

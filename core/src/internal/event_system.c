@@ -36,8 +36,6 @@ struct EVENTSYSTEM_DATA {
 	LIST_HANDLE thread_queue;
 };
 
-#ifndef UWP_BINDING
-
 typedef struct CALLBACK_CLOSURE_TAG {
 	GATEWAY_CALLBACK call;
 	void* user_param;
@@ -433,5 +431,3 @@ static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT ev
 {
 	Gateway_LL_DestroyModuleList((VECTOR_HANDLE)context);
 }
-
-#endif

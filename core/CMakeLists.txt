@@ -52,6 +52,7 @@ set(gateway_c_sources
     ./src/internal/event_system.c
     ./src/gateway_ll.c
     ./src/gateway.c
+    ./src/broker.c
     ${dynamic_library_c_file}
 )
 
@@ -66,14 +67,6 @@ set(gateway_h_sources
     ./inc/module_loader.h
     ./inc/dynamic_library.h
 )
-
-if (GW_BROKER_TYPE STREQUAL "PubSub")
-    set(gateway_c_sources ${gateway_c_sources} ./src/broker.c)
-endif()
-
-if (GW_BROKER_TYPE STREQUAL "Broadcast")
-    set(gateway_c_sources ${gateway_c_sources} ./src/broadcast_broker.c)
-endif()
 
 include_directories(./inc)
 

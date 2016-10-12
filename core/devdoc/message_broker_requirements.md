@@ -1,4 +1,4 @@
-# Pub/Sub Message Broker
+# Message Broker
 
 ## Overview
 
