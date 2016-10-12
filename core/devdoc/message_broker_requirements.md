@@ -170,8 +170,6 @@ static void module_worker(void* user_data)
 
 **SRS_BROKER_17_019: [** The function shall free the buffer received on the `receive_socket`. **]**
 
-**SRS_BROKER_99_012: [** The function shall deliver the message to the module's Receive function via the `IInternalGatewayModule` interface. **]**
-
 ## Broker_Publish
 
 ```C
@@ -237,8 +235,6 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
 **SRS_BROKER_13_047: [** This function shall return `BROKER_ERROR` if an underlying API call to the platform causes an error or `BROKER_OK` otherwise. **]**
 
 **SRS_BROKER_99_014: [** If `module_handle` or `module_apis` are `NULL` the function shall return `BROKER_INVALIDARG`. **]**
-
-**SRS_BROKER_99_015: [** If `module_instance` is `NULL` the function shall return `BROKER_INVALIDARG`. **]**
 
 
 ## Broker_RemoveModule
