@@ -90,10 +90,22 @@ add_library(gateway
     ${gateway_h_sources}
 )
 
+add_library(gateway_install
+    ${gateway_c_sources}
+    ${gateway_h_sources}
+)
+
+set_target_properties(gateway_install PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+
 if(WIN32)
-    target_link_libraries(gateway "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Debug/aziotsharedutil.lib" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Debug/nanomsg.lib" parson ${dynamic_loader_library})
+    target_link_libraries(gateway_install debug "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Debug/aziotsharedutil.lib" debug "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Debug/nanomsg.lib")
+    target_link_libraries(gateway_install optimized "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Release/aziotsharedutil.lib" optimized "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Release/nanomsg.lib")
+    target_link_libraries(gateway_install parson ${dynamic_loader_library})
+    
+    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
 else()
-    target_link_libraries(gateway "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/libaziotsharedutil.a" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/libnanomsg.a" parson ${dynamic_loader_library})
+    target_link_libraries(gateway_install "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/libaziotsharedutil.a" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/libnanomsg.a" parson ${dynamic_loader_library})
+    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
     
     nn_check_lib (anl getaddrinfo_a NN_HAVE_GETADDRINFO_A)
     nn_check_lib (rt clock_gettime  NN_HAVE_CLOCK_GETTIME)
@@ -102,16 +114,21 @@ else()
     nn_check_lib (nsl gethostbyname NN_HAVE_LIBNSL)
     nn_check_lib (socket socket NN_HAVE_LIBSOCKET)
 
+    target_link_libraries(gateway_install ${NN_REQUIRED_LIBRARIES})
+    target_link_libraries(gateway_install m)
+
     target_link_libraries(gateway ${NN_REQUIRED_LIBRARIES})
     target_link_libraries(gateway m)
 endif()
 
 if(WIN32)
+    target_link_libraries(gateway_install rpcrt4.lib)
     target_link_libraries(gateway rpcrt4.lib)
 else()
     find_package(PkgConfig REQUIRED)
     pkg_search_module(UIDLINUX REQUIRED uuid)
 
+    target_link_libraries(gateway_install uuid)
     target_link_libraries(gateway uuid)
 endif()
 
@@ -147,7 +164,7 @@ else()
     set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/../azureiot)
 endif()
 
-install(TARGETS gateway EXPORT gatewayTargets
+install(TARGETS gateway_install EXPORT gatewayTargets
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
     RUNTIME DESTINATION ${LIB_INSTALL_DIR}/../bin
