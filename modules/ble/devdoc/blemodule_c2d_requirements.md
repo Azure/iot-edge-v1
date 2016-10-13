@@ -26,6 +26,19 @@ The message content is a JSON object of the format:
 }
 ```
 
+## BLE_C2D_CreateFromJson
+```c
+MODULE_HANDLE BLE_C2D_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+```
+
+Creates a new BLE C2D module instance. `configuration` is ignored.
+
+**SRS_BLE_CTOD_05_001: [** `BLE_C2D_CreateFromJson` shall return `NULL` if the `broker` parameter is `NULL`. **]**
+
+**SRS_BLE_CTOD_05_002: [** `BLE_C2D_CreateFromJson` shall return `NULL` if any of the underlying platform calls fail. **]**
+
+**SRS_BLE_CTOD_05_003: [** `BLE_C2D_CreateFromJson` shall return a non-`NULL` handle when the function succeeds. **]**
+
 ## BLE_C2D_Create
 ```c
 MODULE_HANDLE BLE_C2D_Create(BROKER_HANDLE broker, const void* configuration)

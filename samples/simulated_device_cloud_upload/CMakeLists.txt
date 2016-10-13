@@ -32,18 +32,14 @@ include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 include_directories(../../modules/common)
 
-#link modules
-linkModule(logger)
-linkModule(identitymap)
-linkModule(iothub)
-linkModule(simulated_device)
-
 add_executable(simulated_device_cloud_upload_sample ${modules_service_c_file} ${simulated_device_cloud_upload_sources})
+
+add_dependencies(simulated_device_cloud_upload_sample simulated_device identity_map iothub logger)
+
 target_link_libraries(simulated_device_cloud_upload_sample gateway)
 linkSharedUtil(simulated_device_cloud_upload_sample)
 linkHttp(simulated_device_cloud_upload_sample)
 install_broker(simulated_device_cloud_upload_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-
 
 add_sample_to_solution(simulated_device_cloud_upload_sample)
 

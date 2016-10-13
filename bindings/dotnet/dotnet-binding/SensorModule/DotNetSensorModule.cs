@@ -32,7 +32,6 @@ namespace SensorModule
 
         public void Destroy()
         {
-            Console.WriteLine("This is C# Sensor Module Destroy!");
         }
 
         public void Receive(Message received_message)

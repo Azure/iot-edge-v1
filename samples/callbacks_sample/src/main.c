@@ -29,7 +29,7 @@ void second_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_
 	printf("Gateway is being destroyed, second callback called with param: \"%d\".\n", *(int*)user_param);
 }
 
-int main(int argc, char** argv)
+int main()
 {
 	int param1 = 1, param2 = 2, param3 = 3;
     GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);

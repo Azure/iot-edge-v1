@@ -3,7 +3,7 @@
     [ 
         {
             "module name" : "IotHub",
-            "module path" : "..\\..\\..\\modules\\iothub\\Debug\\iothub_hl.dll",
+            "module path" : "..\\..\\..\\modules\\iothub\\Debug\\iothub.dll",
             "args" : 
             {
                 "IoTHubName" : "<<insert here IoTHubName>>",
@@ -13,7 +13,7 @@
         },
         {
             "module name" : "mapping",
-            "module path" : "..\\..\\..\\modules\\identitymap\\Debug\\identity_map_hl.dll",
+            "module path" : "..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll",
             "args" : 
             [
                 {
@@ -30,7 +30,7 @@
         },
         {
             "module name":"BLE1",
-            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device_hl.dll",
+            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll",
             "args":
             {
                 "macAddress" : "01:01:01:01:01:01"
@@ -38,7 +38,7 @@
         },
         {
             "module name":"BLE2",
-            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device_hl.dll",
+            "module path" : "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll",
             "args":
             {
                 "macAddress" : "02:02:02:02:02:02"
@@ -46,7 +46,7 @@
         },
         {
             "module name":"Logger",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
             "args":
             {
                 "filename":"deviceCloudUploadGatewaylog.log"

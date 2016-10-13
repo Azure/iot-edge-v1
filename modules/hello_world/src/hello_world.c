@@ -113,33 +113,38 @@ static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configu
             {
                 result->stopThread = 0;
                 result->broker = broker;
-				result->threadHandle = NULL;
+                result->threadHandle = NULL;
             }
         }
-	}
+    }
     return result;
+}
+
+static MODULE_HANDLE HelloWorld_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    return HelloWorld_Create(broker, configuration);
 }
 
 static void HelloWorld_Start(MODULE_HANDLE module)
 {
-	HELLOWORLD_HANDLE_DATA* handleData = module;
-	if (handleData != NULL)
-	{
-		if (Lock(handleData->lockHandle) != LOCK_OK)
-		{
-			LogError("not able to Lock, still setting the thread to finish");
-			handleData->stopThread = 1;
-		}
-		else
-		{
-			if (ThreadAPI_Create(&handleData->threadHandle, helloWorldThread, handleData) != THREADAPI_OK)
-			{
-				LogError("failed to spawn a thread");
-				handleData->threadHandle = NULL;
-			}
-			(void)Unlock(handleData->lockHandle);
-		}
-	}
+    HELLOWORLD_HANDLE_DATA* handleData = module;
+    if (handleData != NULL)
+    {
+        if (Lock(handleData->lockHandle) != LOCK_OK)
+        {
+            LogError("not able to Lock, still setting the thread to finish");
+            handleData->stopThread = 1;
+        }
+        else
+        {
+            if (ThreadAPI_Create(&handleData->threadHandle, helloWorldThread, handleData) != THREADAPI_OK)
+            {
+                LogError("failed to spawn a thread");
+                handleData->threadHandle = NULL;
+            }
+            (void)Unlock(handleData->lockHandle);
+        }
+    }
 }
 
 static void HelloWorld_Destroy(MODULE_HANDLE module)
@@ -158,17 +163,11 @@ static void HelloWorld_Destroy(MODULE_HANDLE module)
         Unlock(handleData->lockHandle);
     }
 
-	if (handleData->threadHandle == NULL)
-	{
-		LogError("Hello World module not started, no thread");
-	}
-	else
-	{
-		if (ThreadAPI_Join(handleData->threadHandle, &notUsed) != THREADAPI_OK)
-		{
-			LogError("unable to ThreadAPI_Join, still proceeding in _Destroy");
-		}
-	}
+    if (handleData->threadHandle != NULL &&
+        ThreadAPI_Join(handleData->threadHandle, &notUsed) != THREADAPI_OK)
+    {
+        LogError("unable to ThreadAPI_Join, still proceeding in _Destroy");
+    }
     
     (void)Lock_Deinit(handleData->lockHandle);
     free(handleData);
@@ -181,10 +180,11 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 
 static const MODULE_APIS HelloWorld_APIS_all =
 {
-	HelloWorld_Create,
-	HelloWorld_Destroy,
-	HelloWorld_Receive,
-	HelloWorld_Start
+    HelloWorld_CreateFromJson,
+    HelloWorld_Create,
+    HelloWorld_Destroy,
+    HelloWorld_Receive,
+    HelloWorld_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -193,12 +193,12 @@ MODULE_EXPORT void MODULE_STATIC_GETAPIS(HELLOWORLD_MODULE)(MODULE_APIS* apis)
 MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis)
 #endif
 {
-	if (!apis)
-	{
-		LogError("NULL passed to Module_GetAPIS");
-	}
-	else
-	{
-		(*apis) = HelloWorld_APIS_all;
-	}
+    if (!apis)
+    {
+        LogError("NULL passed to Module_GetAPIS");
+    }
+    else
+    {
+        (*apis) = HelloWorld_APIS_all;
+    }
 }

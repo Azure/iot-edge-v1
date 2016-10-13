@@ -58,6 +58,7 @@ set(gateway_c_sources
     ./src/message.c
     ./src/module_loader.c
     ./src/internal/event_system.c
+	./src/gateway_internal.c
     ./src/gateway_ll.c
     ./src/gateway.c
     ./src/broker.c
@@ -125,7 +126,8 @@ else()
     target_link_libraries(gateway uuid)
 endif()
 
-#this adds the tests to the build process
+set_target_properties(gateway PROPERTIES FOLDER "Gateway")
+
 add_subdirectory(tests)
 
 #############################################################

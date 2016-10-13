@@ -37,10 +37,11 @@
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-static pfModule_Create  NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Destroy NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Receive NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Start   NODEJS_Start   = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_CreateFromJson NODEJS_CreateFromJson = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Create         NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Destroy        NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Receive        NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start          NODEJS_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 using namespace nodejs_module;
 
@@ -120,23 +121,30 @@ MockModule g_mock_module;
 MODULE_HANDLE g_mock_module_handle = nullptr;
 BROKER_HANDLE g_broker = nullptr;
 
-MODULE_HANDLE MockModule_Create(BROKER_HANDLE broker, const void* configuration)
+static MODULE_HANDLE MockModule_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    // We don't use Module_CreateFromJson in these tests, so it doesn't need to do anything...
+    return NULL;
+}
+
+static MODULE_HANDLE MockModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
     g_mock_module.create(broker, configuration);
     return reinterpret_cast<MODULE_HANDLE>(&g_mock_module);
 }
 
-void MockModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+static void MockModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     g_mock_module.receive(moduleHandle, messageHandle);
 }
 
-void MockModule_Destroy(MODULE_HANDLE moduleHandle)
+static void MockModule_Destroy(MODULE_HANDLE moduleHandle)
 {
     g_mock_module.destroy(moduleHandle);
 }
 
 MODULE_APIS g_fake_module_apis = {
+    MockModule_CreateFromJson,
     MockModule_Create,
     MockModule_Destroy,
     MockModule_Receive
@@ -310,6 +318,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
 		MODULE_APIS apis;
 		Module_GetAPIS(&apis);
+        NODEJS_CreateFromJson = apis.Module_CreateFromJson;
         NODEJS_Create = apis.Module_Create;
         NODEJS_Destroy = apis.Module_Destroy;
 		NODEJS_Receive = apis.Module_Receive;
@@ -369,21 +378,123 @@ BEGIN_TEST_SUITE(nodejs_int)
     /* Tests_SRS_NODEJS_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
     TEST_FUNCTION(Module_GetAPIS_returns_non_NULL_and_non_NULL_fields)
     {
-        ///arrrange
+        ///arrange
 
         ///act
 		MODULE_APIS apis;
 		Module_GetAPIS(&apis);
 
         ///assert
+        ASSERT_IS_TRUE(apis.Module_CreateFromJson != NULL);
         ASSERT_IS_TRUE(apis.Module_Create != NULL);
         ASSERT_IS_TRUE(apis.Module_Destroy != NULL);
         ASSERT_IS_TRUE(apis.Module_Receive != NULL);
     }
 
+    /*Tests_SRS_NODEJS_05_001: [ NODEJS_CreateFromJson shall return NULL if broker is NULL. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_with_NULL_broker_fails)
+    {
+        ///arrange
+
+        ///act
+        auto result = NODEJS_CreateFromJson(NULL, "someConfig");
+
+        ///assert
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_NODEJS_05_002: [ NODEJS_CreateFromJson shall return NULL if configuration is NULL. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_with_NULL_configuration_fails)
+    {
+        ///arrange
+
+        ///act
+        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_NODEJS_05_012: [ NODEJS_CreateFromJson shall parse configuration as a JSON string. ]*/
+    /*Tests_SRS_NODEJS_05_013: [ NODEJS_CreateFromJson shall extract the value of the main_path property from the configuration JSON. ]*/
+    /*Tests_SRS_NODEJS_05_006: [ NODEJS_CreateFromJson shall extract the value of the args property from the configuration JSON. ]*/
+    /*Tests_SRS_NODEJS_05_005: [ NODEJS_CreateFromJson shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
+    /*Tests_SRS_NODEJS_05_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_happy_path_succeeds)
+    {
+        ///arrange
+        TempFile js_file;
+        js_file.Write(NOOP_JS_MODULE);
+        std::string main_path = js_file.ReplaceAll(js_file.js_file_path, "\\\\", "\\\\\\\\");
+
+        std::string valid_json = std::string("") +
+            "{"                                                  \
+            "   \"main_path\": \"" + main_path.c_str() + "\","   \
+            "   \"args\": \"module configuration\""              \
+            "}";
+
+        ///act
+        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, valid_json.c_str());
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+
+        // wait for 15 seconds for the create to get done
+        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+        wait_for_predicate(15, [handle_data]() {
+            return handle_data->GetModuleState() == NodeModuleState::initialized;
+        });
+        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
+        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+
+        ///cleanup
+        NODEJS_Destroy(result);
+    }
+
+    /*Tests_SRS_NODEJS_05_004: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not contain a string property called main_path. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_json_is_missing_main_path)
+    {
+        ///arrange
+        const char* missing_main_path = "{ \"args\": \"module configuration\" }";
+
+        ///act
+        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, missing_main_path);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_NODEJS_05_014: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not start with an object at the root. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_json_is_not_an_object)
+    {
+        ///arrange
+        const char* not_an_object = "[ \"one\", \"two\" ]"; // array instead of object
+
+        ///act
+        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, not_an_object);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_NODEJS_05_003: [ NODEJS_CreateFromJson shall return NULL if configuration is not a valid JSON string. ]*/
+    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_configuration_is_not_valid_json)
+    {
+        ///arrange
+        const char* invalid_json = "{ \"name\": \"value\""; // missing closing curly brace
+
+        ///act
+        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, invalid_json);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_broker_handle)
     {
-        ///arrrange
+        ///arrange
 
         ///act
         auto result = NODEJS_Create(NULL, (const void*)0x42);
@@ -394,7 +505,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_config)
     {
-        ///arrrange
+        ///arrange
 
         ///act
         auto result = NODEJS_Create((BROKER_HANDLE)0x42, NULL);
@@ -405,7 +516,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_main_path)
     {
-        ///arrrange
+        ///arrange
         NODEJS_MODULE_CONFIG config = { 0 };
 
         ///act
@@ -417,7 +528,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_invalid_config_json)
     {
-        ///arrrange
+        ///arrange
         NODEJS_MODULE_CONFIG config = {
             "/path/to/mod.js",
             "not_json"
@@ -432,7 +543,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_invalid_main_file_path)
     {
-        ///arrrange
+        ///arrange
         NODEJS_MODULE_CONFIG config = {
             "/path/to/mod.js",
             "{}"
@@ -547,7 +658,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_publishes_message)
     {
-        ///arrrange
+        ///arrange
         const char* PUBLISH_JS_MODULE = ""                                      \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
@@ -618,7 +729,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_create_throws)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_CREATE_THROWS = ""                    \
             "'use strict';"                                      \
             "module.exports = {"                                 \
@@ -659,7 +770,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_create_returns_nothing)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
@@ -699,7 +810,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_create_does_not_return_bool)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
@@ -740,7 +851,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_create_returns_false)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
@@ -781,7 +892,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_module_interface_invalid_fails)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_INTERFACE_INVALID = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
@@ -821,7 +932,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_invalid_publish_fails)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
@@ -879,7 +990,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_invalid_publish_fails2)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
@@ -943,7 +1054,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_invalid_publish_fails3)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
@@ -1004,7 +1115,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_receive_is_called)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_RECEIVE_IS_CALLED = ""                   \
             "'use strict';"                                         \
             "module.exports = {"                                    \
@@ -1095,7 +1206,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
     TEST_FUNCTION(nodejs_destroy_is_called)
     {
-        ///arrrange
+        ///arrange
         const char* MODULE_DESTROY_IS_CALLED = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \

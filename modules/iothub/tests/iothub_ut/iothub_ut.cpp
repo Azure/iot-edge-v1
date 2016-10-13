@@ -20,6 +20,8 @@
 #include "message.h"
 #include "messageproperties.h"
 
+#include <parson.h>
+
 #define GBALLOC_H
 extern "C" int gballoc_init(void);
 extern "C" void gballoc_deinit(void);
@@ -101,6 +103,26 @@ static void * IotHub_Receive_message_userContext;
 static const char * IotHub_Receive_message_content;
 static size_t IotHub_Receive_message_size;
 
+typedef struct PERSONALITY_TAG
+{
+    STRING_HANDLE deviceName;
+    STRING_HANDLE deviceKey;
+    IOTHUB_CLIENT_HANDLE iothubHandle;
+    BROKER_HANDLE broker;
+    MODULE_HANDLE module;
+}PERSONALITY;
+
+typedef PERSONALITY* PERSONALITY_PTR;
+
+typedef struct IOTHUB_HANDLE_DATA_TAG
+{
+    VECTOR_HANDLE personalities; /*holds PERSONALITYs*/
+    STRING_HANDLE IoTHubName;
+    STRING_HANDLE IoTHubSuffix;
+    IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
+    TRANSPORT_HANDLE transportHandle;
+    BROKER_HANDLE broker;
+}IOTHUB_HANDLE_DATA;
 
 extern "C" const TRANSPORT_PROVIDER* HTTP_Protocol(void) { return NULL; }
 extern "C" const TRANSPORT_PROVIDER* AMQP_Protocol(void) { return NULL; }
@@ -150,6 +172,7 @@ static const char* CONSTMAP_KEYS_VALID_2[3] = { "source", "deviceName", "deviceK
 static const char* CONSTMAP_VALUES_VALID_2[3] = { "mapping", "secondDevice", "red"};
 
 /*these are simple cached variables*/
+static pfModule_CreateFromJson Module_CreateFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Create Module_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy Module_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive Module_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -579,12 +602,50 @@ public:
 		BASEIMPLEMENTATION::gballoc_free(transportHlHandle);
 	MOCK_VOID_METHOD_END()
 
-
-
-	// broker
+    // broker
 	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK)
 
+    /* Parson Mocks */
+    MOCK_STATIC_METHOD_1(, JSON_Value*, json_parse_string, const char *, parseString)
+        JSON_Value* value = NULL;
+        if (parseString != NULL)
+        {
+            value = (JSON_Value*)malloc(1);
+        }
+    MOCK_METHOD_END(JSON_Value*, value);
+
+    MOCK_STATIC_METHOD_1(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
+        JSON_Object* object = NULL;
+        if (value != NULL)
+        {
+            object = (JSON_Object*)0x42;
+        }
+    MOCK_METHOD_END(JSON_Object*, object);
+
+    MOCK_STATIC_METHOD_2(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name)
+        const char * result2;
+        if (strcmp(name, "IoTHubSuffix") == 0)
+        {
+            result2 = "suffix.name";
+        }
+        else if (strcmp(name, "IoTHubName") == 0)
+        {
+            result2 = "aHubName";
+        }
+        else if (strcmp(name, "Transport") == 0)
+        {
+            result2 = "abc";
+        }
+        else
+        {
+            result2 = NULL;
+        }
+    MOCK_METHOD_END(const char*, result2);
+
+    MOCK_STATIC_METHOD_1(, void, json_value_free, JSON_Value*, value)
+        free(value);
+    MOCK_VOID_METHOD_END();
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, gballoc_malloc, size_t, size);
@@ -630,6 +691,10 @@ DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, VECTOR_back, VECTOR_HANDLE, h
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , TRANSPORT_HANDLE, IoTHubTransport_Create, IOTHUB_CLIENT_TRANSPORT_PROVIDER, protocol, const char*, iotHubName, const char*, iotHubSuffix)
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, IoTHubTransport_Destroy, TRANSPORT_HANDLE, transportHlHandle)
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , JSON_Value*, json_parse_string, const char *, filename);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , JSON_Object*, json_value_get_object, const JSON_Value*, value);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , const char*, json_object_get_string, const JSON_Object*, object, const char*, name);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, json_value_free, JSON_Value*, value);
 
 BEGIN_TEST_SUITE(iothub_ut)
 
@@ -641,6 +706,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
 		MODULE_APIS apis;
 		Module_GetAPIS(&apis);
+        Module_CreateFromJson = apis.Module_CreateFromJson;
         Module_Create = apis.Module_Create;
         Module_Destroy = apis.Module_Destroy;
         Module_Receive = apis.Module_Receive;
@@ -720,12 +786,335 @@ BEGIN_TEST_SUITE(iothub_ut)
 		Module_GetAPIS(&MODULEAPIS);
 
         ///assert
+        ASSERT_IS_TRUE(MODULEAPIS.Module_CreateFromJson != NULL);
         ASSERT_IS_TRUE(MODULEAPIS.Module_Create != NULL);
         ASSERT_IS_TRUE(MODULEAPIS.Module_Destroy != NULL);
         ASSERT_IS_TRUE(MODULEAPIS.Module_Receive != NULL);
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+    }
+
+
+    /*Tests_SRS_IOTHUBMODULE_05_004: [ `IotHub_CreateFromJson` shall parse `configuration` as a JSON string. ]*/
+    /*Tests_SRS_IOTHUBMODULE_05_008: [ `IotHub_CreateFromJson` shall invoke the IotHub module's create function, using the broker, IotHubName, IoTHubSuffix, and Transport. ]*/
+    /*Tests_SRS_IOTHUBMODULE_05_009: [ When the lower layer IotHub module creation succeeds, `IotHub_CreateFromJson` shall succeed and return a non-NULL value. ]*/
+    /*Tests_SRS_IOTHUBMODULE_05_010: [ If the lower layer IotHub module creation fails, `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_success)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IOTHUB_HANDLE_DATA)));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(PERSONALITY_PTR)));
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, "aHubName", "suffix.name"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("aHubName"));
+        STRICT_EXPECTED_CALL(mocks, STRING_construct("suffix.name"));
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_008: [ `IotHub_CreateFromJson` shall invoke the IotHub module's create function, using the broker, IotHubName, IoTHubSuffix, and Transport. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_interprets_HTTP_transport)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = HTTP_Protocol;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, "don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_008: [ `IotHub_CreateFromJson` shall invoke the IotHub module's create function, using the broker, IotHubName, IoTHubSuffix, and Transport. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_interprets_AMQP_transport)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = AMQP_Protocol;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("AMQP");
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .NeverInvoked();
+
+        ///act
+        auto result = Module_CreateFromJson(broker, "don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_008: [ `IotHub_CreateFromJson` shall invoke the IotHub module's create function, using the broker, IotHubName, IoTHubSuffix, and Transport. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_interprets_MQTT_transport)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = MQTT_Protocol;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("MQTT");
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .NeverInvoked();
+
+        ///act
+        auto result = Module_CreateFromJson(broker, "don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_012: [ If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_interprets_the_transport_string_without_regard_to_case)
+    {
+        CNiceCallComparer<IotHubMocks> mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        const char* transportStrings[] = { "http", "amqp", "mqtt" };
+        const IOTHUB_CLIENT_TRANSPORT_PROVIDER providers[] = { HTTP_Protocol, AMQP_Protocol, MQTT_Protocol };
+        const size_t length = sizeof(transportStrings) / sizeof(transportStrings[0]);
+
+        for (int i = 0; i < length; ++i)
+        {
+            mocks.ResetAllCalls();
+
+            ///arrange
+            STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+                .IgnoreArgument(1)
+                .SetReturn(transportStrings[i]);
+
+            ///act
+            auto result = Module_CreateFromJson(broker, "don't care");
+
+            ///assert
+            ASSERT_IS_NOT_NULL(result);
+            mocks.AssertActualAndExpectedCalls();
+
+            ///cleanup
+            Module_Destroy(result);
+        }
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_012: [ If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_returns_null_when_transport_is_unknown)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("ABCD");
+
+        ///act
+        auto result = Module_CreateFromJson(broker, "don't care");
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_011: [ If the JSON object does not contain a value named "Transport" then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_returns_null_when_Transport_is_missing)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char *)NULL);
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_007: [ If the JSON object does not contain a value named "IoTHubSuffix" then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_IoTHubSuffix_not_found_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char *)NULL);
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_006: [ If the JSON object does not contain a value named "IoTHubName" then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_IoTHubName_not_found_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char *)NULL);
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_005: [ If parsing of `configuration` fails, `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_get_object_null_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetFailReturn((JSON_Object*)NULL);
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_005: [ If parsing of `configuration` fails, `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    /*Tests_SRS_IOTHUBMODULE_05_003: [ If `configuration` is not a JSON string, then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_parse_string_null_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * invalidJsonString = "calling it invalid has the same effect";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(invalidJsonString))
+            .SetFailReturn((JSON_Value*)NULL);
+
+        ///act
+        auto result = Module_CreateFromJson(broker, invalidJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_001: [If `broker` is NULL then `IotHub_CreateFromJson` shall fail and return NULL.]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_broker_handle_null_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = NULL;
+
+        ///act
+        auto result = Module_CreateFromJson(broker, validJsonString);
+        ///assert
+
+        ASSERT_IS_NULL(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_05_002: [ If `configuration` is NULL then `IotHub_CreateFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_CreateFromJson_config_null_returns_null)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        ///act
+        auto result = Module_CreateFromJson(broker, NULL);
+        ///assert
+
+        ASSERT_IS_NULL(result);
     }
 
     /*Tests_SRS_IOTHUBMODULE_02_001: [ If `broker` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/

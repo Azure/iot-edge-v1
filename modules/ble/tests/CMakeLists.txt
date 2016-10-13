@@ -4,7 +4,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 add_subdirectory(ble_c2d_ut)
-add_subdirectory(ble_hl_ut)
 add_subdirectory(ble_ut)
 add_subdirectory(bleio_seq_ut)
 add_subdirectory(gatt_io_ut)

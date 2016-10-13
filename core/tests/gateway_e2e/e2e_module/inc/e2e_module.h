@@ -4,7 +4,6 @@
 #ifndef E2EMODULE_H
 #define E2EMODULE_H
 
-/*including module.h dictates that MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void); is implemented by the module*/
 #include "module.h"
 
 typedef struct E2EMODULE_CONFIG

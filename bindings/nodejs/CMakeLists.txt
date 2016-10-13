@@ -70,22 +70,6 @@ set(nodejs_headers
 set(nodejs_static_sources ${nodejs_sources})
 set(nodejs_static_headers ${nodejs_headers})
 
-# Node JS binding HL DLL/SO sources and headers
-set(nodejs_hl_sources
-    ./src/nodejs_hl.cpp
-)
-set(nodejs_hl_headers
-    ./inc/nodejs_hl.h
-)
-
-# Node JS binding HL static lib sources and headers
-set(nodejs_hl_static_sources
-    ${nodejs_hl_sources}
-)
-set(nodejs_hl_static_headers
-    ${nodejs_hl_headers}
-)
-
 if(${LINUX})
     set(LIBS ${node_libs})
 endif()
@@ -134,26 +118,10 @@ linkSharedUtil(nodejs_binding_static)
 add_pic_flag(nodejs_binding_static)
 target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
 
-#this builds the nodejs_binding_hl dynamic library
-add_library(nodejs_binding_hl MODULE ${nodejs_hl_sources} ${nodejs_hl_headers})
-target_link_libraries(nodejs_binding_hl nodejs_binding_static ${LIBS})
-linkSharedUtil(nodejs_binding_hl)
-add_pic_flag(nodejs_binding_hl)
-target_include_directories(nodejs_binding_hl PUBLIC $ENV{NODE_INCLUDE})
-
-#this builds the nodejs_binding_hl static library
-add_library(nodejs_binding_hl_static STATIC ${nodejs_hl_static_sources} ${nodejs_hl_static_headers})
-target_compile_definitions(nodejs_binding_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(nodejs_binding_hl_static nodejs_binding_static ${LIBS})
-linkSharedUtil(nodejs_binding_hl_static)
-add_pic_flag(nodejs_binding_hl_static)
-target_include_directories(nodejs_binding_hl_static PUBLIC $ENV{NODE_INCLUDE})
-
-add_module_to_solution(nodejs_binding)
+add_binding_to_solution(nodejs_binding)
 
 add_subdirectory(tests)
 
 if(install_modules)
     install(TARGETS nodejs_binding LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
-    install(TARGETS nodejs_binding_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
 endif()

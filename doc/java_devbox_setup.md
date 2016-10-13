@@ -93,12 +93,12 @@ You can verify that the environment variables necessary to run **_Maven 3_** hav
 <a name="installgw"/>
 ## Install Azure IoT Gateway SDK
 
-- There are two ways to get the .jar library for the Java module bindings for the Microsoft Azure IoT Gateway SDK. You may either download the source code and build on your machine, or include the project as a dependency in your project if your project is a Maven project. Both methods are described below.
+- There are two ways to get the .jar library for the Java module binding for the Microsoft Azure IoT Gateway SDK. You may either download the source code and build on your machine, or include the project as a dependency in your project if your project is a Maven project. Both methods are described below.
 
 <a name="installgwsource">
-### Build Java bindings for the Azure IoT Gateway SDK from sources
+### Build Java binding for the Azure IoT Gateway SDK from sources
 - Get a copy of the **Azure IoT Gateway SDK** from GitHub if you have not already done so. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-gateway-sdk>
-- When you have obtained a copy of the source, you can build the bindings for Java.
+- When you have obtained a copy of the source, you can build the binding for Java.
 
 Open a command prompt and use the following commands for the steps above:
 
@@ -117,7 +117,7 @@ The compiled JAR file with all dependencies bundled in can then be found at:
 When you're ready to build your own module in Java, include this JAR file in your project to get the interfaces and classes that you need.
 
 <a name="installgwmaven">
-### Get the Java bindings for the Azure IoT Gateway SDK from Maven (as a dependency)
+### Get the Java binding for the Azure IoT Gateway SDK from Maven (as a dependency)
 _This is the recommended method of including the Azure IoT Gateway SDK in your project, however this method will only work if your project is a Maven project_
 
 _For a guide on creating a maven project, see here: https://maven.apache.org/guides/getting-started/ _

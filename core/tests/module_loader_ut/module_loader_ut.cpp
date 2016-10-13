@@ -115,6 +115,7 @@ public:
 		if (test_getApi_func_success == true)
 		{
 			MODULE_APIS tmp = {
+                (pfModule_CreateFromJson)TEST_MODULE_LIBRARY_GOOD_HANDLE,
 				(pfModule_Create)TEST_MODULE_LIBRARY_GOOD_HANDLE,
 				(pfModule_Destroy)TEST_MODULE_LIBRARY_GOOD_HANDLE,
 				(pfModule_Receive)TEST_MODULE_LIBRARY_GOOD_HANDLE

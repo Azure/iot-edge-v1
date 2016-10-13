@@ -90,6 +90,92 @@ The following functions are the implementation of those APIs.
 
 **SRS_IDMAP_26_001: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
 
+
+## IdentityMap_CreateFromJson
+```C
+MODULE_HANDLE IdentityMap_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+```
+This function creates the identity map module. `configuration` is a JSON array
+of the following object:
+```json
+{
+    "macAddress" : "<mac address in canonical form>",
+    "deviceId"   : "<device name as registered with IoTHub>",
+    "deviceKey"  : "<key as registered with IoTHub>"
+}
+```
+### Example Arguments
+```json
+[
+    {
+        "macAddress" : "01:01:01:01:01:01",
+        "deviceId"   : "sample-device1",
+        "deviceKey"  : "<key as registered with IoTHub>"
+    },
+    {
+        "macAddress" : "02:02:02:02:02:02",
+        "deviceId"   : "sample-device2",
+        "deviceKey"  : "<key as registered with IoTHub>"
+    }
+]
+```
+
+**SRS_IDMAP_05_003: [** If `broker` is NULL then
+ `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_IDMAP_05_004: [** If `configuration` is NULL then
+ `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_IDMAP_05_005: [** If `configuration` is not a JSON array of 
+JSON objects, then `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_IDMAP_05_006: [** `IdentityMap_CreateFromJson` shall parse the 
+`configuration` as a JSON array of objects. **]**
+
+**SRS_IDMAP_05_007: [** `IdentityMap_CreateFromJson` shall call 
+VECTOR_create to make the identity map module input vector. **]**
+
+**SRS_IDMAP_05_019: [** If creating the vector fails, then 
+`IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_IDMAP_05_008: [** `IdentityMap_CreateFromJson` shall walk 
+through each object of the array. **]**
+
+**SRS_IDMAP_05_009: [** If the array object does not contain a value 
+named "macAddress" then `IdentityMap_CreateFromJson` shall fail and return 
+NULL. **]**
+
+**SRS_IDMAP_05_010: [** If the array object does not contain a value 
+named "deviceId" then `IdentityMap_CreateFromJson` shall fail and return 
+NULL. **]**
+
+**SRS_IDMAP_05_011: [** If the array object does not contain a value 
+named "deviceKey" then `IdentityMap_CreateFromJson` shall fail and return 
+NULL. **]**
+
+**SRS_IDMAP_05_012: [** `IdentityMap_CreateFromJson` shall use 
+"macAddress", "deviceId", and "deviceKey" values as the fields for an 
+IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element 
+to the vector. **]**
+
+**SRS_IDMAP_05_020: [** If pushing into the vector is not successful, 
+then `IdentityMap_CreateFromJson` shall fail and return NULL. **]** 
+
+**SRS_IDMAP_05_013: [** `IdentityMap_CreateFromJson` shall invoke 
+identity map module's create, passing in the message broker handle and the input vector. 
+**]**
+
+**SRS_IDMAP_05_014: [** When the lower layer identity map module 
+create succeeds, `IdentityMap_CreateFromJson` shall succeed and return a 
+non-NULL value. **]**
+
+**SRS_IDMAP_05_015: [** If the lower layer identity map module create 
+fails, `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_IDMAP_05_016: [** `IdentityMap_CreateFromJson` shall release 
+all data it allocated. **]**
+
+
 ##IdentityMap_Create
 ```C
 MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* configuration);

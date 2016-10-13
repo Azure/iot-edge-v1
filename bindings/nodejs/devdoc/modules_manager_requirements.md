@@ -4,8 +4,8 @@ Node JS modules manager requirements
 References
 ----------
 
-  - [High level design document](./nodejs_bindings_hld.md)
-  - [Low level API requirements](./nodejs_bindings_requirements.md)
+  - [High level design document](./nodejs_binding_hld.md)
+  - [Low level API requirements](./nodejs_binding_requirements.md)
 
 Overview
 --------

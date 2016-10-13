@@ -51,12 +51,15 @@ typedef signed char jbyte;
 
 #endif //UNDER_TEST
 
+#include <stdio.h>
 #include "broker_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "java_module_host_manager.h"
+
+#include <parson.h>
 
 #ifdef __cplusplus
 #define JNIFunc(jptr, call, ...) (*(jptr))->call(##__VA_ARGS_)
@@ -80,6 +83,7 @@ typedef struct JAVA_MODULE_HANDLE_DATA_TAG
 
 static int JVM_Create(JavaVM** jvm, JNIEnv** env, JVM_OPTIONS* options);
 static void JVM_Destroy(JavaVM** jvm);
+static int parse_jvm_options_internal(JAVA_MODULE_HOST_CONFIG* config, JSON_Object* obj);
 static void destroy_module_internal(JAVA_MODULE_HANDLE_DATA* module, bool decref);
 static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_strings, JVM_OPTIONS* jvm_options);
 static void deinit_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE options_strings);
@@ -275,6 +279,78 @@ static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* con
 		}
 	}
 	return result;
+}
+
+static MODULE_HANDLE JavaModuleHost_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    MODULE_HANDLE result;
+    if (broker == NULL || configuration == NULL)
+    {
+        /*Codes_SRS_JAVA_MODULE_HOST_05_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
+        LogError("Invalid input (broker = %p, configuration = %p).", broker, configuration);
+        result = NULL;
+    }
+    else
+    {
+        /*Codes_SRS_JAVA_MODULE_HOST_05_003: [This function shall return NULL if configuration is not a valid JSON object.]*/
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            LogError("Unable to parse the JSON string input.");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* obj = json_value_get_object(json);
+            if (obj == NULL)
+            {
+                LogError("Unable to get the JSON object.");
+                result = NULL;
+            }
+            else
+            {
+                /*Codes_SRS_JAVA_MODULE_HOST_05_004: [This function shall return NULL if configuration.args does not contain a field named class_name.]*/
+                if (json_object_get_string(obj, JAVA_MODULE_CLASS_NAME_KEY) == NULL)
+                {
+                    LogError("No field 'class_name' in JSON object.");
+                    result = NULL;
+                }
+                else
+                {
+                    /*Codes_SRS_JAVA_MODULE_HOST_05_005: [This function shall parse the configuration.args JSON object and initialize a new JAVA_MODULE_HOST_CONFIG setting default values to all missing fields.]*/
+                    JAVA_MODULE_HOST_CONFIG config;
+                    JVM_OPTIONS options;
+                    config.options = &options;
+                    if (parse_jvm_options_internal(&config, obj) != 0)
+                    {
+                        LogError("Failed while parsing JVM options.");
+                        result = NULL;
+                    }
+                    else
+                    {
+                        /*Codes_SRS_JAVA_MODULE_HOST_05_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+                        result = JavaModuleHost_Create(broker, &config);
+
+                        /*Codes_SRS_JAVA_MODULE_HOST_05_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
+                        if (result == NULL)
+                        {
+                            LogError("Unable to create Java Module.");
+                        }
+                    }
+
+                    //Cleanup
+                    for (size_t index = 0; index < VECTOR_size(options.additional_options); index++)
+                    {
+                        STRING_delete(*((STRING_HANDLE*)VECTOR_element(options.additional_options, index)));
+                    }
+                    VECTOR_destroy(options.additional_options);
+                    json_free_serialized_string((char*)config.configuration_json);
+                }
+            }
+            json_value_free(json);
+        }
+    }
+    return result;
 }
 
 static void JavaModuleHost_Destroy(MODULE_HANDLE module)
@@ -593,6 +669,57 @@ static void JVM_Destroy(JavaVM** jvm)
 	}
 }
 
+static int parse_jvm_options_internal(JAVA_MODULE_HOST_CONFIG* config, JSON_Object* obj)
+{
+    int result = 0;
+
+    config->class_name = json_object_get_string(obj, JAVA_MODULE_CLASS_NAME_KEY);
+    config->configuration_json = json_serialize_to_string(json_object_get_value(obj, JAVA_MODULE_ARGS_KEY));
+    config->options->class_path = json_object_get_string(obj, JAVA_MODULE_CLASS_PATH_KEY);
+    config->options->library_path = json_object_get_string(obj, JAVA_MODULE_LIBRARY_PATH_KEY);
+
+    JSON_Object* jvm_options = json_object_get_object(obj, JAVA_MODULE_JVM_OPTIONS_KEY);
+    config->options->version = (int)json_object_get_number(jvm_options, JAVA_MODULE_JVM_OPTIONS_VERSION_KEY);
+    config->options->debug = json_object_get_boolean(jvm_options, JAVA_MODULE_JVM_OPTIONS_DEBUG_KEY) == 1 ? true : false;
+    config->options->debug_port = (int)json_object_get_number(jvm_options, JAVA_MODULE_JVM_OPTIONS_DEBUG_PORT_KEY);
+    config->options->verbose = json_object_get_boolean(jvm_options, JAVA_MODULE_JVM_OPTIONS_VERBOSE_KEY) == 1 ? true : false;
+
+    JSON_Array* arr = json_object_get_array(jvm_options, JAVA_MODULE_JVM_OPTIONS_ADDITIONAL_OPTIONS_KEY);
+    size_t additional_options_count = json_array_get_count(arr);
+
+    config->options->additional_options = additional_options_count == 0 ? NULL : VECTOR_create(sizeof(STRING_HANDLE));
+    if (config->options->additional_options == NULL && additional_options_count != 0)
+    {
+        /*Codes_SRS_JAVA_MODULE_HOST_05_010: [ This function shall return NULL if any underlying API call fails. ]*/
+        LogError("VECTOR_create failed.");
+        result = __LINE__;
+    }
+    else
+    {
+        for (size_t index = 0; index < additional_options_count && result == 0; index++) {
+
+            STRING_HANDLE str = STRING_construct(json_array_get_string(arr, index));
+            if (str == NULL)
+            {
+                /*Codes_SRS_JAVA_MODULE_HOST_05_010: [ This function shall return NULL if any underlying API call fails. ]*/
+                LogError("Failed to construct string.");
+                result = __LINE__;
+            }
+            else
+            {
+                if (VECTOR_push_back(config->options->additional_options, &str, 1) != 0)
+                {
+                    LogError("Failed to push additional option %i onto vector.", (int)index);
+                    STRING_delete(str);
+                    result = __LINE__;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_strings, JVM_OPTIONS* jvm_options)
 {
 	int result = 0;
@@ -906,6 +1033,7 @@ static void CallVoidMethodInternal(JNIEnv* env, jobject obj, jmethodID methodID,
 
 static const MODULE_APIS JavaModuleHost_APIS =
 {
+    JavaModuleHost_CreateFromJson,
 	JavaModuleHost_Create,
 	JavaModuleHost_Destroy,
 	JavaModuleHost_Receive,

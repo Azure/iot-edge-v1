@@ -2,12 +2,12 @@
   "modules": [
     {
       "module name": "hello_world",
-      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+      "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll",
       "args": null
     },
     {
       "module name": "azure_functions",
-      "module path": "..\\..\\..\\modules\\azure_functions\\Debug\\azure_functions_hl.dll",
+      "module path": "..\\..\\..\\modules\\azure_functions\\Debug\\azure_functions.dll",
       "args": {
         "hostname": "<YourHostNameHere from Functions Portal>",
         "relativePath": "api/<YourFunctionName>",

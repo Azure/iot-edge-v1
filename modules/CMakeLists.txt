@@ -6,10 +6,6 @@ cmake_minimum_required(VERSION 2.8.11)
 
 set(MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Modules include directory" FORCE)
 
-function(linkModule moduleName)
-	include_directories(${MODULES_DIR}/${moduleName}/inc)
-endfunction(linkModule)
-
 include_directories(./common)
 
 add_subdirectory(ble)

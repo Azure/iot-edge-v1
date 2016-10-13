@@ -29,7 +29,7 @@ include_directories(../../modules/common)
 
 add_executable(azure_functions_sample ${azure_functions_headers} ${modules_path_file} ${azure_functions_sources})
 
-add_dependencies(azure_functions_sample hello_world hello_world_hl azure_functions azure_functions_hl) 
+add_dependencies(azure_functions_sample hello_world azure_functions) 
 
 target_link_libraries(azure_functions_sample gateway)
 linkSharedUtil(azure_functions_sample)

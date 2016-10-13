@@ -31,6 +31,7 @@ include_directories(../../modules/common)
 add_executable(java_sample ${java_sample_headers} ${java_sample_sources})
 
 target_link_libraries(java_sample gateway)
+add_dependencies(java_sample java_module_host logger)
 linkSharedUtil(java_sample)
 install_broker(java_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 

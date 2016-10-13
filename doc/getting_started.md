@@ -114,11 +114,11 @@ Linux
 
 - build.sh produces its outputs in `azure-iot-gateway-sdk/build`. This is where the two modules used in this sample are built. 
 
-> Note: `liblogger_hl.so`'s relative path is `/modules/logger/liblogger_hl.so` and `libhello_world_dl.so` is built in `/modules/hello_world/libhello_world_hl.so`. Use these paths for the "module path" value in the json below.
+> Note: `liblogger.so`'s relative path is `/modules/logger/liblogger.so` and `libhello_world.so` is built in `/modules/hello_world/libhello_world.so`. Use these paths for the "module path" value in the json below.
 
 - Copy the JSON file from azure-iot-gateway-sdk/samples/hello_world/src/hello_world_lin.json to the build folder.
 
-- For the logger_hl module, replace in "args" the "filename" value with the path to the file that will contain the log.
+- For the logger module, replace in "args" the "filename" value with the path to the file that will contain the log.
 This is an example of a JSON settings file for Linux that will write to `log.txt`, if started from `azure-iot-gateway-sdk/build`. The Hello World sample already has a JSON settings file and you do not need to change it. This example has been provided in case you want to change the output location for the log file.
 
 ```json
@@ -126,8 +126,8 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
     "modules" :
     [ 
         {
-            "module name" : "logger_hl",
-            "module path" : "./modules/logger/liblogger_hl.so",
+            "module name" : "logger",
+            "module path" : "./modules/logger/liblogger.so",
             "args" : 
 			{
 				"filename":"log.txt"
@@ -135,7 +135,7 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
         },
         {
             "module name" : "hello_world",
-            "module path" : "./modules/hello_world/libhello_world_hl.so",
+            "module path" : "./modules/hello_world/libhello_world.so",
 			"args" : null
         }
     ],
@@ -143,7 +143,7 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
     [
         {
             "source": "hello_world",
-            "sink": "logger_hl"
+            "sink": "logger"
         }
     ]
 }
@@ -159,19 +159,19 @@ Windows
 
 - From a Developer Command for VS2015 run `build.cmd`. `build.cmd` produces a folder called `build` in the root repo folder. This is where the two modules used in this sample are built.
 
-> Note: 'logger_hl.dll''s relative path is 'modules\logger\logger_hl.dll' and 'hello_world_hl.dll' is built in 'modules\hello_world\hello_world_hl.dll'. Use these paths for the "module path" value in the json below.
+> Note: 'logger.dll''s relative path is 'modules\logger\logger.dll' and 'hello_world.dll' is built in 'modules\hello_world\hello_world.dll'. Use these paths for the "module path" value in the json below.
 
 - Copy the JSON file from folder: `samples\hello_world\src\hello_world_win.json` to folder: `build\samples\hello_world\Debug\`.
 
-- For the logger_hl module, replace in `args` the `filename` value with the path to the file that will contain the log.
+- For the logger module, replace in `args` the `filename` value with the path to the file that will contain the log.
 This is an example of a JSON settings file for Windows. that will write to `log.txt` in your current working directory.
 ```json
 {
     "modules" :
     [ 
         {
-            "module name" : "logger_hl",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+            "module name" : "logger",
+            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
             "args" : 
 			{
 				"filename":"log.txt"
@@ -179,7 +179,7 @@ This is an example of a JSON settings file for Windows. that will write to `log.
         },
         {
             "module name" : "hello_world",
-             "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world_hl.dll",
+             "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll",
 			"args" : null
         }
     ],
@@ -187,7 +187,7 @@ This is an example of a JSON settings file for Windows. that will write to `log.
     [
         {
             "source": "hello_world",
-            "sink": "logger_hl"
+            "sink": "logger"
         }
     ]
 }
@@ -235,9 +235,9 @@ Below is an example of typical output that is written to the log file when the H
 
 ###Gateway creation
 
-The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_Create_From_JSON` function which allows developers to bootstrap a gateway from a JSON file.
+The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_CreateFromJson` function which allows developers to bootstrap a gateway from a JSON file.
 
-`Gateway_Create_FromJSON` deals with creating internal infrastructure (e.g. the broker), loading modules, and setting everything up to function correctly. All the developer needs to do is provide this function with the path to a JSON file specifying what modules they want loaded and links to guide the broker to send messages to the correct module. 
+`Gateway_CreateFromJson` deals with creating internal infrastructure (e.g. the broker), loading modules, and setting everything up to function correctly. All the developer needs to do is provide this function with the path to a JSON file specifying what modules they want loaded and links to guide the broker to send messages to the correct module. 
 
 The code for the Hello World sample's gateway process is contained in [`samples/hello_world/main.c`](../samples/hello_world/src/main.c) A slightly abbreviated version of that code is copied below. This very short program just creates a gateway and then waits for the ENTER key to be pressed before it tears down the gateway. 
 
@@ -245,7 +245,7 @@ The code for the Hello World sample's gateway process is contained in [`samples/
 int main(int argc, char** argv)
 {
     GATEWAY_HANDLE gateway;
-    if ((gateway = Gateway_Create_From_JSON(argv[1])) == NULL)
+    if ((gateway = Gateway_CreateFromJson(argv[1])) == NULL)
     {
         printf("failed to create the gateway from JSON\n");
     }
@@ -283,13 +283,13 @@ The JSON below is the code from one of the JSON files (hello_world_lin.json)[(..
     "modules" :
     [ 
         {
-            "module name" : "logger_hl",
-            "module path" : "./modules/logger/liblogger_hl.so",
+            "module name" : "logger",
+            "module path" : "./modules/logger/liblogger.so",
             "args" : {"filename":"log.txt"}
         },
         {
             "module name" : "hello_world",
-            "module path" : "./modules/hello_world/libhello_world_hl.so",
+            "module path" : "./modules/hello_world/libhello_world.so",
 			"args" : null
         }
     ],
@@ -297,7 +297,7 @@ The JSON below is the code from one of the JSON files (hello_world_lin.json)[(..
     [
         {
             "source": "hello_world",
-            "sink": "logger_hl"
+            "sink": "logger"
         }
     ]
 }

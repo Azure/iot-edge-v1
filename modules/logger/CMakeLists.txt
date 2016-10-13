@@ -19,23 +19,6 @@ set(logger_static_headers
 	${logger_headers}
 )
 
-set(logger_hl_sources
-	./src/logger_hl.c
-)
-
-set(logger_hl_headers
-	./inc/logger_hl.h
-)
-
-set(logger_hl_static_sources
-	${logger_hl_sources}
-)
-
-set(logger_hl_static_headers
-	${logger_hl_headers}
-)
-
-
 include_directories(./inc)
 include_directories(${GW_INC})
 
@@ -48,19 +31,8 @@ add_library(logger_static STATIC ${logger_static_sources} ${logger_static_header
 target_compile_definitions(logger_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(logger_static gateway)
 
-#this builds the Logger_HL dynamic library (by default it uses Logger linked statically)
-add_library(logger_hl MODULE ${logger_hl_sources} ${logger_hl_headers})
-target_link_libraries(logger_hl logger_static gateway)
-
-#this builds the Logger_HL static library (by default it uses Logger linked statically)
-add_library(logger_hl_static STATIC ${logger_hl_static_sources} ${logger_hl_static_headers})
-target_compile_definitions(logger_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(logger_hl_static logger_static gateway)
-
 linkSharedUtil(logger)
 linkSharedUtil(logger_static)
-linkSharedUtil(logger_hl)
-linkSharedUtil(logger_hl_static)
 
 add_module_to_solution(logger)
 
@@ -70,6 +42,5 @@ add_subdirectory(tests)
 
 if(install_modules)
 	install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
-    install(TARGETS logger_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

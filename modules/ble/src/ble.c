@@ -13,9 +13,12 @@
 
 #include <string.h>
 
+#include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/gb_time.h"
 #include "azure_c_shared_utility/buffer_.h"
+#include "azure_c_shared_utility/strings.h"
+#include "azure_c_shared_utility/base64.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/xlogging.h"
@@ -27,8 +30,11 @@
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
 #include "messageproperties.h"
+#include "ble_instr_utils.h"
 #include "ble_utils.h"
 #include "ble.h"
+
+#include <parson.h>
 
 DEFINE_ENUM_STRINGS(BLEIO_SEQ_INSTRUCTION_TYPE, BLEIO_SEQ_INSTRUCTION_TYPE_VALUES);
 
@@ -220,6 +226,117 @@ static MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration)
 
     /*Codes_SRS_BLE_13_006: [  BLE_Create  shall return a non- NULL   MODULE_HANDLE  when successful. ]*/
     return (MODULE_HANDLE)result;
+}
+
+static MODULE_HANDLE BLE_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    MODULE_HANDLE result;
+
+    /*Codes_SRS_BLE_05_001: [ BLE_CreateFromJson shall return NULL if the broker or configuration parameters are NULL. ]*/
+    if(
+        (broker == NULL) ||
+        (configuration == NULL)
+      )
+    {
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        result = NULL;
+    }
+    else
+    {
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+            LogError("unable to json_parse_string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* root = json_value_get_object(json);
+            if (root == NULL)
+            {
+                /*Codes_SRS_BLE_05_003: [ BLE_CreateFromJson shall return NULL if the JSON does not start with an object. ]*/
+                LogError("unable to json_value_get_object");
+                result = NULL;
+            }
+            else
+            {
+                // get controller index
+                int controller_index = (int)json_object_get_number(root, "controller_index");
+                if (controller_index < 0)
+                {
+                    /*Codes_SRS_BLE_05_005: [ BLE_CreateFromJson shall return NULL if the controller_index value in the JSON is less than zero. ]*/
+                    LogError("Invalid BLE controller index specified");
+                    result = NULL;
+                }
+                else
+                {
+                    const char* mac_address = json_object_get_string(root, "device_mac_address");
+                    if (mac_address == NULL)
+                    {
+                        /*Codes_SRS_BLE_05_004: [ BLE_CreateFromJson shall return NULL if there is no device_mac_address property in the JSON. ]*/
+                        LogError("json_object_get_string failed for property 'device_mac_address'");
+                        result = NULL;
+                    }
+                    else
+                    {
+                        JSON_Array* instructions = json_object_get_array(root, "instructions");
+                        if (instructions == NULL)
+                        {
+                            /*Codes_SRS_BLE_05_006: [ BLE_CreateFromJson shall return NULL if the instructions array does not exist in the JSON. ]*/
+                            LogError("json_object_get_array failed for property 'instructions'");
+                            result = NULL;
+                        }
+                        else
+                        {
+                            VECTOR_HANDLE ble_instructions = parse_instructions(instructions);
+                            if (ble_instructions == NULL)
+                            {
+                                LogError("parse_instructions returned NULL");
+                                result = NULL;
+                            }
+                            else
+                            {
+                                BLE_CONFIG ble_config;
+                                if (parse_mac_address(
+                                        mac_address,
+                                        &(ble_config.device_config.device_addr)
+                                    ) == false)
+                                {
+                                    /*Codes_SRS_BLE_05_013: [ BLE_CreateFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
+                                    LogError("parse_mac_address returned false");
+                                    free_instructions(ble_instructions);
+                                    VECTOR_destroy(ble_instructions);
+                                    result = NULL;
+                                }
+                                else
+                                {
+                                    ble_config.device_config.ble_controller_index = controller_index;
+                                    ble_config.instructions = ble_instructions;
+
+                                    /*Codes_SRS_BLE_05_014: [ BLE_CreateFromJson shall call the underlying module's 'create' function. ]*/
+                                    result = BLE_Create(
+                                        broker, (const void*)&ble_config
+                                    );
+                                    if (result == NULL)
+                                    {
+                                        /*Codes_SRS_BLE_05_022: [ BLE_CreateFromJson shall return NULL if calling the underlying module's create function fails. ]*/
+                                        LogError("Unable to create BLE low level module");
+                                        free_instructions(ble_instructions);
+                                        VECTOR_destroy(ble_instructions);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            json_value_free(json);
+        }
+    }
+    
+    /*Codes_SRS_BLE_05_023: [ BLE_CreateFromJson shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
+    return result;
 }
 
 #if __linux__
@@ -744,6 +861,7 @@ static void BLE_Destroy(MODULE_HANDLE module)
 
 static const MODULE_APIS Module_GetAPIS_Impl =
 {
+    BLE_CreateFromJson,
     BLE_Create,
     BLE_Destroy,
     BLE_Receive, 

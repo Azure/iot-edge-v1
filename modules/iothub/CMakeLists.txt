@@ -12,14 +12,6 @@ set(iothub_headers
 	./inc/iothub.h
 )
 
-set(iothub_hl_sources
-	./src/iothub_hl.c
-)
-
-set(iothub_hl_headers
-	./inc/iothub_hl.h
-)
-
 include_directories(./inc)
 include_directories(${GW_INC})
 include_directories(${IOTHUB_CLIENT_INC_FOLDER})
@@ -43,25 +35,6 @@ target_compile_definitions(iothub_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(iothub_static
     gateway
     iothub_client
-)
-
-#this builds the iothub_HL dynamic library (by default it uses IoTHub Module linked statically)
-add_library(iothub_hl MODULE
-    ${iothub_hl_sources}
-    ${iothub_hl_headers}
-)
-target_link_libraries(iothub_hl
-    iothub_static
-)
-
-#this builds the iothub_HL static library (by default it uses IoTHub Module linked statically)
-add_library(iothub_hl_static STATIC
-    ${iothub_hl_sources}
-    ${iothub_hl_headers}
-)
-target_compile_definitions(iothub_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(iothub_hl_static
-    iothub_static
 )
 
 if(${use_amqp})
@@ -100,5 +73,4 @@ add_subdirectory(tests)
 
 if(install_modules)
 	install(TARGETS iothub LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
-    install(TARGETS iothub_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()

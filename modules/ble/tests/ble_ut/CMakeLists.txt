@@ -17,6 +17,7 @@ if(LINUX)
     
     # BLE GATT I/O sources
     set(ble_test_sources
+		../../src/ble_instr_utils.c
         ../../src/ble_utils.c
         ../../src/ble.c
     )
@@ -33,6 +34,7 @@ elseif(WIN32)
     set(ble_test_sources
         ../../src/ble.c
         ../../src/ble_utils.c
+		../../src/ble_instr_utils.c
     )
 endif()
 

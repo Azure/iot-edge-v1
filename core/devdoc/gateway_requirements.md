@@ -48,7 +48,7 @@ extern "C"
 {
 #endif
 
-extern GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path);
+extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 
 #ifdef __cplusplus
 }
@@ -58,11 +58,11 @@ extern GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path);
 
 ```
 
-##Gateway_Create_From_JSON
+##Gateway_CreateFromJson
 ```
-extern GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path);
+extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 ```
-Gateway_Create_From_JSON creates a new gateway using information contained within a well-formed JSON configuration file. The JSON string should be formatted as described above.
+Gateway_CreateFromJson creates a new gateway using information contained within a well-formed JSON configuration file. The JSON string should be formatted as described above.
 
 **SRS_GATEWAY_14_001: [** If `file_path` is NULL the function shall return NULL. **]**
 

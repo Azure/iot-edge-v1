@@ -2,13 +2,13 @@
     "modules" :
     [
         {
-            "module name" : "logger_hl",
-            "module path" : "./modules/logger/liblogger_hl.so",
+            "module name" : "logger",
+            "module path" : "./modules/logger/liblogger.so",
             "args" : {"filename":"log.txt"}
         },
         {
             "module name" : "hello_world",
-            "module path" : "./modules/hello_world/libhello_world_hl.so",
+            "module path" : "./modules/hello_world/libhello_world.so",
             "args" : null
         }
     ],
@@ -16,7 +16,7 @@
     [
         {
             "source": "hello_world",
-            "sink": "logger_hl"
+            "sink": "logger"
         }
     ]
 }

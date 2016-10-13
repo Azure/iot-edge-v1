@@ -25,6 +25,8 @@
 #include "java_module_host.h"
 #include "java_module_host_common.h"
 
+#include <parson.h>
+
 #ifdef _WIN32
 
 #define _JAVASOFT_JNI_MD_H_
@@ -311,6 +313,106 @@ jint mock_JNI_GetCreatedJavaVMs(JavaVM** pvm, jsize num, jsize* vmCount)
 	return 0;
 }
 
+//parson mocks
+MOCKABLE_FUNCTION(, JSON_Value*, json_parse_string, const char*, string);
+JSON_Value* my_json_parse_string(const char* string)
+{
+    JSON_Value* value = NULL;
+    if (string != NULL)
+    {
+        value = (JSON_Value*)malloc(1);
+}
+    return value;
+}
+
+MOCK_FUNCTION_WITH_CODE(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
+JSON_Object* obj = NULL;
+if (value != NULL)
+{
+    obj = (JSON_Object*)0x42;
+}
+MOCK_FUNCTION_END(obj)
+
+MOCK_FUNCTION_WITH_CODE(, void, json_free_serialized_string, char*, string)
+free(string);
+MOCK_FUNCTION_END()
+
+MOCK_FUNCTION_WITH_CODE(, void, json_value_free, JSON_Value*, value)
+free(value);
+MOCK_FUNCTION_END()
+
+MOCK_FUNCTION_WITH_CODE(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name)
+const char* str = NULL;
+if (object != NULL && name != NULL)
+{
+    str = "hello_world";
+}
+MOCK_FUNCTION_END(str)
+
+MOCK_FUNCTION_WITH_CODE(, char*, json_serialize_to_string, const JSON_Value*, value)
+char* serialized_string = NULL;
+if (value != NULL)
+{
+    serialized_string = (char*)malloc(strlen("hello_world") + 1);
+    sprintf(serialized_string, "%s", "hello_world");
+}
+MOCK_FUNCTION_END(serialized_string)
+
+MOCK_FUNCTION_WITH_CODE(, JSON_Object*, json_object_get_object, const JSON_Object*, object, const char*, name)
+JSON_Object* obj = NULL;
+if (object != NULL && name != NULL)
+{
+    obj = (JSON_Object*)0x42;
+}
+MOCK_FUNCTION_END(obj)
+
+MOCK_FUNCTION_WITH_CODE(, double, json_object_get_number, const JSON_Object*, object, const char*, name)
+double num = 0;
+if (object != NULL && name != NULL)
+{
+    num = 1;
+}
+MOCK_FUNCTION_END(num)
+
+MOCK_FUNCTION_WITH_CODE(, int, json_object_get_boolean, const JSON_Object*, object, const char*, name)
+int num = -1;
+if (object != NULL && name != NULL)
+{
+    num = 1;
+}
+MOCK_FUNCTION_END(num)
+
+MOCK_FUNCTION_WITH_CODE(, JSON_Array*, json_object_get_array, const JSON_Object*, object, const char*, name)
+JSON_Array* arr = NULL;
+if (object != NULL && name != NULL)
+{
+    arr = (JSON_Array*)0x42;
+}
+MOCK_FUNCTION_END(arr)
+
+MOCK_FUNCTION_WITH_CODE(, JSON_Value*, json_object_get_value, const JSON_Object*, object, const char*, name)
+JSON_Value* value = NULL;
+if (object != NULL && name != NULL)
+{
+    value = (JSON_Value*)0x42;
+}
+MOCK_FUNCTION_END(value)
+
+MOCK_FUNCTION_WITH_CODE(, size_t, json_array_get_count, const JSON_Array*, arr)
+size_t num = -1;
+if (arr != NULL)
+{
+    num = 1;
+}
+MOCK_FUNCTION_END(num)
+
+MOCK_FUNCTION_WITH_CODE(, const char*, json_array_get_string, const JSON_Array*, arr, size_t, index)
+const char* str = NULL;
+if (arr != NULL && index >= 0)
+{
+    str = "hello_world";
+}
+MOCK_FUNCTION_END(str)
 
 //=============================================================================
 //HOOKS
@@ -432,10 +534,11 @@ void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 #undef ENABLE_MOCKS
 
 /*these are simple cached variables*/
-static pfModule_Create  JavaModuleHost_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Destroy JavaModuleHost_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Receive JavaModuleHost_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Start	JavaModuleHost_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_CreateFromJson JavaModuleHost_CreateFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Create         JavaModuleHost_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Destroy        JavaModuleHost_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Receive        JavaModuleHost_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_Start          JavaModuleHost_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
 IMPLEMENT_UMOCK_C_ENUM_TYPE(JAVA_MODULE_HOST_MANAGER_RESULT, JAVA_MODULE_HOST_MANAGER_RESULT_VALUES);
 IMPLEMENT_UMOCK_C_ENUM_TYPE(BROKER_RESULT, BROKER_RESULT_VALUES);
@@ -450,6 +553,7 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 
 	MODULE_APIS apis;
 	Module_GetAPIS(&apis);
+    JavaModuleHost_CreateFromJson = apis.Module_CreateFromJson;
 	JavaModuleHost_Create = apis.Module_Create;
 	JavaModuleHost_Destroy = apis.Module_Destroy;
 	JavaModuleHost_Receive = apis.Module_Receive;
@@ -520,6 +624,9 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	REGISTER_GLOBAL_MOCK_HOOK(JNI_CreateJavaVM, mock_JNI_CreateJavaVM);
 	REGISTER_GLOBAL_MOCK_HOOK(JNI_GetCreatedJavaVMs, mock_JNI_GetCreatedJavaVMs);
 
+    //parson Hooks
+    REGISTER_GLOBAL_MOCK_HOOK(json_parse_string, my_json_parse_string);
+
 	REGISTER_UMOCK_ALIAS_TYPE(MODULE_HANDLE, void*);
 
 	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_HANDLE, void*);
@@ -581,6 +688,220 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 	global_env = NULL;
 	global_vm = NULL;
 	TEST_MUTEX_RELEASE(g_testByTest);
+}
+
+//=============================================================================
+//JavaModuleHost_CreateFromJson tests
+//=============================================================================
+
+/*Tests_SRS_JAVA_MODULE_HOST_05_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
+TEST_FUNCTION(JavaModuleHost_CreateFromJson_return_NULL_for_NULL_broker_param)
+{
+    //Arrange
+
+    //Act
+    MODULE_HANDLE module = JavaModuleHost_CreateFromJson(NULL, (const char*)0x42);
+
+    //Assert
+    ASSERT_IS_NULL(module);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    //Cleanup
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_05_002: [This function shall return NULL if broker is NULL or configuration is NULL.]*/
+TEST_FUNCTION(JavaModuleHost_CreateFromJson_return_NULL_for_NULL_configuration_param)
+{
+    //Arrange
+
+    //Act
+    MODULE_HANDLE module = JavaModuleHost_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+
+    //Assert
+    ASSERT_IS_NULL(module);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    //Cleanup
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_05_003: [This function shall return NULL if configuration is not a valid JSON object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_004: [This function shall return NULL if configuration.args does not contain a field named class_name.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_005: [This function shall parse the configuration.args JSON object and initialize a new JAVA_MODULE_HOST_CONFIG setting default values to all missing fields.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_010: [This function shall return NULL if any underlying API call fails.]*/
+TEST_FUNCTION(JavaModuleHost_CreateFromJson_API_failure_tests)
+{
+    //Arrange
+    BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+    const char* configuration = "{\"json\": \"string\"}";
+
+    int result = 0;
+    result = umock_c_negative_tests_init();
+    ASSERT_ARE_EQUAL(int, 0, result);
+
+    STRICT_EXPECTED_CALL(json_parse_string((const char*)configuration))
+        .SetFailReturn(NULL);
+    STRICT_EXPECTED_CALL(json_value_get_object(IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .SetFailReturn(NULL);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_NAME_KEY))
+        .IgnoreArgument(1)
+        .SetFailReturn(NULL);
+
+    //Will not fail
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_NAME_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, JAVA_MODULE_ARGS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_serialize_to_string(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_PATH_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_LIBRARY_PATH_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_object(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_number(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_VERSION_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_boolean(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_DEBUG_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_number(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_DEBUG_PORT_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_boolean(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_VERBOSE_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_array(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_ADDITIONAL_OPTIONS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_array_get_count(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+
+    STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)))
+        .SetFailReturn(NULL);
+    STRICT_EXPECTED_CALL(json_array_get_string(IGNORED_PTR_ARG, 0))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_construct(IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .SetFailReturn(NULL);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn(-1);
+
+    //STRICT_EXPECTED_CALL(JavaModuleHost_Create(broker, IGNORED_PTR_ARG))
+    //    .IgnoreArgument(2)
+    //    .SetFailReturn(NULL);
+
+    umock_c_negative_tests_snapshot();
+
+    //Act
+    for (size_t i = 0; i < umock_c_negative_tests_call_count(); i++)
+    {
+        if (i <= 2 || i >= 15)
+        {
+            // arrange
+            umock_c_negative_tests_reset();
+            umock_c_negative_tests_fail_call(i);
+
+            // act
+            MODULE_HANDLE module = JavaModuleHost_CreateFromJson(broker, configuration);
+
+            // assert
+            ASSERT_ARE_EQUAL(void_ptr, NULL, module);
+        }
+    }
+    umock_c_negative_tests_deinit();
+
+    //Assert
+
+    //Cleanup
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_05_005: [This function shall parse the configuration.args JSON object and initialize a new JAVA_MODULE_HOST_CONFIG setting default values to all missing fields.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_006: [This function shall pass broker and the newly created JAVA_MODULE_HOST_CONFIG structure to JavaModuleHost_Create.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_05_007: [This function shall fail or succeed after this function call and return the value from this function call.]*/
+TEST_FUNCTION(JavaModuleHost_CreateFromJson_success)
+{
+    //Arrange
+    BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+    const char* configuration = "{\"json\": \"string\"}";
+
+    STRICT_EXPECTED_CALL(json_parse_string((const char*)configuration));
+    STRICT_EXPECTED_CALL(json_value_get_object(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_NAME_KEY))
+        .IgnoreArgument(1);
+
+    //Will not fail
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_NAME_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, JAVA_MODULE_ARGS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_serialize_to_string(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_CLASS_PATH_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, JAVA_MODULE_LIBRARY_PATH_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_object(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_number(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_VERSION_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_boolean(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_DEBUG_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_number(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_DEBUG_PORT_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_boolean(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_VERBOSE_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_object_get_array(IGNORED_PTR_ARG, JAVA_MODULE_JVM_OPTIONS_ADDITIONAL_OPTIONS_KEY))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(json_array_get_count(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+
+    STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
+    STRICT_EXPECTED_CALL(json_array_get_string(IGNORED_PTR_ARG, 0))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_construct(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+
+    // At this point, JavaModuleHost_CreateFromJson takes the same code path
+    // as JavaModuleHost_Create, which we're testing elsewhere. The call chain
+    // is long and complicated so we won't duplicate it here. However if we
+    // get this far we can feel confident that the "FromJson" part of the
+    // create process is working as expected. The only downside is that there
+    // are some cleanup calls we aren't checking:
+    //
+    //STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 0))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(VECTOR_destroy(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(json_free_serialized_string(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+    //STRICT_EXPECTED_CALL(json_value_free(IGNORED_PTR_ARG))
+    //    .IgnoreArgument(1);
+
+    // act
+    MODULE_HANDLE module = JavaModuleHost_CreateFromJson(broker, configuration);
+
+    // Assert
+    ASSERT_IS_NOT_NULL(module);
+    // Verify that there aren't any unmet expectations. We know there will be
+    // actual calls that we didn't "expect", but we want to ensure that all
+    // calls we *did* expect are matched with actual calls.
+    ASSERT_ARE_EQUAL(char_ptr, "", umock_c_get_expected_calls());
+
+    //Cleanup
+    JavaModuleHost_Destroy(module);
 }
 
 //=============================================================================

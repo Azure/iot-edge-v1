@@ -7,11 +7,12 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/crt_abstractions.h"
-#include "message.h"
 #include "messageproperties.h"
-
+#include "message.h"
 #include "module.h"
 #include "broker.h"
+
+#include <parson.h>
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {
@@ -119,6 +120,31 @@ static int simulated_device_worker(void * user_data)
 	return 0;
 }
 
+static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
+{
+	if (moduleHandle == NULL)
+	{
+		LogError("Attempt to start NULL module");
+	}
+	else
+	{
+		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+		/* OK to start */
+		/* Create a fake data thread.  */
+		if (ThreadAPI_Create(
+			&(module_data->simulatedDeviceThread),
+			simulated_device_worker,
+			(void*)module_data) != THREADAPI_OK)
+		{
+			LogError("ThreadAPI_Create failed");
+			module_data->simulatedDeviceThread = NULL;
+		}
+		else
+		{
+			/* Thread started, module created, all complete.*/
+		}
+	}
+}
 
 static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* configuration)
 {
@@ -162,37 +188,55 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 	return result;
 }
 
-
-static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
+static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
 {
-	if (moduleHandle == NULL)
-	{
-		LogError("Attempt to start NULL module");
-	}
-	else
-	{
-		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
-		/* OK to start */
-		/* Create a fake data thread.  */
-		if (ThreadAPI_Create(
-			&(module_data->simulatedDeviceThread),
-			simulated_device_worker,
-			(void*)module_data) != THREADAPI_OK)
-		{
-			LogError("ThreadAPI_Create failed");
-			module_data->simulatedDeviceThread = NULL;
-		}
-		else
-		{
-			/* Thread started, module created, all complete.*/
-		}
-	}
+    MODULE_HANDLE result;
+    if (broker == NULL || configuration == NULL)
+    {
+        LogError("invalid module args.");
+        result = NULL;
+    }
+    else
+    {
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            LogError("unable to json_parse_string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* root = json_value_get_object(json);
+            if (root == NULL)
+            {
+                LogError("unable to json_value_get_object");
+                result = NULL;
+            }
+            else
+            {
+                const char* macAddress = json_object_get_string(root, "macAddress");
+                if (macAddress == NULL)
+                {
+                    LogError("unable to json_object_get_string");
+                    result = NULL;
+                }
+                else
+                {
+                    result = SimulatedDevice_Create(broker, macAddress);
+                }
+            }
+            json_value_free(json);
+        }
+    }
+    return result;
 }
+
 /*
  *	Required for all modules:  the public API and the designated implementation functions.
  */
 static const MODULE_APIS SimulatedDevice_APIS_all =
 {
+    SimulatedDevice_CreateFromJson,
 	SimulatedDevice_Create,
 	SimulatedDevice_Destroy,
 	SimulatedDevice_Receive,

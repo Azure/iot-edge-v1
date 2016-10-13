@@ -43,31 +43,6 @@ set(java_module_host_headers
     ${java_module_host_manager_headers}
 )
 
-set(java_module_host_static_sources
-    ${java_module_host_sources}
-)
-
-set(java_module_host_static_headers
-    ${java_module_host_headers}
-)
-
-set(java_module_host_hl_sources
-    ./src/java_module_host_hl.c
-)
-
-set(java_module_host_hl_headers
-    ./inc/broker_proxy.h
-    ./inc/java_module_host_hl.h
-)
-
-set(java_module_host_hl_static_sources
-    ${java_module_host_hl_sources}
-)
-
-set(java_module_host_hl_static_headers
-    ${java_module_host_hl_headers}
-)
-
 if(WIN32)
     set(java_include_dirs
         $ENV{JAVA_HOME}/include 
@@ -105,29 +80,17 @@ add_library(java_module_host MODULE ${java_module_host_headers} ${java_module_ho
 target_link_libraries(java_module_host ${LIBS})
 
 #this build the java_module_host static library
-add_library(java_module_host_static STATIC ${java_module_host_static_headers} ${java_module_host_static_sources})
+add_library(java_module_host_static STATIC ${java_module_host_headers} ${java_module_host_sources})
 target_compile_definitions(java_module_host_static PRIVATE BUILD_MODULE_TYPE_STATIC)
 target_link_libraries(java_module_host_static ${LIBS})
 
-#this builds the java_module_host_hl dynamic library (by default it uses java_module_host linked statically)
-add_library(java_module_host_hl MODULE ${java_module_host_hl_headers} ${java_module_host_hl_sources})
-target_link_libraries(java_module_host_hl java_module_host_static ${LIBS})
-
-#this builds the java_module_host_hl static library (by default it uses the java_module_host linked statically)
-add_library(java_module_host_hl_static STATIC ${java_module_host_hl_static_headers} ${java_module_host_hl_static_sources})
-target_compile_definitions(java_module_host_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(java_module_host_hl_static java_module_host_static ${LIBS})
-
 linkSharedUtil(java_module_host)
 linkSharedUtil(java_module_host_static)
-linkSharedUtil(java_module_host_hl)
-linkSharedUtil(java_module_host_hl_static)
 
-add_module_to_solution(java_module_host)
+add_binding_to_solution(java_module_host)
 
 add_subdirectory(tests)
 
 if(install_modules)
     install(TARGETS java_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
-    install(TARGETS java_module_host_hl LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
 endif()

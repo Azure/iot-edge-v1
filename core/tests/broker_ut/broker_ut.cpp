@@ -143,6 +143,7 @@ static void FakeModule_Receive(MODULE_HANDLE module, MESSAGE_HANDLE messageHandl
 
 static MODULE_APIS fake_module_apis =
 {
+    NULL,
     FakeModule_Create,
     FakeModule_Destroy,
     FakeModule_Receive

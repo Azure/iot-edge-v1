@@ -33,6 +33,8 @@ FOR_EACH_1(DEFINE_FAIL_VARIABLES, LIST_OF_COUNTED_APIS)
 #include "azure_c_shared_utility/base64.h"
 #include "logger.h"
 
+#include <parson.h>
+
 #ifndef GB_STDIO_INTERCEPT
 #error these unit tests require the symbol GB_STDIO_INTERCEPT to be defined
 #else
@@ -94,13 +96,50 @@ namespace BASEIMPLEMENTATION
 #undef Unlock
 #undef Lock_Init
 #undef Lock_Deinit
+
+    typedef int JSON_Value_Type;
+
+    typedef union json_value_value {
+        char        *string;
+        double       number;
+        JSON_Object *object;
+        JSON_Array  *array;
+        int          boolean;
+        int          null;
+    } JSON_Value_Value;
+
+    struct json_value_t {
+        JSON_Value_Type     type;
+        JSON_Value_Value    value;
+    };
+
+    struct json_object_t {
+        char       **names;
+        JSON_Value **values;
+        size_t       count;
+        size_t       capacity;
+    };
+
+    typedef struct json_value_t  JSON_Value;
+    typedef struct json_object_t JSON_Object;
+
+    JSON_Value* json_parse_string(const char* string);
+    JSON_Object* json_value_get_object(const JSON_Value* value);
+    const char* json_object_get_string(const JSON_Object* object, const char* name);
+    void json_value_free(JSON_Value *value);
 };
+
+typedef struct LOGGER_HANDLE_DATA_TAG
+{
+    FILE* fout;
+}LOGGER_HANDLE_DATA;
 
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 
 /*these are simple cached variables*/
+static pfModule_CreateFromJson Logger_CreateFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Create  Logger_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy Logger_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive Logger_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -124,14 +163,42 @@ static LOGGER_CONFIG invalidConfig_selector =
     NULL
 };
 
+#define VALID_CONFIG_STRING "{\"filename\":\"log.txt\"}"
+
 #define TIME_IN_STRFTIME "time"
 static MESSAGE_HANDLE validMessageHandle = (MESSAGE_HANDLE)0x032;
 static unsigned char buffer[3] = { 1,2,3 };
 static CONSTBUFFER validBuffer = { buffer, sizeof(buffer)/sizeof(buffer[0]) };
+
+
 TYPED_MOCK_CLASS(CLoggerMocks, CGlobalMock)
 {
 public:
+    //parson
+    MOCK_STATIC_METHOD_1(, JSON_Value*, json_parse_string, const char *, filename)
+        JSON_Value* value = NULL;
+        if (filename != NULL)
+        {
+            value = (JSON_Value*)malloc(sizeof(BASEIMPLEMENTATION::JSON_Value));
+        }
+    MOCK_METHOD_END(JSON_Value*, value);
 
+    MOCK_STATIC_METHOD_1(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
+        JSON_Object* object = NULL;
+        if (value != NULL)
+        {
+            object = (JSON_Object*)0x42;
+        }
+    MOCK_METHOD_END(JSON_Object*, object);
+
+    MOCK_STATIC_METHOD_2(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name)
+    MOCK_METHOD_END(const char*, (strcmp(name, "filename") == 0) ? "log.txt" : NULL);
+
+    MOCK_STATIC_METHOD_1(, void, json_value_free, JSON_Value*, value)
+        free(value);
+    MOCK_VOID_METHOD_END();
+
+    //memory
     MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
         void* result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
     MOCK_METHOD_END(void*, result2);
@@ -140,6 +207,7 @@ public:
         BASEIMPLEMENTATION::gballoc_free(ptr);
     MOCK_VOID_METHOD_END()
 
+    //string
     MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_construct, const char*, source)
         STRING_HANDLE result2 = (STRING_HANDLE)malloc(4);
     MOCK_METHOD_END(STRING_HANDLE, result2)
@@ -222,6 +290,11 @@ public:
     MOCK_METHOD_END(size_t, maxsize);
 };
 
+DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , JSON_Value*, json_parse_string, const char *, filename);
+DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , JSON_Object*, json_value_get_object, const JSON_Value*, value);
+DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , const char*, json_object_get_string, const JSON_Object*, object, const char*, name);
+DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, json_value_free, JSON_Value*, value);
+
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, gballoc_free, void*, ptr);
 
@@ -265,8 +338,9 @@ BEGIN_TEST_SUITE(logger_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		MODULE_APIS apis;
-		Module_GetAPIS(&apis);
+        MODULE_APIS apis;
+        Module_GetAPIS(&apis);
+        Logger_CreateFromJson = apis.Module_CreateFromJson;
         Logger_Create = apis.Module_Create;
         Logger_Destroy = apis.Module_Destroy;
         Logger_Receive = apis.Module_Receive;
@@ -295,6 +369,150 @@ BEGIN_TEST_SUITE(logger_ut)
         {
             ASSERT_FAIL("failure in test framework at ReleaseMutex");
         }
+    }
+
+    /*Tests_SRS_LOGGER_05_001: [ If broker is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_with_NULL_broker_fails)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        ///act
+        auto result = Logger_CreateFromJson(NULL, "someConfig");
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_LOGGER_05_003: [ If configuration is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_with_NULL_configuration_fails)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        ///act
+        auto result = Logger_CreateFromJson(validBrokerHandle, NULL);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_LOGGER_05_005: [ Logger_CreateFromJson shall pass broker and the filename to Logger_Create. ]*/
+    /*Tests_SRS_LOGGER_05_006: [ If Logger_Create succeeds then Logger_CreateFromJson shall succeed and return a non-NULL value. ]*/
+    /*Tests_SRS_LOGGER_05_007: [ If Logger_Create fails then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_happy_path_succeeds)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(VALID_CONFIG_STRING)); /*this is creating the JSON from the string*/
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG)) /*this is destroy of the json value created from the string*/
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG)) /*getting the json object out of the json value*/
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "filename")) /*this is getting a json string that is what follows "filename": in the json*/
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(LOGGER_HANDLE_DATA)));
+        STRICT_EXPECTED_CALL(mocks, gb_fopen("log.txt", "r+b"));
+        STRICT_EXPECTED_CALL(mocks, gb_fseek(IGNORED_PTR_ARG, 0, 2))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gb_ftell(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gb_time(NULL));
+        STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(4);
+        STRICT_EXPECTED_CALL(mocks, gb_fseek(IGNORED_PTR_ARG, -1, SEEK_END))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Logger_CreateFromJson(validBrokerHandle, VALID_CONFIG_STRING);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Logger_Destroy(result);
+    }
+
+    /*Tests_SRS_LOGGER_05_012: [ If the JSON object does not contain a value named "filename" then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_fails_when_json_object_get_string_fails)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(VALID_CONFIG_STRING)); /*this is creating the JSON from the string*/
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG)) /*this is destroy of the json value created from the string*/
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG)) /*getting the json object out of the json value*/
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "filename")) /*this is getting a json string that is what follows "filename": in the json*/
+            .IgnoreArgument(1)
+            .SetFailReturn((const char*)NULL);
+
+        ///act
+        auto result = Logger_CreateFromJson(validBrokerHandle, VALID_CONFIG_STRING);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_LOGGER_05_012: [ If the JSON object does not contain a value named "filename" then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_fails_when_json_value_get_object_fails)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(VALID_CONFIG_STRING)); /*this is creating the JSON from the string*/
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG)) /*this is destroy of the json value created from the string*/
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG)) /*getting the json object out of the json value*/
+            .IgnoreArgument(1)
+            .SetFailReturn((JSON_Object*)NULL);
+
+        ///act
+        auto result = Logger_CreateFromJson(validBrokerHandle, VALID_CONFIG_STRING);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_LOGGER_05_011: [ If configuration is not a JSON object, then Logger_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(Logger_CreateFromJson_fails_when_json_parse_string_fails)
+    {
+        ///arrange
+        CLoggerMocks mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(VALID_CONFIG_STRING)) /*this is creating the JSON from the string*/
+            .SetFailReturn((JSON_Value*)NULL);
+
+        ///act
+        auto result = Logger_CreateFromJson(validBrokerHandle, VALID_CONFIG_STRING);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
     }
 
     /*Tests_SRS_LOGGER_02_001: [If broker is NULL then Logger_Create shall fail and return NULL.]*/
@@ -1930,13 +2148,14 @@ BEGIN_TEST_SUITE(logger_ut)
         ///arrrange
 
         ///act
-		MODULE_APIS result;
-		memset(&result, 0, sizeof(MODULE_APIS));
+        MODULE_APIS result;
+        memset(&result, 0, sizeof(MODULE_APIS));
         Module_GetAPIS(&result);
 
         ///assert
-		ASSERT_IS_TRUE(result.Module_Create != NULL);
-		ASSERT_IS_TRUE(result.Module_Destroy != NULL);
-		ASSERT_IS_TRUE(result.Module_Receive != NULL);
+        ASSERT_IS_TRUE(result.Module_CreateFromJson != NULL);
+        ASSERT_IS_TRUE(result.Module_Create != NULL);
+        ASSERT_IS_TRUE(result.Module_Destroy != NULL);
+        ASSERT_IS_TRUE(result.Module_Receive != NULL);
     }
 END_TEST_SUITE(logger_ut)

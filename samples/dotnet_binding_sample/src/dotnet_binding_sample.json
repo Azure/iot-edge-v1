@@ -2,13 +2,13 @@
     "modules" :
     [
         {
-            "module name" : "logger_hl",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
-            "args" : {"filename":"C:\\Temp\\Log.txt"}
+            "module name" : "logger",
+            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
+            "args" : {"filename":"log.txt"}
         },
         {
           "module name": "dotnet_sensor_module",
-          "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet_hl.dll",
+          "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
           "args": {
             "dotnet_module_path": "SensorModule",
             "dotnet_module_entry_class": "SensorModule.DotNetSensorModule",
@@ -17,7 +17,7 @@
         },
         {
             "module name" : "dotnet_printer_module",
-            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet_hl.dll",
+            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
             "args" : {
                 "dotnet_module_path": "PrinterModule",
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule",
@@ -34,7 +34,7 @@
       },
       {
         "source": "dotnet_sensor_module",
-        "sink": "logger_hl"
+        "sink": "logger"
       }
     ]
 }

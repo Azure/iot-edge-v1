@@ -54,6 +54,76 @@ The following functions are the implementation of those APIs.
 **SRS_JAVA_MODULE_HOST_26_001: [** `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. **]**
 
 
+## JavaModuleHost_CreateFromJson
+```C
+static MODULE_HANDLE JavaModuleHost_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+```
+
+Creates a new Java Module Host instance. The parameter `configuration` is a pointer to a `const char*` that contains a JSON object supplied by `Gateway_CreateFromJson`.
+This JSON object will be the `"args"` section of the Gateway JSON configuration file and should be formatted as follows:
+```json
+{
+    "modules": [
+        {
+            "module name": "java_poller",
+            "module path": "/path/to/java_module_host.so|.dll",
+            "args": {
+                "class_path": "/path/to/relevant/class/files",
+                "library_path": "/path/to/dir/with/java_module_host.so|.dll",
+                "class_name": "Poller",
+                "args": {
+                    "frequency": 30
+                },
+                "jvm_options": {
+                    "version": 8,
+                    "debug": true,
+                    "debug_port": 9876,
+                    "verbose": false,
+                    "additional_options": [
+                        "-Djava.version=1.8"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
+###"class_path" (optional)
+Path to the relevant Java class files.
+
+###"library_path" (optional)
+Path to the Java module host native library.
+
+###"class_name" (required)
+The name of the main module class.
+
+###"args" (optional)
+The user-defined arguments for the Java module (Java).
+
+###"jvm_options" (optional)
+The JVM options to be used when creating the JVM. Specify the version, debug options, verbosity, and any other additional options. The defaults are:
+* version: 4
+* debug: false
+* debug_port: 9876
+* verbose: false
+* additional_options: NONE
+
+**SRS_JAVA_MODULE_HOST_05_002: [** This function shall return `NULL` if `broker` is `NULL` or `configuration` is `NULL`. **]**
+
+**SRS_JAVA_MODULE_HOST_05_003: [** This function shall return `NULL` if `configuration` is not a valid JSON object. **]**
+
+**SRS_JAVA_MODULE_HOST_05_004: [** This function shall return `NULL` if `configuration.args` does not contain a field named `class_name`. **]**
+
+**SRS_JAVA_MODULE_HOST_05_005: [** This function shall parse the `configuration.args` JSON object and initialize a new `JAVA_MODULE_HOST_CONFIG` setting default values to all missing fields. **]**
+
+**SRS_JAVA_MODULE_HOST_05_006: [** This function shall pass `broker` and the newly created `JAVA_MODULE_HOST_CONFIG` structure to `JavaModuleHost_Create`. **]**
+
+**SRS_JAVA_MODULE_HOST_05_007: [** This function shall fail or succeed after this function call and return the value from this function call. **]**
+
+**SRS_JAVA_MODULE_HOST_05_010: [** This function shall return `NULL` if any underlying API call fails. **]**
+
+
 ## JavaModuleHost_Create
 ```C
 static MODULE_HANDLE JavaModuleHost_Create(BROKER_HANDLE broker, const void* configuration);

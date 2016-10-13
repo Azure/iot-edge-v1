@@ -87,21 +87,17 @@ endif()
 
 function(add_module_to_solution undecoratedModuleName)
   set_target_properties(${undecoratedModuleName}
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
   set_target_properties(${undecoratedModuleName}_static
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-  set_target_properties(${undecoratedModuleName}_hl
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-  set_target_properties(${undecoratedModuleName}_hl_static
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
 endfunction()
 
 function(add_binding_to_solution bindingLanguage)
-    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
+    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Gateway/Bindings")
 endfunction()
     
 function(add_sample_to_solution sampleName)
-  set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
+  set_target_properties(${sampleName} PROPERTIES FOLDER "Gateway/Samples")
 endfunction()
 
 
@@ -167,7 +163,7 @@ include_directories(./deps/nanomsg/src)
 
 set(NANOMSG_TARGETS dist )
 foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
-  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "Nanomsg_Projects")
+  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "nanomsg Targets")
 endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)

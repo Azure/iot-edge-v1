@@ -1,0 +1,100 @@
+{
+  "modules": [
+    {
+      "module name": "IoTHub",
+      "module path": "<</path/to/libiothub.so>>",
+      "args": {
+        "IoTHubName": "<<Azure IoT Hub Name>>",
+        "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
+        "Transport" : "amqp"
+      }
+    },
+    {
+      "module name": "BLE Printer",
+      "module path": "<</path/to/libble_printer.so>>",
+      "args": null
+    },
+    {
+      "module name": "mapping",
+      "module path": "<</path/to/libidentity_map.so>>",
+      "args": [
+        {
+          "macAddress": "AA:BB:CC:DD:EE:FF",
+          "deviceId": "<<Azure IoT Hub Device ID>>",
+          "deviceKey": "<<Azure IoT Hub Device Key>>"
+        }
+      ]
+    },
+    {
+      "module name": "BLEC2D",
+      "module path": "<</path/to/libble_c2d.so>>",
+      "args": null
+    },
+    {
+      "module name": "SensorTag",
+      "module path": "<</path/to/libble.so>>",
+      "args": {
+        "controller_index": 0,
+        "device_mac_address": "<<AA:BB:CC:DD:EE:FF>>",
+        "instructions": [
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A24-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A25-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A26-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A27-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A28-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "read_once",
+            "characteristic_uuid": "00002A29-0000-1000-8000-00805F9B34FB"
+          },
+          {
+            "type": "write_at_init",
+            "characteristic_uuid": "F000AA02-0451-4000-B000-000000000000",
+            "data": "AQ=="
+          },
+          {
+            "type": "read_periodic",
+            "characteristic_uuid": "F000AA01-0451-4000-B000-000000000000",
+            "interval_in_ms": 1000
+          },
+          {
+            "type": "write_at_exit",
+            "characteristic_uuid": "F000AA02-0451-4000-B000-000000000000",
+            "data": "AA=="
+          }
+        ]
+      }
+    },
+    {
+      "module name": "Logger",
+      "module path" : "<</path/to/liblogger.so>>",
+      "args":
+      {
+        "filename": "<</path/to/log-file.log>>"
+      }
+    }
+  ],
+  "links" : [
+    {"source" : "*", "sink" : "Logger" },
+    {"source" : "SensorTag", "sink" : "mapping" },
+    {"source" : "SensorTag", "sink" : "BLE Printer" },
+    {"source" : "mapping", "sink" : "IoTHub" },
+    {"source" : "IoTHub", "sink" : "mapping" },
+    {"source" : "mapping", "sink" : "BLEC2D" },
+    {"source" : "BLEC2D", "sink" : "SensorTag"}
+  ]
+}

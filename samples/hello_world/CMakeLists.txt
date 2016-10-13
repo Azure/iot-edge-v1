@@ -21,16 +21,13 @@ else()
     set_source_files_properties(./src/hello_world_lin.json PROPERTIES HEADER_FILE_ONLY ON)
 endif()
 
-set(hello_world_headers
-)
-
 include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 include_directories(../../modules/common)
 
-add_executable(hello_world_sample ${hello_world_headers} ${hello_world_sources})
+add_executable(hello_world_sample ${hello_world_sources})
 
-add_dependencies(hello_world_sample logger_hl)
+add_dependencies(hello_world_sample hello_world logger)
 
 target_link_libraries(hello_world_sample gateway nanomsg)
 linkSharedUtil(hello_world_sample)

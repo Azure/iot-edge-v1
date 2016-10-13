@@ -36,10 +36,10 @@ this module will be similar to the configuration for the Node Module Host:
     "modules": [
         {
             "module name": "java_poller",
-            "module path": "/path/to/java_module_host_hl.so|.dll",
+            "module path": "/path/to/java_module_host.so|.dll",
             "args": {
                 "class_path": "/path/to/relevant/class/files",
-                "library_path": "/path/to/dir/with/java_module_host_hl.so|.dll",
+                "library_path": "/path/to/dir/with/java_module_host.so|.dll",
                 "class_name": "Poller",
                 "args": {
                     "frequency": 30

@@ -15,7 +15,7 @@ The sample contains:
 Other resources:
 *[getting started doc](getting_started.md)
 *[devbox setup](devbox_setup.md)
-*[.NET binding High Level Design](../bindings/dotnet/devdoc/dotnet_bindings_hld.md)
+*[.NET binding High Level Design](../bindings/dotnet/devdoc/dotnet_binding_hld.md)
 *.Net Framework Installer: https://www.microsoft.com/en-us/download/details.aspx?id=17851
 
 Prerequisites
@@ -80,13 +80,13 @@ Json Configuration
     "modules" :
     [
         {
-            "module name" : "logger_hl",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger_hl.dll",
+            "module name" : "logger",
+            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
             "args" : {"filename":"C:\\Temp\\Log.txt"} 
         },
         {
           "module name": "dotnet_sensor_module",
-          "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet_hl.dll",
+          "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
           "args": {
             "dotnet_module_path": "SensorModule",
             "dotnet_module_entry_class": "SensorModule.DotNetSensorModule",
@@ -95,7 +95,7 @@ Json Configuration
         },
         {
             "module name" : "dotnet_printer_module",
-            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet_hl.dll",
+            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
             "args" : {
                 "dotnet_module_path": "PrinterModule",
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule",
@@ -134,7 +134,6 @@ namespace PrinterModule
 
         public void Destroy()
         {
-            Console.WriteLine("This is C# Sensor Module Destroy!");
         }
 
         public void Receive(Message received_message)
@@ -157,7 +156,7 @@ Modules may also implement the `IGatewayModuleStart` interface.  The Start metho
     [
         {
             "module name" : "dotnet_printer_module", ==> Your new module name. 
-            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet_hl.dll", ==> This is the location where the dotnet_hl.dll is located.
+            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll", ==> This is the location where the dotnet.dll is located.
             "args" : {
                 "dotnet_module_path": "PrinterModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule", ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
