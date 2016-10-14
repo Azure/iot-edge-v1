@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
+include("dependencies.cmake")
+
 set(MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Modules include directory" FORCE)
 
 include_directories(./common)

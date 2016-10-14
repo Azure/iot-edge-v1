@@ -19,5 +19,6 @@ set(${theseTestsName}_h_files
 )
 
 include_directories(${GW_INC})
+include_directories(${IOTHUB_CLIENT_INCLUDES})
 
 build_test_artifacts(${theseTestsName} ON)

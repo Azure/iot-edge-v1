@@ -27,7 +27,9 @@ target_link_libraries(dotnet_static gateway mscoree)
 linkSharedUtil(dotnet)
 linkSharedUtil(dotnet_static)
 
-add_subdirectory(tests)
+if(NOT ${skip_unittests})
+	add_subdirectory(tests)
+endif()
 
 add_binding_to_solution(dotnet)
 add_binding_to_solution(dotnet_static)

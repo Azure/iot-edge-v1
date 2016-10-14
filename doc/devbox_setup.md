@@ -16,10 +16,10 @@ Be sure to include Visual C++ and NuGet Package Manager.
 2. Install [git](http://www.git-scm.com) making sure git.exe can be run from a command line.
 3. Install [cmake](https://cmake.org/download/) making sure cmake.exe can be run from a command line.
 
- >Note: Using the .msi is the easiest option when installing on Windows. Add CMake to the PATH for at least the current user when prompted to do so by the installer. 
-4. Clone the latest version of this repository to your local machine with the recursive parameter
+>Note: Using the .msi is the easiest option when installing on Windows. Add CMake to the PATH for at least the current user when prompted to do so by the installer. 
+4. Clone the latest version of this repository to your local machine 
 ```
-git clone --recursive https://github.com/Azure/azure-iot-gateway-sdk.git
+git clone https://github.com/Azure/azure-iot-gateway-sdk.git
 ```
 Use the **master** branch to ensure you fetch the latest release version.
 
@@ -38,9 +38,9 @@ This section shows you how to set up a development environment for the Azure IoT
  ``` 
  
  * libglib2.0-dev is required for ble module/sample
-2. Clone the latest version of this repository to your Ubuntu machine with the recursive parameter
+2. Clone the latest version of this repository to your Ubuntu machine
 ```
-git clone --recursive https://github.com/Azure/azure-iot-gateway-sdk.git
+git clone https://github.com/Azure/azure-iot-gateway-sdk.git
 ```
 Use the **master** branch to ensure you fetch the latest release version.
 

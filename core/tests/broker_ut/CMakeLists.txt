@@ -20,5 +20,6 @@ set(${theseTestsName}_h_files
 )
 
 include_directories(${GW_INC})
+include_directories(${NANOMSG_INCLUDES})
 
 build_test_artifacts(${theseTestsName} ON)

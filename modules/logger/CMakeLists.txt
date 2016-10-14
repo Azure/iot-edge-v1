@@ -36,8 +36,9 @@ linkSharedUtil(logger_static)
 
 add_module_to_solution(logger)
 
-add_subdirectory(tests)
-
+if(NOT ${skip_unittests})
+	add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 

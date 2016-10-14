@@ -10,3 +10,18 @@
 [submodule "deps/nanomsg"]
 	path = deps/nanomsg
 	url = https://github.com/nanomsg/nanomsg.git
+[submodule "deps/uamqp"]
+	path = deps/uamqp
+	url = https://github.com/azure/azure-uamqp-c
+[submodule "deps/umock-c"]
+	path = deps/umock-c
+	url = https://github.com/azure/umock-c
+[submodule "deps/ctest"]
+	path = deps/ctest
+	url = https://github.com/azure/azure-ctest
+[submodule "deps/testrunner"]
+	path = deps/testrunner
+	url = https://github.com/azure/azure-c-testrunnerswitcher
+[submodule "deps/umqtt"]
+	path = deps/umqtt
+	url = https://github.com/azure/azure-umqtt-c

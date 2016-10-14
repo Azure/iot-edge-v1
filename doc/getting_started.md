@@ -82,7 +82,9 @@ Linux
 
 >create a folder for the build output and navigate to that folder.
 
->run `cmake <path to repo root>`
+>run `sudo cmake <path to repo root>`
+
+>Note: The cmake scripts will check for installed cmake dependencies on your machine before it attempts to fetch, build, and install them for you.
 
 >run `make -j $(nproc)`
 
@@ -92,7 +94,7 @@ Linux
 
 Windows
 
-1. Open a Developer Command Prompt for VS2015
+1. Open a Developer Command Prompt for VS2015 as an Administrator
 2. Navigate to `azure-iot-gateway-sdk\tools\`
 3. Run `build.cmd`. 
 
@@ -101,6 +103,8 @@ Windows
 >create a folder for the build output and navigate to that folder.
 
 >run `cmake <path to repo root>`
+
+>Note: The cmake scripts will check for installed cmake dependencies on your machine before it attempts to fetch, build, and install them for you.
 
 >run `msbuild /m /p:Configuration="Debug" /p:Platform="Win32" azure_iot_gateway_sdk.sln`
 

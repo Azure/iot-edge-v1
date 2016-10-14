@@ -88,7 +88,9 @@ linkSharedUtil(java_module_host_static)
 
 add_binding_to_solution(java_module_host)
 
-add_subdirectory(tests)
+if(NOT ${skip_unittests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS java_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
