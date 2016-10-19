@@ -10,7 +10,7 @@ add_subdirectory(event_system_ut)
 add_subdirectory(gateway_ll_ut)
 add_subdirectory(gateway_ut)
 add_subdirectory(gwmessage_ut)
-add_subdirectory(module_loader_ut)
+add_subdirectory(dynamic_loader_ut)
 
 if(${run_e2e_tests})
     add_subdirectory(gateway_e2e)

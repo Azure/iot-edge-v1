@@ -17,6 +17,7 @@
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/vector.h"
 #include "module.h"
+#include "module_loader.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -61,8 +62,11 @@ typedef struct GATEWAY_MODULES_ENTRY_TAG
 	/** @brief The (possibly @c NULL) name of the module */
 	const char* module_name;
 	
-	/** @brief The path to the .dll or .so of the module */
-	const char* module_path;
+	/** @brief The configuration for loading the module into the gateway. */
+	const void* loader_configuration;
+
+	/** @brief The API to use for loading this module. */
+	const MODULE_LOADER_API * loader_api;
 	
 	/** @brief The user-defined configuration object for the module */
 	const void* module_configuration;
@@ -133,6 +137,7 @@ typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type
 *
 *	@param		properties		#GATEWAY_PROPERTIES structure containing 
 *								specific module properties and information.
+*
 *
 *	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the 
 *				gateway or @c NULL on failure.

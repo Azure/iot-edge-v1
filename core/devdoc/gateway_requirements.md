@@ -16,12 +16,18 @@ Third party C JSON library: https://github.com/kgabis/parson
     [ 
         {
             "module name" : "foo",
-            "module path" : "F:\\foo.dll",
+            "loading args" : 
+                {
+                    "module path" : "F:\\foo.dll"
+                },
             "args" : ...
         },
         {
             "module name" : "bar",
-            "module path" : "F:\\bar.dll",
+            "loading args" : 
+                {
+                    "module path" : "F:\\bar.dll"
+                },
             "args" : ...
         },
         ...
@@ -72,7 +78,11 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 
 **SRS_GATEWAY_14_004: [** The function shall traverse the `JSON_Value` object to initialize a `GATEWAY_PROPERTIES` instance. **]**
 
-**SRS_GATEWAY_14_005: [** The function shall set the value of `const void* module_properties` in the `GATEWAY_PROPERTIES` instance to a char\* representing the serialized *args* value for the particular module. **]**
+**SRS_GATEWAY_14_005: [** The function shall set the value of `const void* module_configuration` in the `GATEWAY_PROPERTIES` instance to a char\* representing the serialized *args* value for the particular module. **]**
+
+**SRS_GATEWAY_17_005: [** The function shall parse the "loading args" for "module path" and fill a `DYNAMIC_LOADER_CONFIG` structure with the module path information. **]**
+
+**SRS_GATEWAY_17_003: [** The function shall set the value of `const void * loader_configuration` in the `GATEWAY_PROPERTIES` instance to a pointer of the module's `DYNAMIC_LOADER_CONFIG` structure. **]**
 
 **SRS_GATEWAY_14_006: [** The function shall return NULL if the `JSON_Value` contains incomplete information. **]**
 
@@ -81,6 +91,8 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 **SRS_GATEWAY_04_002: [** The function shall add all modules source and sink to `GATEWAY_PROPERTIES` inside `gateway_links`. **]**
 
 **SRS_GATEWAY_14_007: [** The function shall use the `GATEWAY_PROPERTIES` instance to create and return a `GATEWAY_HANDLE` using the lower level API. **]**
+
+**SRS_GATEWAY_17_004: [** The function shall set the module loader to the default dynamically linked library module loader. **]** 
 
 **SRS_GATEWAY_17_001: [** Upon successful creation, this function shall start the gateway. **]**
 

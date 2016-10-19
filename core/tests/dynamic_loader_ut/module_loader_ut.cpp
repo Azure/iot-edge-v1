@@ -12,6 +12,7 @@
 
 #include "module_loader.h"
 #include "dynamic_library.h"
+#include "dynamic_loader.h"
 
 #include "azure_c_shared_utility/lock.h"
 
@@ -44,6 +45,10 @@ namespace BASEIMPLEMENTATION
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
 
+static pfModuleLoader_Load ModuleLoader_Load;
+static pfModuleLoader_Unload ModuleLoader_Unload;
+static pfModuleLoader_GetApi ModuleLoader_Get_Api;
+
 // Value for a good handle
 #define TEST_MODULE_LIBRARY_GOOD_HANDLE (void*)0xDEAF
 // Value for a valid file handle to a file that does not have a valid symbol
@@ -54,6 +59,7 @@ static size_t whenShallmalloc_fail;
 #define TEST_MODULE_LIBRARY_BAD_SYM_NAME ("badsym")
 // Value for a library that does not load.
 #define TEST_MODULE_LIBRARY_BAD_NAME ("bad")
+
 
 
 static bool test_getApi_func_success = true;
@@ -188,6 +194,12 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		currentmalloc_call = 0;
 		whenShallmalloc_fail = 0;
 		test_getApi_func_success = true;
+
+		/*Tests_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ]*/
+		const MODULE_LOADER_API* ml = DynamicLoader_GetApi();
+		ModuleLoader_Get_Api = ml->GetApi;
+		ModuleLoader_Load = ml->Load;
+		ModuleLoader_Unload = ml->Unload;
     }
 
     TEST_FUNCTION_CLEANUP(TestMethodCleanup)
@@ -202,14 +214,31 @@ BEGIN_TEST_SUITE(module_loader_ut)
     }
 
 	/*Tests_SRS_MODULE_LOADER_17_001: [ModuleLoader_Load shall validate the moduleFileName, if it is NULL or an empty string, it will return NULL.]*/
+	TEST_FUNCTION(ModuleLoader_Load_Args_Is_Null)
+	{
+		CModuleLoaderMocks mocks;
+		///arrange
+
+		///act
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(NULL);
+
+		///assert
+		ASSERT_IS_NULL(moduleHandle);
+
+		///cleanup
+	}
+
+	/*Tests_SRS_MODULE_LOADER_17_001: [ModuleLoader_Load shall validate the moduleFileName, if it is NULL or an empty string, it will return NULL.]*/
 	TEST_FUNCTION(ModuleLoader_Load_Name_Is_Null)
 	{
 		CModuleLoaderMocks mocks;
 		///arrange
-		const char* moduleFileName = NULL;
-
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			nullptr
+		};
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);
@@ -230,7 +259,11 @@ BEGIN_TEST_SUITE(module_loader_ut)
 			.IgnoreArgument(1);
 
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);
@@ -250,9 +283,13 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 			.IgnoreArgument(1);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
 
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);
@@ -278,7 +315,11 @@ BEGIN_TEST_SUITE(module_loader_ut)
 			.IgnoreArgument(1);
 
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);
@@ -303,9 +344,12 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
 			.ExpectedTimesExactly(2)
 			.IgnoreArgument(1);
-
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);
@@ -320,6 +364,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 	/* Tests_SRS_MODULE_LOADER_17_006: [ModuleLoader_Load shall return a non-NULL handle to a MODULE_LIBRARY_DATA_TAG upon success.]*/
 	/* Tests_SRS_MODULE_LOADER_26_001: [If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`.]*/
 	/* Tests_SRS_MODULE_LOADER_26_002: [`ModulerLoader_Load` shall allocate memory for the structure `MODULE_APIS`.] */
+	/* Tests_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ] */
 	TEST_FUNCTION(ModuleLoader_Success)
 	{
 		CModuleLoaderMocks mocks;
@@ -332,9 +377,13 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME)).IgnoreArgument(1);
 		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
 
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_ARE_NOT_EQUAL(void_ptr, NULL, moduleHandle);
@@ -344,15 +393,15 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		ModuleLoader_Unload(moduleHandle);
 	}
 
-	/*Tests_SRS_MODULE_LOADER_17_007: [ModuleLoader_GetModuleAPIs shall return NULL if the moduleLibrary  is NULL.]*/
-	TEST_FUNCTION(ModuleLoader_GetModuleAPIs_Library_Is_Null)
+	/*Tests_SRS_MODULE_LOADER_17_007: [ModuleLoader_Get_Api shall return NULL if the moduleLibrary  is NULL.]*/
+	TEST_FUNCTION(ModuleLoader_Get_Api_Library_Is_Null)
 	{
 		CModuleLoaderMocks mocks;
 		///arrange
 		MODULE_LIBRARY_HANDLE moduleLibrary  = NULL;
 
 		///act
-		const MODULE_APIS* apisHandle = ModuleLoader_GetModuleAPIs(moduleLibrary);
+		const MODULE_APIS* apisHandle = ModuleLoader_Get_Api(moduleLibrary);
 
 		///assert
 		ASSERT_IS_NULL(apisHandle);
@@ -360,8 +409,9 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_MODULE_LOADER_17_008: [ModuleLoader_GetModuleAPIs shall return a valid pointer to MODULE_APIS on success.]*/
-	TEST_FUNCTION(ModuleLoader_GetModuleAPIs_Name_Is_Good)
+	/*Tests_SRS_MODULE_LOADER_17_008: [ModuleLoader_Get_Api shall return a valid pointer to MODULE_APIS on success.]*/
+	/*Tests_SRS_MODULE_LOADER_17_020: [ DynamicLoader_GetApi shall return a non-NULL pointer to a MODULER_LOADER structure. ]*/
+	TEST_FUNCTION(ModuleLoader_Get_Api_Name_Is_Good)
 	{
 		CModuleLoaderMocks mocks;
 		///arrange
@@ -374,12 +424,16 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME))
 			.IgnoreArgument(1);
 		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 		ASSERT_IS_NOT_NULL(moduleHandle);
 		mocks.ResetAllCalls();
 		
 		///act
-		const MODULE_APIS* apisHandle = ModuleLoader_GetModuleAPIs(moduleHandle );
+		const MODULE_APIS* apisHandle = ModuleLoader_Get_Api(moduleHandle );
 
 		///assert
 		ASSERT_IS_TRUE(TEST_MODULE_LIBRARY_GOOD_HANDLE == (void*)apisHandle->Module_Create);
@@ -423,8 +477,11 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_LoadLibrary(moduleFileName));
 		STRICT_EXPECTED_CALL(mocks, DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPIS_NAME));
 		EXPECTED_CALL(mocks, test_getApi_func(IGNORED_PTR_ARG));
-		
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 		ASSERT_IS_NOT_NULL(moduleHandle);
 		mocks.ResetAllCalls();
 		
@@ -443,7 +500,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
 	}
 
 	/*Tests_SRS_MODULE_LOADER_26_003: [If memory allocation is not successful, the load shall fail, and it shall return `NULL`.]*/
-	TEST_FUNCTION(ModuleLoader_GetModuleAPIs_module_apis_malloc_fail)
+	TEST_FUNCTION(ModuleLoader_Get_Api_module_apis_malloc_fail)
 	{
 		CModuleLoaderMocks mocks;
 		///arrange
@@ -456,8 +513,13 @@ BEGIN_TEST_SUITE(module_loader_ut)
 		EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 		EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG));
 
+		DYNAMIC_LOADER_CONFIG loader_args =
+		{
+			moduleFileName
+		};
+
 		///act
-		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(moduleFileName);
+		MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
 
 		///assert
 		ASSERT_IS_NULL(moduleHandle);

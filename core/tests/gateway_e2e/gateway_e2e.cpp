@@ -23,6 +23,7 @@
 #include "identitymap.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "module_config_resources.h"
+#include "dynamic_loader.h"
 
 DEFINE_MICROMOCK_ENUM_TO_STRING(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
 
@@ -183,21 +184,28 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		}
 		
 		GATEWAY_MODULES_ENTRY modules[3];
+		DYNAMIC_LOADER_CONFIG loaders[3];
 		GATEWAY_LINK_ENTRY links[2];
 
 		modules[0].module_configuration = &iotHubConfig;
 		modules[0].module_name = "IoTHub";
-		modules[0].module_path = iothub_module_path();
+		modules[0].loader_configuration = &loaders[0];
+		loaders[0].moduleLibraryFileName = iothub_module_path();
+		modules[0].loader_api = DynamicLoader_GetApi();
 
 		
 		modules[1].module_configuration = e2eModuleMappingVector;
 		modules[1].module_name = GW_IDMAP_MODULE;
-		modules[1].module_path = identity_map_module_path();
+		modules[1].loader_configuration = &loaders[1];
+		loaders[1].moduleLibraryFileName = identity_map_module_path();
+		modules[1].loader_api = DynamicLoader_GetApi();
 
 		modules[2].module_configuration = &e2eModuleConfiguration;
 		modules[2].module_name = "E2ETest";
-		modules[2].module_path = e2e_module_path();
-		
+		modules[2].loader_configuration = &loaders[2];
+		loaders[2].moduleLibraryFileName = e2e_module_path();
+		modules[2].loader_api = DynamicLoader_GetApi();
+
 		links[0].module_source = "E2ETest";
 		links[0].module_sink = GW_IDMAP_MODULE;
 

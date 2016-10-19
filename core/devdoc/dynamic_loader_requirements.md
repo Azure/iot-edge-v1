@@ -6,23 +6,40 @@
 module_loader allows a user to dynamically load modules into a gateway.  The module in this case is represented by a file name of a shared library (a DLL or SO file, depending on operating system).  The library name given is expected to implement a gateway module, so it is expected to export the API as defined in module.h.
 ## References
 module.h – defines `MODULE_APIS`, `MODULE_GETAPIS_NAME`, and `Module_GetAPIS` function declaration.
+
+dynamic_library.h - used for operating system specific loading of dynamically linked libraries.
+
+Third party C JSON library: https://github.com/kgabis/parson
+
 ## Exposed API
 ```C
-typedef struct MODULE_LIBRARY_DATA_TAG* MODULE_LIBRARY_HANDLE;
 
-extern MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName);
-extern const MODULE_APIS* ModuleLoader_GetModuleAPIs(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
-extern void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+typedef struct DYNAMIC_LOADER_CONFIG_TAG
+{
+    const char * moduleLibraryFileName;
+} DYNAMIC_LOADER_CONFIG;
+
+extern const MODULE_LOADER_API * DynamicLoader_GetApi(void);
 ```
+
+### DynamicLoader_GetApi
+
+This returns the function table for the dynamically linked library module loader.
+
+**SRS_MODULE_LOADER_17_020: [** `DynamicLoader_GetApi` shall return a non-`NULL` pointer to a MODULER_LOADER structure. **]**
+
+**SRS_MODULE_LOADER_17_015: [** `DynamicLoader_GetApi` shall set all the fields of the MODULE_LOADER_API structure. **]**
 
 ### ModuleLoader_Load
 ```C
-extern MODULE_LIBRARY_HANDLE ModuleLoader_Load(const char* moduleLibraryFileName);
+MODULE_LIBRARY_HANDLE ModuleLoader_Load(const void* loader_configuration);
 ```
 
-**SRS_MODULE_LOADER_17_001: [**`ModuleLoader_Load` shall validate the moduleLibraryFileName, if it is `NULL`, it shall return NULL.**]** 
+`ModuleLoader_Load` expects `loader_configuration` to be a pointer to a `DYNAMIC_LOADER_CONFIG` structure.
+
+**SRS_MODULE_LOADER_17_001: [**`ModuleLoader_Load` shall validate the `DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`, if it is `NULL`, it shall return NULL.**]** 
 	
-**SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by the moduleLibraryFileName.**]**
+**SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by`DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`.**]**
 **SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
 	
 **SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPIS_NAME` in the open library.**]**
@@ -43,7 +60,7 @@ The contents of the structure `MODULE_LIBRARY_DATA_TAG` will be operating system
 
 ### ModuleLoader_GetModuleAPIs
 ```C
-extern const MODULE_APIS* `ModuleLoader_GetModuleAPIs`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+const MODULE_APIS* `ModuleLoader_GetModuleAPIs`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
 **SRS_MODULE_LOADER_17_007: [**`ModuleLoader_GetModuleAPIs` shall return `NULL` if the moduleLibraryHandle is `NULL`.**]**
@@ -52,7 +69,7 @@ extern const MODULE_APIS* `ModuleLoader_GetModuleAPIs`(MODULE_LIBRARY_HANDLE mod
 
 ### ModuleLoader_Unload
 ```C
-extern void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
 **SRS_MODULE_LOADER_17_009: [**`ModuleLoader_Unload` shall do nothing if the moduleLibraryHandle is `NULL`.**]**

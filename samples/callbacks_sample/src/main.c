@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "gateway_ll.h"
+#include "dynamic_loader.h"
 
 const char *hello_module_path = "../../modules/hello_world/Debug/hello_world.dll";
 
@@ -44,9 +45,14 @@ int main()
 
 	Gateway_LL_Start(gw);
 
+	DYNAMIC_LOADER_CONFIG loader_cfg = {
+		hello_module_path
+	};
+
 	GATEWAY_MODULES_ENTRY new_module = {
 		"test module",
-		hello_module_path,
+		&loader_cfg,
+		DynamicLoader_GetApi(),
 		NULL
 	};
 

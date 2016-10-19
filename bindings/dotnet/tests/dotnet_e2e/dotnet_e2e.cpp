@@ -18,6 +18,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "internal/event_system.h"
 #include "dotnet.h"
+#include "dynamic_loader.h"
 
 
 DEFINE_MICROMOCK_ENUM_TO_STRING(BROKER_RESULT, BROKER_RESULT_VALUES);
@@ -137,9 +138,15 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
         "Sender"
     };
 
+	const DYNAMIC_LOADER_CONFIG loader_cfg =
+	{
+		"..\\..\\..\\Debug\\dotnet.dll"
+	};
+
     const GATEWAY_MODULES_ENTRY managedModuleSender {
         "Sender",
-        "..\\..\\..\\Debug\\dotnet.dll",
+        &loader_cfg,
+		DynamicLoader_GetApi(),
         &senderConfig
     };
 
@@ -155,6 +162,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
     const GATEWAY_MODULES_ENTRY managedModuleReceiver {
         "Receiver",
         "..\\..\\..\\Debug\\dotnet.dll",
+		DynamicLoader_GetApi(),
         &receiverConfig
     };
 

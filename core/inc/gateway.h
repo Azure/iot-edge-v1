@@ -32,12 +32,18 @@ extern "C"
 	*					[ 
 	*						{
 	*							"module name" : "foo",
-	*							"module path" : "F:\\foo.dll",
+    *					        "loading args" : 
+    *            				{
+    *                				"module path" : "F:\\foo.dll"
+    *            				},	
 	*							"args" : ...
 	*						},
 	*						{
 	*							"module name" : "bar",
-	*							"module path" : "F:\\bar.dll",
+    *        					"loading args" : 
+    *            				{
+    *                			"module path" : "F:\\bar.dll"
+    *            				},
 	*							"args" : ...
 	*						}
 	*					],

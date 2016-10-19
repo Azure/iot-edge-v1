@@ -140,135 +140,135 @@ static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_L
 
 GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, bool use_json)
 {
-    /*Codes_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
-    GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
+	GATEWAY_HANDLE_DATA* gateway;
+	/*Codes_SRS_GATEWAY_LL_14_001: [This function shall create a GATEWAY_HANDLE representing the newly created gateway.]*/
+	gateway = (GATEWAY_HANDLE_DATA*)malloc(sizeof(GATEWAY_HANDLE_DATA));
 
-    if (gateway != NULL)
-    {
-        /* For freeing up NULL ptrs in case of create failure */
-        memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
+	if (gateway != NULL)
+	{
+		/* For freeing up NULL ptrs in case of create failure */
+		memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
 
-        /*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new BROKER_HANDLE for the gateway representing this gateway's message broker. ]*/
-        gateway->broker = Broker_Create();
-        if (gateway->broker == NULL)
-        {
-            /*Codes_SRS_GATEWAY_LL_14_004: [This function shall return NULL if a BROKER_HANDLE cannot be created.]*/
-            gateway_destroy_internal(gateway);
-            gateway = NULL;
-            LogError("Gateway_LL_Create(): Broker_Create() failed.");
-        }
-        else
-        {
-            /*Codes_SRS_GATEWAY_LL_14_033: [ The function shall create a vector to store each MODULE_DATA. ]*/
-            gateway->modules = VECTOR_create(sizeof(MODULE_DATA*));
-            if (gateway->modules == NULL)
-            {
-                /*Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
-                /*Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created BROKER_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ]*/
-                gateway_destroy_internal(gateway);
-                gateway = NULL;
-                LogError("Gateway_LL_Create(): VECTOR_create failed.");
-            }
-            else
-            {
-                /* Codes_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
-                gateway->links = VECTOR_create(sizeof(LINK_DATA));
-                if (gateway->links == NULL)
-                {
-                    gateway_destroy_internal(gateway);
-                    gateway = NULL;
-                    LogError("Gateway_LL_Create(): VECTOR_create for links failed.");
-                }
-                else
-                {
-                    if (properties != NULL && properties->gateway_modules != NULL)
-                    {
-                        /*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the gateway's message broker. ]*/
-                        size_t entries_count = VECTOR_size(properties->gateway_modules);
-                        if (entries_count > 0)
-                        {
-                            //Add the first module, if successful add others
-                            GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
-                            MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name, use_json);
+		/*Codes_SRS_GATEWAY_LL_14_003: [This function shall create a new BROKER_HANDLE for the gateway representing this gateway's message broker. ]*/
+		gateway->broker = Broker_Create();
+		if (gateway->broker == NULL)
+		{
+			/*Codes_SRS_GATEWAY_LL_14_004: [This function shall return NULL if a BROKER_HANDLE cannot be created.]*/
+			gateway_destroy_internal(gateway);
+			gateway = NULL;
+			LogError("Gateway_LL_Create(): Broker_Create() failed.");
+		}
+		else
+		{
+			/*Codes_SRS_GATEWAY_LL_14_033: [ The function shall create a vector to store each MODULE_DATA. ]*/
+			gateway->modules = VECTOR_create(sizeof(MODULE_DATA*));
+			if (gateway->modules == NULL)
+			{
+				/*Codes_SRS_GATEWAY_LL_14_034: [ This function shall return NULL if a VECTOR_HANDLE cannot be created. ]*/
+				/*Codes_SRS_GATEWAY_LL_14_035: [ This function shall destroy the previously created BROKER_HANDLE and free the GATEWAY_HANDLE if the VECTOR_HANDLE cannot be created. ]*/
+				gateway_destroy_internal(gateway);
+				gateway = NULL;
+				LogError("Gateway_LL_Create(): VECTOR_create failed.");
+			}
+			else
+			{
+				/* Codes_SRS_GATEWAY_LL_04_001: [ The function shall create a vector to store each LINK_DATA ] */
+				gateway->links = VECTOR_create(sizeof(LINK_DATA));
+				if (gateway->links == NULL)
+				{
+					gateway_destroy_internal(gateway);
+					gateway = NULL;
+					LogError("Gateway_LL_Create(): VECTOR_create for links failed.");
+				}
+				else
+				{
+					if (properties != NULL && properties->gateway_modules != NULL)
+					{
+						/*Codes_SRS_GATEWAY_LL_14_009: [The function shall use each of GATEWAY_PROPERTIES's gateway_modules to create and add a module to the gateway's message broker. ]*/
+						size_t entries_count = VECTOR_size(properties->gateway_modules);
+						if (entries_count > 0)
+						{
+							//Add the first module, if successful add others
+							GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
+							MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->loader_configuration, entry->loader_api, entry->module_configuration, entry->module_name, use_json);
 
-                            //Continue adding modules until all are added or one fails
-                            for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
-                            {
-                                entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
-                                module = gateway_addmodule_internal(gateway, entry->module_path, entry->module_configuration, entry->module_name, use_json);
-                            }
+							//Continue adding modules until all are added or one fails
+							for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
+							{
+								entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
+								module = gateway_addmodule_internal(gateway, entry->loader_configuration, entry->loader_api, entry->module_configuration, entry->module_name, use_json);
+							}
 
-                            /*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
-                            if (module == NULL)
-                            {
-                                gateway_destroy_internal(gateway);
-                                gateway = NULL;
-                            }
-                        }
+							/*Codes_SRS_GATEWAY_LL_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
+							if (module == NULL)
+							{
+								gateway_destroy_internal(gateway);
+								gateway = NULL;
+							}
+						}
 
-                        if (gateway != NULL)
-                        {
-                            if (properties->gateway_links != NULL)
-                            {
-                                /* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE's broker. ] */
-                                size_t entries_count = VECTOR_size(properties->gateway_links);
+						if (gateway != NULL)
+						{
+							if (properties->gateway_links != NULL)
+							{
+								/* Codes_SRS_GATEWAY_LL_04_002: [ The function shall use each GATEWAY_LINK_ENTRY of GATEWAY_PROPERTIES's gateway_links to add a LINK to GATEWAY_HANDLE's broker. ] */
+								size_t entries_count = VECTOR_size(properties->gateway_links);
 
-                                if (entries_count > 0)
-                                {
-                                    //Add the first link, if successfull add others
-                                    GATEWAY_LINK_ENTRY* entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, 0);
-                                    bool linkAdded = gateway_addlink_internal(gateway, entry);
+								if (entries_count > 0)
+								{
+									//Add the first link, if successfull add others
+									GATEWAY_LINK_ENTRY* entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, 0);
+									bool linkAdded = gateway_addlink_internal(gateway, entry);
 
-                                    //Continue adding links until all are added or one fails
-                                    for (size_t links_index = 1; links_index < entries_count && linkAdded; ++links_index)
-                                    {
-                                        entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, links_index);
-                                        linkAdded = gateway_addlink_internal(gateway, entry);
-                                    }
+									//Continue adding links until all are added or one fails
+									for (size_t links_index = 1; links_index < entries_count && linkAdded; ++links_index)
+									{
+										entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, links_index);
+										linkAdded = gateway_addlink_internal(gateway, entry);
+									}
 
-                                    /*Codes_SRS_GATEWAY_LL_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the broker the GATEWAY_HANDLE will be destroyed.]*/
-                                    if (!linkAdded)
-                                    {
-                                        LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink);
-                                        gateway_destroy_internal(gateway);
-                                        gateway = NULL;
-                                    }
-                                }
-                            }
-                        }
-                    }
+									/*Codes_SRS_GATEWAY_LL_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the broker the GATEWAY_HANDLE will be destroyed.]*/
+									if (!linkAdded)
+									{
+										LogError("Gateway_LL_Create(): Unable to add link from '%s' to '%s'.The gateway will be destroyed.", entry->module_source, entry->module_sink);
+										gateway_destroy_internal(gateway);
+										gateway = NULL;
+									}
+								}
+							}
+						}
+					}
 
-                    if (gateway != NULL)
-                    {
-                        /* TODO: Seperate the gateway init from gateway start-up so that plugins have the chance
-                        * register themselves */
-                        /*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
-                        gateway->event_system = EventSystem_Init();
-                        /*Codes_SRS_GATEWAY_LL_26_002: [ If Gateway Events module fails to be initialized the gateway module shall be destroyed with no events reported. ] */
-                        if (gateway->event_system == NULL)
-                        {
-                            LogError("Gateway_LL_Create(): Unable to initialize callback system");
-                            gateway_destroy_internal(gateway);
-                            gateway = NULL;
-                        }
-                        else
-                        {
-                            /*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
+					if (gateway != NULL)
+					{
+						/* TODO: Seperate the gateway init from gateway start-up so that plugins have the chance
+						* register themselves */
+						/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
+						gateway->event_system = EventSystem_Init();
+						/*Codes_SRS_GATEWAY_LL_26_002: [ If Gateway Events module fails to be initialized the gateway module shall be destroyed with no events reported. ] */
+						if (gateway->event_system == NULL)
+						{
+							LogError("Gateway_LL_Create(): Unable to initialize callback system");
+							gateway_destroy_internal(gateway);
+							gateway = NULL;
+						}
+						else
+						{
+							/*Codes_SRS_GATEWAY_LL_26_001: [ This function shall initialize attached Gateway Events callback system and report GATEWAY_STARTED event. ] */
 							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_CREATED);
-                            /*Codes_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
-                            EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    /*Codes_SRS_GATEWAY_LL_14_002: [This function shall return NULL upon any memory allocation failure.]*/
-    else
-    {
-        LogError("Gateway_LL_Create(): malloc failed.");
-    }
-
+							/*Codes_SRS_GATEWAY_LL_26_010: [ This function shall report `GATEWAY_MODULE_LIST_CHANGED` event. ] */
+							EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
+						}
+					}
+				}
+			}
+		}
+	}
+	/*Codes_SRS_GATEWAY_LL_14_002: [This function shall return NULL upon any memory allocation failure.]*/
+	else
+	{
+		LogError("Gateway_LL_Create(): malloc failed.");
+	}
     return gateway;
 }
 
@@ -338,15 +338,15 @@ bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module
 	return module_data == NULL ? false : true;
 }
 
-MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_path, const void* module_configuration, const char* module_name, bool use_json)
+MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const void* loader_configuration, const MODULE_LOADER_API* loader_api, const void* module_configuration, const char* module_name, bool use_json)
 {
 	MODULE_HANDLE module_result;
 
-	/*Codes_SRS_GATEWAY_LL_14_011: [If gw, entry, or GATEWAY_MODULES_ENTRY's module_path is NULL the function shall return NULL. ]*/
-	if (gateway_handle == NULL || module_path == NULL || module_name == NULL)		
+	/*Codes_SRS_GATEWAY_LL_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
+	if (gateway_handle == NULL || module_name == NULL || loader_api == NULL)		
 	{
 		module_result = NULL;
-		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_path string is NULL or empty or module_name is NULL or empty. gw = %p, module_path = '%s', module_name = '%s'.", gateway_handle, module_path, module_name);
+		LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_name is NULL or empty, or loader_api is NULL. gw = %p, module_name = '%s', api = %p.", gateway_handle, module_name, loader_api);
 	}
 	else if (strcmp(module_name, GATEWAY_ALL) == 0)
 	{
@@ -372,19 +372,20 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 			else
 			{
 				/*Codes_SRS_GATEWAY_LL_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
-				MODULE_LIBRARY_HANDLE module_library_handle = ModuleLoader_Load(module_path);
+				/*Codes_SRS_GATEWAY_LL_17_015: [ The function shall use GATEWAY_PROPERTIES::loader_api->Load and each GATEWAY_PROPERTIES::loader_configuration to get each module's MODULE_LIBRARY_HANDLE. ]*/
+				MODULE_LIBRARY_HANDLE module_library_handle = loader_api->Load(loader_configuration);
 				/*Codes_SRS_GATEWAY_LL_14_031: [If unsuccessful, the function shall return NULL.]*/
 				if (module_library_handle == NULL)
 				{
 					free(new_module_data);
 					module_result = NULL;
-					LogError("Failed to add module because the module located at [%s] could not be loaded.", module_path);
+					LogError("Failed to add module because the module could not be loaded.");
 				}
 				else
 				{
 					//Should always be a safe call.
 					/*Codes_SRS_GATEWAY_LL_14_013: [The function shall get the const MODULE_APIS* from the MODULE_LIBRARY_HANDLE.]*/
-					const MODULE_APIS* module_apis = ModuleLoader_GetModuleAPIs(module_library_handle);
+					const MODULE_APIS* module_apis = loader_api->GetApi(module_library_handle);
 
 					/*Codes_SRS_GATEWAY_LL_14_015: [The function shall use the MODULE_APIS to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
                     MODULE_HANDLE module_handle = use_json
@@ -395,7 +396,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 					{
 						free(new_module_data);
 						module_result = NULL;
-						ModuleLoader_Unload(module_library_handle);
+						loader_api->Unload(module_library_handle);
 						LogError("Module_Create failed.");
 					}
 					else
@@ -433,11 +434,12 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 								strcpy(name_copied, module_name);
 								/*Codes_SRS_GATEWAY_LL_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
 								Broker_IncRef(gateway_handle->broker);
-								/*Codes_SRS_GATEWAY_LL_14_029: [The function shall create a new MODULE_DATA containing the MODULE_HANDLE and MODULE_LIBRARY_HANDLE if the module was successfully attached to the message broker.]*/
+								/*Codes_SRS_GATEWAY_LL_14_029: [ The function shall create a new MODULE_DATA containing the MODULE_HANDLE, MODULE_LOADER_API and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
 								MODULE_DATA module_data =
 								{
 									name_copied,
 									module_library_handle,
+									loader_api,
 									module_handle
 								};
 								*new_module_data = module_data;
@@ -484,7 +486,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 						if (module_result == NULL)
 						{
 							module_apis->Module_Destroy(module_handle);
-							ModuleLoader_Unload(module_library_handle);
+							loader_api->Unload(module_library_handle);
 						}
 					}
 				}
@@ -523,9 +525,9 @@ void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_D
     /*Codes_SRS_GATEWAY_LL_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
     Broker_DecRef(gateway_handle->broker);
     /*Codes_SRS_GATEWAY_LL_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_APIS and destroy module. ]*/
-    ModuleLoader_GetModuleAPIs((*module_data_pptr)->module_library_handle)->Module_Destroy((*module_data_pptr)->module);
+	(*module_data_pptr)->module_loader->GetApi((*module_data_pptr)->module_library_handle)->Module_Destroy((*module_data_pptr)->module);
     /*Codes_SRS_GATEWAY_LL_14_025: [The function shall unload MODULE_DATA's module_library_handle. ]*/
-    ModuleLoader_Unload((*module_data_pptr)->module_library_handle);
+	(*module_data_pptr)->module_loader->Unload((*module_data_pptr)->module_library_handle);
     /*Codes_SRS_GATEWAY_LL_14_026:[The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
     MODULE_DATA * module_data_ptr = *module_data_pptr;
     VECTOR_erase(gateway_handle->modules, module_data_pptr, 1);

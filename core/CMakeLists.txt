@@ -56,7 +56,7 @@ endmacro (nn_check_lib)
 
 set(gateway_c_sources
     ./src/message.c
-    ./src/module_loader.c
+    ./src/dynamic_loader.c
     ./src/internal/event_system.c
 	./src/gateway_internal.c
     ./src/gateway_ll.c
@@ -74,6 +74,7 @@ set(gateway_h_sources
     ./inc/gateway_ll.h
     ./inc/gateway.h
     ./inc/module_loader.h
+	./inc/dynamic_loader.h
     ./inc/dynamic_library.h
 )
 

@@ -6,8 +6,10 @@
 #include "azure_c_shared_utility/macro_utils.h"
 #include "gateway.h"
 #include "parson.h"
+#include "dynamic_loader.h"
 
 #define MODULES_KEY "modules"
+#define LOADER_KEY "loading args"
 #define MODULE_NAME_KEY "module name"
 #define MODULE_PATH_KEY "module path"
 #define ARG_KEY "args"
@@ -25,7 +27,7 @@
 
 DEFINE_ENUM(PARSE_JSON_RESULT, PARSE_JSON_RESULT_VALUES);
 
-GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, bool use_json);
+GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, const MODULE_LOADER_API * module_loader, bool use_json);
 static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties, JSON_Value *root);
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties);
 void gateway_destroy_internal(GATEWAY_HANDLE gw);
@@ -52,7 +54,8 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
                 if (parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS)
                 {
                     /*Codes_SRS_GATEWAY_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
-                    gw = gateway_create_internal(properties, true);
+					/*Codes_SRS_GATEWAY_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
+                    gw = gateway_create_internal(properties, DynamicLoader_GetApi(), true);
 
                     if (gw == NULL)
                     {
@@ -116,6 +119,7 @@ static void destroy_properties_internal(GATEWAY_PROPERTIES* properties)
 		{
 			GATEWAY_MODULES_ENTRY* element = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, element_index);
 			json_free_serialized_string((char*)(element->module_configuration));
+			free((void*)element->loader_configuration);
 		}
 
 		VECTOR_destroy(properties->gateway_modules);
@@ -148,43 +152,68 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                 size_t module_count = json_array_get_count(modules_array);
                 for (size_t module_index = 0; module_index < module_count; ++module_index)
                 {
-                    module = json_array_get_object(modules_array, module_index);
-                    const char* module_name = json_object_get_string(module, MODULE_NAME_KEY);
-                    const char* module_path = json_object_get_string(module, MODULE_PATH_KEY);
+					DYNAMIC_LOADER_CONFIG * loader_config = (DYNAMIC_LOADER_CONFIG*)malloc(sizeof(DYNAMIC_LOADER_CONFIG));
+					if (loader_config != NULL)
+					{
+						module = json_array_get_object(modules_array, module_index);
+						/*Codes_SRS_GATEWAY_17_005: [ The function shall parse the "loading args" for "module path" and fill a DYNAMIC_LOADER_CONFIG structure with the module path information. ]*/
+						JSON_Object * loader_args = json_object_get_object(module, LOADER_KEY);
+						const char* module_name = json_object_get_string(module, MODULE_NAME_KEY);
+						const char* module_path;
+						if (loader_args != NULL)
+						{
+							module_path = json_object_get_string(loader_args, MODULE_PATH_KEY);
+						}
+						else
+						{
+							module_path = NULL;
+						}
 
-                    if (module_name != NULL && module_path != NULL)
-                    {
-                        /*Codes_SRS_GATEWAY_14_005: [The function shall set the value of const void* module_properties in the GATEWAY_PROPERTIES instance to a char* representing the serialized args value for the particular module.]*/
-                        JSON_Value *args = json_object_get_value(module, ARG_KEY);
-                        char* args_str = json_serialize_to_string(args);
+						if (module_name != NULL && module_path != NULL)
+						{
+							/*Codes_SRS_GATEWAY_14_005: [The function shall set the value of const void* module_properties in the GATEWAY_PROPERTIES instance to a char* representing the serialized args value for the particular module.]*/
+							/*Codes_SRS_GATEWAY_17_003: [ The function shall set the value of const void * loader_configuration in the GATEWAY_PROPERTIES instance to a pointer of the module's DYNAMIC_LOADER_CONFIG structure. ]*/
+							JSON_Value *args = json_object_get_value(module, ARG_KEY);
+							char* args_str = json_serialize_to_string(args);
+							loader_config->moduleLibraryFileName = module_path;
 
-                        GATEWAY_MODULES_ENTRY entry = {
-                            module_name,
-                            module_path,
-                            args_str
-                        };
+							GATEWAY_MODULES_ENTRY entry = {
+								module_name,
+								loader_config,
+								DynamicLoader_GetApi(),
+								args_str
+							};
 
-                        /*Codes_SRS_GATEWAY_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
-                        if (VECTOR_push_back(out_properties->gateway_modules, &entry, 1) == 0)
-                        {
-                            result = PARSE_JSON_SUCCESS;
-                        }
-                        else
-                        {
-                            json_free_serialized_string(args_str);
-                            result = PARSE_JSON_VECTOR_FAILURE;
-                            LogError("Failed to push data into properties vector.");
-                            break;
-                        }
-                    }
-                    /*Codes_SRS_GATEWAY_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
-                    else
-                    {
-                        result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
-                        LogError("\"module name\" or \"module path\" in input JSON configuration is missing or misconfigured.");
-                        break;
-                    }
-                }
+							/*Codes_SRS_GATEWAY_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
+							if (VECTOR_push_back(out_properties->gateway_modules, &entry, 1) == 0)
+							{
+								result = PARSE_JSON_SUCCESS;
+							}
+							else
+							{
+								free(loader_config);
+								json_free_serialized_string(args_str);
+								result = PARSE_JSON_VECTOR_FAILURE;
+								LogError("Failed to push data into properties vector.");
+								break;
+							}
+						}
+						/*Codes_SRS_GATEWAY_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
+						else
+						{
+							free(loader_config);
+							result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
+							LogError("\"module name\" or \"module path\" in input JSON configuration is missing or misconfigured.");
+							break;
+						}
+					}
+					else
+					{
+						result = PARSE_JSON_MISCONFIGURED_OR_OTHER;
+						LogError("Could not allocate structure for loading args");
+						break;
+					}
+				}
 
 				if (result == PARSE_JSON_SUCCESS)
 				{

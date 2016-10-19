@@ -88,9 +88,12 @@ typedef struct GATEWAY_MODULES_ENTRY_TAG
 	/** @brief The (possibly @c NULL) name of the module */
 	const char* module_name;
 	
-	/** @brief The path to the .dll or .so of the module */
-	const char* module_path;
+	/** @brief The configuration for loading the module into the gateway. */
+	const void* loader_configuration;
 	
+	/** @brief The API to load and unload this module. */
+	const MODULE_LOADER_API * module_loader;
+
 	/** @brief The user-defined configuration object for the module */
 	const void* module_configuration;
 } GATEWAY_MODULES_ENTRY;
@@ -280,7 +283,10 @@ Gateway_LL_Create creates a new gateway using information from the `GATEWAY_PROP
 
 **SRS_GATEWAY_LL_14_035: [** This function shall destroy the previously created `BROKER_HANDLE` and free the `GATEWAY_HANDLE` if the `VECTOR_HANDLE` cannot be created. **]**
 
+**SRS_GATEWAY_LL_17_015: [** The function shall use `GATEWAY_PROPERTIES::loader_api->Load` and each `GATEWAY_PROPERTIES::loader_configuration` to get each module's MODULE_LIBRARY_HANDLE. **]**
+
 **SRS_GATEWAY_LL_14_009: [** The function shall use each of `GATEWAY_PROPERTIES`'s `gateway_modules` to create and add a module to the gateway's message broker. **]**
+
 
 **SRS_GATEWAY_LL_14_036: [** If any `MODULE_HANDLE` is unable to be created from a `GATEWAY_MODULES_ENTRY` the `GATEWAY_HANDLE` will be destroyed. **]**
 
@@ -339,17 +345,17 @@ Gateway_LL_Destroy destroys a gateway represented by the `gw` parameter.
 ```
 extern MODULE_HANDLE Gateway_LL_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTIES_ENTRY* entry);
 ```
-Gateway_LL_AddModule adds a module to the gateway's message broker using the provided `GATEWAY_PROPERTIES_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
+Gateway_LL_AddModule adds a module to the gateway's message broker using the provided `GATEWAY_PROPERTIES_ENTRY`'s `loader_configuration`, `loader_api` and `module_configuration`.
 
-**SRS_GATEWAY_LL_14_011: [** If `gw`, `entry`, or `GATEWAY_MODULES_ENTRY`'s `module_path` is `NULL` the function shall return `NULL`. **]**
+**SRS_GATEWAY_LL_14_011: [** If `gw`, `entry`, or `GATEWAY_MODULES_ENTRY`'s `loader_configuration` or `loader_api` is `NULL` the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_012: [** The function shall load the module located at `GATEWAY_MODULES_ENTRY`'s `module_path` into a `MODULE_LIBRARY_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_012: [** The function shall load the module via the `GATEWAY_MODULES_ENTRY`'s `loader_configuration` into a `MODULE_LIBRARY_HANDLE`. **]**
 
 **SRS_GATEWAY_LL_14_031: [** If unsuccessful, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_013: [** The function shall get the `const MODULE_APIS*` from the `MODULE_LIBRARY_HANDLE`. **]**
+**SRS_GATEWAY_LL_14_013: [** The function shall get the `const MODULE_APIS*` from the `loader_api`. **]**
 
-**SRS_GATEWAY_LL_14_015: [** The function shall use the `MODULE_APIS` to create a `MODULE_HANDLE` using the `GATEWAY_MODULES_ENTRY`'s `module_properties`. **]**
+**SRS_GATEWAY_LL_14_015: [** The function shall use the `MODULE_APIS` to create a `MODULE_HANDLE` using the `GATEWAY_MODULES_ENTRY`'s `module_configuration`. **]**
 
 **SRS_GATEWAY_LL_14_016: [** If the module creation is unsuccessful, the function shall return `NULL`. **]**
 
@@ -359,7 +365,7 @@ Gateway_LL_AddModule adds a module to the gateway's message broker using the pro
 
 **SRS_GATEWAY_LL_14_018: [** If the function cannot attach the module to the message broker, the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_LL_14_029: [** The function shall create a new `MODULE_DATA` containting the `MODULE_HANDLE` and `MODULE_LIBRARY_HANDLE` if the module was successfully linked to the message broker. **]**
+**SRS_GATEWAY_LL_14_029: [** The function shall create a new `MODULE_DATA` containing the `MODULE_HANDLE`, `MODULE_LOADER_API` and `MODULE_LIBRARY_HANDLE` if the module was successfully linked to the message broker. **]**
 
 **SRS_GATEWAY_LL_14_032: [** The function shall add the new `MODULE_DATA` to `GATEWAY_HANDLE_DATA`'s `modules` if the module was successfully linked to the message broker. **]**
 
@@ -464,7 +470,7 @@ extern void Gateway_LL_DestroyModuleList(VECTOR_HANDLE module_list);
 ```
 extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 ```
-Gateway_LL_AddLink adds a link to the gateway's message broker using the provided `GATEWAY_LINK_ENTRY`'s `module_path` and `GATEWAY_PROPERTIES_ENTRY`'s `module_properties`.
+Gateway_LL_AddLink adds a link to the gateway's message broker using the provided `GATEWAY_LINK_ENTRY`'s `loader_configuration` and `GATEWAY_PROPERTIES_ENTRY`'s `module_configuration`.
 
 **SRS_GATEWAY_LL_04_008: [** If `gw` , `entryLink`, `entryLink->module_source` or `entryLink->module_source` is NULL the function shall return `GATEWAY_ADD_LINK_INVALID_ARG`. **]**
 
