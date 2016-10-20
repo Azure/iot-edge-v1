@@ -364,6 +364,10 @@ public:
     MOCK_STATIC_METHOD_1(, const char*, STRING_c_str, STRING_HANDLE, handle)
         const char* result2 = BASEIMPLEMENTATION::STRING_c_str(handle);
     MOCK_METHOD_END(const char*, result2)
+
+    MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_clone, STRING_HANDLE, handle)
+        auto result2 = BASEIMPLEMENTATION::STRING_clone(handle);
+    MOCK_METHOD_END(STRING_HANDLE, result2)
     
     MOCK_STATIC_METHOD_1(, BLEIO_GATT_HANDLE, BLEIO_gatt_create, const BLE_DEVICE_CONFIG*, config)
         auto result2 = (BLEIO_GATT_HANDLE)malloc(1);
@@ -652,6 +656,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , void*, VECTOR_front, VECTOR_HANDLE, ve
 DECLARE_GLOBAL_MOCK_METHOD_3(CBLEMocks, , void, VECTOR_erase, VECTOR_HANDLE, handle, void*, elements, size_t, numElements);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , STRING_HANDLE, STRING_construct, const char*, s);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , STRING_HANDLE, STRING_clone, STRING_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , STRING_HANDLE, STRING_new_JSON, const char*, source);
 DECLARE_GLOBAL_MOCK_METHOD_2(CBLEMocks, , int, STRING_concat_with_STRING, STRING_HANDLE, s1, STRING_HANDLE, s2);
@@ -964,6 +969,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .SetReturn((size_t)0);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
@@ -998,6 +1007,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLE_INSTRUCTION)))
             .IgnoreArgument(1)
             .SetFailReturn((VECTOR_HANDLE)NULL);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
@@ -1038,6 +1051,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1)
             .SetFailReturn((JSON_Object*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
@@ -1083,6 +1101,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1131,6 +1154,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1182,6 +1210,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1240,6 +1273,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
 
@@ -1294,6 +1332,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1355,6 +1398,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
 
@@ -1406,6 +1454,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1471,6 +1524,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         ///act
@@ -1563,6 +1621,11 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
 
@@ -1599,6 +1662,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         STRICT_EXPECTED_CALL(mocks, STRING_construct(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -1781,20 +1845,28 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
             .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
@@ -1820,6 +1892,28 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        //CleanUp
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         ///act
         auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
 
@@ -1828,6 +1922,7 @@ BEGIN_TEST_SUITE(ble_ut)
         ASSERT_IS_NOT_NULL(result);
 
         ///cleanup
+        should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
     }
 
@@ -2166,6 +2261,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
@@ -2225,6 +2322,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
 
         ///act
         auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
@@ -2286,7 +2386,12 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(instr1.characteristic_uuid));
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
+
 
         STRICT_EXPECTED_CALL(mocks, g_main_loop_new(NULL, FALSE))
             .SetFailReturn((GMainLoop*)NULL);
@@ -2356,7 +2461,12 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreAllArguments()
             .SetFailReturn((THREADAPI_RESULT)THREADAPI_ERROR);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(instr1.characteristic_uuid));
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
+
 
         STRICT_EXPECTED_CALL(mocks, g_main_loop_new(NULL, FALSE));
         STRICT_EXPECTED_CALL(mocks, g_main_loop_unref(IGNORED_PTR_ARG))
@@ -2423,11 +2533,16 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))    // in ~CBLEIOSequence()
             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(instr1.characteristic_uuid));
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, g_main_loop_new(NULL, FALSE));
         STRICT_EXPECTED_CALL(mocks, g_get_monotonic_time());
@@ -2504,6 +2619,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)) // CBLEIOSequence::run
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2579,6 +2698,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2654,6 +2777,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2732,6 +2859,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2814,6 +2945,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2898,6 +3033,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -2984,6 +3122,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -3073,6 +3214,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -3170,6 +3313,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -3274,6 +3419,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -3385,6 +3532,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
@@ -3497,6 +3646,9 @@ BEGIN_TEST_SUITE(ble_ut)
 
         STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                              // CBLEIOSequence::run
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
 
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLEIO_SEQ_INSTRUCTION)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
@@ -3636,6 +3788,10 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);                                             // CBLEIOSequence::run
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                                              
+
+
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);

@@ -385,7 +385,7 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
                                                 }
                                                 else
                                                 {
-                                                    unsigned int statuscodeBack;
+                                                    unsigned int statuscodeBack = HTTPAPIEX_ERROR;
                                                     /* Codes_SRS_AZUREFUNCTIONS_04_017: [ azureFunctions_Receive shall HTTPAPIEX_ExecuteRequest to send the HTTP POST to Azure Functions. If it fail it shall fail and return. ] */
                                                     HTTPAPIEX_RESULT requestResult = HTTPAPIEX_ExecuteRequest(myHTTPEXHandle, HTTPAPI_REQUEST_POST, STRING_c_str(relativePathInfoForRequest), httpHeaders, postContent, &statuscodeBack, NULL, myResponseBuffer);
 

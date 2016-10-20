@@ -305,8 +305,6 @@ static MODULE_HANDLE BLE_CreateFromJson(BROKER_HANDLE broker, const char* config
                                 {
                                     /*Codes_SRS_BLE_05_013: [ BLE_CreateFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
                                     LogError("parse_mac_address returned false");
-                                    free_instructions(ble_instructions);
-                                    VECTOR_destroy(ble_instructions);
                                     result = NULL;
                                 }
                                 else
@@ -322,11 +320,11 @@ static MODULE_HANDLE BLE_CreateFromJson(BROKER_HANDLE broker, const char* config
                                     {
                                         /*Codes_SRS_BLE_05_022: [ BLE_CreateFromJson shall return NULL if calling the underlying module's create function fails. ]*/
                                         LogError("Unable to create BLE low level module");
-                                        free_instructions(ble_instructions);
-                                        VECTOR_destroy(ble_instructions);
                                     }
                                 }
                             }
+                            free_instructions(ble_instructions);
+	                    VECTOR_destroy(ble_instructions);
                         }
                     }
                 }
@@ -438,7 +436,7 @@ static VECTOR_HANDLE ble_instr_to_bleioseq_instr(BLE_HANDLE_DATA* module, VECTOR
             // copy the data
             BLEIO_SEQ_INSTRUCTION instr;
             instr.instruction_type = src_instr->instruction_type;
-            instr.characteristic_uuid = src_instr->characteristic_uuid;
+            instr.characteristic_uuid = STRING_clone(src_instr->characteristic_uuid);
             memcpy(&(instr.data), &(src_instr->data), sizeof(instr.data));
             instr.context = (void*)module;
 
