@@ -514,6 +514,9 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_happy_path)
     //assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    //cleanup
+    apis.Module_Destroy(result);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */
@@ -1248,6 +1251,7 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_fail_when_HTTPAPIEX_create_Fail)
     AZURE_FUNCTIONS_CONFIG config;
     config.relativePath = (STRING_HANDLE)0x42;
     config.hostAddress = (STRING_HANDLE)0x42;
+    config.securityKey = (STRING_HANDLE)0x42;
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
