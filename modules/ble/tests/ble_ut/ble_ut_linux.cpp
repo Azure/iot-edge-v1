@@ -2263,6 +2263,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
         STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
              .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
@@ -2324,6 +2326,13 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+              .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+              .IgnoreArgument(1);;
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
              .IgnoreArgument(1);
 
         ///act
@@ -2407,6 +2416,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///cleanup
         VECTOR_destroy(config.instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_005: [ BLE_Create shall return NULL if an underlying API call fails. ]*/
@@ -2483,6 +2493,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///cleanup
         VECTOR_destroy(config.instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_005: [ BLE_Create shall return NULL if an underlying API call fails. ]*/
@@ -2574,6 +2585,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///cleanup
         VECTOR_destroy(config.instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_006: [ BLE_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
@@ -2643,6 +2655,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_read_fails)
@@ -2722,6 +2735,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_Map_Create_fails)
@@ -2804,6 +2818,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_time_fails)
@@ -2890,6 +2905,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_localtime_fails)
@@ -2978,6 +2994,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_strftime_fails)
@@ -3067,6 +3084,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_first_Map_Add_fails)
@@ -3159,6 +3177,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_second_Map_Add_fails)
@@ -3258,6 +3277,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_third_Map_Add_fails)
@@ -3364,6 +3384,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_fourth_Map_Add_fails)
@@ -3477,6 +3498,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
     
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_fifth_Map_Add_fails)
@@ -3596,6 +3618,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_Message_Create_fails)
@@ -3713,6 +3736,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_019: [BLE_Create shall handle the ON_BLEIO_SEQ_READ_COMPLETE callback on the BLE I/O sequence. If the call is successful then a new message shall be published on the message broker with the buffer that was read as the content of the message along with the following properties:
@@ -3862,6 +3886,7 @@ BEGIN_TEST_SUITE(ble_ut)
         should_g_main_loop_quit_call_thread_func = true;
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_016: [ If module is NULL BLE_Destroy shall do nothing. ]*/
@@ -3949,6 +3974,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///cleanup
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_26_001: [ `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. ]*/
@@ -4057,6 +4083,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_020: [ BLE_Receive shall ignore all messages except those that have the following properties:
@@ -4124,6 +4151,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+	STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_020: [ BLE_Receive shall ignore all messages except those that have the following properties:
@@ -4195,6 +4223,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+	STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_020: [ BLE_Receive shall ignore all messages except those that have the following properties:
@@ -4268,6 +4297,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+	STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_022: [ BLE_Receive shall ignore the message unless the 'macAddress' property matches the MAC address that was passed to this module when it was created. ]*/
@@ -4336,6 +4366,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+	STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(BLE_Receive_does_nothing_when_message_does_not_have_content)
@@ -4407,6 +4438,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_021: [ BLE_Receive shall treat the content of the message as a BLE_INSTRUCTION and schedule it for execution by calling BLEIO_Seq_AddInstruction. ]*/
@@ -4491,6 +4523,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
         BUFFER_delete(instruction.data.buffer);
         STRING_delete(instruction.characteristic_uuid);
     }

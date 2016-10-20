@@ -106,6 +106,23 @@ static bool terminate_event_dispatcher(
 );
 #endif
 
+
+void free_bleioseq_instr(VECTOR_HANDLE instructions) 
+{ 
+	size_t len = VECTOR_size(instructions); 
+
+    for (size_t i = 0; i < len; ++i) 
+    { 
+        BLEIO_SEQ_INSTRUCTION* instr = (BLEIO_SEQ_INSTRUCTION*)VECTOR_element(instructions, i);
+        // free string handle for the characteristic uuid 
+
+        if (instr->characteristic_uuid != NULL) 
+        { 
+            STRING_delete(instr->characteristic_uuid); 
+        }
+    } 
+}
+
 static MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration)
 {
     BLE_HANDLE_DATA* result;
@@ -172,6 +189,7 @@ static MODULE_HANDLE BLE_Create(BROKER_HANDLE broker, const void* configuration)
                         /*Codes_SRS_BLE_13_005: [  BLE_Create  shall return  NULL  if an underlying API call fails. ]*/
                         LogError("BLEIO_Seq_Create failed");
                         BLEIO_gatt_destroy(result->bleio_gatt);
+                        free_bleioseq_instr(instructions);
                         VECTOR_destroy(instructions);
                         free(result);
                         result = NULL;
@@ -443,6 +461,7 @@ static VECTOR_HANDLE ble_instr_to_bleioseq_instr(BLE_HANDLE_DATA* module, VECTOR
             if (VECTOR_push_back(result, &instr, 1) != 0)
             {
                 LogError("VECTOR_push_back failed");
+                STRING_delete(instr.characteristic_uuid);
                 break;
             }
         }
