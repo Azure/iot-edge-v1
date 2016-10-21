@@ -6,6 +6,11 @@
 
 #include "module_loader.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct MODULE_DATA_TAG {
     /** @brief The name of the module added. This name is unique on a gateway. */
     char* module_name;
@@ -49,5 +54,9 @@ int add_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_
 void remove_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_entry);
 bool module_name_find(const void* element, const void* module_name);
 bool link_data_find(const void* element, const void* link_data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // GATEWAY_INTERNAL_H
