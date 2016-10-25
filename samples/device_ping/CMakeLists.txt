@@ -30,10 +30,12 @@ include_directories(../../modules/common)
 
 add_executable(device_ping ${device_ping_headers} ${modules_path_file} ${device_ping_sources})
 
-add_dependencies(device_ping iothubdeviceping_hl logger_hl)
+add_dependencies(device_ping iothubdeviceping_hl logger_hl iothubdeviceping)
 
 target_link_libraries(device_ping gateway nanomsg)
 linkSharedUtil(device_ping)
 install_broker(device_ping ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(device_ping)
+
+add_subdirectory(iothubdeviceping)

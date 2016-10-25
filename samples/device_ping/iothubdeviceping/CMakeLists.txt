@@ -12,14 +12,6 @@ set(iothubdeviceping_headers
     ./inc/iothubdeviceping.h
 )
 
-set(iothubdeviceping_hl_sources
-    ./src/iothubdeviceping_hl.c
-)
-
-set(iothubdeviceping_hl_headers
-    ./inc/iothubdeviceping_hl.h
-)
-
 include_directories(./inc)
 include_directories(${GW_INC})
 include_directories(${IOTHUB_CLIENT_INC_FOLDER} ${UAMQP_INC_FOLDER} ${SHARED_UTIL_INC_FOLDER})
@@ -43,25 +35,6 @@ target_compile_definitions(iothubdeviceping_static PRIVATE BUILD_MODULE_TYPE_STA
 target_link_libraries(iothubdeviceping_static
     gateway
     iothub_client
-)
-
-#this builds the IoTHubDevicePing_HL dynamic library (by default it uses IoTHub Module linked statically)
-add_library(iothubdeviceping_hl MODULE
-    ${iothubdeviceping_hl_sources}
-    ${iothubdeviceping_hl_headers}
-)
-target_link_libraries(iothubdeviceping_hl
-    iothubdeviceping_static
-)
-
-#this builds the IoTHubDevicePing_HL static library (by default it uses IoTHub Module linked statically)
-add_library(iothubdeviceping_hl_static
-    ${iothubdeviceping_hl_sources}
-    ${iothubdeviceping_hl_headers}
-)
-target_compile_definitions(iothubdeviceping_hl_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(iothubdeviceping_hl_static
-    iothubdeviceping_static
 )
 
 if(${use_amqp})
@@ -98,5 +71,4 @@ add_module_to_solution(iothubdeviceping)
 
 if(install_executables)
     install(TARGETS iothubdeviceping LIBRARY DESTINATION lib)
-    install(TARGETS iothubdeviceping_hl LIBRARY DESTINATION lib)
 endif()
