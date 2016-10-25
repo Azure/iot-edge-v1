@@ -5,6 +5,6 @@ cmake_minimum_required(VERSION 2.8.11)
 
 #Seting this disable valgrind on Client and CShared utility, since it were disable. It shall be enabled once they are passing.
 set(run_valgrind OFF)
-set(run_e2e_tests OFF)
+
 add_subdirectory(./c-utility)
 add_subdirectory(./iot-sdk/c)
