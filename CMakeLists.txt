@@ -129,11 +129,8 @@ endmacro(compileAsC11)
 enable_testing()
 compileAsC99()
 
-#this adds the C shared utility
-add_subdirectory(./deps/c-utility)
-
-#this adds the C IoTHubClient
-add_subdirectory(./deps/iot-sdk/c)
+#this add the deps folder that will add C shared utility and IotHubClient
+add_subdirectory(./deps)
 
 #this makes available from now on the includes of azure-c-shared-utility
 include_directories(${SHARED_UTIL_INC_FOLDER})
