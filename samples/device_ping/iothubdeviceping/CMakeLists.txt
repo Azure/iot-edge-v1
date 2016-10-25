@@ -26,49 +26,25 @@ target_link_libraries(iothubdeviceping
     iothub_client
 )
 
-#this builds the IoTHubDevicePing static library
-add_library(iothubdeviceping_static
-    ${iothubdeviceping_sources}
-    ${iothubdeviceping_headers}
-)
-target_compile_definitions(iothubdeviceping_static PRIVATE BUILD_MODULE_TYPE_STATIC)
-target_link_libraries(iothubdeviceping_static
-    gateway
-    iothub_client
-)
-
 if(${use_amqp})
-    target_link_libraries(iothubdeviceping_static iothub_client_amqp_transport)
     target_link_libraries(iothubdeviceping iothub_client_amqp_transport)
-    linkUAMQP(iothubdeviceping_static)
     linkUAMQP(iothubdeviceping)
 else()
-    add_definitions(-DIOTHUBMODULE_NULL_AMQP)
+    message(FATAL_ERROR "FATAL_ERROR: use_amqp not set")
 endif()
 
 if(${use_http})
-    target_link_libraries(iothubdeviceping_static iothub_client_http_transport)
     target_link_libraries(iothubdeviceping iothub_client_http_transport)
-    linkHttp(iothubdeviceping_static)
     linkHttp(iothubdeviceping)
 else()
-    add_definitions(-DIOTHUBMODULE_NULL_HTTP)
+    message(FATAL_ERROR "FATAL_ERROR: use_http not set")
 endif()
 
 if(${use_mqtt})
-    target_link_libraries(iothubdeviceping_static iothub_client_mqtt_transport)
     target_link_libraries(iothubdeviceping iothub_client_mqtt_transport)
-    linkMqttLibrary(iothubdeviceping_static)
     linkMqttLibrary(iothubdeviceping)
 else()
     add_definitions(-DIOTHUBMODULE_NULL_MQTT)
 endif()
 
 linkSharedUtil(iothubdeviceping)
-linkSharedUtil(iothubdeviceping_static)
-
-add_module_to_solution(iothubdeviceping)
-
-if(install_executables)
-    install(TARGETS iothubdeviceping LIBRARY DESTINATION lib)
-endif()

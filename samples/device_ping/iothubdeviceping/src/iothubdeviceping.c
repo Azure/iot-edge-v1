@@ -12,16 +12,18 @@
 #include "iothubtransport.h"
 #include "iothubtransporthttp.h"
 #include "iothub_message.h"
-#include "azure_c_shared_utility/vector.h"
-#include "azure_c_shared_utility/xlogging.h"
-#include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "messageproperties.h"
 #include "broker.h"
 
+#include <parson.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "azure_c_shared_utility/vector.h"
+#include "azure_c_shared_utility/xlogging.h"
+#include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/platform.h"
 #include "azure_c_shared_utility/tlsio.h"
 #include "azure_uamqp_c/message_receiver.h"
@@ -618,68 +620,6 @@ static IOTHUBDEVICEPING_CONFIG *clone_iothub_device_ping_config(const IOTHUBDEVI
     return clonedConfig;
 }
 
-static MODULE_HANDLE IotHubDevicePing_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
-{
-    MODULE_HANDLE *result;
-    if ((brokerHandle == NULL) || (configuration == NULL))
-    {
-        LogError("Invalid NULL parameter, brokerHandle=[%p] configuration=[%p]", brokerHandle, configuration);
-        result = NULL;
-    }
-    else
-    {
-        JSON_Value *json = json_parse_string((const char *)configuration);
-        if (json == NULL)
-        {
-            LogError("Unable to parse json string");
-            result = NULL;
-        }
-        else
-        {
-            JSON_Object *obj = json_value_get_object(json);
-            if (obj == NULL)
-            {
-                LogError("Expected a JSON Object in configuration");
-                result = NULL;
-            }
-            else
-            {
-                const char *DeviceConnectionString;
-                const char *eventHubHost;
-                const char *eventHubKeyName;
-                const char *eventHubKey;
-                const char *eventHubCompatibleName;
-                const char *eventHubPartitionNum;
-                if ((DeviceConnectionString = json_object_get_string(obj, "DeviceConnectionString")) == "NULL" ||
-                    (eventHubHost = json_object_get_string(obj, "EH_HOST")) == "NULL" ||
-                    (eventHubKeyName = json_object_get_string(obj, "EH_KEY_NAME")) == "NULL" ||
-                    (eventHubKey = json_object_get_string(obj, "EH_KEY")) == "NULL" ||
-                    (eventHubCompatibleName = json_object_get_string(obj, "EH_COMP_NAME")) == "NULL" ||
-                    (eventHubPartitionNum = json_object_get_string(obj, "EH_PARTITION_NUM")) == "NULL") // NULL
-                {
-                    LogError("Did not find expected configuration");
-                    result = NULL;
-                }
-                else
-                {
-                    MODULE_APIS apis;
-                    MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(&apis);
-                    IOTHUBDEVICEPING_CONFIG llConfiguration;
-                    llConfiguration.DeviceConnectionString = DeviceConnectionString;
-                    llConfiguration.EH_HOST = eventHubHost;
-                    llConfiguration.EH_KEY_NAME = eventHubKeyName;
-                    llConfiguration.EH_KEY = eventHubKey;
-                    llConfiguration.EH_COMP_NAME = eventHubCompatibleName;
-                    llConfiguration.EH_PARTITION_NUM = eventHubPartitionNum;
-                    result = apis.Module_Create(brokerHandle, &llConfiguration);
-                }
-            }
-            json_value_free(json);
-        }
-    }
-    return result;
-}
-
 static MODULE_HANDLE IoTHubDevicePing_Create(BROKER_HANDLE brokerHandle, const void *configuration)
 {
     // set g_echoreply false
@@ -744,6 +684,68 @@ static MODULE_HANDLE IoTHubDevicePing_Create(BROKER_HANDLE brokerHandle, const v
     return result;
 }
 
+static MODULE_HANDLE IoTHubDevicePing_CreateFromJson(BROKER_HANDLE brokerHandle, const char* configuration)
+{
+    MODULE_HANDLE *result;
+    if ((brokerHandle == NULL) || (configuration == NULL))
+    {
+        LogError("Invalid NULL parameter, brokerHandle=[%p] configuration=[%p]", brokerHandle, configuration);
+        result = NULL;
+    }
+    else
+    {
+        JSON_Value *json = json_parse_string((const char *)configuration);
+        if (json == NULL)
+        {
+            LogError("Unable to parse json string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object *obj = json_value_get_object(json);
+            if (obj == NULL)
+            {
+                LogError("Expected a JSON Object in configuration");
+                result = NULL;
+            }
+            else
+            {
+                const char *DeviceConnectionString;
+                const char *eventHubHost;
+                const char *eventHubKeyName;
+                const char *eventHubKey;
+                const char *eventHubCompatibleName;
+                const char *eventHubPartitionNum;
+                if ((DeviceConnectionString = json_object_get_string(obj, "DeviceConnectionString")) == "NULL" ||
+                    (eventHubHost = json_object_get_string(obj, "EH_HOST")) == "NULL" ||
+                    (eventHubKeyName = json_object_get_string(obj, "EH_KEY_NAME")) == "NULL" ||
+                    (eventHubKey = json_object_get_string(obj, "EH_KEY")) == "NULL" ||
+                    (eventHubCompatibleName = json_object_get_string(obj, "EH_COMP_NAME")) == "NULL" ||
+                    (eventHubPartitionNum = json_object_get_string(obj, "EH_PARTITION_NUM")) == "NULL") // NULL
+                {
+                    LogError("Did not find expected configuration");
+                    result = NULL;
+                }
+                else
+                {
+                    MODULE_APIS apis;
+                    Module_GetAPIS(&apis);
+                    IOTHUBDEVICEPING_CONFIG llConfiguration;
+                    llConfiguration.DeviceConnectionString = DeviceConnectionString;
+                    llConfiguration.EH_HOST = eventHubHost;
+                    llConfiguration.EH_KEY_NAME = eventHubKeyName;
+                    llConfiguration.EH_KEY = eventHubKey;
+                    llConfiguration.EH_COMP_NAME = eventHubCompatibleName;
+                    llConfiguration.EH_PARTITION_NUM = eventHubPartitionNum;
+                    result = apis.Module_Create(brokerHandle, &llConfiguration);
+                }
+            }
+            json_value_free(json);
+        }
+    }
+    return result;
+}
+
 static void IoTHubDevicePing_Destroy(MODULE_HANDLE moduleHandle)
 {
     IOTHUBDEVICEPING_HANDLE_DATA *handleData = moduleHandle;
@@ -775,7 +777,7 @@ static void IoTHubDevicePing_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE 
     // no action, IoTHubDevicePing is not interested in any messages
 }
 
-static const MODULE_APIS Module_GetAPIS_Impl =
+static const MODULE_APIS moduleInterface =
 {
     IoTHubDevicePing_CreateFromJson,
     IoTHubDevicePing_Create,
@@ -784,11 +786,7 @@ static const MODULE_APIS Module_GetAPIS_Impl =
     NULL
 };
 
-#ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT void MODULE_STATIC_GETAPIS(IOTHUBDEVICEPING_MODULE)(MODULE_APIS *apis)
-#else
 MODULE_EXPORT void Module_GetAPIS(MODULE_APIS *apis)
-#endif
 {
     if (!apis)
     {
@@ -796,6 +794,6 @@ MODULE_EXPORT void Module_GetAPIS(MODULE_APIS *apis)
     }
     else
     {
-        (*apis) = Module_GetAPIS_Impl;
+        (*apis) = moduleInterface;
     }
 }
