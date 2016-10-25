@@ -15,6 +15,7 @@
 #include "module_loader.h"
 #include "internal/event_system.h"
 
+#include "gateway_ll.h"
 #include "../src/gateway_internal.h"
 
 #define DUMMY_JSON_PATH "x.json"
@@ -542,6 +543,7 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     TEST_INITIALIZE_MEMORY_DEBUG(g_dllByDll);
 	g_testByTest = MicroMockCreateMutex();
 	ASSERT_IS_NOT_NULL(g_testByTest);
+    currentBroker_ref_count = 0;
 
     dummyAPIs = {
         mock_Module_CreateFromJson,
@@ -843,7 +845,7 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
 	mocks.AssertActualAndExpectedCalls();
 
 	//Cleanup
-	Gateway_LL_Destroy(gateway);
+    gateway_destroy_internal(gateway);
 }
 
 //Tests_SRS_GATEWAY_17_002: [ This function shall return NULL if starting the gateway fails. ]
@@ -1034,8 +1036,6 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, Gateway_LL_Start(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .SetFailReturn((GATEWAY_START_RESULT)GATEWAY_START_INVALID_ARGS);
-    STRICT_EXPECTED_CALL(mocks, Gateway_LL_Destroy(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG,0))
@@ -1051,6 +1051,102 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    //Cleaning up calls
+    STRICT_EXPECTED_CALL(mocks, EventSystem_ReportEvent(IGNORED_PTR_ARG, IGNORED_PTR_ARG, GATEWAY_DESTROYED))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+
+    STRICT_EXPECTED_CALL(mocks, EventSystem_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG,IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG,IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG,IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG,IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .IgnoreArgument(3);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .IgnoreArgument(3);
+    STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Broker_DecRef(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, mock_Module_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, ModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, ModuleLoader_Unload(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
 	//Act

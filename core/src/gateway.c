@@ -28,6 +28,7 @@ DEFINE_ENUM(PARSE_JSON_RESULT, PARSE_JSON_RESULT_VALUES);
 GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, bool use_json);
 static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties, JSON_Value *root);
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties);
+void gateway_destroy_internal(GATEWAY_HANDLE gw);
 
 GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 {
@@ -66,7 +67,7 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 						{
 							/*Codes_SRS_GATEWAY_17_002: [ This function shall return NULL if starting the gateway fails. ]*/
 							LogError("failed to start gateway");
-							Gateway_LL_Destroy(gw);
+							gateway_destroy_internal(gw);
 							gw = NULL;
 						}
 					}
