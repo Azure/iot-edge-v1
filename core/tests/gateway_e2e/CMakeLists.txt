@@ -3,6 +3,9 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
+#Disable Valgrind just for Gateway E2E test, since they are having problems with Open SSL and Valgrind.
+set(run_valgrind OFF)
+
 compileAsC99()
 set(theseTestsName gateway_e2e)
 set(${theseTestsName}_cpp_files
