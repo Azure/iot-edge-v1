@@ -21,7 +21,7 @@ int main(int argc, char*argv[])
         if(platform_init() == 0)
         {
             char *json_path = argv[1];
-            GATEWAY_HANDLE gateway = Gateway_Create_From_JSON(json_path);
+            GATEWAY_HANDLE gateway = Gateway_CreateFromJson(json_path);
             if(gateway == NULL)
             {
                 LogError("An error ocurred while creating the gateway.");

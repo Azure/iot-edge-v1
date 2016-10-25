@@ -14,7 +14,7 @@ set(callbacks_headers
 include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 
-add_executable(callbacks_sample ${callbacks_headers} ${modules_path_file} ${callbacks_sources})
+add_executable(callbacks_sample ${callbacks_headers} ${callbacks_sources})
 
 target_link_libraries(callbacks_sample gateway)
 linkSharedUtil(callbacks_sample)

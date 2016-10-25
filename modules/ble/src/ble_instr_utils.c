@@ -72,7 +72,7 @@ bool parse_write(
     const char* base64_encoded_data = json_object_get_string(instr, "data");
     if (base64_encoded_data == NULL)
     {
-        /*Codes_SRS_BLE_HL_13_011: [ BLE_HL_Create shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/ 
+        /*Codes_SRS_BLE_05_011: [ BLE_CreateFromJson shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/ 
         LogError("json_value_get_string returned NULL for the property 'data' while processing instruction %zu", index);
         result = false;
     }
@@ -81,7 +81,7 @@ bool parse_write(
         ble_instr->data.buffer = Base64_Decoder(base64_encoded_data);
         if (ble_instr->data.buffer == NULL)
         {
-            /*Codes_SRS_BLE_HL_13_012: [ BLE_HL_Create shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/ 
+            /*Codes_SRS_BLE_05_012: [ BLE_CreateFromJson shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/ 
             LogError("Base64_Decoder returned NULL for the property 'data' while processing instruction %zu", index);
             result = false;
         }
@@ -111,7 +111,7 @@ bool parse_instruction(
     {
         if (parse_read_periodic(instr, ble_instr) == false)
         {
-            /*Codes_SRS_BLE_HL_13_010: [ BLE_HL_Create shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/ 
+            /*Codes_SRS_BLE_05_010: [ BLE_CreateFromJson shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/ 
             LogError("parse_read_periodic returned false while processing instruction %zu", index);
             result = false;
         }
@@ -158,7 +158,7 @@ bool parse_instruction(
     }
     else
     {
-        /*Codes_SRS_BLE_HL_13_021: [ BLE_HL_Create shall return NULL if a given instruction's type property is unrecognized. ]*/
+        /*Codes_SRS_BLE_05_021: [ BLE_CreateFromJson shall return NULL if a given instruction's type property is unrecognized. ]*/
         LogError("Unknown instruction type '%s' encountered for instruction number %zu", type, index);
         result = false;
     }
@@ -172,7 +172,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
     size_t count = json_array_get_count(instructions);
     if (count == 0)
     {
-        /*Codes_SRS_BLE_HL_13_020: [ BLE_HL_Create shall return NULL if the instructions array length is equal to zero. ]*/
+        /*Codes_SRS_BLE_05_020: [ BLE_CreateFromJson shall return NULL if the instructions array length is equal to zero. ]*/
         LogError("json_array_get_count returned zero");
         result = NULL;
     }
@@ -186,7 +186,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                 JSON_Object* instr = json_array_get_object(instructions, i);
                 if (instr == NULL)
                 {
-                    /*Codes_SRS_BLE_HL_13_007: [ BLE_HL_Create shall return NULL if each instruction is not an object. ]*/
+                    /*Codes_SRS_BLE_05_007: [ BLE_CreateFromJson shall return NULL if each instruction is not an object. ]*/
                     LogError("json_array_get_object returned NULL for instruction number %zu", i);
                     free_instructions(result);
                     VECTOR_destroy(result);
@@ -198,7 +198,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                     const char* type = json_object_get_string(instr, "type");
                     if (type == NULL)
                     {
-                        /*Codes_SRS_BLE_HL_13_008: [ BLE_HL_Create shall return NULL if a given instruction does not have a type property. ]*/
+                        /*Codes_SRS_BLE_05_008: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a type property. ]*/
                         LogError("json_object_get_string returned NULL for the property 'type' for instruction number %zu", i);
                         free_instructions(result);
                         VECTOR_destroy(result);
@@ -210,7 +210,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                         const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
                         if (characteristic_uuid == NULL)
                         {
-                            /*Codes_SRS_BLE_HL_13_009: [ BLE_HL_Create shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
+                            /*Codes_SRS_BLE_05_009: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
                             LogError("json_object_get_string returned NULL for the property 'characteristic_uuid' for instruction number %zu", i);
                             free_instructions(result);
                             VECTOR_destroy(result);
@@ -223,7 +223,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                             ble_instr.characteristic_uuid = STRING_construct(characteristic_uuid);
                             if (ble_instr.characteristic_uuid == NULL)
                             {
-                                /*Codes_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
+                                /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
                                 LogError("STRING_construct returned NULL while processing instruction %zu", i);
                                 free_instructions(result);
                                 VECTOR_destroy(result);
@@ -246,7 +246,7 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                                     // if we get here then we have a valid instruction
                                     if (VECTOR_push_back(result, &ble_instr, 1) != 0)
                                     {
-                                        /*Codes_SRS_BLE_HL_13_002: [ BLE_HL_Create shall return NULL if any of the underlying platform calls fail. ]*/
+                                        /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
                                         LogError("VECTOR_push_back returned a non-zero value while processing instruction %zu", i);
                                         free_instruction(&ble_instr);
                                         free_instructions(result);

@@ -7,13 +7,6 @@
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/strings.h"
 
-/**
- * Including module.h dictates that:
- *
- *      MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
- *
- * is implemented by the module.
- */
 #include "module.h"
 
 #include "ble_gatt_io.h"

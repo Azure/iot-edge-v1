@@ -7,6 +7,8 @@
 #include <crtdbg.h>
 #endif
 
+#include "azure_c_shared_utility/gballoc.h"
+
 #ifdef WIN32
 #include <io.h>
 #else
@@ -121,6 +123,82 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
                 LogError("A lock API error occurred when adding the module to the modules manager - %d", err);
                 result = NULL;
             }
+        }
+    }
+
+    return result;
+}
+
+static MODULE_HANDLE NODEJS_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    MODULE_HANDLE result;
+
+    /*Codes_SRS_NODEJS_05_001: [ NODEJS_CreateFromJson shall return NULL if broker is NULL. ]*/
+    /*Codes_SRS_NODEJS_05_002: [ NODEJS_CreateFromJson shall return NULL if configuration is NULL. ]*/
+    if (broker == NULL || configuration == NULL)
+    {
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        result = NULL;
+    }
+    else
+    {
+        /*Codes_SRS_NODEJS_05_012: [ NODEJS_CreateFromJson shall parse configuration as a JSON string. ]*/
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            /*Codes_SRS_NODEJS_05_003: [ NODEJS_CreateFromJson shall return NULL if configuration is not a valid JSON string. ]*/
+            LogError("unable to json_parse_string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* obj = json_value_get_object(json);
+            if (obj == NULL)
+            {
+                /*Codes_SRS_NODEJS_05_014: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not start with an object at the root. ]*/
+                LogError("unable to json_value_get_object");
+                result = NULL;
+            }
+            else
+            {
+                /*Codes_SRS_NODEJS_05_013: [ NODEJS_CreateFromJson shall extract the value of the main_path property from the configuration JSON. ]*/
+                const char* main_path = json_object_get_string(obj, "main_path");
+                if (main_path == NULL)
+                {
+                    /*Codes_SRS_NODEJS_05_004: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not contain a string property called main_path. ]*/
+                    LogError("json_object_get_string failed");
+                    result = NULL;
+                }
+                else
+                {
+                    /*Codes_SRS_NODEJS_05_006: [ NODEJS_CreateFromJson shall extract the value of the args property from the configuration JSON. ]*/
+                    JSON_Value* args = json_object_get_value(obj, "args"); // args is allowed to be NULL
+                    char* args_str = json_serialize_to_string(args);
+
+                    NODEJS_MODULE_CONFIG config =
+                    {
+                        main_path, args_str
+                    };
+
+                    /*Codes_SRS_NODEJS_05_005: [ NODEJS_CreateFromJson shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
+                    result = NODEJS_Create(broker, (const void*)&config);
+                    if (result == NULL)
+                    {
+                        /*Codes_SRS_NODEJS_05_008: [ If NODEJS_Create fail then the value NULL shall be returned. ]*/
+                        LogError("Unable to create Node JS module");
+                        // return 'result' as-is
+                    }
+                    else
+                    {
+                        /*Codes_SRS_NODEJS_05_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
+                        // return 'result' as-is
+                    }
+
+                    free(args_str);
+                }
+            }
+
+            json_value_free(json);
         }
     }
 
@@ -1279,6 +1357,7 @@ void NODEJS_Start(MODULE_HANDLE module)
 */
 static const MODULE_APIS NODEJS_APIS_all =
 {
+    NODEJS_CreateFromJson,
     NODEJS_Create,
     NODEJS_Destroy,
     NODEJS_Receive, 

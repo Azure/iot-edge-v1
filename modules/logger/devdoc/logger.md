@@ -29,6 +29,45 @@ typedef struct LOGGER_CONFIG_TAG
 }LOGGER_CONFIG;
 ```
 
+###Logger_CreateFromJson
+```c
+MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+```
+Creates a new LOGGER MODULE instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_CreateFromJson`.
+The json object should contain: 
+```json
+{
+    "filename": "path/to/outputfile"
+}
+``` 
+
+Example:
+The following Gateway config file describes a module named "logger" that is an instance of logger.dll. It instructs the logger to output messages to the file deviceCloudUploadGatewaylog.txt.
+```json
+{
+    "modules" :
+    [ 
+        {
+            "module name" : "logger",
+            "module path" : "logger.dll",
+            "args" : 
+            {
+                "filename":"deviceCloudUploadGatewaylog.txt"}"
+            }
+        }
+   ]
+}```
+
+
+**SRS_LOGGER_05_001: [** If `broker` is NULL then `Logger_CreateFromJson` shall fail and return NULL. **]**
+**SRS_LOGGER_05_003: [** If `configuration` is NULL then `Logger_CreateFromJson` shall fail and return NULL. **]**
+**SRS_LOGGER_05_011: [** If configuration is not a JSON object, then `Logger_CreateFromJson` shall fail and return NULL. **]**
+**SRS_LOGGER_05_012: [** If the JSON object does not contain a value named "filename" then `Logger_CreateFromJson` shall fail and return NULL. **]**
+**SRS_LOGGER_05_005: [** `Logger_CreateFromJson` shall pass `broker` and the filename to `Logger_Create`. **]**
+**SRS_LOGGER_05_006: [** If `Logger_Create` succeeds then `Logger_CreateFromJson` shall succeed and return a non-NULL value. **]**
+**SRS_LOGGER_05_007: [** If `Logger_Create` fails then `Logger_CreateFromJson` shall fail and return NULL. **]**
+
+
 ###Logger_Create
 ```c
 MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration);

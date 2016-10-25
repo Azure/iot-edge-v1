@@ -4,13 +4,6 @@
 #ifndef NODEJS_H
 #define NODEJS_H
 
-/**
- * Including module.h dictates that:
- *
- *      MODULE_EXPORT const MODULE_APIS* Module_GetAPIS(void);
- *
- * is implemented by the module.
- */
 #include "module.h"
 
 #ifdef __cplusplus

@@ -21,7 +21,8 @@ extern "C"
 
 	/**
 	* @brief	Creates a Gateway using a JSON configuration file as input which 
-	*			describes each module.
+	*			describes each module. Each module described in the configuration
+	*           must support Module_CreateFromJson. 
 	*
 	* @param	file_path	Path to the JSON configuration file for this gateway.
 	*			Sample JSON configuration file:
@@ -52,7 +53,7 @@ extern "C"
 	* @return	A non-NULL #GATEWAY_HANDLE that can be used to manage the 
 	*			gateway or @c NULL on failure.
 	*/
-	extern GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path);
+	extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 
 #ifdef __cplusplus
 }

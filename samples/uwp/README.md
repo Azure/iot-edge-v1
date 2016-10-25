@@ -1,1 +1,0 @@
-The directions to run this sample can be found at [doc/sample_uwp.md](../../doc/sample_uwp.md).

@@ -236,29 +236,6 @@ extern GATEWAY_ADD_LINK_RESULT Gateway_LL_AddLink(GATEWAY_HANDLE gw, const GATEW
 */
 extern void Gateway_LL_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
-#ifdef UWP_BINDING
-
-/** @brief		Creates a new gateway using the provided #MODULEs and #BROKER_HANDLE.
-*
-*	@param		modules   		#VECTOR_HANDLE structure containing
-*								specific modules.
-*
-*	@param		broker          #BROKER_HANDLE structure containing
-*								specific message broker instance.
-*
-*	@return		A non-NULL #GATEWAY_HANDLE that can be used to manage the
-*				gateway or @c NULL on failure.
-*/
-extern GATEWAY_HANDLE Gateway_LL_UwpCreate(const VECTOR_HANDLE modules, BROKER_HANDLE broker);
-
-/** @brief		Destroys the gateway and disposes of all associated data.
-*
-*	@param		gw		#GATEWAY_HANDLE to be destroyed.
-*/
-extern void Gateway_LL_UwpDestroy(GATEWAY_HANDLE gw);
-
-#endif // UWP_BINDING
-
 #ifdef __cplusplus
 }
 #endif

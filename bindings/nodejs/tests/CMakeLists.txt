@@ -10,5 +10,3 @@ cmake_minimum_required(VERSION 2.8.11)
 if(WIN32)
     add_subdirectory(nodejs_int)
 endif()
-
-add_subdirectory(nodejs_hl_ut)

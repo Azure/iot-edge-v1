@@ -5,7 +5,23 @@
 #define LOGGER_H
 
 #include "module.h"
-#include "logger_common.h"
+
+typedef enum LOGGER_TYPE_TAG
+{
+    LOGGING_TO_FILE
+} LOGGER_TYPE;
+
+typedef struct LOGGER_CONFIG_TAG
+{
+    LOGGER_TYPE selector;
+    union 
+    {
+        struct LOGGER_CONFIG_FILE_TAG
+        {
+            const char* name;
+        } loggerConfigFile;
+    } selectee;
+} LOGGER_CONFIG; /*this needs to be passed to the Module_Create function*/
 
 #ifdef __cplusplus
 extern "C"
@@ -17,6 +33,5 @@ MODULE_EXPORT void MODULE_STATIC_GETAPIS(LOGGER_MODULE)(MODULE_APIS* apis);
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /*LOGGER_H*/

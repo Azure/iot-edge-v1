@@ -23,5 +23,5 @@ if(${enable_nodejs_binding})
 endif()
 
 if(LINUX)
-    add_subdirectory(ble_gateway_hl)
+    add_subdirectory(ble_gateway)
 endif()

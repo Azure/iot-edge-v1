@@ -7,6 +7,11 @@
 
 const char *hello_module_path = "../../modules/hello_world/Debug/hello_world.dll";
 
+void started_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
+{
+	printf("Gateway is being started, called with param: \"%d\".\n", *(int*)user_param);
+}
+
 void module_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	VECTOR_HANDLE modules = (VECTOR_HANDLE)ctx;
@@ -24,16 +29,20 @@ void second_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_
 	printf("Gateway is being destroyed, second callback called with param: \"%d\".\n", *(int*)user_param);
 }
 
-int main(int argc, char** argv)
+int main()
 {
-	int param1 = 1, param2 = 2;
+	int param1 = 1, param2 = 2, param3 = 3;
     GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
 	
+	
+	Gateway_LL_AddEventCallback(gw, GATEWAY_STARTED, started_callback, &param1);
 	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, module_callback, NULL);
-    Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, my_callback, &param1);
-	Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, second_callback, &param2);
+    Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, my_callback, &param2);
+	Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, second_callback, &param3);
     
 	printf("Gateway is running.\n");
+
+	Gateway_LL_Start(gw);
 
 	GATEWAY_MODULES_ENTRY new_module = {
 		"test module",

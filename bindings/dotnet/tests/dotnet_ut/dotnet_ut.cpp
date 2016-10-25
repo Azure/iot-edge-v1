@@ -15,6 +15,8 @@
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/map.h"
 
+#include <parson.h>
+
 #include <metahost.h>
 #include <comutil.h>
 #import "mscorlib.tlb" raw_interfaces_only				\
@@ -25,6 +27,24 @@ using namespace mscorlib;
 
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
+
+#define FAKE_CONFIG "" \
+"{" \
+"  \"modules\": [" \
+"    {" \
+"      \"module name\": \"csharp_hello_world\"," \
+"      \"module path\": \"/csharp_hello_world.dll\"," \
+"      \"args\": \"\"" \
+"    }," \
+"    {" \
+"      \"dotnet_module_path\": \"SensorTag\"," \
+"      \"dotnet_module_entry_class\": \"/dotnet.so\"," \
+"      \"dotnet_module_args\": {"\
+"       \"module configuration"\
+"      }" \
+"    }" \
+"  ]" \
+"}"
 
 #define GBALLOC_H
 
@@ -101,6 +121,21 @@ namespace BASEIMPLEMENTATION
 
 #include <stddef.h>   /* size_t */
 
+    typedef union json_value_value {
+        char        *string;
+        double       number;
+        JSON_Object *object;
+        JSON_Array  *array;
+        int          boolean;
+        int          null;
+    } JSON_Value_Value;
+
+    struct json_value_t {
+        JSON_Value_Type     type;
+        JSON_Value_Value    value;
+    };
+
+    typedef struct json_value_t  JSON_Value;
 };
 
 //Comparator to compare a WChar
@@ -1486,7 +1521,88 @@ public:
 		BASEIMPLEMENTATION::gballoc_free(ptr);
 	MOCK_VOID_METHOD_END()
 
-	//Broker Mocks
+    /*Parson Mocks*/
+    MOCK_STATIC_METHOD_1(, JSON_Value*, json_parse_string, const char *, filename)
+    JSON_Value* value = NULL;
+    if (filename != NULL)
+    {
+        value = (JSON_Value*)malloc(sizeof(BASEIMPLEMENTATION::JSON_Value));
+    }
+    MOCK_METHOD_END(JSON_Value*, value);
+
+    MOCK_STATIC_METHOD_1(, JSON_Value*, json_parse_file, const char *, filename)
+        JSON_Value* value = NULL;
+    if (filename != NULL)
+    {
+        value = (JSON_Value*)malloc(sizeof(BASEIMPLEMENTATION::JSON_Value));
+    }
+    MOCK_METHOD_END(JSON_Value*, value);
+
+    MOCK_STATIC_METHOD_1(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
+        JSON_Object* object = NULL;
+    if (value != NULL)
+    {
+        object = (JSON_Object*)0x42;
+    }
+    MOCK_METHOD_END(JSON_Object*, object);
+
+    MOCK_STATIC_METHOD_2(, JSON_Array*, json_object_get_array, const JSON_Object*, object, const char*, name)
+        JSON_Array* arr = NULL;
+    if (object != NULL && name != NULL)
+    {
+        arr = (JSON_Array*)0x42;
+    }
+    MOCK_METHOD_END(JSON_Array*, arr);
+
+    MOCK_STATIC_METHOD_1(, size_t, json_array_get_count, const JSON_Array*, arr)
+        size_t size = 4;
+    MOCK_METHOD_END(size_t, size);
+
+    MOCK_STATIC_METHOD_2(, double, json_object_get_number, const JSON_Object *, object, const char *, name)
+        double result2 = 0;
+    MOCK_METHOD_END(double, result2);
+
+    MOCK_STATIC_METHOD_2(, JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index)
+        JSON_Object* object = NULL;
+    if (arr != NULL && index >= 0)
+    {
+        object = (JSON_Object*)0x42;
+    }
+    MOCK_METHOD_END(JSON_Object*, object);
+
+    MOCK_STATIC_METHOD_2(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name)
+        const char* result2;
+    if (strcmp(name, "dotnet_module_path") == 0)
+    {
+        result2 = "/path/to/csharp_module.dll";
+    }
+    else if (strcmp(name, "dotnet_module_entry_class") == 0)
+    {
+        result2 = "mycsharpmodule.classname";
+    }
+    else if (strcmp(name, "dotnet_module_args") == 0)
+    {
+        result2 = "module configuration";
+    }
+    else
+    {
+        result2 = NULL;
+    }
+    MOCK_METHOD_END(const char*, result2);
+
+    MOCK_STATIC_METHOD_2(, JSON_Value*, json_object_get_value, const JSON_Object*, object, const char*, name)
+        JSON_Value* value = NULL;
+    if (object != NULL && name != NULL)
+    {
+        value = (JSON_Value*)0x42;
+    }
+    MOCK_METHOD_END(JSON_Value*, value);
+
+    MOCK_STATIC_METHOD_1(, void, json_value_free, JSON_Value*, value)
+        free(value);
+    MOCK_VOID_METHOD_END();
+
+    //Broker Mocks
 	MOCK_STATIC_METHOD_3(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message)
 	MOCK_METHOD_END(BROKER_RESULT, BROKER_OK);
 };
@@ -1543,6 +1659,15 @@ extern "C"
 	DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
 
 	DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , void, Message_Destroy, MESSAGE_HANDLE, message);
+
+    DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , JSON_Value*, json_parse_string, const char *, filename);
+    DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , JSON_Object*, json_value_get_object, const JSON_Value*, value);
+    DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , double, json_object_get_number, const JSON_Object*, value, const char*, name);
+    DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , const char*, json_object_get_string, const JSON_Object*, object, const char*, name);
+    DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , JSON_Array*, json_object_get_array, const JSON_Object*, object, const char*, name);
+    DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , void, json_value_free, JSON_Value*, value);
+    DECLARE_GLOBAL_MOCK_METHOD_1(CDOTNETMocks, , size_t, json_array_get_count, const JSON_Array*, arr);
+    DECLARE_GLOBAL_MOCK_METHOD_2(CDOTNETMocks, , JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index);
 
 	//Broker Mocks
 	DECLARE_GLOBAL_MOCK_METHOD_3(CDOTNETMocks, , BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE_HANDLE, source, MESSAGE_HANDLE, message);
@@ -1677,10 +1802,280 @@ BEGIN_TEST_SUITE(dotnet_ut)
         }
     }
 	
-	/* Tests_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if broker is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_broker_is_Null)
+    /* Tests_SRS_DOTNET_05_001: [ If broker is NULL then DotNet_CreateFromJson shall fail and return NULL. ]  */
+    TEST_FUNCTION(DotNet_CreateFromJson_returns_NULL_when_broker_is_NULL)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson(NULL, (const char*)0x42);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_002: [If configuration is NULL then DotNet_CreateFromJson shall fail and return NULL.] */
+    TEST_FUNCTION(DotNet_CreateFromJson_returns_NULL_when_configuration_is_NULL)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_json_parse_string_fails)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetFailReturn((JSON_Value*)NULL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_json_value_get_object_fails)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetFailReturn((JSON_Object*)NULL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_004: [ If the JSON object does not contain a value named "dotnet_module_path" then DotNet_CreateFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_path)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char*)NULL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_005: [ If the JSON object does not contain a value named "dotnet_module_entry_class" then DotNet_CreateFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_entry_class)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char*)NULL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_006: [ If the JSON object does not contain a value named "dotnet_module_args" then DotNet_CreateFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_args)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char*)NULL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_007: [ DotNet_CreateFromJson shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNet_Create. ]*/
+    /* Tests_SRS_DOTNET_05_009: [ If DotNet_Create fails then DotNet_CreateFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_Module_Create_fails)
+    {
+        ///arrange
+        CDOTNETMocks mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
+            .IgnoreArgument(3)
+            .SetReturn(E_FAIL);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+    }
+
+    /* Tests_SRS_DOTNET_05_007: [ DotNet_CreateFromJson shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNet_Create. ]*/
+    /* Tests_SRS_DOTNET_05_008: [ If DotNet_Create succeeds then DotNet_CreateFromJson shall succeed and return a non-NULL value. ] */
+    TEST_FUNCTION(DotNet_CreateFromJson_succeeds)
+    {
+        ///arrange
+        CNiceCallComparer<CDOTNETMocks> mocks;
+        MODULE_APIS theAPIS;
+        Module_GetAPIS(&theAPIS);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
+            .IgnoreArgument(3);
+
+        ///act
+        auto result = theAPIS.Module_CreateFromJson((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NOT_NULL(result);
+
+        ///cleanup
+        theAPIS.Module_Destroy(result);
+    }
+
+	/* Tests_SRS_DOTNET_04_001: [ DotNet_Create shall return NULL if broker is NULL. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_broker_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1697,10 +2092,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_002: [ DotNET_Create shall return NULL if configuration is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_configuration_is_Null)
+	/* Tests_SRS_DOTNET_04_002: [ DotNet_Create shall return NULL if configuration is NULL. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_configuration_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1717,10 +2112,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 	
-	/* Tests_SRS_DOTNET_04_003: [ DotNET_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_dotnet_module_path_is_Null)
+	/* Tests_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_path_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1741,10 +2136,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_004: [ DotNET_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_dotnet_module_entry_class_is_Null)
+	/* Tests_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_entry_class_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1765,10 +2160,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_005: [ DotNET_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_dotnet_module_args_is_Null)
+	/* Tests_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_args_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1789,10 +2184,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_new_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_new_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1821,10 +2216,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CLRCreateInstance_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_CLRCreateInstance_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1849,10 +2244,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_GetRuntime_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_GetRuntime_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1880,10 +2275,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_IsLoadable_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_IsLoadable_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1914,10 +2309,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_IsLoadable_fLoadable_is_False)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_IsLoadable_fLoadable_is_False)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1949,10 +2344,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_GetInterface_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_GetInterface_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -1988,10 +2383,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CorRunTimeHost_Start_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_CorRunTimeHost_Start_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2029,10 +2424,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CorRunTimeHost_GetDefaultDomain_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_CorRunTimeHost_GetDefaultDomain_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2073,10 +2468,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_QueryInterface_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_QueryInterface_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2120,10 +2515,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_Load_2_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_Load_2_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2171,10 +2566,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_GetType_2_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_GetType_2_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2225,10 +2620,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_Load_IoTGatewayAssembly_2_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_Load_IoTGatewayAssembly_2_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2284,10 +2679,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayCreateVector_for_Broker_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_SafeArrayCreateVector_for_Broker_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2348,10 +2743,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayPutElement_for_Broker_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_SafeArrayPutElement_for_Broker_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2420,10 +2815,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CreateInstance_3_for_Broker_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_CreateInstance_3_for_Broker_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2496,10 +2891,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_CreateInstance_for_ClientModuleClass_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_CreateInstance_for_ClientModuleClass_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2576,10 +2971,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 	
-    /* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayCreateVector_ForClientCreate_fails)
+    /* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_SafeArrayCreateVector_ForClientCreate_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2667,10 +3062,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayPutElement_ARG1_ForClientCreate_fails)
+	/* Tests_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_SafeArrayPutElement_ARG1_ForClientCreate_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2766,9 +3161,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_SafeArrayPutElement_ARG2_ForClientCreate_fails)
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_SafeArrayPutElement_ARG2_ForClientCreate_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2861,9 +3256,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	TEST_FUNCTION(DotNET_Create_returns_NULL_when_InvokeMember_3_ForClientCreate_fails)
+	TEST_FUNCTION(DotNet_Create_returns_NULL_when_InvokeMember_3_ForClientCreate_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -2967,16 +3362,16 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 
-	/* Tests_SRS_DOTNET_04_007: [ DotNET_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
-	/* Tests_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
-	/* Tests_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
-	/* Tests_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
-	/* Tests_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+	/* Tests_SRS_DOTNET_04_007: [ DotNet_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
+	/* Tests_SRS_DOTNET_04_008: [ DotNet_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
+	/* Tests_SRS_DOTNET_04_012: [ DotNet_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
+	/* Tests_SRS_DOTNET_04_009: [ DotNet_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
+	/* Tests_SRS_DOTNET_04_010: [ DotNet_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
 	/* Tests_SRS_DOTNET_04_013: [ A .NET Object conforming to the Broker interface defined shall be created: ] */
-	/* Tests_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
-	TEST_FUNCTION(DotNET_Create_succeed)
+	/* Tests_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
+	TEST_FUNCTION(DotNet_Create_succeed)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3079,10 +3474,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		theAPIS.Module_Destroy((MODULE_HANDLE)result);
 	}
 
-	/* Tests_SRS_DOTNET_04_015: [ DotNET_Receive shall do nothing if module is NULL. ] */
-	TEST_FUNCTION(DotNET_Receive_does_nothing_when_modulehandle_is_Null)
+	/* Tests_SRS_DOTNET_04_015: [ DotNet_Receive shall do nothing if module is NULL. ] */
+	TEST_FUNCTION(DotNet_Receive_does_nothing_when_modulehandle_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3098,10 +3493,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_016: [ DotNET_Receive shall do nothing if message is NULL. ] */
-	TEST_FUNCTION(DotNET_Receive_does_nothing_when_message_is_Null)
+	/* Tests_SRS_DOTNET_04_016: [ DotNet_Receive shall do nothing if message is NULL. ] */
+	TEST_FUNCTION(DotNet_Receive_does_nothing_when_message_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3117,10 +3512,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_Message_ToByteArray_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_Message_ToByteArray_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3147,9 +3542,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_Message_alloc_fails)
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_Message_alloc_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3177,10 +3572,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_CreateSafeArray_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_CreateSafeArray_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3216,10 +3611,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayAccessData_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayAccessData_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3256,10 +3651,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayUnaccessData_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayUnaccessData_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3299,10 +3694,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayCreateVector_for_Message_Constructor_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayCreateVector_for_Message_Constructor_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3344,10 +3739,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayPutElement_for_Message_Constructor_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayPutElement_for_Message_Constructor_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3395,9 +3790,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
-	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ]*/
-	TEST_FUNCTION(DotNET_Start_succeeds)
+	/*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ]*/
+	TEST_FUNCTION(DotNet_Start_succeeds)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3430,8 +3825,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ] */
-	TEST_FUNCTION(DotNET_Start_Invoke_fails_log_error)
+	/*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ] */
+	TEST_FUNCTION(DotNet_Start_Invoke_fails_log_error)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3465,8 +3860,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
-	TEST_FUNCTION(DotNET_Start_GetInterface_fails_log_error)
+	/*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+	TEST_FUNCTION(DotNet_Start_GetInterface_fails_log_error)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3496,8 +3891,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/*Tests_SRS_DOTNET_17_001: [ DotNET_Start shall do nothing if module is NULL. ] */
-	TEST_FUNCTION(DotNET_Start_does_nothing_with_NULL)
+	/*Tests_SRS_DOTNET_17_001: [ DotNet_Start shall do nothing if module is NULL. ] */
+	TEST_FUNCTION(DotNet_Start_does_nothing_with_NULL)
 	{
 		///arrage
 		CDOTNETMocks mocks;
@@ -3514,10 +3909,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 	
-	/* Tests_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_Create_Instance_3_for_Message_Constructor_fails)
+	/* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_Create_Instance_3_for_Message_Constructor_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3568,10 +3963,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_018: [ DotNET_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayCreateVector_For_Receive_Argument_fails)
+	/* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayCreateVector_For_Receive_Argument_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3624,10 +4019,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_018: [ DotNET_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_SafeArrayPutElement_For_Receive_Argument_fails)
+	/* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_SafeArrayPutElement_For_Receive_Argument_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3686,10 +4081,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_018: [ DotNET_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
-	TEST_FUNCTION(DotNET_Receive__does_nothing_when_InvokeMember_3_For_Receive_Argument_fails)
+	/* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
+	TEST_FUNCTION(DotNet_Receive__does_nothing_when_InvokeMember_3_For_Receive_Argument_fails)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3755,10 +4150,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_018: [ DotNET_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
-	TEST_FUNCTION(DotNET_receive_succeed)
+	/* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
+	TEST_FUNCTION(DotNet_receive_succeed)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3823,10 +4218,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_019: [ DotNET_Destroy shall do nothing if module is NULL. ] */
-	TEST_FUNCTION(DotNET_Destroy_does_nothing_when_module_is_Null)
+	/* Tests_SRS_DOTNET_04_019: [ DotNet_Destroy shall do nothing if module is NULL. ] */
+	TEST_FUNCTION(DotNet_Destroy_does_nothing_when_module_is_Null)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3842,11 +4237,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
 		///cleanup
 	}
 
-	/* Tests_SRS_DOTNET_04_022: [ DotNET_Destroy shall call the Destroy C# method. ] */
-	/* Tests_SRS_DOTNET_04_020: [ DotNET_Destroy shall free all resources associated with the given module.. ] */
-	TEST_FUNCTION(DotNET_Destroy_Invokes_DotNet_Destroy)
+	/* Tests_SRS_DOTNET_04_022: [ DotNet_Destroy shall call the Destroy C# method. ] */
+	/* Tests_SRS_DOTNET_04_020: [ DotNet_Destroy shall free all resources associated with the given module.. ] */
+	TEST_FUNCTION(DotNet_Destroy_Invokes_DotNet_Destroy)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 		MODULE_APIS theAPIS;
 		Module_GetAPIS(&theAPIS);
@@ -3875,9 +4270,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_04_022: [ Module_DotNetHost_PublishMessage shall return false if broker is NULL. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_broker_is_NULL_return_false)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_if_broker_is_NULL_return_false)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		///act
@@ -3890,9 +4285,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_04_029: [ Module_DotNetHost_PublishMessage shall return false if sourceModule is NULL. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_sourceModule_is_NULL_return_false)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_if_sourceModule_is_NULL_return_false)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		///act
@@ -3905,9 +4300,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if message is NULL, or size if lower than 0. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_source_is_NULL_return_false)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_if_source_is_NULL_return_false)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		///act
@@ -3920,9 +4315,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_04_023: [ Module_DotNetHost_PublishMessage shall return false if message is NULL, or size if lower than 0. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_if_size_is_lower_than_zero_return_false)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_if_size_is_lower_than_zero_return_false)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		///act
@@ -3936,9 +4331,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
 	
 	/* Tests_SRS_DOTNET_04_025: [ If Message_CreateFromByteArray fails, Module_DotNetHost_PublishMessage shall fail. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_Message_CreateFromByteArray_fail)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_fails_when_Message_CreateFromByteArray_fail)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
@@ -3955,9 +4350,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_04_027: [ If Broker_Publish fails Module_DotNetHost_PublishMessage shall fail. ] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_fails_when_Broker_Publish_fail)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_fails_when_Broker_Publish_fail)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
@@ -3982,9 +4377,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	/* Tests_SRS_DOTNET_04_024: [ Module_DotNetHost_PublishMessage shall create a message from message and size by invoking Message_CreateFromByteArray. ] */
 	/* Tests_SRS_DOTNET_04_026: [ Module_DotNetHost_PublishMessage shall call Broker_Publish passing broker, sourceModule, message and size. ] */
 	/* Tests_SRS_DOTNET_04_028: [If Broker_Publish succeeds Module_DotNetHost_PublishMessage shall succeed.] */
-	TEST_FUNCTION(DotNET_Module_DotNetHost_PublishMessage_succeed)
+	TEST_FUNCTION(DotNet_Module_DotNetHost_PublishMessage_succeed)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		STRICT_EXPECTED_CALL(mocks, Message_CreateFromByteArray((const unsigned char*)"AnyContent", 11))
@@ -4006,9 +4401,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
 	}
 
 	/* Tests_SRS_DOTNET_26_001: [ `Module_GetAPIS` shall fill out the provided `MODULES_API` structure with required module's APIs functions. ] */
-	TEST_FUNCTION(DotNET_Module_GetAPIS_returns_non_NULL)
+	TEST_FUNCTION(DotNet_Module_GetAPIS_returns_non_NULL)
 	{
-		///arrage
+		///arrange
 		CDOTNETMocks mocks;
 
 		mocks.ResetAllCalls();

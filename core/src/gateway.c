@@ -25,10 +25,11 @@
 
 DEFINE_ENUM(PARSE_JSON_RESULT, PARSE_JSON_RESULT_VALUES);
 
+GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, bool use_json);
 static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties, JSON_Value *root);
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties);
 
-GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path)
+GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 {
     GATEWAY_HANDLE gw;
 
@@ -50,7 +51,7 @@ GATEWAY_HANDLE Gateway_Create_From_JSON(const char* file_path)
                 if (parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS)
                 {
                     /*Codes_SRS_GATEWAY_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
-                    gw = Gateway_LL_Create(properties);
+                    gw = gateway_create_internal(properties, true);
 
                     if (gw == NULL)
                     {

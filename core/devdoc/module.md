@@ -25,25 +25,6 @@ typedef struct MODULE_APIS_TAG MODULE_APIS;
 extern "C"
 {
 #endif
-
-#ifdef UWP_BINDING
-
-    /** @brief	Interface containing module-specific implementations. */
-    class IInternalGatewayModule
-    {
-    public:
-        /** @brief Interface equivalent to #Module_Receive function. */
-        virtual void Module_Receive(MESSAGE_HANDLE messageHandle) = 0;
-    };
-
-    typedef struct MODULE_TAG
-    {
-        /** @brief Interface implementation for module. */
-        IInternalGatewayModule* module_instance;
-    }MODULE;
-
-#else
-
     /** @brief	Structure used to represent/abstract the idea of a module.  May
     *			contain Hamdle/FxnPtrs or an interface ptr or some unforseen
     *			representation.
@@ -144,7 +125,6 @@ extern "C"
 *			the functions for the particular module.
 */
 MODULE_EXPORT void Module_GetAPIS(MODULE_APIS* apis);
-#endif // UWP_BINDING
 
 #ifdef __cplusplus
 }

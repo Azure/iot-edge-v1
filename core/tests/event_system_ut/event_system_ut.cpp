@@ -47,7 +47,7 @@ namespace BASEIMPLEMENTATION
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 
-static std::vector<GATEWAY_HANDLE> callback_gw_history;
+static std::vector<GATEWAY_HANDLE> *callback_gw_history;
 static int callback_per_event_count[GATEWAY_EVENTS_COUNT];
 static int helper_counter;
 
@@ -271,7 +271,7 @@ static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thre
 static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
 	ASSERT_IS_TRUE(event_type < GATEWAY_EVENTS_COUNT);
-	callback_gw_history.push_back(gw);
+	callback_gw_history->push_back(gw);
 	callback_per_event_count[event_type]++;
 }
 
@@ -288,10 +288,15 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     TEST_INITIALIZE_MEMORY_DEBUG(g_dllByDll);
 	g_testByTest = MicroMockCreateMutex();
 	ASSERT_IS_NOT_NULL(g_testByTest);
+
+	callback_gw_history = new std::vector<GATEWAY_HANDLE>;
 }
 
 TEST_SUITE_CLEANUP(TestClassCleanup)
 {
+
+	delete callback_gw_history;
+
 	MicroMockDestroyMutex(g_testByTest);
     TEST_DEINITIALIZE_MEMORY_DEBUG(g_dllByDll);
 }
@@ -303,7 +308,7 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 		ASSERT_FAIL("our mutex is ABANDONED. Failure in test framework");
 	}
 
-	callback_gw_history.clear();
+	callback_gw_history->clear();
 	for (int i = 0; i < GATEWAY_EVENTS_COUNT; i++)
 		callback_per_event_count[i] = 0;
 	helper_counter = 0;
@@ -580,14 +585,14 @@ TEST_FUNCTION(EventSystem_Report_CallAllRegistered)
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_DESTROYED);
 	EventSystem_ReportEvent(event_system, gw, GATEWAY_STARTED);
 	// check that they weren't run in this thread
-	ASSERT_IS_TRUE(callback_gw_history.empty());
+	ASSERT_IS_TRUE(callback_gw_history->empty());
 	// simulate the thread running
 	last_thread_func(last_thread_arg);
 
 	// Assert
-	ASSERT_ARE_EQUAL(size_t, callback_gw_history.size(), 3);
+	ASSERT_ARE_EQUAL(size_t, callback_gw_history->size(), 3);
 	for (int i = 0; i < 3; i++)
-		ASSERT_IS_TRUE(callback_gw_history[i] == gw);
+		ASSERT_IS_TRUE((*callback_gw_history)[i] == gw);
 	ASSERT_ARE_EQUAL(int, callback_per_event_count[GATEWAY_STARTED], 2);
 	ASSERT_ARE_EQUAL(int, callback_per_event_count[GATEWAY_DESTROYED], 1);
 
@@ -664,16 +669,16 @@ TEST_FUNCTION(EventSystem_Recreates_Thread_When_Quit)
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_STARTED);
 	
 	ASSERT_IS_NOT_NULL((void*)last_thread_func);
-	ASSERT_ARE_EQUAL(int, callback_gw_history.size(), 0);
+	ASSERT_ARE_EQUAL(int, callback_gw_history->size(), 0);
 	last_thread_func(last_thread_arg);
-	ASSERT_ARE_EQUAL(int, callback_gw_history.size(), 2);
+	ASSERT_ARE_EQUAL(int, callback_gw_history->size(), 2);
 	last_thread_func = NULL;
 	
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_STARTED);
 	
 	ASSERT_IS_NOT_NULL((void*)last_thread_func);
 	last_thread_func(last_thread_arg);
-	ASSERT_ARE_EQUAL(int, callback_gw_history.size(), 4);
+	ASSERT_ARE_EQUAL(int, callback_gw_history->size(), 4);
 
 	mocks.ResetAllCalls();
 
@@ -763,12 +768,13 @@ TEST_FUNCTION(EventSystem_Report_NULL_EventSystem)
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();
-	ASSERT_IS_TRUE(callback_gw_history.empty());
+	ASSERT_IS_TRUE(callback_gw_history->empty());
 }
 
 /* Tests_SRS_EVENTSYSTEM_26_012: [ This function shall log a failure and do nothing else when either `event_system` or `callback` parameters are NULL. ] */
 TEST_FUNCTION(EventSystem_AddEventCallback_NULLs)
 {
+
 	// Arrange
 	CEventSystemMocks mocks;
 	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
@@ -804,7 +810,7 @@ TEST_FUNCTION(EventSystem_AddEventCallback_NULLs)
 
 	// Assert
 	mocks.AssertActualAndExpectedCalls();
-	ASSERT_IS_TRUE(callback_gw_history.empty());
+	ASSERT_IS_TRUE(callback_gw_history->empty());
 }
 
 TEST_FUNCTION(EventSystem_AddEventCallback_Vector_fail)
@@ -825,7 +831,7 @@ TEST_FUNCTION(EventSystem_AddEventCallback_Vector_fail)
 	EventSystem_ReportEvent(handle, NULL, GATEWAY_STARTED);
 
 	// Assert
-	ASSERT_IS_TRUE(callback_gw_history.empty());
+	ASSERT_IS_TRUE(callback_gw_history->empty());
 	mocks.AssertActualAndExpectedCalls();
 
 	// Cleanup

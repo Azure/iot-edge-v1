@@ -2,7 +2,7 @@
   "modules": [
     {
       "module name": "java_printer",
-      "module path": "../../bindings/java/libjava_module_host_hl.so",
+      "module path": "../../bindings/java/libjava_module_host.so",
       "args": {
         "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-0.0.3-with-deps.jar:../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-0.0.3-with-deps.jar",
         "library_path": "../../bindings/java",
@@ -21,7 +21,7 @@
     },
     {
       "module name": "java_sensor",
-      "module path": "../../bindings/java/libjava_module_host_hl.so",
+      "module path": "../../bindings/java/libjava_module_host.so",
       "args": {
         "class_path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-0.0.3-with-deps.jar:../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-0.0.3-with-deps.jar",
         "library_path": "../../bindings/java",
@@ -39,13 +39,13 @@
       }
     },
     {
-      "module name": "logger_hl",
-      "module path": "../../modules/logger/liblogger_hl.so",
+      "module name": "logger",
+      "module path": "../../modules/logger/liblogger.so",
       "args": { "filename": "log.txt" }
     }
   ],
   "links" : [
-    { "source" : "*", "sink" : "logger_hl" },
+    { "source" : "*", "sink" : "logger" },
     { "source" : "java_sensor", "sink" : "java_printer" }
   ]
 }

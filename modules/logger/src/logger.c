@@ -5,21 +5,22 @@
 #ifdef _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
-#include "azure_c_shared_utility/gballoc.h"
-
-#include "azure_c_shared_utility/gb_stdio.h"
-#include "azure_c_shared_utility/gb_time.h"
+#include <errno.h>
 
 #include "logger.h"
 
-#include <errno.h>
+#include <azure_c_shared_utility/gballoc.h>
+#include <azure_c_shared_utility/gb_stdio.h>
+#include <azure_c_shared_utility/gb_time.h>
+#include <azure_c_shared_utility/strings.h>
+#include <azure_c_shared_utility/xlogging.h>
+#include <azure_c_shared_utility/crt_abstractions.h>
+#include <azure_c_shared_utility/base64.h>
+#include <azure_c_shared_utility/map.h>
+#include <azure_c_shared_utility/constmap.h>
 
-#include "azure_c_shared_utility/strings.h"
-#include "azure_c_shared_utility/xlogging.h"
-#include "azure_c_shared_utility/crt_abstractions.h"
-#include "azure_c_shared_utility/base64.h"
-#include "azure_c_shared_utility/map.h"
-#include "azure_c_shared_utility/constmap.h"
+// TODO: wrap in #ifdef
+#include <parson.h>
 
 typedef struct LOGGER_HANDLE_DATA_TAG
 {
@@ -257,6 +258,77 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
     return result;
 }
 
+static MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    
+    MODULE_HANDLE result;
+    /*Codes_SRS_LOGGER_05_001: [ If broker is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
+    /*Codes_SRS_LOGGER_05_003: [ If configuration is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
+    if(
+        (broker == NULL) ||
+        (configuration == NULL)
+    )
+    { 
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        result = NULL;
+    }
+    else
+    {
+        /*Codes_SRS_LOGGER_05_011: [ If configuration is not a JSON object, then Logger_CreateFromJson shall fail and return NULL. ]*/
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            LogError("unable to json_parse_string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* obj = json_value_get_object(json);
+            if (obj == NULL)
+            {
+                LogError("unable to json_value_get_object");
+                result = NULL;
+            }
+            else
+            {
+                /*Codes_SRS_LOGGER_05_012: [ If the JSON object does not contain a value named "filename" then Logger_CreateFromJson shall fail and return NULL. ]*/
+                const char* fileNameValue = json_object_get_string(obj, "filename");
+                if (fileNameValue == NULL)
+                {
+                    LogError("json_object_get_string failed");
+                    result = NULL;
+                }
+                else
+                {
+                    /*fileNameValue is believed at this moment to be a string that might point to a filename on the system*/
+                    
+                    LOGGER_CONFIG config;
+                    config.selector = LOGGING_TO_FILE;
+                    config.selectee.loggerConfigFile.name = fileNameValue;
+                    
+                    /*Codes_SRS_LOGGER_05_005: [ Logger_CreateFromJson shall pass broker and the filename to Logger_Create. ]*/
+                    result = Logger_Create(broker, &config);
+
+                    if (result == NULL)
+                    {
+                        /*Codes_SRS_LOGGER_05_007: [ If Logger_Create fails then Logger_CreateFromJson shall fail and return NULL. ]*/
+                        /*return result "as is" - that is - NULL*/
+                        LogError("unable to create Logger");
+                    }
+                    else
+                    {
+                        /*Codes_SRS_LOGGER_05_006: [ If Logger_Create succeeds then Logger_CreateFromJson shall succeed and return a non-NULL value. ]*/
+                        /*return result "as is" - that is - not NULL*/
+                    }
+                }
+            }
+            json_value_free(json);
+        }
+    }
+    
+    return result;
+}
+
 static void Logger_Destroy(MODULE_HANDLE module)
 {
     /*Codes_SRS_LOGGER_02_014: [If moduleHandle is NULL then Logger_Destroy shall return.]*/
@@ -410,6 +482,7 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
  */
 static const MODULE_APIS Logger_APIS_all =
 {
+    Logger_CreateFromJson,
     Logger_Create,
     Logger_Destroy,
     Logger_Receive,

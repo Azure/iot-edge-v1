@@ -19,7 +19,7 @@ add_executable(nodejs_simple_sample ${nodejs_simple_sample_headers} ${nodejs_sim
 target_link_libraries(nodejs_simple_sample ${LIBS})
 
 # make nodejs_simple_sample depend on other modules
-add_dependencies(nodejs_simple_sample nodejs_binding_hl logger_hl)
+add_dependencies(nodejs_simple_sample nodejs_binding logger)
 
 linkSharedUtil(nodejs_simple_sample)
 install_broker(nodejs_simple_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )

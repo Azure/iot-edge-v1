@@ -21,8 +21,8 @@ set(${theseTestsName}_c_files
 )
 
 include_directories(../../../samples/protocol_encapsulation/inc ${IOTHUB_CLIENT_INC_FOLDER} e2e_module/inc/)
-include_directories(../../../deps/azure-iot-sdks/c/testtools/iothub_test/inc)
-include_directories(../../../deps/azure-c-shared-utility/inc/azure_c_shared_utility)
+include_directories(../../../deps/iot-sdk/c/testtools/iothub_test/inc)
+include_directories(../../../deps/c-utility/inc/azure_c_shared_utility)
 include_directories(../../../modules/common)
 include_directories(../../../modules/iothub/inc)
 include_directories(../../../modules/identitymap/inc)

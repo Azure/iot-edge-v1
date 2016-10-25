@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 			}
 			else
 			{
-				deviceCloudUploadGateway = Gateway_Create_From_JSON(argv[1]);
+				deviceCloudUploadGateway = Gateway_CreateFromJson(argv[1]);
 				if (deviceCloudUploadGateway == NULL)
 				{
 					LogError("Failed to create gateway");

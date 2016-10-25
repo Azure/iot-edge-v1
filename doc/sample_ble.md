@@ -85,13 +85,13 @@ that participates in the gateway. This configuration is provided as JSON. All
 5 participating modules will need to be configured. There is a sample JSON file
 provided in the repo called `gateway_sample.json` which you can use as a
 starting point for building your own configuration file. You should find the
-file at the path `samples/ble_gateway_hl/src` relative to the root of the repo.
+file at the path `samples/ble_gateway/src` relative to the root of the repo.
 
-In order to run the sample you'll run the `ble_gateway_hl` binary passing the
+In order to run the sample you'll run the `ble_gateway` binary passing the
 path to the configuration JSON file.
 
 ```
-ble_gateway_hl <<path to the configuration JSON>>
+ble_gateway <<path to the configuration JSON>>
 ```
 
 Template configuration JSONs are given below for all the modules that are a part
@@ -105,7 +105,7 @@ IDs and data (for write instructions).
 ```json
 {
     "module name": "logger",
-    "module path": "<</path/to/liblogger_hl.so>>",
+    "module path": "<</path/to/liblogger.so>>",
     "args":
     {
         "filename":"/path/to/log-file-name.log"
@@ -118,7 +118,7 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "BLE Device",
-  "module path": "<</path/to/libble_hl.so>>",
+  "module path": "<</path/to/libble.so>>",
   "args": {
     "controller_index": 0,
     "device_mac_address": "<<AA:BB:CC:DD:EE:FF>>",
@@ -172,7 +172,7 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "IoTHub",
-  "module path": "<</path/to/iothub/libiothub_hl.so>>",
+  "module path": "<</path/to/iothub/libiothub.so>>",
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
     "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"
@@ -185,7 +185,7 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "mapping",
-  "module path": "<</path/to/libidentity_map_hl.so>>",
+  "module path": "<</path/to/libidentity_map.so>>",
   "args": [
     {
       "macAddress": "AA:BB:CC:DD:EE:FF",

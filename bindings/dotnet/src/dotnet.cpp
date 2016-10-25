@@ -25,10 +25,11 @@
 #include "dotnet.h"
 
 #include <new>
-
 #include <metahost.h>
-
 #include <atlbase.h>
+#include <stdio.h>
+
+#include <parson.h>
 
 
 #define DEFAULT_CLR_VERSION L"v4.0.30319"
@@ -81,12 +82,12 @@ bool buildBrokerObject(long long  brokerHandle, long long  moduleHandle, _Assemb
 		psaAzureIoTGatewayBrokerConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 2);
 		if (psaAzureIoTGatewayBrokerConstructorArgs == NULL)
 		{
-			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+			/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Failed to create Safe Array. ");
 		}
 		else if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayBrokerConstructorArgs, &index, &broker)))
 		{
-			/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+			/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 			LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
 		}
 		else
@@ -94,7 +95,7 @@ bool buildBrokerObject(long long  brokerHandle, long long  moduleHandle, _Assemb
 			index = 1;
 			if (FAILED(hr = SafeArrayPutElement(psaAzureIoTGatewayBrokerConstructorArgs, &index, &module)))
 			{
-				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+				/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 				LogError("Adding Element on the safe array failed. w/hr 0x%08lx\n", hr);
 			}
 			/* Codes_SRS_DOTNET_04_013: [ A .NET Object conforming to the Broker interface defined shall be created: ] */
@@ -108,7 +109,7 @@ bool buildBrokerObject(long long  brokerHandle, long long  moduleHandle, _Assemb
 				NULL,
 				vtAzureIoTGatewayBrokerObject)))
 			{
-				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+				/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 				LogError("Creating an instance of the message broker failed with hr 0x%08lx\n", hr);
 			}
 			else
@@ -140,42 +141,42 @@ bool createCLRInstancesGetInterfacesAndStarting(ICLRMetaHost** pMetaHost, ICLRRu
 
 	if (FAILED(hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_PPV_ARGS(pMetaHost))))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("CLRCreateInstance failed w/hr 0x%08lx\n", hr);
 	}
 	else if (FAILED(hr = (*pMetaHost)->GetRuntime(DEFAULT_CLR_VERSION, IID_PPV_ARGS(pRuntimeInfo))))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("ICLRMetaHost::GetRuntime failed w/hr 0x%08lx", hr);
 	}
 	else if (FAILED(hr = (*pRuntimeInfo)->IsLoadable(&fLoadable)))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("ICLRRuntimeInfo::IsLoadable failed w/hr 0x%08lx\n", hr);
 	}
 	else if (!fLoadable)
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError(".NET runtime %ls cannot be loaded\n", DEFAULT_CLR_VERSION);
 	}
 	else if (FAILED(hr = (*pRuntimeInfo)->GetInterface(CLSID_CorRuntimeHost, IID_PPV_ARGS(pCorRuntimeHost))))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("ICLRRuntimeInfo::GetInterface failed w/hr 0x%08lx\n", hr);
 	}
 	else if (FAILED(hr = (*pCorRuntimeHost)->Start()))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("CLR failed to start w/hr 0x%08lx\n", hr);
 	}
 	else if (FAILED(hr = (*pCorRuntimeHost)->GetDefaultDomain(&spAppDomainThunk)))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("ICorRuntimeHost::GetDefaultDomain failed w/hr 0x%08lx\n", hr);
 	}
 	else if (FAILED(hr = spAppDomainThunk->QueryInterface(IID_PPV_ARGS(pDefaultAppDomain))))
 	{
-		/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+		/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 		LogError("Failed to get default AppDomain w/hr 0x%08lx\n", hr);
 	}
 	else
@@ -250,7 +251,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 						{
 							LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
 						}
-						/*Codes_SRS_DOTNET_04_014: [ DotNET_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
+						/*Codes_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
 						else if (FAILED(hrResult = pClientModuleType->InvokeMember_3(
 							bstrCreateClientMethodName,
 							static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
@@ -259,7 +260,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 							psaClientModuleCreateArgs,
 							&vt_Empty)))
 						{
-							/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+							/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 							LogError("Failed to invoke Create Method with hr 0x%08lx\n", hrResult);
 						}
 						else
@@ -284,7 +285,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
 	return returnResult;
 }
 
-static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configuration)
+static MODULE_HANDLE DotNet_Create(BROKER_HANDLE broker, const void* configuration)
 {
 	DOTNET_HOST_HANDLE_DATA* out = NULL;
 
@@ -295,8 +296,8 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
 			(configuration == NULL)
 			)
 		{
-			/* Codes_SRS_DOTNET_04_001: [ DotNET_Create shall return NULL if broker is NULL. ] */
-			/* Codes_SRS_DOTNET_04_002: [ DotNET_Create shall return NULL if configuration is NULL. ] */
+			/* Codes_SRS_DOTNET_04_001: [ DotNet_Create shall return NULL if broker is NULL. ] */
+			/* Codes_SRS_DOTNET_04_002: [ DotNet_Create shall return NULL if configuration is NULL. ] */
 			LogError("invalid arg broker=%p, configuration=%p", broker, configuration);
 		}
 		else
@@ -304,22 +305,22 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
 			DOTNET_HOST_CONFIG* dotNetConfig = (DOTNET_HOST_CONFIG*)configuration;
 			if (dotNetConfig->dotnet_module_path == NULL)
 			{
-				/* Codes_SRS_DOTNET_04_003: [ DotNET_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
+				/* Codes_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
 				LogError("invalid configuration. dotnet_module_path=%p", dotNetConfig->dotnet_module_path);
 			}
 			else if (dotNetConfig->dotnet_module_entry_class == NULL)
 			{
-				/* Codes_SRS_DOTNET_04_004: [ DotNET_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
+				/* Codes_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
 				LogError("invalid configuration. dotnet_module_entry_class=%p", dotNetConfig->dotnet_module_entry_class);
 			}
 			else if (dotNetConfig->dotnet_module_args == NULL)
 			{
-				/* Codes_SRS_DOTNET_04_005: [ DotNET_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
+				/* Codes_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
 				LogError("invalid configuration. dotnet_module_args=%p", dotNetConfig->dotnet_module_args);
 			}
 			else
 			{
-				/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+				/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 				HRESULT hr;
 				bstr_t bstrClientModuleAssemblyName(dotNetConfig->dotnet_module_path);
 				_AppDomainPtr spDefaultAppDomain;
@@ -329,7 +330,7 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
 				variant_t vtAzureIoTGatewayBrokerObject;
 				try
 				{
-					/* Codes_SRS_DOTNET_04_008: [ DotNET_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
+					/* Codes_SRS_DOTNET_04_008: [ DotNet_Create shall allocate memory for an instance of the DOTNET_HOST_HANDLE_DATA structure and use that as the backing structure for the module handle. ] */
 					out = new DOTNET_HOST_HANDLE_DATA();
 				}
 				catch (std::bad_alloc)
@@ -340,36 +341,36 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
 
 				if (out != NULL)
 				{
-					/* Codes_SRS_DOTNET_04_007: [ DotNET_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
+					/* Codes_SRS_DOTNET_04_007: [ DotNet_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
 					out->broker = broker;
 
-					/* Codes_SRS_DOTNET_04_012: [ DotNET_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
-					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_012: [ DotNet_Create shall get the 3 CLR Host Interfaces (CLRMetaHost, CLRRuntimeInfo and CorRuntimeHost) and save it on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_010: [ DotNet_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
 					if (!createCLRInstancesGetInterfacesAndStarting(&out->spMetaHost, &out->spRuntimeInfo, &out->spCorRuntimeHost, &spDefaultAppDomain))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Error creating CLR Intance, Getting Interfaces and Starting it.");
 						delete out; 
 						out = NULL;
 					}
 					else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrClientModuleAssemblyName, &spClientModuleAssembly)))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
 						delete out;
 						out = NULL;
 					}
-					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_010: [ DotNet_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
 					else if (FAILED(hr = spClientModuleAssembly->GetType_2(bstrClientModuleClassName, &out->spClientModuleType)))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Failed to get the Type interface w/hr 0x%08lx\n", hr);
 						delete out;
 						out = NULL;
 					}
 					else if (FAILED(hr = spDefaultAppDomain->Load_2(bstrAzureIoTGatewayAssemblyName, &(out->spAzureIoTGatewayAssembly))))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Failed to load the assembly w/hr 0x%08lx\n", hr);
 						delete out;
 						out = NULL;
@@ -380,18 +381,18 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
 						delete out;
 						out = NULL;
 					}
-					/* Codes_SRS_DOTNET_04_009: [ DotNET_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
-					/* Codes_SRS_DOTNET_04_010: [ DotNET_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_009: [ DotNet_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
+					/* Codes_SRS_DOTNET_04_010: [ DotNet_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
 					else if (FAILED(hr = spClientModuleAssembly->CreateInstance(bstrClientModuleClassName, &out->vtClientModuleObject)))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Creating an instance of Client Class failed with hr 0x%08lx\n", hr);
 						delete out;
 						out = NULL;
 					}
 					else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayBrokerObject, out->spClientModuleType, &out->vtClientModuleObject))
 					{
-						/* Codes_SRS_DOTNET_04_006: [ DotNET_Create shall return NULL if an underlying API call fails. ] */
+						/* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
 						LogError("Failed to invoke Create Method");
 						delete out;
 						out = NULL;
@@ -408,6 +409,89 @@ static MODULE_HANDLE DotNET_Create(BROKER_HANDLE broker, const void* configurati
     return out;
 }
 
+static MODULE_HANDLE DotNet_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+{
+    MODULE_HANDLE result;
+    /* Codes_SRS_DOTNET_05_001: [ If broker is NULL then DotNet_CreateFromJson shall fail and return NULL. ]  */
+    /* Codes_SRS_DOTNET_05_002: [ If configuration is NULL then DotNet_CreateFromJson shall fail and return NULL. ] */
+    if (
+        (broker == NULL) ||
+        (configuration == NULL)
+        )
+    {
+        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        result = NULL;
+    }
+    else
+    {
+        JSON_Value* json = json_parse_string((const char*)configuration);
+        if (json == NULL)
+        {
+            /* Codes_SRS_DOTNET_05_003: [If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL.] */
+            LogError("unable to json_parse_string");
+            result = NULL;
+        }
+        else
+        {
+            JSON_Object* root = json_value_get_object(json);
+            if (root == NULL)
+            {
+                /* Codes_SRS_DOTNET_05_003: [If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL.] */
+                LogError("unable to json_value_get_object");
+                result = NULL;
+            }
+            else
+            {
+                const char* dotnet_module_path_string = json_object_get_string(root, "dotnet_module_path");
+                if (dotnet_module_path_string == NULL)
+                {
+                    /* Codes_SRS_DOTNET_05_004: [ If the JSON object does not contain a value named "dotnet_module_path" then DotNet_CreateFromJson shall fail and return NULL. ] */
+                    LogError("json_object_get_string failed for property 'dotnet_module_path'");
+                    result = NULL;
+                }
+                else
+                {
+                    const char* dotnet_module_entry_class_string = json_object_get_string(root, "dotnet_module_entry_class");
+                    if (dotnet_module_entry_class_string == NULL)
+                    {
+                        /* Codes_SRS_DOTNET_05_005: [If the JSON object does not contain a value named "dotnet_module_entry_class" then DotNet_CreateFromJson shall fail and return NULL.] */
+                        LogError("json_object_get_string failed for property 'dotnet_module_entry_class'");
+                        result = NULL;
+                    }
+                    else
+                    {
+                        const char* dotnet_module_args_string = json_object_get_string(root, "dotnet_module_args");
+                        if (dotnet_module_args_string == NULL)
+                        {
+                            /* Codes_SRS_DOTNET_05_006: [ If the JSON object does not contain a value named "dotnet_module_args" then DotNet_CreateFromJson shall fail and return NULL. ] */
+                            LogError("json_object_get_string failed for property 'dotnet_module_args'");
+                            result = NULL;
+                        }
+                        else
+                        {
+                            DOTNET_HOST_CONFIG dotNet_config;
+                            dotNet_config.dotnet_module_path = dotnet_module_path_string;
+                            dotNet_config.dotnet_module_entry_class = dotnet_module_entry_class_string;
+                            dotNet_config.dotnet_module_args = dotnet_module_args_string;
+
+                            /* Codes_SRS_DOTNET_05_007: [ DotNet_CreateFromJson shall pass broker and const char* configuration (dotnet_module_path, dotnet_module_entry_class and dotnet_module_args as string) to DotNet_Create. ] */
+                            result = DotNet_Create(broker, (const void*)&dotNet_config);
+
+                            /* Codes_SRS_DOTNET_05_008: [ If DotNet_Create succeeds then DotNet_CreateFromJson shall succeed and return a non-NULL value. ] */
+                            if (result == NULL)
+                            {
+                                LogError("DotNet_Host_Create failed.");
+                                /* Codes_SRS_DOTNET_05_009: [ If DotNet_Create fails then DotNet_CreateFromJson shall fail and return NULL. ] */
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
 
 bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayMessageObject)
 {
@@ -469,7 +553,7 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 			{
 				LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
 			}
-			/* Codes_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
+			/* Codes_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
 			else if (FAILED(hrResult = spAzureIoTGatewayAssembly->CreateInstance_3
 			(
 				bstrAzureIoTGatewayMessageClassName,
@@ -500,7 +584,7 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 	return returnResult;
 }
 
-static void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+static void DotNet_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
 	SAFEARRAY *psaAzureIoTGatewayClientReceiveArgs = NULL;
 	try
@@ -517,7 +601,7 @@ static void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 			variant_t vt_Empty;
 			LONG index = 0;
 
-			/* Codes_SRS_DOTNET_04_017: [ DotNET_Receive shall construct an instance of the Message interface as defined below: ] */
+			/* Codes_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
 			if (!buildMessageObject(messageHandle, result->spAzureIoTGatewayAssembly, &vtAzureIoTGatewayMessageObject))
 			{
 				LogError("Error building Message Object.");
@@ -533,7 +617,7 @@ static void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 			{
 				LogError("Error Adding Argument to the Safe Array.w/hr 0x%08lx\n", hrResult);
 			}
-			/* Codes_SRS_DOTNET_04_018: [ DotNET_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
+			/* Codes_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
 			else if (FAILED(hrResult = result->spClientModuleType->InvokeMember_3
 			(
 				bstrReceiveClientMethodName,
@@ -549,8 +633,8 @@ static void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 		}
 		else
 		{
-			/* Codes_SRS_DOTNET_04_015: [ DotNET_Receive shall do nothing if module is NULL. ] */
-			/* Codes_SRS_DOTNET_04_016: [ DotNET_Receive shall do nothing if message is NULL. ] */
+			/* Codes_SRS_DOTNET_04_015: [ DotNet_Receive shall do nothing if module is NULL. ] */
+			/* Codes_SRS_DOTNET_04_016: [ DotNet_Receive shall do nothing if message is NULL. ] */
 			LogError("invalid arg moduleHandle=%p, messageHandle=%p", moduleHandle, messageHandle);
 			/*do nothing*/
 		}
@@ -568,13 +652,13 @@ static void DotNET_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 }
 
 
-static void DotNET_Destroy(MODULE_HANDLE module)
+static void DotNet_Destroy(MODULE_HANDLE module)
 {
-	/* Codes_SRS_DOTNET_04_019: [ DotNET_Destroy shall do nothing if module is NULL. ] */
+	/* Codes_SRS_DOTNET_04_019: [ DotNet_Destroy shall do nothing if module is NULL. ] */
 	if (module != NULL)
 	{
 		DOTNET_HOST_HANDLE_DATA* handleData = (DOTNET_HOST_HANDLE_DATA*)module;
-		/* Codes_SRS_DOTNET_04_022: [ DotNET_Destroy shall call the Destroy C# method. ] */
+		/* Codes_SRS_DOTNET_04_022: [ DotNet_Destroy shall call the Destroy C# method. ] */
 		try
 		{
 			bstr_t bstrDestroyClientMethodName(L"Destroy");
@@ -597,7 +681,7 @@ static void DotNET_Destroy(MODULE_HANDLE module)
 		{
 			LogError("Exception Thrown. Message: %s ", e.ErrorMessage());
 		};
-		/* Codes_SRS_DOTNET_04_020: [ DotNET_Destroy shall free all resources associated with the given module.. ] */
+		/* Codes_SRS_DOTNET_04_020: [ DotNet_Destroy shall free all resources associated with the given module.. ] */
 		delete(handleData);
 	}
 }
@@ -640,9 +724,9 @@ MODULE_EXPORT bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE
 	return returnValue;
 }
 
-static void DotNET_Start(MODULE_HANDLE module)
+static void DotNet_Start(MODULE_HANDLE module)
 {
-	/*Codes_SRS_DOTNET_17_001: [ DotNET_Start shall do nothing if module is NULL. ]*/
+	/*Codes_SRS_DOTNET_17_001: [ DotNet_Start shall do nothing if module is NULL. ]*/
 	if (module != NULL)
 	{
 		DOTNET_HOST_HANDLE_DATA* handleData = (DOTNET_HOST_HANDLE_DATA*)module;
@@ -652,7 +736,7 @@ static void DotNET_Start(MODULE_HANDLE module)
 			_Type * if_type = NULL;
 			HRESULT hrResult;
 			
-			/*Codes_SRS_DOTNET_17_002: [ DotNET_Start shall attempt to get the "IGatewayModuleStart" type interface. ]*/
+			/*Codes_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ]*/
 			if (FAILED(hrResult = handleData->spClientModuleType->GetInterface(bstrStartClientIFName, VARIANT_TRUE, &if_type)))
 			{
 				LogError("Failed to discover type");
@@ -664,7 +748,7 @@ static void DotNET_Start(MODULE_HANDLE module)
 					bstr_t bstrStartClientMethodName(L"Start");
 					variant_t vt_Empty;
 
-					/*Codes_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNET_Start shall call theStart C# method. ]*/
+					/*Codes_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ]*/
 					if (FAILED(hrResult = handleData->spClientModuleType->InvokeMember_3
 					(
 						bstrStartClientMethodName,
@@ -689,10 +773,11 @@ static void DotNET_Start(MODULE_HANDLE module)
 
 static const MODULE_APIS DOTNET_APIS_all =
 {
-	DotNET_Create,
-	DotNET_Destroy,
-	DotNET_Receive, 
-	DotNET_Start
+    DotNet_CreateFromJson,
+	DotNet_Create,
+	DotNet_Destroy,
+	DotNet_Receive,
+	DotNet_Start
 };
 
 

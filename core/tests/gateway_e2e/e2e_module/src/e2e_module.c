@@ -42,8 +42,6 @@ static void E2EModule_Destroy(MODULE_HANDLE moduleHandle)
 	else
 	{
 		E2E_MODULE_DATA* module_data = (E2E_MODULE_DATA*)moduleHandle;
-		int result;
-
 		free((void*)module_data->fakeMacAddress);
 		free((void*)module_data->dataToSend);
 		free(module_data);
@@ -154,6 +152,7 @@ static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configur
  */
 static const MODULE_APIS E2EModule_APIS_all =
 {
+	NULL,
 	E2EModule_Create,
 	E2EModule_Destroy,
 	E2EModule_Receive,

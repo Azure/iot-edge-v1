@@ -14,9 +14,9 @@ The creation of the message is considered finished at the moment when the messag
 
 ## References
 
-[constmap.h](../azure-c-shared-utility/c/devdoc/constmap_requirements.md)
+[constmap.h](../../deps/c-utility/c/devdoc/constmap_requirements.md)
 
-[constbuffer.h](../azure-c-shared-utility/c/devdoc/constbuffer_requirements.md)
+[constbuffer.h](../../deps/c-utility/c/devdoc/constbuffer_requirements.md)
 
 ## Exposed API
 ```C

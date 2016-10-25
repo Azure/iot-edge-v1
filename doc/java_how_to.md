@@ -64,7 +64,7 @@ Creating a Java module is easy:
   ```json
   {
       "module name": "<<Friendly name for your module>>",
-      "module path": "<<path/to/java_module_host_hl.[so|dll]>>",
+      "module path": "<<path/to/java_module_host.[so|dll]>>",
       "args": {
         "class_path": "<<Complete java class path containing all .jar and .class files necessary>>",
         "library_path": "<<path/to/dir/containing/java_module_host.[so|dll]>>",
@@ -146,7 +146,7 @@ If using cmake and msbuild or make:
 ###Running the samples
 On windows:
   - ```cd {project_root}\build\samples\java_sample```
-  - ```Debug\java_sample.exe ..\..\..\samlpes\java_sample\src\java_sample_win.json```
+  - ```Debug\java_sample.exe ..\..\..\samples\java_sample\src\java_sample_win.json```
 
 On linux:
   - ```cd {project_root}/build/samples/java_sample```

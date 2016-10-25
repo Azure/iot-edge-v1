@@ -2,12 +2,12 @@
   "modules": [
     {
       "module name": "hello_world",
-      "module path": "./modules/hello_world/libhello_world_hl.so",
+      "module path": "./modules/hello_world/libhello_world.so",
       "args": null
     },
     {
       "module name": "azure_functions",
-      "module path": "./modules/azure_functions/libazure_functions_hl.so",
+      "module path": "./modules/azure_functions/libazure_functions.so",
       "args": {
         "hostname": "<YourHostNameHere from Functions Portal>",
         "relativePath": "/api/<YourFunctionName>",

@@ -4,10 +4,28 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(azure_iot_gateway_sdk)
 
+set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
+set(COMPANY_NAME "Microsoft")
+
+if(WIN32)
+    set(VERSION_PREFIX "${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
+else()
+    set(VERSION_PREFIX "${PROJECT_NAME}-${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
+endif()
+
+message(STATUS "Version prefix is ${VERSION_PREFIX}")
+
+if(WIN32)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}-${VERSION_PREFIX}/" CACHE INTERNAL "CMake install prefix")
+endif()
+
+message(STATUS "CMake Install Prefix is ${CMAKE_INSTALL_PREFIX}")
+
 #the following variables are project-wide and can be used with cmake-gui
 option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always built]" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
+option(install_modules "should cmake install the default gateway modules" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
@@ -20,16 +38,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(LINUX TRUE)
   find_program( MEMORYCHECK_COMMAND valgrind )
   set( MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --suppressions=${CMAKE_CURRENT_LIST_DIR}/core/valgrind_suppressions.txt --error-exitcode=1" )
-endif()
-
-if(NOT GW_BROKER_TYPE)
-  set(GW_BROKER_TYPE "PubSub" CACHE STRING "Specfic which message broker the gateway will use [PubSub|Broadcast], default PubSub")
-else()
-  if(NOT GW_BROKER_TYPE STREQUAL "Broadcast")
-    if (NOT GW_BROKER_TYPE STREQUAL "PubSub")
-      message( FATAL_ERROR "Broker type may only be PubSub or Broadcast" )
-    endif()
-  endif()
 endif()
 
 include (CTest)
@@ -79,21 +87,17 @@ endif()
 
 function(add_module_to_solution undecoratedModuleName)
   set_target_properties(${undecoratedModuleName}
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
   set_target_properties(${undecoratedModuleName}_static
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-  set_target_properties(${undecoratedModuleName}_hl
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
-  set_target_properties(${undecoratedModuleName}_hl_static
-    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
 endfunction()
 
 function(add_binding_to_solution bindingLanguage)
-    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
+    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Gateway/Bindings")
 endfunction()
     
 function(add_sample_to_solution sampleName)
-  set_target_properties(${sampleName} PROPERTIES FOLDER "AzureIoTGateway_Samples")
+  set_target_properties(${sampleName} PROPERTIES FOLDER "Gateway/Samples")
 endfunction()
 
 
@@ -126,10 +130,10 @@ enable_testing()
 compileAsC99()
 
 #this adds the C shared utility
-add_subdirectory(./deps/azure-c-shared-utility)
+add_subdirectory(./deps/c-utility)
 
 #this adds the C IoTHubClient
-add_subdirectory(./deps/azure-iot-sdks/c)
+add_subdirectory(./deps/iot-sdk/c)
 
 #this makes available from now on the includes of azure-c-shared-utility
 include_directories(${SHARED_UTIL_INC_FOLDER})
@@ -143,7 +147,7 @@ include_directories(./deps/parson)
 
 #this adds nanomsg
 option(NN_ENABLE_DOC "" OFF )
-if (WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
+if (WIN32)
   option(NN_STATIC_LIB "" OFF )
 else()
   option(NN_STATIC_LIB "" ON )
@@ -153,24 +157,23 @@ endif()
 
 option(NN_TESTS "" OFF )
 option(NN_ENABLE_NANOCAT "" OFF)
-set(ENV{CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_BINARY_DIR} )
 set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
 add_subdirectory(./deps/nanomsg)
 include_directories(./deps/nanomsg/src)
 
 set(NANOMSG_TARGETS dist )
 foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
-  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "Nanomsg_Projects")
+  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "nanomsg Targets")
 endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)
-  if (GW_BROKER_TYPE STREQUAL "PubSub")
-    target_link_libraries(${whatIsBuilding} nanomsg )
-  endif()
+
+target_link_libraries(${whatIsBuilding} nanomsg )
+  
 endfunction(link_broker)
 
 function(install_broker whatIsBuilding whatIsBuildingLocation)
-  if(WIN32 AND GW_BROKER_TYPE STREQUAL "PubSub")
+  if(WIN32)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           ${nanomsg_target_dll}

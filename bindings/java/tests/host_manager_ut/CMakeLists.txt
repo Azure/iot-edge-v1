@@ -22,4 +22,4 @@ set(${theseTestsName}_h_files
 
 include_directories(${GW_INC})
 
-build_c_test_artifacts(${theseTestsName} ON "UnitTests")
+build_c_test_artifacts(${theseTestsName} ON "tests/UnitTests")

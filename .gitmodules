@@ -1,8 +1,8 @@
 [submodule "deps/azure-c-shared-utility"]
-	path = deps/azure-c-shared-utility
+	path = deps/c-utility
 	url = https://github.com/Azure/azure-c-shared-utility
 [submodule "deps/azure-iot-sdks"]
-	path = deps/azure-iot-sdks
+	path = deps/iot-sdk
 	url = https://github.com/azure/azure-iot-sdks
 [submodule "deps/parson"]
 	path = deps/parson

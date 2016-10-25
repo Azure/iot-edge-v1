@@ -39,13 +39,70 @@ The following functions are the implementation of those APIs.
 
 **SRS_AZUREFUNCTIONS_04_020: [** `Module_GetAPIS` shall fill the provided `MODULE_APIS` function with the required function pointers. **]**
 
+## AzureFunctions_CreateFromJson
+```C
+MODULE_HANDLE AzureFunctions_CreateFromJson(BROKER_HANDLE broker, const void* configuration);
+```
+This function creates the Azure Functions module. This function expects a 
+string representing a JSON object with two values--hostAddress and relativePath
+--which together form the URL to an Azure Function.
+
+**SRS_AZUREFUNCTIONS_05_002: [** If `broker` is NULL then
+ `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_003: [** If `configuration` is NULL then
+ `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_004: [** If `configuration` is not a JSON string, then `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_005: [** `AzureFunctions_CreateFromJson` shall parse the 
+`configuration` as a JSON array of strings. **]**
+
+**SRS_AZUREFUNCTIONS_05_006: [** If the array object does not contain a value 
+named "hostAddress" then `AzureFunctions_CreateFromJson` shall fail and return 
+NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_007: [** If the array object does not contain a value 
+named "relativePath" then `AzureFunctions_CreateFromJson` shall fail and return 
+NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_019: [** If the array object contains a value named 
+"key" then `AzureFunctions_CreateFromJson` shall create a securityKey based on 
+input key **]**
+
+**SRS_AZUREFUNCTIONS_05_008: [** `AzureFunctions_CreateFromJson` shall call 
+STRING_construct to create hostAddress based on input host address. **]**
+
+**SRS_AZUREFUNCTIONS_05_009: [** `AzureFunctions_CreateFromJson` shall call 
+STRING_construct to create relativePath based on input host address. **]**
+
+**SRS_AZUREFUNCTIONS_05_010: [** If creating the strings fails, then 
+`AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+
+
+**SRS_AZUREFUNCTIONS_05_011: [** `AzureFunctions_CreateFromJson` shall invoke 
+Azure Functions module's create, passing in the message broker handle and the `Azure_Functions_CONFIG`. 
+**]**
+
+**SRS_AZUREFUNCTIONS_05_012: [** When the lower layer Azure Functions module 
+create succeeds, `AzureFunctions_CreateFromJson` shall succeed and return a 
+non-NULL value. **]**
+
+**SRS_AZUREFUNCTIONS_05_013: [** If the lower layer Azure Functions module create 
+fails, `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+
+**SRS_AZUREFUNCTIONS_05_014: [** `AzureFunctions_CreateFromJson` shall release 
+all data it allocated. **]**
+
 ## AzureFunctions_Create
 ```C
 MODULE_HANDLE AzureFunctions_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
-This function creates the Azure Functions module.  This module expects a `AZURE_FUNCTIONS_CONFIG`, which contains three strings which are hostAddress, relativePath and securityKey (Optional)
- for an HTTP Trigger Azure Function. 
+This function creates the Azure Functions module. This function expects a 
+`AZURE_FUNCTIONS_CONFIG`, which contains three strings--hostAddress, 
+relativePath, and securityKey (optional)--which together form the URL to an 
+Azure Function.
 
 **SRS_AZUREFUNCTIONS_04_001: [** Upon success, this function shall return a valid pointer to a `MODULE_HANDLE`. **]**
 

@@ -2,7 +2,7 @@
   "modules": [
     {
       "module name": "node_printer",
-      "module path": "<<path to nodejs_binding_hl.dll|.so>>",
+      "module path": "<<path to nodejs_binding.dll|.so>>",
       "args": {
         "main_path": "<<path to printer.js>>",
         "args": null
@@ -10,7 +10,7 @@
     },
     {
       "module name": "node_sensor",
-      "module path": "<<path to nodejs_binding_hl.dll|.so>>",
+      "module path": "<<path to nodejs_binding.dll|.so>>",
       "args": {
         "main_path": "<<path to sensor.js>>",
         "args": null
@@ -18,7 +18,7 @@
     },
     {
       "module name": "iothub_writer",
-      "module path": "<<path to nodejs_binding_hl.dll>>",
+      "module path": "<<path to nodejs_binding.dll>>",
       "args": {
         "main_path": "<<path to iothub_writer.js>>",
         "args": {
@@ -28,7 +28,7 @@
     },
     {
       "module name": "Logger",
-      "module path": "<<path to logger_hl.dll>>",
+      "module path": "<<path to logger.dll>>",
       "args": {
         "filename": "<<path to log file>>"
       }
