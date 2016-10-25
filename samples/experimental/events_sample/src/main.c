@@ -6,7 +6,7 @@
 #include "gateway_ll.h"
 #include "dynamic_loader.h"
 
-const char *hello_module_path = "../../modules/hello_world/Debug/hello_world.dll";
+const char *hello_module_path = "../../../modules/hello_world/Debug/hello_world.dll";
 
 void started_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {

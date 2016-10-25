@@ -21,4 +21,6 @@ linkSharedUtil(events_sample)
 add_dependencies(events_sample hello_world)
 install_broker(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
-add_sample_to_solution(events_sample)
+# add events_sample to non-standard "Experimental" VS project folder for now 
+#add_sample_to_solution(events_sample)
+set_target_properties(events_sample PROPERTIES FOLDER "Gateway/Samples/Experimental")
