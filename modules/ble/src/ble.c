@@ -107,7 +107,7 @@ static bool terminate_event_dispatcher(
 #endif
 
 
-void free_bleioseq_instr(VECTOR_HANDLE instructions) 
+static void free_bleioseq_instr(VECTOR_HANDLE instructions) 
 { 
 	size_t len = VECTOR_size(instructions); 
 
@@ -120,6 +120,13 @@ void free_bleioseq_instr(VECTOR_HANDLE instructions)
         { 
             STRING_delete(instr->characteristic_uuid); 
         }
+
+		if((instr->instruction_type == WRITE_AT_INIT ||
+			instr->instruction_type == WRITE_AT_EXIT ||
+			instr->instruction_type == WRITE_ONCE) && instr->data.buffer != NULL)
+		{
+			BUFFER_delete(instr->data.buffer);
+		}
     } 
 }
 
