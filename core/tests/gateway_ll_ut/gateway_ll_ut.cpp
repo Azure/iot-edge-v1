@@ -1691,7 +1691,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Loads_Module_From_Library_Path)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(DUMMY_LIBRARY_PATH));
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1892,7 +1893,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Module_Create_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(DUMMY_LIBRARY_PATH));
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1973,7 +1975,8 @@ TEST_FUNCTION(Gateway_LL_AddModule_Internal_API_Fail_Rollback_Module)
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(DUMMY_LIBRARY_PATH));
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
+	.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleAPIs(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))

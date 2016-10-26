@@ -161,7 +161,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
     const GATEWAY_MODULES_ENTRY managedModuleReceiver {
         "Receiver",
-        "..\\..\\..\\Debug\\dotnet.dll",
+		&loader_cfg,
 		DynamicLoader_GetApi(),
         &receiverConfig
     };
