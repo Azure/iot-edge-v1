@@ -40,11 +40,4 @@ else()
     message(FATAL_ERROR "FATAL_ERROR: use_http not set")
 endif()
 
-if(${use_mqtt})
-    target_link_libraries(iothubdeviceping iothub_client_mqtt_transport)
-    linkMqttLibrary(iothubdeviceping)
-else()
-    add_definitions(-DIOTHUBMODULE_NULL_MQTT)
-endif()
-
 linkSharedUtil(iothubdeviceping)

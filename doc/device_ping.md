@@ -53,8 +53,6 @@ of the azure-iot-gateway-sdk repository. You need to fill the following informat
 
 >`EH_PARTITION_NUM`: Go to your IoT hub 'Messaging' page and set the value to 'Partitions'.
 
-Note: if you don't have D driver on your host machine, you'll need to change `filename` to other path.
-
 - Navigate to `build\samples\device_ping\Debug`.
 
 - Run `.\device_ping.exe <path to JSON config file>`
