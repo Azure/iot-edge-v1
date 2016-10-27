@@ -153,7 +153,18 @@ void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEW
 
 GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
 {
-    return gateway_create_internal(properties, false);
+    GATEWAY_HANDLE result;
+    if (ModuleLoader_Initialize() != MODULE_LOADER_SUCCESS)
+    {
+        LogError("Gateway_Create() - ModuleLoader_Initialize failed");
+        result = NULL;
+    }
+    else
+    {
+        result = gateway_create_internal(properties, false);
+    }
+
+    return result;
 }
 
 GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
@@ -169,7 +180,7 @@ GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
         for (m = 0; m < module_count; m++)
         {
             MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
-            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->GetApi((*module_data)->module_library_handle));
+            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_library_handle));
             if (pfStart != NULL)
             {
                 /*Codes_SRS_GATEWAY_17_010: [ This function shall call Module_Start for every module which defines the start function. ]*/
@@ -192,6 +203,7 @@ GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
 void Gateway_Destroy(GATEWAY_HANDLE gw)
 {
     gateway_destroy_internal(gw);
+    ModuleLoader_Destroy();
 }
 
 MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry)
@@ -200,7 +212,7 @@ MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* 
     /*Codes_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
     if (gw != NULL && entry != NULL)
     {
-        module = gateway_addmodule_internal(gw, entry->loader_configuration, entry->loader_api, entry->module_configuration, entry->module_name, false);
+        module = gateway_addmodule_internal(gw, entry, false);
 
         if (module == NULL)
         {
@@ -229,7 +241,7 @@ extern void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
         MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
         if (module_data != NULL)
         {
-            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->GetApi((*module_data)->module_library_handle));
+            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_library_handle));
             if (pfStart != NULL)
             {
                 /*Codes_SRS_GATEWAY_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/

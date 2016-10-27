@@ -18,6 +18,7 @@
 #include <azure_c_shared_utility/base64.h>
 #include <azure_c_shared_utility/map.h>
 #include <azure_c_shared_utility/constmap.h>
+#include <azure_c_shared_utility/strings.h>
 
 // TODO: wrap in #ifdef
 #include <parson.h>
@@ -158,19 +159,19 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                 else
                 {
                     /*Codes_SRS_LOGGER_02_006: [Logger_Create shall open the file configuration the filename selectee.loggerConfigFile.name in update (reading and writing) mode and assign the result of fopen to fout field. ]*/
-                    result->fout = fopen(config->selectee.loggerConfigFile.name, "r+b"); /*open binary file for update (reading and writing)*/
+                    result->fout = fopen(STRING_c_str(config->selectee.loggerConfigFile.name), "r+b"); /*open binary file for update (reading and writing)*/
                     if (result->fout == NULL) 
                     {
                         /*if the file does not exist [or other error, indistinguishable here] try to create it*/
                         /*Codes_SRS_LOGGER_02_020: [If the file selectee.loggerConfigFile.name does not exist, it shall be created.]*/
-                        result->fout = fopen(config->selectee.loggerConfigFile.name, "w+b");/*truncate to zero length or create binary file for update*/
+                        result->fout = fopen(STRING_c_str(config->selectee.loggerConfigFile.name), "w+b");/*truncate to zero length or create binary file for update*/
                     }
 
                     /*Codes_SRS_LOGGER_02_007: [If Logger_Create encounters any errors while creating the LOGGER_HANDLE_DATA then it shall fail and return NULL.]*/
                     /*Codes_SRS_LOGGER_02_021: [If creating selectee.loggerConfigFile.name fails then Logger_Create shall fail and return NULL.]*/
                     if (result->fout == NULL)
                     {
-                        LogError("unable to open file %s", config->selectee.loggerConfigFile.name);
+                        LogError("unable to open file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
                         free(result);
                         result = NULL;
                     }
@@ -183,7 +184,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                             LogError("unable to fseek to end of file");
                             if (fclose(result->fout) != 0)
                             {
-                                LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
+                                LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
                             }
                             free(result);
                             result = NULL;
@@ -199,7 +200,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                 LogError("unable to ftell (errno=%d)", errno);
                                 if (fclose(result->fout) != 0)
                                 {
-                                    LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
+                                    LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
                                 }
                                 free(result);
                                 result = NULL;
@@ -216,7 +217,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                         LogError("unable to write to output file");
                                         if (fclose(result->fout) != 0)
                                         {
-                                            LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
+                                            LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
                                         }
                                         free(result);
                                         result = NULL;
@@ -229,7 +230,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                             LogError("append_logStartStop failed");
                                             if (fclose(result->fout) != 0)
                                             {
-                                                LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
+                                                LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
                                             }
                                             free(result);
                                             result = NULL;
@@ -258,18 +259,13 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
     return result;
 }
 
-static MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void* Logger_ParseConfigurationFromJson(const char* configuration)
 {
-    
-    MODULE_HANDLE result;
-    /*Codes_SRS_LOGGER_05_001: [ If broker is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
+    LOGGER_CONFIG* result;
     /*Codes_SRS_LOGGER_05_003: [ If configuration is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
-    if(
-        (broker == NULL) ||
-        (configuration == NULL)
-    )
+    if(configuration == NULL)
     { 
-        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        LogError("NULL parameter detected configuration=%p", configuration);
         result = NULL;
     }
     else
@@ -302,23 +298,27 @@ static MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* con
                 {
                     /*fileNameValue is believed at this moment to be a string that might point to a filename on the system*/
                     
-                    LOGGER_CONFIG config;
-                    config.selector = LOGGING_TO_FILE;
-                    config.selectee.loggerConfigFile.name = fileNameValue;
-                    
-                    /*Codes_SRS_LOGGER_05_005: [ Logger_CreateFromJson shall pass broker and the filename to Logger_Create. ]*/
-                    result = Logger_Create(broker, &config);
-
+                    result = (LOGGER_CONFIG*)malloc(sizeof(LOGGER_CONFIG));
                     if (result == NULL)
                     {
-                        /*Codes_SRS_LOGGER_05_007: [ If Logger_Create fails then Logger_CreateFromJson shall fail and return NULL. ]*/
-                        /*return result "as is" - that is - NULL*/
-                        LogError("unable to create Logger");
+                        LogError("malloc failed");
                     }
                     else
                     {
-                        /*Codes_SRS_LOGGER_05_006: [ If Logger_Create succeeds then Logger_CreateFromJson shall succeed and return a non-NULL value. ]*/
-                        /*return result "as is" - that is - not NULL*/
+                        result->selector = LOGGING_TO_FILE;
+                        result->selectee.loggerConfigFile.name = STRING_construct(fileNameValue);
+                        if (result->selectee.loggerConfigFile.name == NULL)
+                        {
+                            LogError("STRING_construct failed");
+                            free(result);
+                            result = NULL;
+                        }
+                        else
+                        {
+                            /**
+                             * Everything's good.
+                             */
+                        }
                     }
                 }
             }
@@ -327,6 +327,20 @@ static MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* con
     }
     
     return result;
+}
+
+static void Logger_FreeConfiguration(void* configuration)
+{
+    if (configuration == NULL)
+    {
+        LogError("configuration is NULL");
+    }
+    else
+    {
+        LOGGER_CONFIG* config = (LOGGER_CONFIG*)configuration;
+        STRING_delete(config->selectee.loggerConfigFile.name);
+        free(config);
+    }
 }
 
 static void Logger_Destroy(MODULE_HANDLE module)
@@ -484,7 +498,8 @@ static const MODULE_API_1 Logger_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-    Logger_CreateFromJson,
+    Logger_ParseConfigurationFromJson,
+    Logger_FreeConfiguration,
     Logger_Create,
     Logger_Destroy,
     Logger_Receive,

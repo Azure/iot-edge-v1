@@ -49,18 +49,30 @@ extern "C"
         MODULE_HANDLE module_handle;
     };
 
-    /** @brief      Creates an instance of a module.
+    /** @brief      Translates module configuration from a JSON string to a
+     *              module specific data structure.
      *
-     *  @details    This function is optional.
+     *  @details    This function must be implemented by modules that support
+     *              configuration options.
      *
-     *  @param      broker          The #BROKER_HANDLE to which this module
-     *                              will publish messages.
      *  @param      configuration   A JSON string which describes any needed
      *                              configuration to create this module.
      *
-     *  @return     A non-NULL #MODULE_HANDLE upon success, otherwise @c NULL.
+     *  @return     A void pointer containing a parsed representation of the
+     *              module's configuration.
      */
-    typedef MODULE_HANDLE(*pfModule_CreateFromJson)(BROKER_HANDLE broker, const char* configuration);
+    typedef void*(*pfModule_ParseConfigurationFromJson)(const char* configuration);
+
+    /** @brief      Frees the configuration object returned by the
+     *              ParseConfigurationFromJson function.
+     *
+     *  @details    This function must be implemented by modules that support
+     *              configuration options.
+     *
+     *  @param      configuration   A void pointer containing a parsed representation
+     *                              of the module's configuration.
+     */
+    typedef void(*pfModule_FreeConfiguration)(void* configuration);
 
     /** @brief      Creates an instance of a module.
      *
@@ -137,9 +149,13 @@ extern "C"
         /** @brief  Always the first element on a Module's API*/
         MODULE_API base;
 
-        /** @brief  Function pointer to the #Module_CreateFromJson function
-         *          (optional). */
-        pfModule_CreateFromJson Module_CreateFromJson;
+        /** @brief  Function pointer to the #Module_ParseConfigurationFromJson
+         *          function. */
+        pfModule_ParseConfigurationFromJson Module_ParseConfigurationFromJson;
+
+        /** @brief  Function pointer to the #Module_FreeConfiguration
+         *          function. */
+        pfModule_FreeConfiguration Module_FreeConfiguration;
 
         /** @brief  Function pointer to the #Module_Create function. */
         pfModule_Create Module_Create;

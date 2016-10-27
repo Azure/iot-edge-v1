@@ -10,7 +10,7 @@ endif()
 if(${enable_java_binding})
     add_subdirectory(java)
 endif()
-    
+
 if(${enable_nodejs_binding})
     add_subdirectory(nodejs)
 endif()

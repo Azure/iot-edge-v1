@@ -31,6 +31,7 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/agenttime.h"
+#include "azure_c_shared_utility/strings.h"
 #include "parson.h"
 
 #include "module.h"
@@ -97,8 +98,8 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
             NODEJS_MODULE_HANDLE_DATA handle_data_input
             {
                 broker,
-                module_config->main_path,
-                module_config->configuration_json,
+                STRING_c_str(module_config->main_path),
+                STRING_c_str(module_config->configuration_json),
                 on_module_start
             };
 
@@ -129,80 +130,21 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
     return result;
 }
 
-static MODULE_HANDLE NODEJS_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void* NODEJS_ParseConfigurationFromJson(const char* configuration)
 {
-    MODULE_HANDLE result;
+    return (void*)STRING_construct(configuration);
+}
 
-    /*Codes_SRS_NODEJS_05_001: [ NODEJS_CreateFromJson shall return NULL if broker is NULL. ]*/
-    /*Codes_SRS_NODEJS_05_002: [ NODEJS_CreateFromJson shall return NULL if configuration is NULL. ]*/
-    if (broker == NULL || configuration == NULL)
+static void NODEJS_FreeConfiguration(void* configuration)
+{
+    if (configuration == NULL)
     {
-        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
-        result = NULL;
+        LogError("configuration is NULL");
     }
     else
     {
-        /*Codes_SRS_NODEJS_05_012: [ NODEJS_CreateFromJson shall parse configuration as a JSON string. ]*/
-        JSON_Value* json = json_parse_string((const char*)configuration);
-        if (json == NULL)
-        {
-            /*Codes_SRS_NODEJS_05_003: [ NODEJS_CreateFromJson shall return NULL if configuration is not a valid JSON string. ]*/
-            LogError("unable to json_parse_string");
-            result = NULL;
-        }
-        else
-        {
-            JSON_Object* obj = json_value_get_object(json);
-            if (obj == NULL)
-            {
-                /*Codes_SRS_NODEJS_05_014: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not start with an object at the root. ]*/
-                LogError("unable to json_value_get_object");
-                result = NULL;
-            }
-            else
-            {
-                /*Codes_SRS_NODEJS_05_013: [ NODEJS_CreateFromJson shall extract the value of the main_path property from the configuration JSON. ]*/
-                const char* main_path = json_object_get_string(obj, "main_path");
-                if (main_path == NULL)
-                {
-                    /*Codes_SRS_NODEJS_05_004: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not contain a string property called main_path. ]*/
-                    LogError("json_object_get_string failed");
-                    result = NULL;
-                }
-                else
-                {
-                    /*Codes_SRS_NODEJS_05_006: [ NODEJS_CreateFromJson shall extract the value of the args property from the configuration JSON. ]*/
-                    JSON_Value* args = json_object_get_value(obj, "args"); // args is allowed to be NULL
-                    char* args_str = json_serialize_to_string(args);
-
-                    NODEJS_MODULE_CONFIG config =
-                    {
-                        main_path, args_str
-                    };
-
-                    /*Codes_SRS_NODEJS_05_005: [ NODEJS_CreateFromJson shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
-                    result = NODEJS_Create(broker, (const void*)&config);
-                    if (result == NULL)
-                    {
-                        /*Codes_SRS_NODEJS_05_008: [ If NODEJS_Create fail then the value NULL shall be returned. ]*/
-                        LogError("Unable to create Node JS module");
-                        // return 'result' as-is
-                    }
-                    else
-                    {
-                        /*Codes_SRS_NODEJS_05_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
-                        // return 'result' as-is
-                    }
-
-                    free(args_str);
-                }
-            }
-
-            json_value_free(json);
-        }
+        STRING_delete((STRING_HANDLE)configuration);
     }
-
-    return result;
 }
 
 static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config)
@@ -223,7 +165,7 @@ static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* mod
     else if (
         module_config->configuration_json != NULL
         &&
-        (json = json_parse_string(module_config->configuration_json)) == NULL
+        (json = json_parse_string(STRING_c_str(module_config->configuration_json))) == NULL
     )
     {
         LogError("Unable to parse configuration JSON");
@@ -231,13 +173,13 @@ static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* mod
     }
     else if(
 #ifdef WIN32
-        _access(module_config->main_path, 4) != 0
+        _access(STRING_c_str(module_config->main_path), 4) != 0
 #else
-        access(module_config->main_path, 4) != 0
+        access(STRING_c_str(module_config->main_path), 4) != 0
 #endif
         )
     {
-        LogError("Unable to access the JavaScript file at path '%s'", module_config->main_path);
+        LogError("Unable to access the JavaScript file at path '%s'", STRING_c_str(module_config->main_path));
         result = false;
     }
     else
@@ -1359,13 +1301,13 @@ static const MODULE_API_1 NODEJS_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-    NODEJS_CreateFromJson,
+    NODEJS_ParseConfigurationFromJson,
+    NODEJS_FreeConfiguration,
     NODEJS_Create,
     NODEJS_Destroy,
     NODEJS_Receive, 
     NODEJS_Start
 };
-
 
 #ifdef BUILD_MODULE_TYPE_STATIC
 MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(NODEJS_MODULE)(const MODULE_API_VERSION gateway_api_version)

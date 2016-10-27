@@ -191,13 +191,13 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
                         {
                             //Add the first module, if successful add others
                             GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
-                            MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry->loader_configuration, entry->loader_api, entry->module_configuration, entry->module_name, use_json);
+                            MODULE_HANDLE module = gateway_addmodule_internal(gateway, entry, use_json);
 
                             //Continue adding modules until all are added or one fails
                             for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
                             {
                                 entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
-                                module = gateway_addmodule_internal(gateway, entry->loader_configuration, entry->loader_api, entry->module_configuration, entry->module_name, use_json);
+                                module = gateway_addmodule_internal(gateway, entry, use_json);
                             }
 
                             /*Codes_SRS_GATEWAY_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
@@ -339,28 +339,39 @@ bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module
     return module_data == NULL ? false : true;
 }
 
-MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const void* loader_configuration, const MODULE_LOADER_API* loader_api, const void* module_configuration, const char* module_name, bool use_json)
+MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_MODULES_ENTRY* module_entry, bool use_json)
 {
     MODULE_HANDLE module_result;
 
     /*Codes_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
-    if (gateway_handle == NULL || module_name == NULL || loader_api == NULL)        
+    if (
+        gateway_handle == NULL ||
+        module_entry == NULL ||
+        module_entry->module_name == NULL ||
+        module_entry->module_loader_info.loader == NULL ||
+        module_entry->module_loader_info.entrypoint == NULL
+       )
     {
         module_result = NULL;
-        LogError("Failed to add module because either the GATEWAY_HANDLE is NULL, module_name is NULL or empty, or loader_api is NULL. gw = %p, module_name = '%s', api = %p.", gateway_handle, module_name, loader_api);
+        LogError(
+            "Failed to add module because a required input parameter is NULL. gw = %p, module_name = '%s', loader = %p, entrypoint = %p.",
+            gateway_handle,
+            module_entry != NULL ? module_entry->module_name : "NULL",
+            module_entry != NULL ? module_entry->module_loader_info.loader : "NULL",
+            module_entry != NULL ? module_entry->module_loader_info.entrypoint : "NULL"
+        );
     }
-    else if (strcmp(module_name, GATEWAY_ALL) == 0)
+    else if (strcmp(module_entry->module_name, GATEWAY_ALL) == 0)
     {
         /*Codes_SRS_GATEWAY_17_001: [ This function shall not accept "*" as a module name. ]*/
         module_result = NULL;
-        LogError("Failed to add module because the module_name is invalid [%s]", module_name);
+        LogError("Failed to add module because the module_name is invalid [%s]", module_entry->module_name);
     }
-    else    
+    else
     {
         //First check if a module with a given name already exists.
         /*Codes_SRS_GATEWAY_04_004: [ If a module with the same module_name already exists, this function shall fail and the GATEWAY_HANDLE will be destroyed. ]*/
-        bool moduleExist = checkIfModuleExists(gateway_handle, module_name);
-
+        bool moduleExist = checkIfModuleExists(gateway_handle, module_entry->module_name);
         if (!moduleExist)
         {
             MODULE_DATA * new_module_data = (MODULE_DATA*)malloc(sizeof(MODULE_DATA));
@@ -374,7 +385,11 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
             {
                 /*Codes_SRS_GATEWAY_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
                 /*Codes_SRS_GATEWAY_17_015: [ The function shall use GATEWAY_PROPERTIES::loader_api->Load and each GATEWAY_PROPERTIES::loader_configuration to get each module's MODULE_LIBRARY_HANDLE. ]*/
-                MODULE_LIBRARY_HANDLE module_library_handle = loader_api->Load(loader_configuration);
+                MODULE_LIBRARY_HANDLE module_library_handle = module_entry->module_loader_info.loader->api->Load(
+                    module_entry->module_loader_info.loader,
+                    module_entry->module_loader_info.entrypoint
+                );
+
                 /*Codes_SRS_GATEWAY_14_031: [If unsuccessful, the function shall return NULL.]*/
                 if (module_library_handle == NULL)
                 {
@@ -386,18 +401,41 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                 {
                     //Should always be a safe call.
                     /*Codes_SRS_GATEWAY_14_013: [The function shall get the const MODULE_API* from the MODULE_LIBRARY_HANDLE.]*/
-                    const MODULE_API* module_apis = loader_api->GetApi(module_library_handle);
+                    const MODULE_API* module_apis = module_entry->module_loader_info.loader->api->GetApi(module_library_handle);
+
+                    // parse module args if needed
+                    const void* module_configuration = module_entry->module_configuration;
+                    const void* transformed_module_configuration = module_configuration;
+                    if (use_json)
+                    {
+                        module_configuration = MODULE_PARSE_CONFIGURATION_FROM_JSON(module_apis)(
+                            (const char *)(module_entry->module_configuration)
+                        );
+
+                        // request the loader to transform the module configuration to what the module expects
+                        transformed_module_configuration = module_entry->module_loader_info.loader->api->BuildModuleConfiguration(
+                            module_entry->module_loader_info.loader,
+                            module_entry->module_loader_info.entrypoint,
+                            module_configuration
+                        );
+                    }
 
                     /*Codes_SRS_GATEWAY_14_015: [The function shall use the MODULE_API to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
-                    MODULE_HANDLE module_handle = use_json
-                        ? MODULE_CREATE_FROM_JSON(module_apis)(gateway_handle->broker, module_configuration)
-                        : MODULE_CREATE(module_apis)(gateway_handle->broker, module_configuration);
+                    MODULE_HANDLE module_handle = MODULE_CREATE(module_apis)(gateway_handle->broker, transformed_module_configuration);
+
+                    // free the configurations
+                    if (use_json)
+                    {
+                        MODULE_FREE_CONFIGURATION(module_apis)((void*)module_configuration);
+                        module_entry->module_loader_info.loader->api->FreeModuleConfiguration(transformed_module_configuration);
+                    }
+
                     /*Codes_SRS_GATEWAY_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
                     if (module_handle == NULL)
                     {
                         free(new_module_data);
                         module_result = NULL;
-                        loader_api->Unload(module_library_handle);
+                        module_entry->module_loader_info.loader->api->Unload(module_library_handle);
                         LogError("Module_Create failed.");
                     }
                     else
@@ -419,7 +457,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                         {
                             char* name_copied = NULL;
                             /*Codes_SRS_GATEWAY_26_020: [ The function shall make a copy of the name of the module for internal use. ]*/
-                            mallocAndStrcpy_s(&name_copied, module_name);
+                            mallocAndStrcpy_s(&name_copied, module_entry->module_name);
                             if (name_copied == NULL)
                             {
                                 free(new_module_data);
@@ -432,7 +470,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                             }
                             else
                             {
-                                strcpy(name_copied, module_name);
+                                strcpy(name_copied, module_entry->module_name);
                                 /*Codes_SRS_GATEWAY_14_039: [ The function shall increment the BROKER_HANDLE reference count if the MODULE_HANDLE was successfully added to the GATEWAY_HANDLE_DATA's broker. ]*/
                                 Broker_IncRef(gateway_handle->broker);
                                 /*Codes_SRS_GATEWAY_14_029: [ The function shall create a new MODULE_DATA containing the MODULE_HANDLE, MODULE_LOADER_API and MODULE_LIBRARY_HANDLE if the module was successfully linked to the message broker. ]*/
@@ -440,7 +478,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                                 {
                                     name_copied,
                                     module_library_handle,
-                                    loader_api,
+                                    module_entry->module_loader_info.loader,
                                     module_handle
                                 };
                                 *new_module_data = module_data;
@@ -487,7 +525,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                         if (module_result == NULL)
                         {
                             MODULE_DESTROY(module_apis)(module_handle);
-                            loader_api->Unload(module_library_handle);
+                            module_entry->module_loader_info.loader->api->Unload(module_library_handle);
                         }
                     }
                 }
@@ -496,10 +534,10 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
         else
         {
             module_result = NULL;
-            LogError("Error to add module. Duplicated module name: %s", module_name);
+            LogError("Error to add module. Duplicated module name: %s", module_entry->module_name);
         }
     }
-    
+
     return module_result;
 }
 
@@ -525,10 +563,13 @@ void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_D
     }
     /*Codes_SRS_GATEWAY_14_038: [ The function shall decrement the BROKER_HANDLE reference count. ]*/
     Broker_DecRef(gateway_handle->broker);
+
     /*Codes_SRS_GATEWAY_14_024: [ The function shall use the MODULE_DATA's module_library_handle to retrieve the MODULE_API and destroy module. ]*/
-    MODULE_DESTROY((*module_data_pptr)->module_loader->GetApi((*module_data_pptr)->module_library_handle))((*module_data_pptr)->module);
+    MODULE_DESTROY((*module_data_pptr)->module_loader->api->GetApi((*module_data_pptr)->module_library_handle))((*module_data_pptr)->module);
+
     /*Codes_SRS_GATEWAY_14_025: [The function shall unload MODULE_DATA's module_library_handle. ]*/
-    (*module_data_pptr)->module_loader->Unload((*module_data_pptr)->module_library_handle);
+    (*module_data_pptr)->module_loader->api->Unload((*module_data_pptr)->module_library_handle);
+
     /*Codes_SRS_GATEWAY_14_026:[The function shall remove that MODULE_DATA from GATEWAY_HANDLE_DATA's modules. ]*/
     MODULE_DATA * module_data_ptr = *module_data_pptr;
     VECTOR_erase(gateway_handle->modules, module_data_pptr, 1);
