@@ -105,7 +105,9 @@ IDs and data (for write instructions).
 ```json
 {
     "module name": "logger",
-    "module path": "<</path/to/liblogger.so>>",
+    "loading args" : {
+      "module path": "<</path/to/liblogger.so>>"
+    }
     "args":
     {
         "filename":"/path/to/log-file-name.log"
@@ -118,7 +120,9 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "BLE Device",
-  "module path": "<</path/to/libble.so>>",
+  "loading args" : {
+    "module path": "<</path/to/libble.so>>"
+  }
   "args": {
     "controller_index": 0,
     "device_mac_address": "<<AA:BB:CC:DD:EE:FF>>",
@@ -172,7 +176,9 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "IoTHub",
-  "module path": "<</path/to/iothub/libiothub.so>>",
+  "loading args" : {
+    "module path": "<</path/to/iothub/libiothub.so>>"
+  }
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
     "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"
@@ -185,7 +191,9 @@ IDs and data (for write instructions).
 ```json
 {
   "module name": "mapping",
-  "module path": "<</path/to/libidentity_map.so>>",
+  "loading args" : {
+    "module path": "<</path/to/libidentity_map.so>>"
+  }
   "args": [
     {
       "macAddress": "AA:BB:CC:DD:EE:FF",
@@ -201,7 +209,9 @@ IDs and data (for write instructions).
 ```json
 {
     "module name": "BLE Printer",
-    "module path": "<</path/to/libble_printer.so",
+    "loading args" : {
+      "module path": "<</path/to/libble_printer.so"
+    }
     "args": null
 }
 ```
