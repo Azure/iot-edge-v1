@@ -1,0 +1,8 @@
+root = true
+
+[*]
+insert_final_newline = true     # A newline ending in every file
+indent_style = space            # We use spaces. Period.
+indent_size = 4                 # And 4 of them.
+charset = utf-8                 # Save files as utf-8
+trim_trailing_whitespace = true # no trailing whitespace in lines

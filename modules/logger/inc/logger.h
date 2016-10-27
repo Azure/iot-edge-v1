@@ -5,6 +5,7 @@
 #define LOGGER_H
 
 #include "module.h"
+#include "azure_c_shared_utility/strings.h"
 
 typedef enum LOGGER_TYPE_TAG
 {
@@ -18,7 +19,7 @@ typedef struct LOGGER_CONFIG_TAG
     {
         struct LOGGER_CONFIG_FILE_TAG
         {
-            const char* name;
+            STRING_HANDLE name;
         } loggerConfigFile;
     } selectee;
 } LOGGER_CONFIG; /*this needs to be passed to the Module_Create function*/

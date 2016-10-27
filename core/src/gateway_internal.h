@@ -19,8 +19,8 @@ typedef struct MODULE_DATA_TAG {
     /** @brief  The MODULE_LIBRARY_HANDLE associated with 'module' */
     MODULE_LIBRARY_HANDLE module_library_handle;
 
-    /** @brief  The API to load and unload this module. */
-    const MODULE_LOADER_API * module_loader;
+    /** @brief  The module loader associated with this module. */
+    const MODULE_LOADER* module_loader;
 
     /** @brief  The MODULE_HANDLE of the same module that lives on the message
      *          broker.
@@ -51,7 +51,7 @@ typedef struct LINK_DATA_TAG {
 
 GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, bool use_json);
 void gateway_destroy_internal(GATEWAY_HANDLE gw);
-MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const void* loader_configuration, const MODULE_LOADER_API* loader_api, const void* module_configuration, const char* module_name, bool use_json);
+MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_MODULES_ENTRY* entry, bool use_json);
 void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA** module);
 bool gateway_addlink_internal(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry);
 void gateway_removelink_internal(GATEWAY_HANDLE_DATA* gateway_handle, LINK_DATA* link_data);

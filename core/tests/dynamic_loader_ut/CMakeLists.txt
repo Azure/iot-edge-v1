@@ -12,13 +12,13 @@ set(${testSuiteName}_cpp_files
 )
 
 set(${testSuiteName}_c_files
-    ../../src/dynamic_loader.c
+    ../../src/module_loaders/dynamic_loader.c
 )
 
 set(${testSuiteName}_h_files
     ../../inc/module_loader.h
     ../../inc/dynamic_library.h
-    ../../inc/dynamic_loader.h
+    ../../inc/module_loaders/dynamic_loader.h
 )
 
 include_directories(${GW_INC})

@@ -10,24 +10,24 @@ design goals of the Gateway SDK is the idea that the SDK will allow for
 flexibility with respect to how a module is packaged and distributed and loaded
 in the gateway. This document describes at a high level how this works. Gateway
 modules can be written using different technology stacks. At the time of writing
-modules can be written using C, .NET, Node.js and Java. The responsibility of
+modules can be written using C, .NET, Node.js or Java. The responsibility of
 bootstrapping the respective runtimes (in case of stacks that have a runtime
-that is) and loading the module code lies with the module loader.
+that is) and loading the module code lies with the *module loader*.
 
 What is a Module Loader?
 ------------------------
 
 The primary duty of a module loader in the gateway is to locate and load a
 module - or in other words, to abstract away from the gateway the details of
-locating and loading a module. A gateway module maybe native or managed (.NET,
+locating and loading a module. A gateway module may be native or managed (.NET,
 Node.js or Java). If its a managed module then the loader is responsible for
 ensuring that the runtime needed to successfully load and run the module is
 loaded and initialized first.
 
 From the perspective of the gateway, a module loader is a piece of code that
-knows how to load a module implementation and hand the gateway a table of
-function pointers that contain the module implementation. The gateway doesn’t
-really care how the module loader goes about acquiring the said pointers.
+knows how to load a module instance and hand the gateway a table of function
+pointers used to control it. The gateway doesn’t really care how the module
+loader goes about acquiring the said pointers.
 
 Loader Configuration
 --------------------
@@ -38,22 +38,23 @@ A loader is defined by the following attributes:
 
 -   **Name**: A string that can be used to reference this particular loader
 
--   **Module Path**: Optional path to a language binding implementation for
-    non-native loaders
+-   **Binding Module Path**: Optional path to a language binding implementation
+    for non-native loaders
 
 -   **Configuration**: Optional additional configuration parameters that may be
-    used to configure the runtime that is to be loaded
+    used to configure the runtime that is to be loaded. For example, one might
+    specify custom runtime options for the Java Virtual Machine here.
 
 When initializing a gateway from a JSON configuration file via the
-`Gateway_CreateFromJson` API, the loader configuration can be specified via the
-top level `loaders` array. For example:
+`Gateway_CreateFromJson` function, the loader configuration can be specified via
+the top level `loaders` array. For example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   "loaders": [
     {
       "type": "java",
-      "name": "java_loader",
+      "name": "java",
       "jvm.options": {
         ... jvm options here ...
       }
@@ -85,16 +86,16 @@ The Gateway SDK ships with a set of loaders that support dynamically loaded
 modules and language binding loaders for .NET, Node.js and Java. They can be
 referenced using the following loader names:
 
--   `native_loader`: This implements loading of native modules - that is, plain
-    C modules.
+-   `native`: This implements loading of native modules - that is, plain C
+    modules.
 
--   `java_loader`: This implements loading of modules implemented using the Java
-    programming language.
+-   `java`: This implements loading of modules implemented using the Java
+    programming language jand compiled to JAR files.
 
--   `node_loader`: This implements loading of modules implemented using Node.js.
+-   `node`: This implements loading of modules implemented using Node.js.
 
--   `dotnet_loader`: This implements loading of modules implemented using a .NET
-    language.
+-   `dotnet`: This implements loading of modules implemented using a .NET
+    language and compiled as a .NET assembly.
 
 It is legal to completely omit specifying the `loaders` array in which case the
 default loaders specified above will be made available using default options.
@@ -106,7 +107,7 @@ Here’s an example of a module configuration that makes use of the Java loader:
     {
        "name": "printer",
        "loader": {
-         "name": "java_loader",
+         "name": "java",
          "class.name": "org.contoso.gateway.module.Printer",
          "class.path": "./printer.jar"
        }
@@ -171,6 +172,8 @@ Briefly, here’s how the gateway bootstraps itself:
 
 2.  Module loaders for a given language binding may or may not be available
     depending on what *CMake* build options were used when the source was built.
+    For example if CMake was run with the `enable_dotnet_binding` variable set
+    to `false`/`off` then the corresponding loader becomes unavailable for use.
 
 3.  Every module loader implementation provides a global function that is
     responsible for returning a pointer to a `MODULE_LOADER` instance. The
@@ -212,11 +215,11 @@ Briefly, here’s how the gateway bootstraps itself:
     loader then it has the effect of overriding the default loader.
 
 6.  When initializing custom loaders, if the caller has provided a value in
-    `MODULE_LOADER::binding_module_path` then we proceed to make use of it. If
-    there’s no `binding_module_path` provided then the gateway looks for a
-    DLL/SO with a well-known name by invoking the underlying operating system’s
-    default DLL/SO search algorithm. We also search in the folder where the
-    gateway binary was run from and from the `./bin` folder. If the module
+    `MODULE_LOADER::binding_module_path` then the gateway proceeds to make use
+    of it. If there’s no `binding_module_path` provided then the gateway looks
+    for a DLL/SO with a well-known name by invoking the underlying operating
+    system’s default DLL/SO search algorithm. We also search in the folder where
+    the gateway binary was run from and from the `./bin` folder. If the module
     cannot be located at the end of this search then it is an error.
 
 7.  In case of a *native* module loader, there is no binding module. In order to
@@ -224,20 +227,13 @@ Briefly, here’s how the gateway bootstraps itself:
     *binding* module where the module API implementation simply delegates to the
     *real* module’s API.
 
-8.  The gateway calls the module loader’s `Load` callback to acquire a
+8.  The gateway calls the module loader’s `Load` function to acquire a
     `MODULE_LIBRARY_HANDLE`. Each module loader’s implementation of this
     function would do what’s necessary to also load the associated runtime (in
     case of language binding modules).
 
 9.  The language binding module loader implementations will use the dynamic
-    DLL/SO loading API to load the binding module DLLs/SOs.
+    loader to load the binding module DLLs/SOs.
 
 10. The gateway then proceeds to acquire the module’s function pointer table and
     calls `Module_Create` or `Module_CreateFromJson` to instantiate the module.
-    In case of language binding modules this callback would be on the binding
-    module itself.
-
- 
--
-
- 
