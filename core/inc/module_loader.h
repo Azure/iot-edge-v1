@@ -11,8 +11,8 @@ extern "C"
 {
 #endif
 
-/** @brief  Handle for a module library */
-typedef struct MODULE_LIBRARY_HANDLE_DATA_TAG* MODULE_LIBRARY_HANDLE;
+/** @brief handle for a module library */
+typedef void* MODULE_LIBRARY_HANDLE;
 
 typedef MODULE_LIBRARY_HANDLE(*pfModuleLoader_Load)(const void * config);
 typedef void(*pfModuleLoader_Unload)(MODULE_LIBRARY_HANDLE handle);
