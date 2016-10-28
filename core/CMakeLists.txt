@@ -59,8 +59,8 @@ set(gateway_c_sources
     ./src/dynamic_loader.c
     ./src/internal/event_system.c
 	./src/gateway_internal.c
-    ./src/gateway_ll.c
     ./src/gateway.c
+    ./src/gateway_createfromjson.c
     ./src/broker.c
     ${dynamic_library_c_file}
 )
@@ -72,7 +72,6 @@ set(gateway_h_sources
     ./inc/module.h
     ./inc/module_access.h
     ./inc/internal/event_system.h
-    ./inc/gateway_ll.h
     ./inc/gateway.h
     ./inc/module_loader.h
 	./inc/dynamic_loader.h

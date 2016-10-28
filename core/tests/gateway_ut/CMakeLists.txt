@@ -11,16 +11,13 @@ set(${testSuite}_cpp_files
 
 set(${testSuite}_c_files
     ../../src/gateway.c
-	../../src/gateway_internal.c
+    ../../src/gateway_internal.c
 )
 
 set(${testSuite}_h_files
     ../../inc/gateway.h
 )
 
-include_directories(
-    ${GW_INC}
-    ../../parson/
-)
+include_directories(${GW_INC})
 
 build_test_artifacts(${testSuite} ON)

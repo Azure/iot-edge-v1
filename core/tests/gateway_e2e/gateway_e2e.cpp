@@ -16,7 +16,7 @@
 #include "micromockcharstararenullterminatedstrings.h"
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/lock.h"
-#include "gateway_ll.h"
+#include "gateway.h"
 #include "iothub.h"
 #include "e2e_module.h"
 #include "messageproperties.h"
@@ -224,8 +224,8 @@ BEGIN_TEST_SUITE(gateway_e2e)
 		///act
 		m6GatewayProperties.gateway_modules = gatewayProps;
 		m6GatewayProperties.gateway_links = gatewayLinks; 
-		e2eGatewayInstance = Gateway_LL_Create(&m6GatewayProperties);
-		auto start_result = Gateway_LL_Start(e2eGatewayInstance);
+		e2eGatewayInstance = Gateway_Create(&m6GatewayProperties);
+		auto start_result = Gateway_Start(e2eGatewayInstance);
 
         ///assert
 		ASSERT_IS_NOT_NULL(e2eGatewayInstance);
@@ -234,7 +234,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
 
 		ThreadAPI_Sleep(MAX_CLOUD_TRAVEL_TIME * 1000);
 
-		Gateway_LL_Destroy(e2eGatewayInstance);
+		Gateway_Destroy(e2eGatewayInstance);
 
 		VECTOR_destroy(e2eModuleMappingVector);
 		VECTOR_destroy(gatewayProps);

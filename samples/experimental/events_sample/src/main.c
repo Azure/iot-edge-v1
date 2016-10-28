@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "gateway_ll.h"
+#include "gateway.h"
 #include "dynamic_loader.h"
 
 const char *hello_module_path = "../../../modules/hello_world/Debug/hello_world.dll";
@@ -33,17 +33,17 @@ void second_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_
 int main()
 {
 	int param1 = 1, param2 = 2, param3 = 3;
-    GATEWAY_HANDLE gw = Gateway_LL_Create(NULL);
+    GATEWAY_HANDLE gw = Gateway_Create(NULL);
 	
 	
-	Gateway_LL_AddEventCallback(gw, GATEWAY_STARTED, started_callback, &param1);
-	Gateway_LL_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, module_callback, NULL);
-    Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, my_callback, &param2);
-	Gateway_LL_AddEventCallback(gw, GATEWAY_DESTROYED, second_callback, &param3);
+	Gateway_AddEventCallback(gw, GATEWAY_STARTED, started_callback, &param1);
+	Gateway_AddEventCallback(gw, GATEWAY_MODULE_LIST_CHANGED, module_callback, NULL);
+    Gateway_AddEventCallback(gw, GATEWAY_DESTROYED, my_callback, &param2);
+	Gateway_AddEventCallback(gw, GATEWAY_DESTROYED, second_callback, &param3);
     
 	printf("Gateway is running.\n");
 
-	Gateway_LL_Start(gw);
+	Gateway_Start(gw);
 
 	DYNAMIC_LOADER_CONFIG loader_cfg = {
 		hello_module_path
@@ -56,7 +56,7 @@ int main()
 		NULL
 	};
 
-	Gateway_LL_AddModule(gw, &new_module);
-    Gateway_LL_Destroy(gw);
+	Gateway_AddModule(gw, &new_module);
+    Gateway_Destroy(gw);
 	printf("Gateway was destroyed, exiting main function.\n");
 }

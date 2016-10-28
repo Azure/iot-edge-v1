@@ -14,7 +14,7 @@
 #include "azure_c_shared_utility/condition.h"
 #include "azure_c_shared_utility/list.h"
 
-#include "gateway_ll.h"
+#include "gateway.h"
 #include "internal/event_system.h"
 
 #include <assert.h>
@@ -402,8 +402,8 @@ static int callback_thread_main_func(void* event_system_param)
 
 static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gateway, VECTOR_HANDLE callbacks)
 {
-	/* Codes_SRS_EVENTSYSTEM_26_016: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_LL_GetModuleList as the event context in callbacks ] */
-	VECTOR_HANDLE modules = Gateway_LL_GetModuleList(gateway);
+	/* Codes_SRS_EVENTSYSTEM_26_016: [ This event shall provide `VECTOR_HANDLE` as returned from #Gateway_GetModuleList as the event context in callbacks ] */
+	VECTOR_HANDLE modules = Gateway_GetModuleList(gateway);
 	if (modules == NULL)
 	{
 		event_system->is_errored = 1;
@@ -414,7 +414,7 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 			callback_destroy_modulelist,
 			NULL
 		};
-		/* Codes_SRS_EVENTSYSTEM_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_LL_GetModuleList after finishing all the callbacks ] */
+		/* Codes_SRS_EVENTSYSTEM_26_015: [ This event shall clean up the `VECTOR_HANDLE` of #Gateway_GetModuleList after finishing all the callbacks ] */
 		if (VECTOR_push_back(callbacks, &closure, 1) != 0)
 		{
 			LogError("Failed to push back during handling module list updated event");
@@ -429,5 +429,5 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 
 static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param)
 {
-	Gateway_LL_DestroyModuleList((VECTOR_HANDLE)context);
+	Gateway_DestroyModuleList((VECTOR_HANDLE)context);
 }

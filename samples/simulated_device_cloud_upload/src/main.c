@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 				{
 					/* Wait for user input to quit. */
 					waitForUserInput();
-					Gateway_LL_Destroy(deviceCloudUploadGateway);
+					Gateway_Destroy(deviceCloudUploadGateway);
 				}
 			}
 			platform_deinit();

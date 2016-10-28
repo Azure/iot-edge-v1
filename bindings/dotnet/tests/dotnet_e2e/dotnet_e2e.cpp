@@ -13,7 +13,7 @@
 #include "micromockcharstararenullterminatedstrings.h"
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/lock.h"
-#include "gateway_ll.h"
+#include "gateway.h"
 #include "messageproperties.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "internal/event_system.h"
@@ -131,7 +131,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
     ///arrange
 
     ///act    
-    GATEWAY_HANDLE e2eGatewayInstance = Gateway_LL_Create(NULL);
+    GATEWAY_HANDLE e2eGatewayInstance = Gateway_Create(NULL);
 
     //Add Managed Module 1
     const DOTNET_HOST_CONFIG senderConfig {
@@ -152,7 +152,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
         &senderConfig
     };
 
-    MODULE_HANDLE managedModuleSenderHandle = Gateway_LL_AddModule(e2eGatewayInstance, &managedModuleSender);
+    MODULE_HANDLE managedModuleSenderHandle = Gateway_AddModule(e2eGatewayInstance, &managedModuleSender);
 
     //Add Managed Module 2
     const DOTNET_HOST_CONFIG receiverConfig {
@@ -168,9 +168,9 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
         &receiverConfig
     };
 
-    MODULE_HANDLE managedModuleReceiverHandle = Gateway_LL_AddModule(e2eGatewayInstance, &managedModuleReceiver);
+    MODULE_HANDLE managedModuleReceiverHandle = Gateway_AddModule(e2eGatewayInstance, &managedModuleReceiver);
 
-	Gateway_LL_Start(e2eGatewayInstance);
+	Gateway_Start(e2eGatewayInstance);
 
     //Set the test probe module.
     GATEWAY_HANDLE_DATA* gatewayHandleData = (GATEWAY_HANDLE_DATA*)e2eGatewayInstance;
@@ -221,7 +221,7 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
     ///cleanup
     Broker_RemoveModule(gatewayHandleData->broker, &myProbeTestModule);
 
-    Gateway_LL_Destroy(e2eGatewayInstance);
+    Gateway_Destroy(e2eGatewayInstance);
 
 }
 END_TEST_SUITE(dotnet_e2e)
