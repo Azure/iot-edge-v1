@@ -2,7 +2,6 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for java binding
 
 # Check if the environment variable JAVA_HOME exists
 if(
@@ -32,7 +31,7 @@ set(java_module_host_manager_headers
 )
 
 set(java_module_host_sources
-	./src/java_module_host.c
+    ./src/java_module_host.c
     ${java_module_host_manager_sources}
 )
 

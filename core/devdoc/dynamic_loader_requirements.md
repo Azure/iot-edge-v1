@@ -38,10 +38,10 @@ MODULE_LIBRARY_HANDLE ModuleLoader_Load(const void* loader_configuration);
 `ModuleLoader_Load` expects `loader_configuration` to be a pointer to a `DYNAMIC_LOADER_CONFIG` structure.
 
 **SRS_MODULE_LOADER_17_001: [**`ModuleLoader_Load` shall validate the `DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`, if it is `NULL`, it shall return NULL.**]** 
-	
+
 **SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by`DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`.**]**
 **SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
-	
+
 **SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPI_NAME` in the open library.**]**
 **SRS_MODULE_LOADER_17_013: [**If locating the function is not successful, the load shall fail, and it shall return `NULL`.**]**
 

@@ -15,8 +15,8 @@ extern "C"
 typedef struct AZURE_FUNCTIONS_CONFIG_TAG
 {
     STRING_HANDLE hostAddress;
-	STRING_HANDLE relativePath;
-	STRING_HANDLE securityKey;
+    STRING_HANDLE relativePath;
+    STRING_HANDLE securityKey;
 } AZURE_FUNCTIONS_CONFIG;
 
 MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(AZUREFUNCTIONS_MODULE)(const MODULE_API_VERSION gateway_api_version);

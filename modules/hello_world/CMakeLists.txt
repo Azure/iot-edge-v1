@@ -4,11 +4,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(hello_world_sources
-	./src/hello_world.c
+    ./src/hello_world.c
 )
 
 set(hello_world_headers
-	./inc/hello_world.h
+    ./inc/hello_world.h
 )
 
 include_directories(./inc)
@@ -29,6 +29,6 @@ linkSharedUtil(hello_world_static)
 add_module_to_solution(hello_world)
 
 if(install_modules)
-	install(TARGETS hello_world LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS hello_world LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

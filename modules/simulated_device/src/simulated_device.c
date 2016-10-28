@@ -16,7 +16,7 @@
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {
-	BROKER_HANDLE	    broker;
+    BROKER_HANDLE        broker;
     THREAD_HANDLE       simulatedDeviceThread;
     const char *        fakeMacAddress;
     unsigned int        simulatedDeviceRunning : 1;
@@ -31,119 +31,119 @@ static void SimulatedDevice_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE m
 
 static void SimulatedDevice_Destroy(MODULE_HANDLE moduleHandle)
 {
-	if (moduleHandle == NULL)
-	{
-		LogError("Attempt to destroy NULL module");
-	}
-	else
-	{
-		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
-		int result;
+    if (moduleHandle == NULL)
+    {
+        LogError("Attempt to destroy NULL module");
+    }
+    else
+    {
+        SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+        int result;
 
-		/* Tell thread to stop */
-		module_data->simulatedDeviceRunning = 0;
-		/* join the thread */
-		ThreadAPI_Join(module_data->simulatedDeviceThread, &result);
-		/* free module data */
-		free((void*)module_data->fakeMacAddress);
-		free(module_data);
-	}
+        /* Tell thread to stop */
+        module_data->simulatedDeviceRunning = 0;
+        /* join the thread */
+        ThreadAPI_Join(module_data->simulatedDeviceThread, &result);
+        /* free module data */
+        free((void*)module_data->fakeMacAddress);
+        free(module_data);
+    }
 }
 
 static int simulated_device_worker(void * user_data)
 {
     SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)user_data;
-	double avgTemperature = 10.0;
-	double additionalTemp = 0.0;
-	double maxSpeed = 40.0;
+    double avgTemperature = 10.0;
+    double additionalTemp = 0.0;
+    double maxSpeed = 40.0;
 
-	if (user_data != NULL)
-	{
+    if (user_data != NULL)
+    {
 
-		while (module_data->simulatedDeviceRunning)
-		{
-			MESSAGE_CONFIG newMessageCfg;
-			MAP_HANDLE newProperties = Map_Create(NULL);
-			if (newProperties == NULL)
-			{
-				LogError("Failed to create message properties");
-			}
+        while (module_data->simulatedDeviceRunning)
+        {
+            MESSAGE_CONFIG newMessageCfg;
+            MAP_HANDLE newProperties = Map_Create(NULL);
+            if (newProperties == NULL)
+            {
+                LogError("Failed to create message properties");
+            }
 
-			else
-			{
-				if (Map_Add(newProperties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_TELEMETRY) != MAP_OK)
-				{
-					LogError("Failed to set source property");
-				}
-				else if (Map_Add(newProperties, GW_MAC_ADDRESS_PROPERTY, module_data->fakeMacAddress) != MAP_OK)
-				{
-					LogError("Failed to set source property");
-				}
-				else
-				{
-					newMessageCfg.sourceProperties = newProperties;
-					if ((avgTemperature + additionalTemp) > maxSpeed)
-						additionalTemp = 0.0;
+            else
+            {
+                if (Map_Add(newProperties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_TELEMETRY) != MAP_OK)
+                {
+                    LogError("Failed to set source property");
+                }
+                else if (Map_Add(newProperties, GW_MAC_ADDRESS_PROPERTY, module_data->fakeMacAddress) != MAP_OK)
+                {
+                    LogError("Failed to set source property");
+                }
+                else
+                {
+                    newMessageCfg.sourceProperties = newProperties;
+                    if ((avgTemperature + additionalTemp) > maxSpeed)
+                        additionalTemp = 0.0;
 
-					if (sprintf_s(msgText, sizeof(msgText), "{\"temperature\": %.2f}", avgTemperature + additionalTemp) < 0)
-					{
-						LogError("Failed to set message text");
-					}
-					else
-					{
-						newMessageCfg.size = strlen(msgText);
-						newMessageCfg.source = (const unsigned char*)msgText;
+                    if (sprintf_s(msgText, sizeof(msgText), "{\"temperature\": %.2f}", avgTemperature + additionalTemp) < 0)
+                    {
+                        LogError("Failed to set message text");
+                    }
+                    else
+                    {
+                        newMessageCfg.size = strlen(msgText);
+                        newMessageCfg.source = (const unsigned char*)msgText;
 
-						MESSAGE_HANDLE newMessage = Message_Create(&newMessageCfg);
-						if (newMessage == NULL)
-						{
-							LogError("Failed to create new message");
-						}
-						else
-						{
-							if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
-							{
-								LogError("Failed to create new message");
-							}
+                        MESSAGE_HANDLE newMessage = Message_Create(&newMessageCfg);
+                        if (newMessage == NULL)
+                        {
+                            LogError("Failed to create new message");
+                        }
+                        else
+                        {
+                            if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
+                            {
+                                LogError("Failed to create new message");
+                            }
 
-							additionalTemp += 1.0;
-							Message_Destroy(newMessage);
-						}
-					}
-				}
-				Map_Destroy(newProperties);
-			}
-			ThreadAPI_Sleep(10000);
-		}
-	}
+                            additionalTemp += 1.0;
+                            Message_Destroy(newMessage);
+                        }
+                    }
+                }
+                Map_Destroy(newProperties);
+            }
+            ThreadAPI_Sleep(10000);
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
 {
-	if (moduleHandle == NULL)
-	{
-		LogError("Attempt to start NULL module");
-	}
-	else
-	{
-		SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
-		/* OK to start */
-		/* Create a fake data thread.  */
-		if (ThreadAPI_Create(
-			&(module_data->simulatedDeviceThread),
-			simulated_device_worker,
-			(void*)module_data) != THREADAPI_OK)
-		{
-			LogError("ThreadAPI_Create failed");
-			module_data->simulatedDeviceThread = NULL;
-		}
-		else
-		{
-			/* Thread started, module created, all complete.*/
-		}
-	}
+    if (moduleHandle == NULL)
+    {
+        LogError("Attempt to start NULL module");
+    }
+    else
+    {
+        SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+        /* OK to start */
+        /* Create a fake data thread.  */
+        if (ThreadAPI_Create(
+            &(module_data->simulatedDeviceThread),
+            simulated_device_worker,
+            (void*)module_data) != THREADAPI_OK)
+        {
+            LogError("ThreadAPI_Create failed");
+            module_data->simulatedDeviceThread = NULL;
+        }
+        else
+        {
+            /* Thread started, module created, all complete.*/
+        }
+    }
 }
 
 static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* configuration)
@@ -151,7 +151,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
     SIMULATEDDEVICE_DATA * result;
     if (broker == NULL || configuration == NULL)
     {
-		LogError("invalid SIMULATED DEVICE module args.");
+        LogError("invalid SIMULATED DEVICE module args.");
         result = NULL;
     }
     else
@@ -160,32 +160,32 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
         result = (SIMULATEDDEVICE_DATA*)malloc(sizeof(SIMULATEDDEVICE_DATA));
         if (result == NULL)
         {
-			LogError("couldn't allocate memory for BLE Module");
+            LogError("couldn't allocate memory for BLE Module");
         }
         else
         {
-			/* save the message broker */
-			result->broker = broker;
-			/* set module is running to true */
-			result->simulatedDeviceRunning = 1;
-			/* save fake MacAddress */
-			char * newFakeAdress;
-			int status = mallocAndStrcpy_s(&newFakeAdress, configuration);
+            /* save the message broker */
+            result->broker = broker;
+            /* set module is running to true */
+            result->simulatedDeviceRunning = 1;
+            /* save fake MacAddress */
+            char * newFakeAdress;
+            int status = mallocAndStrcpy_s(&newFakeAdress, configuration);
 
-			if (status != 0)
-			{
-				LogError("MacAddress did not copy");
-			}
-			else
-			{
-				result->fakeMacAddress = newFakeAdress;
-				result->simulatedDeviceThread = NULL;
+            if (status != 0)
+            {
+                LogError("MacAddress did not copy");
+            }
+            else
+            {
+                result->fakeMacAddress = newFakeAdress;
+                result->simulatedDeviceThread = NULL;
 
-			}
+            }
 
         }
     }
-	return result;
+    return result;
 }
 
 static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
@@ -232,17 +232,17 @@ static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const 
 }
 
 /*
- *	Required for all modules:  the public API and the designated implementation functions.
+ *    Required for all modules:  the public API and the designated implementation functions.
  */
 static const MODULE_API_1 SimulatedDevice_APIS_all =
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
 
-	SimulatedDevice_CreateFromJson,
-	SimulatedDevice_Create,
-	SimulatedDevice_Destroy,
-	SimulatedDevice_Receive,
-	SimulatedDevice_Start
+    SimulatedDevice_CreateFromJson,
+    SimulatedDevice_Create,
+    SimulatedDevice_Destroy,
+    SimulatedDevice_Receive,
+    SimulatedDevice_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -251,6 +251,6 @@ MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(SIMULATED_DEVICE_MODULE)(co
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	(void)gateway_api_version;
-	return (const MODULE_API *)&SimulatedDevice_APIS_all;
+    (void)gateway_api_version;
+    return (const MODULE_API *)&SimulatedDevice_APIS_all;
 }

@@ -431,12 +431,12 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
  */
 static const MODULE_API_1 AzureFunctions_APIS_all =
 {
-	{MODULE_API_VERSION_1},
-	AzureFunctions_CreateFromJson,
-	AzureFunctions_Create,
-	AzureFunctions_Destroy,
-	AzureFunctions_Receive,
-	NULL  /* No Start, this module acts on received messages. */
+    {MODULE_API_VERSION_1},
+    AzureFunctions_CreateFromJson,
+    AzureFunctions_Create,
+    AzureFunctions_Destroy,
+    AzureFunctions_Receive,
+    NULL  /* No Start, this module acts on received messages. */
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -445,15 +445,15 @@ MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(AZUREFUNCTIONS_MODULE)(cons
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	const MODULE_API* result;
+    const MODULE_API* result;
     if (gateway_api_version >= AzureFunctions_APIS_all.base.version)
     {
-		/* Codes_SRS_AZUREFUNCTIONS_04_020: [ Module_GetApi shall return the MODULE_API structure. ] */
-		result = (const MODULE_API*)&AzureFunctions_APIS_all;
+        /* Codes_SRS_AZUREFUNCTIONS_04_020: [ Module_GetApi shall return the MODULE_API structure. ] */
+        result = (const MODULE_API*)&AzureFunctions_APIS_all;
     }
     else
     {
-		result = NULL;
+        result = NULL;
     }
-	return result;
+    return result;
 }

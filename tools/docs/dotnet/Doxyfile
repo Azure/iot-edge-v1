@@ -845,7 +845,6 @@ EXCLUDE_PATTERNS       =
 # Other unused symbols are ignored as well.
 
 EXCLUDE_SYMBOLS        = 
-			 
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

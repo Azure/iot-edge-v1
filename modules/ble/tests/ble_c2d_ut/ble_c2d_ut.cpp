@@ -522,7 +522,7 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
 
-		const MODULE_API *apis = Module_GetApi(MODULE_API_VERSION_1);
+        const MODULE_API *apis = Module_GetApi(MODULE_API_VERSION_1);
         BLE_C2D_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
         BLE_C2D_Create = MODULE_CREATE(apis);
         BLE_C2D_Destroy = MODULE_DESTROY(apis);
@@ -670,14 +670,14 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         CBLEC2DMocks mocks;
 
         ///act
-		const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+        const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
 
         ///assert
         ASSERT_IS_NOT_NULL(apis);
         ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
-		ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
-		ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
 
         ///cleanup
     }

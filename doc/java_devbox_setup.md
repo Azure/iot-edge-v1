@@ -2,12 +2,12 @@
 
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Java module development.
 
-- [Java JDK SE](#installjava)
-- [Maven 3](#installmaven)
-- [Azure IoT Gateway SDK for Java](#installgw)
-	- [Build from source](#installgwsource)
-	- [Include using Maven](#installgwmaven)
-- [Application Samples](#samplecode)
+-  [Java JDK SE](#installjava)
+-  [Maven 3](#installmaven)
+-  [Azure IoT Gateway SDK for Java](#installgw)
+   -  [Build from source](#installgwsource)
+   -  [Include using Maven](#installgwmaven)
+-  [Application Samples](#samplecode)
 
 <a name="installjava"/>
 ## Install Java JDK SE
@@ -29,27 +29,27 @@ Depending on your Linux distribution, you can install the JDK using *apt-get*, a
 #### Set up environment variables
 - Please make sure that the `PATH` environment variable includes the full path to the bin folder containing java as well as the server directory containing the jvm.
 
-	```
-	which java
-	echo $PATH
-	```
-	Ensure that the bin directory shown by the ```which java``` command matches one of the directories shown in your $PATH variable and that the server directory containing the jvm is present in your $PATH.
-	If it is not:
-	```
-	export PATH=/path/to/java/bin:$PATH
+    ```
+    which java
+    echo $PATH
+    ```
+    Ensure that the bin directory shown by the ```which java``` command matches one of the directories shown in your $PATH variable and that the server directory containing the jvm is present in your $PATH.
+    If it is not:
+    ```
+    export PATH=/path/to/java/bin:$PATH
     export PATH=/path/to/java/jre/lib/amd64/server:$PATH
-	```
+    ```
 
 - Please make sure that the `JAVA_HOME` environment variable includes the full path to the jdk.
 
-	```
-	update-alternatives --config java
-	```
-	Take note of the jdk location. ```update-alternatives``` will show something similar to ***/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java***. The jdk directory would then be ***/usr/lib/jvm/java-8-openjdk-amd64/***.
+    ```
+    update-alternatives --config java
+    ```
+    Take note of the jdk location. ```update-alternatives``` will show something similar to ***/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java***. The jdk directory would then be ***/usr/lib/jvm/java-8-openjdk-amd64/***.
 
-	```
-	export JAVA_HOME=/path/to/jdk
-	```
+    ```
+    export JAVA_HOME=/path/to/jdk
+    ```
 
 
 <a name="installmaven"/>
@@ -78,15 +78,15 @@ Please verify the following:
 
 Ensure the `PATH` environment variable contains the full path to the bin folder containing **_Maven 3_**.
 
-	```
-	which mvn
-	echo $PATH
-	```
+    ```
+    which mvn
+    echo $PATH
+    ```
 Ensure that the bin directory shown by the ```which mvn``` command matches one of the directories shown in your $PATH variable.
-	If it does not:
-	```
-	export PATH=/path/to/mvn/bin:$PATH
-	```
+    If it does not:
+    ```
+    export PATH=/path/to/mvn/bin:$PATH
+    ```
 
 You can verify that the environment variables necessary to run **_Maven 3_** have been set correctly by running `mvn --version`.
 
@@ -103,9 +103,9 @@ You can verify that the environment variables necessary to run **_Maven 3_** hav
 Open a command prompt and use the following commands for the steps above:
 
 ```
-	git clone https://github.com/Azure/azure-iot-gateway-sdk.git
-	cd bindings/java/gateway-java-binding
-	mvn clean install
+    git clone https://github.com/Azure/azure-iot-gateway-sdk.git
+    cd bindings/java/gateway-java-binding
+    mvn clean install
 ```
 
 The compiled JAR file with all dependencies bundled in can then be found at:
@@ -130,7 +130,7 @@ In your main pom.xml file, add the Azure IoT Gateway SDK Java binding as a depen
     <groupId>com.microsoft.azure.gateway</groupId>
     <artifactId>gateway-java-binding</artifactId>
     <version>1.0.0</version>
-	<!--This is the current version number as of the writing of this document. Yours may be different.-->
+    <!--This is the current version number as of the writing of this document. Yours may be different.-->
 </dependency>
 ```
 

@@ -31,7 +31,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_id{ 0 },
         v8_isolate{ nullptr },
         module_state{ NodeModuleState::error },
-		start_pending{ false }
+        start_pending{ false }
     {
     }
 
@@ -48,7 +48,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_id{ 0 },
         v8_isolate{ nullptr },
         module_state{ NodeModuleState::error },
-		start_pending{ false }
+        start_pending{ false }
     {
     }
 
@@ -61,7 +61,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start = rhs.on_module_start;
         module_id = rhs.module_id;
         module_state = rhs.module_state;
-		start_pending = rhs.start_pending;
+        start_pending = rhs.start_pending;
 
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
@@ -80,7 +80,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start = rhs.on_module_start;
         module_id = rhs.module_id;
         module_state = rhs.module_state;
-		start_pending = rhs.start_pending;
+        start_pending = rhs.start_pending;
 
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
@@ -98,7 +98,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start = rhs.on_module_start;
         this->module_id = module_id;
         module_state = rhs.module_state;
-		start_pending = rhs.start_pending;
+        start_pending = rhs.start_pending;
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
         {
@@ -128,17 +128,17 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_state = state;
     }
 
-	bool GetStartPending()
-	{
-		nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
-		return start_pending;
-	}
+    bool GetStartPending()
+    {
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        return start_pending;
+    }
 
-	void SetStartPending(bool isPending)
-	{
-		nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
-		start_pending = isPending;
-	}
+    void SetStartPending(bool isPending)
+    {
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        start_pending = isPending;
+    }
 
     BROKER_HANDLE               broker;
     std::string                 main_path;
@@ -148,7 +148,7 @@ struct NODEJS_MODULE_HANDLE_DATA
     size_t                      module_id;
     PFNMODULE_START             on_module_start;
     NodeModuleState             module_state;
-	bool						start_pending;
+    bool                        start_pending;
     nodejs_module::Lock         object_lock;
 };
 

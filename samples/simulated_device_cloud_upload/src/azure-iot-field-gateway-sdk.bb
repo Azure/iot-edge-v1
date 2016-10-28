@@ -23,11 +23,10 @@ FILES_SOLIBSDEV = ""
 inherit pkgconfig cmake systemd
 
 do_install_append() {
-	# install service file
-	install -d ${D}${systemd_unitdir}/system
-	install -c -m 0644 ${WORKDIR}/home/azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload.service ${D}${systemd_unitdir}/system
+    # install service file
+    install -d ${D}${systemd_unitdir}/system
+    install -c -m 0644 ${WORKDIR}/home/azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload.service ${D}${systemd_unitdir}/system
     
-   	install -d ${D}${bindir}
-	install -c -m 0644 ${WORKDIR}/home/azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_intel_edison.json ${D}${bindir}
-
+    install -d ${D}${bindir}
+    install -c -m 0644 ${WORKDIR}/home/azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_intel_edison.json ${D}${bindir}
 }

@@ -2,7 +2,6 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for the core tests folder
 
 add_subdirectory(broker_ut)
 add_subdirectory(dynamic_library_ut)

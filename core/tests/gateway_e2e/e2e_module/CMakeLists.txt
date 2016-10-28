@@ -4,11 +4,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(e2e_module_sources
-	./src/e2e_module.c
+    ./src/e2e_module.c
 )
 
 set(e2e_module_headers
-	./inc/e2e_module.h
+    ./inc/e2e_module.h
 )
 
 

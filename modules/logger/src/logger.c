@@ -478,11 +478,11 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 }
 
 /*
- *	Required for all modules:  the public API and the designated implementation functions.
+ *    Required for all modules:  the public API and the designated implementation functions.
  */
 static const MODULE_API_1 Logger_APIS_all =
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
 
     Logger_CreateFromJson,
     Logger_Create,

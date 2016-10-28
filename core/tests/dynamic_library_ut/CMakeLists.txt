@@ -8,22 +8,19 @@ set(testSuiteName dynamic_library_ut)
 
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
-	set(${testSuiteName}_cpp_files
-${testSuiteName}_windows.cpp)
-set(${testSuiteName}_c_files
-../../adapters/dynamic_library_windows.c
-)
+    set(${testSuiteName}_cpp_files
+        ${testSuiteName}_windows.cpp)
+    set(${testSuiteName}_c_files
+        ../../adapters/dynamic_library_windows.c)
 elseif(LINUX)
-    	set(${testSuiteName}_cpp_files
-${testSuiteName}_linux.cpp)
-set(${testSuiteName}_c_files
-../../adapters/dynamic_library_linux.c
-)
+    set(${testSuiteName}_cpp_files
+        ${testSuiteName}_linux.cpp)
+    set(${testSuiteName}_c_files
+        ../../adapters/dynamic_library_linux.c)
 endif()
 
 set(${testSuiteName}_h_files
-../../inc/dynamic_library.h
-)
+    ../../inc/dynamic_library.h)
 
 include_directories(${GW_INC})
 

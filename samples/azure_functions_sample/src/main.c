@@ -10,8 +10,8 @@ int main(int argc, char** argv)
 {
     GATEWAY_HANDLE gateway;
 
-	platform_init();
-	
+    platform_init();
+    
     if (argc != 2)
     {
         printf("usage: azure_functions_sample configFile\n");
@@ -31,5 +31,5 @@ int main(int argc, char** argv)
             Gateway_Destroy(gateway);
         }
     }
-	return 0;
+    return 0;
 }

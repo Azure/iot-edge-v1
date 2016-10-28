@@ -159,7 +159,7 @@ void BLEPrinter_Destroy(MODULE_HANDLE module)
 
 static const MODULE_API_1 Module_GetApi_Impl =
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
 
     BLEPrinter_CreateFromJson,
     BLEPrinter_Create,

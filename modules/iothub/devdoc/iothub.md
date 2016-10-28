@@ -38,8 +38,8 @@ This module connects to the IoT hub described by the following data structure, u
 ```C
 typedef struct IOTHUB_CONFIG_TAG
 {
-	const char* IoTHubName;   /*the name of the IoT hub*/
-	const char* IoTHubSuffix; /*the suffix used in generating the host name*/
+    const char* IoTHubName;   /*the name of the IoT hub*/
+    const char* IoTHubSuffix; /*the suffix used in generating the host name*/
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 ```

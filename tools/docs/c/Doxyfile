@@ -772,11 +772,11 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = mainpage.dox \
-			 ../../../core/inc/gateway.h \
-			 ../../../core/inc/message.h \
-			 ../../../core/inc/broker.h \
-			 ../../../core/inc/module.h \
-			 ../../../core/inc/module_loader.h \
+             ../../../core/inc/gateway.h \
+             ../../../core/inc/message.h \
+             ../../../core/inc/broker.h \
+             ../../../core/inc/module.h \
+             ../../../core/inc/module_loader.h \
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -847,15 +847,14 @@ EXCLUDE_PATTERNS       =
 # Other unused symbols are ignored as well.
 
 EXCLUDE_SYMBOLS        = *_VALUES \
-			 BROKER_RESULTStrings \
-			 BROKER_RESULT_FromString \
+             BROKER_RESULTStrings \
+             BROKER_RESULT_FromString \
              GATEWAY_ADD_LINK_RESULTStrings \
              GATEWAY_ADD_LINK_RESULT_FromString \
              GATEWAY_START_RESULTStrings \
              GATEWAY_START_RESULT_FromString \
-			 BROKER_offsetof_quit_worker \
-			 MODULE_EXPORT
-			 
+             MODULE_EXPORT
+             
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

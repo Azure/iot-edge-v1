@@ -1,7 +1,6 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-# this is CMakeLists for the ble module
 cmake_minimum_required(VERSION 2.8.11)
 
 if(LINUX)
@@ -42,7 +41,7 @@ if(LINUX)
         ./src/bleio_seq_linux_schedule_write.c
         ./src/bleio_seq_linux_schedule_read.c
         ./src/bleio_seq_linux_schedule_periodic.c
-		./src/ble_instr_utils.c
+        ./src/ble_instr_utils.c
         ./src/ble_utils.c
         ./src/ble.c
     )
@@ -57,7 +56,7 @@ elseif(WIN32)
     set(ble_sources
         ./src/ble_gatt_io_windows.c
         ./src/bleio_seq_windows.c
-		./src/ble_instr_utils.c
+        ./src/ble_instr_utils.c
         ./src/ble_utils.c
         ./src/ble.c
     )

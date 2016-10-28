@@ -19,7 +19,7 @@ Third party C JSON library: https://github.com/kgabis/parson
             "loading args" : 
             {
                 "module path" : "module1.dll"
-            },	
+            },
             "args" : ...
         },
         {

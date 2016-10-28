@@ -33,21 +33,21 @@ windows_unittests_add_exe(${theseTestsName} ${LIBS})
 
 
 if(TARGET ${theseTestsName}_dll)
-	target_link_libraries(${theseTestsName}_dll
-		gateway
-	)
+    target_link_libraries(${theseTestsName}_dll
+        gateway
+    )
 endif()
-	
+    
 if(TARGET ${theseTestsName}_exe)
-	target_link_libraries(${theseTestsName}_exe
-		gateway
-	)	
+    target_link_libraries(${theseTestsName}_exe
+        gateway
+    )    
     add_dependencies(${theseTestsName}_exe dotnet)
         
-	install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_managed_binding_dll} )
-	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_e2etest_module_dll} )
-	install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_host_binding_dll} )
+    install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+    install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_managed_binding_dll} )
+    install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_e2etest_module_dll} )
+    install_binaries(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_host_binding_dll} )
     
 
 endif()

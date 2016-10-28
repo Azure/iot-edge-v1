@@ -20,30 +20,8 @@ The creation of the message is considered finished at the moment when the messag
 
 ## Exposed API
 ```C
-#ifndef MESSAGE_H
-#define MESSAGE_H
-
-#ifdef __cplusplus
-#include <cstdint>
-#include <cstddef>
-extern "C"
-{
-#else
-#include <stdint.h>
-#include <stddef.h>
-#endif
-
-#include "macro_utils.h"
-#include "azure_c_shared_utility/map.h"
-#include "azure_c_shared_utility/constmap.h"
-#include "azure_c_shared_utility/constbuffer.h"
-#include "azure_c_shared_utility/buffer_.h"
-
-/*this is the interface of any message*/
-
 typedef struct MESSAGE_HANDLE_DATA_TAG* MESSAGE_HANDLE;
 
-/*all messages are constructed from this */
 typedef struct MESSAGE_CONFIG_TAG
 {
     size_t size;
@@ -51,48 +29,21 @@ typedef struct MESSAGE_CONFIG_TAG
     MAP_HANDLE sourceProperties;
 }MESSAGE_CONFIG;
 
-
 typedef struct MESSAGE_BUFFER_CONFIG_TAG
 {
-	CONSTBUFFER_HANDLE sourceContent;
-	MAP_HANDLE sourceProperties;
+    CONSTBUFFER_HANDLE sourceContent;
+    MAP_HANDLE sourceProperties;
 }MESSAGE_BUFFER_CONFIG;
 
-/*this creates a new message */
 extern MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
-
-/* this creates a new message from a CONSTBUFFER content */
+extern MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
+extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size);
 extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg);
-
-/*this creates a new message from a byte array*/
-MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
-
-/*this creates a byte array from a message*/
-extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, const unsigned char* buf, int32_t size);
-
-/*this clones a message. Since messages are immutable, it would only increment the inner count*/
 extern MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
-
-/*this gets an immutable map (dictionary) of all the properties of the message*/
 extern CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
-
-/*this gets the message content*/
 extern const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
-
-/*this gets the message content handle*/
-extern const CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
-
-/*this destroys the message*/
+extern CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
 extern void Message_Destroy(MESSAGE_HANDLE message);
-
-#ifdef __cplusplus
-}
-#else
-#endif
-
-
-#endif /*MESSAGE_H*/
-
 ```
 
 ## Message_Create

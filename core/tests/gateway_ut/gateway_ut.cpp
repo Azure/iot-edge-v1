@@ -348,9 +348,9 @@ static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static GATEWAY_PROPERTIES* dummyProps;
 static MODULE_LOADER_API module_loader_api =
 {
-	DynamicModuleLoader_Load,
-	DynamicModuleLoader_Unload,
-	DynamicModuleLoader_GetModuleApi
+    DynamicModuleLoader_Load,
+    DynamicModuleLoader_Unload,
+    DynamicModuleLoader_GetModuleApi
 };
 
 static int sampleCallbackFuncCallCount;
@@ -426,21 +426,21 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     currentVECTOR_find_if_call = 0;
     whenShallVECTOR_find_if_fail = 0;
 
-	dummyAPIs =
-	{
-		{MODULE_API_VERSION_1},
+    dummyAPIs =
+    {
+        {MODULE_API_VERSION_1},
 
-		mock_Module_CreateFromJson,
-		mock_Module_Create,
-		mock_Module_Destroy,
-		mock_Module_Receive,
-		mock_Module_Start
-	};
+        mock_Module_CreateFromJson,
+        mock_Module_Create,
+        mock_Module_Destroy,
+        mock_Module_Receive,
+        mock_Module_Start
+    };
 
-	GATEWAY_MODULES_ENTRY dummyEntry = {
-		"dummy module",
-		DUMMY_LIBRARY_PATH,
-		&module_loader_api,
+    GATEWAY_MODULES_ENTRY dummyEntry = {
+        "dummy module",
+        DUMMY_LIBRARY_PATH,
+        &module_loader_api,
         NULL
     };
 
@@ -500,55 +500,55 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Success)
 /*Tests_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
 TEST_FUNCTION(Gateway_Create_returns_null_on_invalid_GW_entry)
 {
-	//Arrange
-	CGatewayLLMocks mocks;
-	GATEWAY_MODULES_ENTRY dummyEntry2 = {
-		"dummy module 2",
-		"x2.dll",
-		NULL,
-		NULL
-	};
-	GATEWAY_PROPERTIES newdummyProps;
-	newdummyProps.gateway_modules = BASEIMPLEMENTATION::VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
-	ASSERT_IS_NOT_NULL(newdummyProps.gateway_modules);
-	BASEIMPLEMENTATION::VECTOR_push_back(newdummyProps.gateway_modules, &dummyEntry2, 1);
-	newdummyProps.gateway_links = NULL;
+    //Arrange
+    CGatewayLLMocks mocks;
+    GATEWAY_MODULES_ENTRY dummyEntry2 = {
+        "dummy module 2",
+        "x2.dll",
+        NULL,
+        NULL
+    };
+    GATEWAY_PROPERTIES newdummyProps;
+    newdummyProps.gateway_modules = BASEIMPLEMENTATION::VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+    ASSERT_IS_NOT_NULL(newdummyProps.gateway_modules);
+    BASEIMPLEMENTATION::VECTOR_push_back(newdummyProps.gateway_modules, &dummyEntry2, 1);
+    newdummyProps.gateway_links = NULL;
 
 
-	//Expectations
-	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, Broker_Create());
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
-		.IgnoreArgument(1); //modules
-	STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
-		.IgnoreArgument(1); //links
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(newdummyProps.gateway_modules));
-	STRICT_EXPECTED_CALL(mocks, VECTOR_element(newdummyProps.gateway_modules, 0));
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
+    //Expectations
+    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Broker_Create());
+    STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+        .IgnoreArgument(1); //modules
+    STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
+        .IgnoreArgument(1); //links
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(newdummyProps.gateway_modules));
+    STRICT_EXPECTED_CALL(mocks, VECTOR_element(newdummyProps.gateway_modules, 0));
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
 
-	//Act
-	GATEWAY_HANDLE gateway = Gateway_Create(&newdummyProps);
+    //Act
+    GATEWAY_HANDLE gateway = Gateway_Create(&newdummyProps);
 
-	//Assert
-	ASSERT_IS_NULL(gateway);
-	mocks.AssertActualAndExpectedCalls();
+    //Assert
+    ASSERT_IS_NULL(gateway);
+    mocks.AssertActualAndExpectedCalls();
 
-	//Cleanup
-	BASEIMPLEMENTATION::VECTOR_destroy(newdummyProps.gateway_modules);
-	
-	//Nothing to cleanup
+    //Cleanup
+    BASEIMPLEMENTATION::VECTOR_destroy(newdummyProps.gateway_modules);
+    
+    //Nothing to cleanup
 }
 
 /*Tests_SRS_GATEWAY_14_002: [This function shall return NULL upon any memory allocation failure.]*/
@@ -676,7 +676,7 @@ TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
+        &module_loader_api,
         NULL
     };
 
@@ -812,7 +812,7 @@ TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
+        &module_loader_api,
         NULL
     };
 
@@ -937,8 +937,8 @@ TEST_FUNCTION(Gateway_Create_AddModule_WithDuplicatedModuleName_Fails)
     GATEWAY_MODULES_ENTRY duplicatedEntry = {
         "dummy module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &duplicatedEntry, 1);
@@ -1045,8 +1045,8 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_In_Props_Success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
@@ -1143,8 +1143,8 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -1155,16 +1155,16 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     // indirectly test that it's ok to set Module_CreateFromJson to NULL
     const MODULE_API_1 noCreateFromJson =
     {
-		{MODULE_API_VERSION_1},
+        {MODULE_API_VERSION_1},
 
-		NULL,
+        NULL,
         mock_Module_Create,
         mock_Module_Destroy,
         mock_Module_Receive,
         mock_Module_Start
         
     };
-	const MODULE_API* noCreateFromJsonApi = reinterpret_cast<const MODULE_API *>(&noCreateFromJson);
+    const MODULE_API* noCreateFromJsonApi = reinterpret_cast<const MODULE_API *>(&noCreateFromJson);
 
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink, 1);
@@ -1396,8 +1396,8 @@ TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
@@ -1491,8 +1491,8 @@ TEST_FUNCTION(Gateway_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -1634,23 +1634,23 @@ TEST_FUNCTION(Gateway_AddModule_Returns_Null_For_Null_Module)
 
 TEST_FUNCTION(Gateway_AddModule_Returns_Null_For_null_module_name)
 {
-	//Arrange
-	CGatewayLLMocks mocks;
+    //Arrange
+    CGatewayLLMocks mocks;
 
-	GATEWAY_HANDLE gw = Gateway_Create(NULL);
-	mocks.ResetAllCalls();
+    GATEWAY_HANDLE gw = Gateway_Create(NULL);
+    mocks.ResetAllCalls();
 
-	//Act
-	GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules);
-	entry->module_name = NULL;
-	MODULE_HANDLE handle2 = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    //Act
+    GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules);
+    entry->module_name = NULL;
+    MODULE_HANDLE handle2 = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
-	//Assert
-	ASSERT_IS_NULL(handle2);
-	mocks.AssertActualAndExpectedCalls();
+    //Assert
+    ASSERT_IS_NULL(handle2);
+    mocks.AssertActualAndExpectedCalls();
 
-	//Cleanup
-	Gateway_Destroy(gw);
+    //Cleanup
+    Gateway_Destroy(gw);
 }
 
 //Tests_SRS_GATEWAY_17_001: [ This function shall not accept "*" as a module name. ]
@@ -1700,7 +1700,7 @@ TEST_FUNCTION(Gateway_AddModule_Loads_Module_From_Library_Path)
         .IgnoreArgument(1);
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1803,7 +1803,7 @@ TEST_FUNCTION(Gateway_AddModule_Creates_Module_Using_Module_Properties)
     GATEWAY_MODULES_ENTRY entry = {
         "Test module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
+        &module_loader_api,
         properties
     };
 
@@ -1849,32 +1849,32 @@ TEST_FUNCTION(Gateway_AddModule_Creates_Module_Using_Module_Properties)
 
 TEST_FUNCTION(Gateway_AddModule_fails_on_null_loader_api)
 {
-	//Arrange
-	CGatewayLLMocks mocks;
+    //Arrange
+    CGatewayLLMocks mocks;
 
-	GATEWAY_HANDLE gw = Gateway_Create(NULL);
-	mocks.ResetAllCalls();
-	bool* properties = (bool*)malloc(sizeof(bool));
-	*properties = true;
-	GATEWAY_MODULES_ENTRY entry = {
-		"Test module",
-		DUMMY_LIBRARY_PATH,
-		NULL,
-		properties
-	};
+    GATEWAY_HANDLE gw = Gateway_Create(NULL);
+    mocks.ResetAllCalls();
+    bool* properties = (bool*)malloc(sizeof(bool));
+    *properties = true;
+    GATEWAY_MODULES_ENTRY entry = {
+        "Test module",
+        DUMMY_LIBRARY_PATH,
+        NULL,
+        properties
+    };
 
-	//Expectations
+    //Expectations
 
-	//Act
-	MODULE_HANDLE handle = Gateway_AddModule(gw, &entry);
+    //Act
+    MODULE_HANDLE handle = Gateway_AddModule(gw, &entry);
 
-	//Assert
-	ASSERT_IS_NULL(handle);
-	mocks.AssertActualAndExpectedCalls();
+    //Assert
+    ASSERT_IS_NULL(handle);
+    mocks.AssertActualAndExpectedCalls();
 
-	//Cleanup
-	Gateway_Destroy(gw);
-	free(properties);
+    //Cleanup
+    Gateway_Destroy(gw);
+    free(properties);
 }
 
 /*Tests_SRS_GATEWAY_14_016: [ If the module creation is unsuccessful, the function shall return NULL. ]*/
@@ -1890,7 +1890,7 @@ TEST_FUNCTION(Gateway_AddModule_Module_Create_Fails)
     GATEWAY_MODULES_ENTRY entry = {
         "Test module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
+        &module_loader_api,
         &properties
     };
 
@@ -1902,7 +1902,7 @@ TEST_FUNCTION(Gateway_AddModule_Module_Create_Fails)
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1984,7 +1984,7 @@ TEST_FUNCTION(Gateway_AddModule_Internal_API_Fail_Rollback_Module)
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-	.IgnoreArgument(1);
+    .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, mock_Module_Create(IGNORED_PTR_ARG, NULL))
@@ -2198,8 +2198,8 @@ TEST_FUNCTION(Gateway_RemoveLink_Does_Nothing_If_Gateway_NULL)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2253,8 +2253,8 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSourceModule_Find_Link_Data_Failure)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2299,8 +2299,8 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_Link_Data_Failure)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2344,8 +2344,8 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_star_Link_Data_Failu
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     const char * dm2 = "dummy module2";
@@ -2399,8 +2399,8 @@ TEST_FUNCTION(Gateway_RemoveLink_Finds_Link_Data_Success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2789,8 +2789,8 @@ TEST_FUNCTION(Gateway_AddLink_DuplicatedLink_Fail)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2835,8 +2835,8 @@ TEST_FUNCTION(Gateway_AddLink_NonExistingSourceModule_Fail)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2885,8 +2885,8 @@ TEST_FUNCTION(Gateway_AddLink_NonExistingSinkModule_Fail)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     const char * nem = "NonExisting";
@@ -2940,8 +2940,8 @@ TEST_FUNCTION(Gateway_AddLink_Succeeds)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -2990,8 +2990,8 @@ TEST_FUNCTION(Gateway_AddLink_pushback_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -3039,8 +3039,8 @@ TEST_FUNCTION(Gateway_AddLink_broker_add_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink = {
@@ -3084,14 +3084,14 @@ TEST_FUNCTION(Gateway_AddLink_star_2nd_addbroker_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3173,14 +3173,14 @@ TEST_FUNCTION(Gateway_AddLink_star_2nd_add_push_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3234,14 +3234,14 @@ TEST_FUNCTION(Gateway_AddModule_Creates_Module_with_star_links)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3324,14 +3324,14 @@ TEST_FUNCTION(Gateway_AddModule_Creates_Module_star_2nd_addLink_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x3.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3447,14 +3447,14 @@ TEST_FUNCTION(Gateway_AddModule_Creates_Module_star_2nd_find_fails)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x3.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3571,14 +3571,14 @@ TEST_FUNCTION(Gateway_AddLink_star_success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x3.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3646,14 +3646,14 @@ TEST_FUNCTION(Gateway_AddLink_star_no_sink)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x3.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3701,14 +3701,14 @@ TEST_FUNCTION(Gateway_AddLink_star_failure_to_add)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x3.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3791,14 +3791,14 @@ TEST_FUNCTION(Gateway_RemoveModule_with_star_links)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3880,14 +3880,14 @@ TEST_FUNCTION(Gateway_RemoveModule_with_star_links_has_errors)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -3968,14 +3968,14 @@ TEST_FUNCTION(Gateway_RemoveLink_star_link_success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -4045,14 +4045,14 @@ TEST_FUNCTION(Gateway_RemoveLink_nostar_link_success)
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_MODULES_ENTRY dummyEntry3 = {
         "dummy module 3",
         "x2.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_LINK_ENTRY dummyLink1 = {
@@ -4109,8 +4109,8 @@ TEST_FUNCTION(Gateway_AddModule_Reports_On_Success)
     GATEWAY_MODULES_ENTRY dummyModule = {
         "dummy module",
         "x.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_HANDLE gateway = Gateway_Create(NULL);
@@ -4138,8 +4138,8 @@ TEST_FUNCTION(Gateway_RemoveModule_Reports_On_Success)
     GATEWAY_MODULES_ENTRY dummyModule = {
         "dummy module",
         "x.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     GATEWAY_HANDLE gateway = Gateway_Create(NULL);
@@ -4176,20 +4176,20 @@ TEST_FUNCTION(Gateway_GetModuleList_Links_basic_tree)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_2",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_3",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4248,20 +4248,20 @@ TEST_FUNCTION(Gateway_GetModuleList_links_cycle)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_2",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_3",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4322,8 +4322,8 @@ TEST_FUNCTION(Gateway_GetModuleList_links_to_itself)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4396,14 +4396,14 @@ TEST_FUNCTION(Gateway_GetModuleList_links_star)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_2",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4452,8 +4452,8 @@ TEST_FUNCTION(Gateway_GetModuleList_calloc_fail)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4502,8 +4502,8 @@ TEST_FUNCTION(Gateway_modules_sources_vector_create_fail)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4559,8 +4559,8 @@ TEST_FUNCTION(Gateway_GetModuleList_link_push_back_fail)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4622,14 +4622,14 @@ TEST_FUNCTION(Gateway_DestroyModuleList_basic)
         {
             "module_1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module_2",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4812,20 +4812,20 @@ TEST_FUNCTION(Gateway_RemoveModule_removes_links)
         {
             "module1",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module2",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         },
         {
             "module3",
             "x.dll",
-			&module_loader_api,
-			NULL
+            &module_loader_api,
+            NULL
         }
     };
 
@@ -4967,8 +4967,8 @@ TEST_FUNCTION(Gateway_AddModule_name_is_copied)
     GATEWAY_MODULES_ENTRY module = {
         name,
         "x.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
     GATEWAY_PROPERTIES props;
     props.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
@@ -5002,8 +5002,8 @@ TEST_FUNCTION(Gateway_AddModule_malloc_name_fail)
     GATEWAY_MODULES_ENTRY module = {
         "asd",
         "x.dll",
-		&module_loader_api,
-		NULL
+        &module_loader_api,
+        NULL
     };
 
     // Expect
@@ -5045,18 +5045,18 @@ TEST_FUNCTION(Gateway_Start_starts_stuff)
     GATEWAY_MODULES_ENTRY entry1 = {
         "Test module1",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		properties
+        &module_loader_api,
+        properties
     };
     GATEWAY_MODULES_ENTRY entry2 = {
         "Test module2",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		properties
+        &module_loader_api,
+        properties
     };
     const MODULE_API_1 dummyAPIs_nostart = 
     {
-		{MODULE_API_VERSION_1},
+        {MODULE_API_VERSION_1},
 
         mock_Module_CreateFromJson,
         mock_Module_Create,
@@ -5064,7 +5064,7 @@ TEST_FUNCTION(Gateway_Start_starts_stuff)
         mock_Module_Receive,
         NULL
     };
-	const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
+    const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
 
     MODULE_HANDLE handle1 = Gateway_AddModule(gw, &entry1);
     MODULE_HANDLE handle2 = Gateway_AddModule(gw, &entry2);
@@ -5127,8 +5127,8 @@ TEST_FUNCTION(Gateway_StartModule_starts_module)
     GATEWAY_MODULES_ENTRY entry = {
         "Test module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		properties
+        &module_loader_api,
+        properties
     };
     MODULE_HANDLE handle = Gateway_AddModule(gw, &entry);
     mocks.ResetAllCalls();
@@ -5163,13 +5163,13 @@ TEST_FUNCTION(Gateway_StartModule_no_start_for_null_start_func)
     GATEWAY_MODULES_ENTRY entry = {
         "Test module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		properties
+        &module_loader_api,
+        properties
     };
 
     const MODULE_API_1 dummyAPIs_nostart = 
-	{
-		{MODULE_API_VERSION_1},
+    {
+        {MODULE_API_VERSION_1},
 
         mock_Module_CreateFromJson,
         mock_Module_Create,
@@ -5177,7 +5177,7 @@ TEST_FUNCTION(Gateway_StartModule_no_start_for_null_start_func)
         mock_Module_Receive,
         NULL
     };
-	const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
+    const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
 
     MODULE_HANDLE handle = Gateway_AddModule(gw, &entry);
     mocks.ResetAllCalls();
@@ -5212,8 +5212,8 @@ TEST_FUNCTION(Gateway_StartModule_no_module)
     GATEWAY_MODULES_ENTRY entry = {
         "Test module",
         DUMMY_LIBRARY_PATH,
-		&module_loader_api,
-		properties
+        &module_loader_api,
+        properties
     };
     MODULE_HANDLE handle = Gateway_AddModule(gw, &entry);
     mocks.ResetAllCalls();

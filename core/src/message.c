@@ -467,22 +467,22 @@ MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t 
 
 extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size)
 {
-	int32_t result;
+    int32_t result;
     if (messageHandle == NULL) 
     {
-		/*Codes_SRS_MESSAGE_02_032: [ If messageHandle is NULL then Message_ToByteArray shall fail and return -1. ]*/
-		LogError("invalid (NULL) messageHandle parameter detected", messageHandle, size);
+        /*Codes_SRS_MESSAGE_02_032: [ If messageHandle is NULL then Message_ToByteArray shall fail and return -1. ]*/
+        LogError("invalid (NULL) messageHandle parameter detected", messageHandle, size);
         result = -1;
     }
-	else if (
-		(buf == NULL) &&
-		(size != 0)
-		)
-	{
-		/*Codes_SRS_MESSAGE_17_015: [ if buf is NULL and size is not equal to zero, Message_ToByteArray shall return -1; ]*/
-		LogError("Null buffer sent with a specific size buffer=[%p], size=[%d]", messageHandle, size);
-		result = -1;
-	}
+    else if (
+        (buf == NULL) &&
+        (size != 0)
+        )
+    {
+        /*Codes_SRS_MESSAGE_17_015: [ if buf is NULL and size is not equal to zero, Message_ToByteArray shall return -1; ]*/
+        LogError("Null buffer sent with a specific size buffer=[%p], size=[%d]", messageHandle, size);
+        result = -1;
+    }
     else
     {
         MESSAGE_HANDLE_DATA* messageHandleData = (MESSAGE_HANDLE_DATA*)messageHandle;
@@ -521,33 +521,33 @@ extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* 
             
             if (size == 0)
             {
-				/*Codes_SRS_MESSAGE_17_016: [ If buf is NULL and size is equal to zero, Message_ToByteArray shall return the needed memory size. ]*/
-				result = byteArraySize;
+                /*Codes_SRS_MESSAGE_17_016: [ If buf is NULL and size is equal to zero, Message_ToByteArray shall return the needed memory size. ]*/
+                result = byteArraySize;
             }
-			else if (byteArraySize > (size_t)size)
-			{
-				/*Codes_SRS_MESSAGE_17_017: [ If buf is not NULL and size is less than the needed memory size, Message_ToByteArray shall return -1; ]*/
-				LogError("message is %u bytes, won't fit in buffer of %u bytes", byteArraySize, size);
-				result = -1;
-			}
+            else if (byteArraySize > (size_t)size)
+            {
+                /*Codes_SRS_MESSAGE_17_017: [ If buf is not NULL and size is less than the needed memory size, Message_ToByteArray shall return -1; ]*/
+                LogError("message is %u bytes, won't fit in buffer of %u bytes", byteArraySize, size);
+                result = -1;
+            }
             else
             {
                 /*Codes_SRS_MESSAGE_02_034: [ Message_ToByteArray shall populate the memory with values as indicated in the implementation details. ]*/
 
                 size_t currentPosition; /*always points to the byte we are about to write*/
                 /*a header formed of the following hex characters in this order: 0xA1 0x60*/
-				buf[0] = FIRST_MESSAGE_BYTE;
-				buf[1] = SECOND_MESSAGE_BYTE;
+                buf[0] = FIRST_MESSAGE_BYTE;
+                buf[1] = SECOND_MESSAGE_BYTE;
                 /*4 bytes in MSB order representing the total size of the byte array. */
-				buf[2] = byteArraySize >> 24;
-				buf[3] = (byteArraySize >> 16) & 0xFF;
-				buf[4] = (byteArraySize >> 8) & 0xFF;
-				buf[5] = (byteArraySize) & 0xFF;
+                buf[2] = byteArraySize >> 24;
+                buf[3] = (byteArraySize >> 16) & 0xFF;
+                buf[4] = (byteArraySize >> 8) & 0xFF;
+                buf[5] = (byteArraySize) & 0xFF;
                 /*4 bytes in MSB order representing the number of properties*/
-				buf[6] = nProperties >> 24;
-				buf[7] = (nProperties >> 16) & 0xFF;
-				buf[8] = (nProperties >> 8) & 0xFF;
-				buf[9] = nProperties & 0xFF;
+                buf[6] = nProperties >> 24;
+                buf[7] = (nProperties >> 16) & 0xFF;
+                buf[8] = (nProperties >> 8) & 0xFF;
+                buf[9] = nProperties & 0xFF;
                 /*for every property, 2 arrays of null terminated characters representing the name of the property and the value.*/
                 currentPosition = 10;
                 for (i = 0;i < nProperties;i++)
@@ -565,16 +565,16 @@ extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* 
                 }
 
                 /*4 bytes in MSB order representing the number of bytes in the message content array*/
-				buf[currentPosition++] = (messageContent->size) >> 24;
-				buf[currentPosition++] = ((messageContent->size) >> 16) & 0xFF;
-				buf[currentPosition++] = ((messageContent->size) >> 8) & 0xFF;
-				buf[currentPosition++] = (messageContent->size) & 0xFF;
+                buf[currentPosition++] = (messageContent->size) >> 24;
+                buf[currentPosition++] = ((messageContent->size) >> 16) & 0xFF;
+                buf[currentPosition++] = ((messageContent->size) >> 8) & 0xFF;
+                buf[currentPosition++] = (messageContent->size) & 0xFF;
 
                 /*n bytes of message content follows.*/
                 memcpy(buf + currentPosition, messageContent->buffer, messageContent->size);
 
-				/*Codes_SRS_MESSAGE_02_036: [ Otherwise Message_ToByteArray shall succeed, and return the byte array size. ]*/
-				result = byteArraySize;
+                /*Codes_SRS_MESSAGE_02_036: [ Otherwise Message_ToByteArray shall succeed, and return the byte array size. ]*/
+                result = byteArraySize;
             }
         }
     }

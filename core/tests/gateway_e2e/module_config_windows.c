@@ -9,15 +9,15 @@ const char* identity_map_path_string = "..\\..\\..\\..\\modules\\identitymap\\De
 
 const char* e2e_module_path()
 {
-	return e2e_module_path_string;
+    return e2e_module_path_string;
 }
 
 const char* iothub_module_path()
 {
-	return iothub_path_string;
+    return iothub_path_string;
 }
 
 const char* identity_map_module_path()
 {
-	return identity_map_path_string;
+    return identity_map_path_string;
 }

@@ -109,7 +109,7 @@ static bool terminate_event_dispatcher(
 
 static void free_bleioseq_instr(VECTOR_HANDLE instructions) 
 { 
-	size_t len = VECTOR_size(instructions); 
+    size_t len = VECTOR_size(instructions); 
 
     for (size_t i = 0; i < len; ++i) 
     { 
@@ -121,12 +121,12 @@ static void free_bleioseq_instr(VECTOR_HANDLE instructions)
             STRING_delete(instr->characteristic_uuid); 
         }
 
-		if((instr->instruction_type == WRITE_AT_INIT ||
-			instr->instruction_type == WRITE_AT_EXIT ||
-			instr->instruction_type == WRITE_ONCE) && instr->data.buffer != NULL)
-		{
-			BUFFER_delete(instr->data.buffer);
-		}
+        if((instr->instruction_type == WRITE_AT_INIT ||
+            instr->instruction_type == WRITE_AT_EXIT ||
+            instr->instruction_type == WRITE_ONCE) && instr->data.buffer != NULL)
+        {
+            BUFFER_delete(instr->data.buffer);
+        }
     } 
 }
 
@@ -349,7 +349,7 @@ static MODULE_HANDLE BLE_CreateFromJson(BROKER_HANDLE broker, const char* config
                                 }
                             }
                             free_instructions(ble_instructions);
-	                    VECTOR_destroy(ble_instructions);
+                        VECTOR_destroy(ble_instructions);
                         }
                     }
                 }
@@ -885,7 +885,7 @@ static void BLE_Destroy(MODULE_HANDLE module)
 
 static const MODULE_API_1 Module_GetApi_Impl =
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
     BLE_CreateFromJson,
     BLE_Create,
     BLE_Destroy,

@@ -2,10 +2,9 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for simulated_device_cloud_upload sample
 
 set(simulated_device_cloud_upload_sources
-	./src/main.c
+    ./src/main.c
 )
 
 if(WIN32)
@@ -44,5 +43,5 @@ install_broker(simulated_device_cloud_upload_sample ${CMAKE_CURRENT_BINARY_DIR}/
 add_sample_to_solution(simulated_device_cloud_upload_sample)
 
 if(install_executables)
-	install(TARGETS simulated_device_cloud_upload_sample DESTINATION bin)
+    install(TARGETS simulated_device_cloud_upload_sample DESTINATION bin)
 endif()

@@ -4,19 +4,19 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(logger_sources
-	./src/logger.c
+    ./src/logger.c
 )
 
 set(logger_headers
-	./inc/logger.h
+    ./inc/logger.h
 )
 
 set(logger_static_sources
-	${logger_sources}
+    ${logger_sources}
 )
 
 set(logger_static_headers
-	${logger_headers}
+    ${logger_headers}
 )
 
 include_directories(./inc)
@@ -39,8 +39,7 @@ add_module_to_solution(logger)
 add_subdirectory(tests)
 
 
-
 if(install_modules)
-	install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

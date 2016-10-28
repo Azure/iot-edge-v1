@@ -27,5 +27,5 @@ int main(int argc, char** argv)
             Gateway_Destroy(gateway);
         }
     }
-	return 0;
+    return 0;
 }

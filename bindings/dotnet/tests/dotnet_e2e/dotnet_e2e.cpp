@@ -81,7 +81,7 @@ static void E2EModule_Destroy(MODULE_HANDLE module)
 }
 static const MODULE_API_1 E2E_APIS_all =
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
 
     E2EModule_CreateFromJson,
     E2EModule_Create,
@@ -140,15 +140,15 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
         "Sender"
     };
 
-	const DYNAMIC_LOADER_CONFIG loader_cfg =
-	{
-		"..\\..\\..\\Debug\\dotnet.dll"
-	};
+    const DYNAMIC_LOADER_CONFIG loader_cfg =
+    {
+        "..\\..\\..\\Debug\\dotnet.dll"
+    };
 
     const GATEWAY_MODULES_ENTRY managedModuleSender {
         "Sender",
         &loader_cfg,
-		DynamicLoader_GetApi(),
+        DynamicLoader_GetApi(),
         &senderConfig
     };
 
@@ -163,14 +163,14 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
     const GATEWAY_MODULES_ENTRY managedModuleReceiver {
         "Receiver",
-		&loader_cfg,
-		DynamicLoader_GetApi(),
+        &loader_cfg,
+        DynamicLoader_GetApi(),
         &receiverConfig
     };
 
     MODULE_HANDLE managedModuleReceiverHandle = Gateway_AddModule(e2eGatewayInstance, &managedModuleReceiver);
 
-	Gateway_Start(e2eGatewayInstance);
+    Gateway_Start(e2eGatewayInstance);
 
     //Set the test probe module.
     GATEWAY_HANDLE_DATA* gatewayHandleData = (GATEWAY_HANDLE_DATA*)e2eGatewayInstance;

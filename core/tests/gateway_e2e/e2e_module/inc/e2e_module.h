@@ -8,8 +8,8 @@
 
 typedef struct E2EMODULE_CONFIG
 {
-	const char* macAddress;
-	const char* sendData;
+    const char* macAddress;
+    const char* sendData;
 }E2EMODULE_CONFIG;
 
 #endif /*E2EMODULE_H*/

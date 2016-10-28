@@ -669,13 +669,13 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 
 static const MODULE_API_1 moduleInterface = 
 {
-	{MODULE_API_VERSION_1},
+    {MODULE_API_VERSION_1},
 
-	IotHub_CreateFromJson,
-	IotHub_Create,
-	IotHub_Destroy,
-	IotHub_Receive,
-	NULL
+    IotHub_CreateFromJson,
+    IotHub_Create,
+    IotHub_Destroy,
+    IotHub_Receive,
+    NULL
 };
 
 /*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure with the required function pointers. ]*/

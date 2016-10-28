@@ -4,11 +4,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(dotnet_sources
-	./src/dotnet.cpp
+    ./src/dotnet.cpp
 )
 
 set(dotnet_headers
-	./inc/dotnet.h
+    ./inc/dotnet.h
 )
 
 include_directories(./inc)

@@ -17,7 +17,7 @@ if(LINUX)
     
     # BLE GATT I/O sources
     set(ble_test_sources
-		../../src/ble_instr_utils.c
+        ../../src/ble_instr_utils.c
         ../../src/ble_utils.c
         ../../src/ble.c
     )
@@ -34,7 +34,7 @@ elseif(WIN32)
     set(ble_test_sources
         ../../src/ble.c
         ../../src/ble_utils.c
-		../../src/ble_instr_utils.c
+        ../../src/ble_instr_utils.c
     )
 endif()
 
@@ -66,18 +66,18 @@ add_definitions(-DGB_TIME_INTERCEPT -DNO_LOGGING)
 build_test_artifacts(${theseTestsName} ON ${LIBS})
 
 if(WIN32)
-	if(TARGET ${theseTestsName}_dll)
-		target_link_libraries(${theseTestsName}_dll
-			gateway
-			rpcrt4
-		)
-	endif()
-	
-	if(TARGET ${theseTestsName}_exe)
-		target_link_libraries(${theseTestsName}_exe
-			gateway
-			rpcrt4
-		)	
+    if(TARGET ${theseTestsName}_dll)
+        target_link_libraries(${theseTestsName}_dll
+            gateway
+            rpcrt4
+        )
+    endif()
+    
+    if(TARGET ${theseTestsName}_exe)
+        target_link_libraries(${theseTestsName}_exe
+            gateway
+            rpcrt4
+        )    
         install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	endif()
+    endif()
 endif()

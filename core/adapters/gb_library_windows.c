@@ -6,28 +6,28 @@
 
 void* gb_LoadLibraryA(const char* dynamicLibraryFileName)
 {
-	return (void*)LoadLibraryA(dynamicLibraryFileName);
+    return (void*)LoadLibraryA(dynamicLibraryFileName);
 }
 
 
 int gb_FreeLibrary(void* library)
 {
-	return (int)FreeLibrary((HMODULE)library);
+    return (int)FreeLibrary((HMODULE)library);
 }
 
 
 void* gb_GetProcAddress(void* library, const char* symbolName)
 {
-	return (void*)GetProcAddress((HMODULE)library, symbolName);
+    return (void*)GetProcAddress((HMODULE)library, symbolName);
 }
 
 DWORD gb_GetLastError()
 {
-	return GetLastError();
+    return GetLastError();
 }
 
 DWORD gb_GetCurrentDirectoryA(DWORD nBufferLength, char* lpBuffer)
 {
-	return GetCurrentDirectoryA(nBufferLength, lpBuffer);
+    return GetCurrentDirectoryA(nBufferLength, lpBuffer);
 }
 

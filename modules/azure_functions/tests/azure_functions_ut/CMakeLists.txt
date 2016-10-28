@@ -11,7 +11,7 @@ ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-	../../src/azure_functions.c	
+    ../../src/azure_functions.c
 )
 
 set(${theseTestsName}_h_files

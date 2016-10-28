@@ -105,11 +105,11 @@ rem no error checking
 
 pushd %cmake-root%
 if %build-platform% == x64 (
-	echo ***Running CMAKE for Win64***
+    echo ***Running CMAKE for Win64***
         cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
-	echo ***Running CMAKE for Win32***
+    echo ***Running CMAKE for Win32***
         cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )

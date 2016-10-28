@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(events_sources
-	./src/main.c
+    ./src/main.c
 )
 
 set(events_headers

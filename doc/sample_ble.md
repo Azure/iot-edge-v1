@@ -107,7 +107,7 @@ IDs and data (for write instructions).
     "module name": "logger",
     "loading args" : {
       "module path": "<</path/to/liblogger.so>>"
-    }
+    },
     "args":
     {
         "filename":"/path/to/log-file-name.log"
@@ -122,7 +122,7 @@ IDs and data (for write instructions).
   "module name": "BLE Device",
   "loading args" : {
     "module path": "<</path/to/libble.so>>"
-  }
+  },
   "args": {
     "controller_index": 0,
     "device_mac_address": "<<AA:BB:CC:DD:EE:FF>>",
@@ -178,7 +178,7 @@ IDs and data (for write instructions).
   "module name": "IoTHub",
   "loading args" : {
     "module path": "<</path/to/iothub/libiothub.so>>"
-  }
+  },
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
     "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"
@@ -193,7 +193,7 @@ IDs and data (for write instructions).
   "module name": "mapping",
   "loading args" : {
     "module path": "<</path/to/libidentity_map.so>>"
-  }
+  },
   "args": [
     {
       "macAddress": "AA:BB:CC:DD:EE:FF",
@@ -211,7 +211,7 @@ IDs and data (for write instructions).
     "module name": "BLE Printer",
     "loading args" : {
       "module path": "<</path/to/libble_printer.so"
-    }
+    },
     "args": null
 }
 ```

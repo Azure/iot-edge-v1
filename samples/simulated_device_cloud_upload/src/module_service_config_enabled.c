@@ -30,7 +30,7 @@ int configureAsAService(void)
         }
     }
 
-	return functionReturn;
+    return functionReturn;
 }
 
 void waitForUserInput(void)
