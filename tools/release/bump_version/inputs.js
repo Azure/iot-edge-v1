@@ -7,7 +7,7 @@ module.exports = [
         "filePath": "tools/docs/c/Doxyfile",
         "search": "(PROJECT\\_NUMBER)([ ]+\\= )(.*)",
         "replaceString": function(versions) {
-            return '$1' + '$2' + versions.azureiotgateway;
+            return '$1' + '$2' + versions.gateway.core;
         }
     },
     ///////////////////////////////////////////////////
@@ -18,7 +18,7 @@ module.exports = [
         "filePath": "bindings/dotnet/dotnet-binding/E2ETestModule/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
-            return '$1' + versions.dotnetbinding + '$2';
+            return '$1' + versions.bindings.dotnet + '$2';
         }
     },
     {
@@ -26,7 +26,7 @@ module.exports = [
         "filePath": "bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
-            return '$1' + versions.dotnetbinding + '$2';
+            return '$1' + versions.bindings.dotnet + '$2';
         }
     },
     {
@@ -34,7 +34,7 @@ module.exports = [
         "filePath": "bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway.Test/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
-            return '$1' + versions.dotnetbinding + '$2';
+            return '$1' + versions.bindings.dotnet + '$2';
         }
     },    
     {
@@ -42,7 +42,7 @@ module.exports = [
         "filePath": "bindings/dotnet/dotnet-binding/PrinterModule/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
-            return '$1' + versions.dotnetbinding + '$2';
+            return '$1' + versions.bindings.dotnet + '$2';
         }
     },
     {
@@ -50,7 +50,7 @@ module.exports = [
         "filePath": "bindings/dotnet/dotnet-binding/SensorModule/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
-            return '$1' + versions.dotnetbinding + '$2';
+            return '$1' + versions.bindings.dotnet + '$2';
         }
     },
     {
@@ -58,7 +58,7 @@ module.exports = [
         "filePath": "tools/docs/dotnet/Doxyfile",
         "search": "(PROJECT\\_NUMBER)([ ]+\\= )(.*)",
         "replaceString": function(versions) {
-            return '$1' + '$2' + versions.dotnetbinding;
+            return '$1' + '$2' + versions.bindings.dotnet;
         }
     },
     ///////////////////////////////////////////////////
@@ -69,26 +69,20 @@ module.exports = [
         "filePath": "bindings/java/gateway-java-binding/pom.xml",
         "search": "//mavenns:project/mavenns:version",
         "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
-        "replaceString": function(versions) {
-            return versions.javabinding;
-        }
+        "replaceString": "bindings.java",
     },
     {
         "taskType": "xmlReplaceTask",
         "filePath": "samples/java_sample/java_modules/Printer/pom.xml",
         "search": "//mavenns:project/mavenns:version",
         "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
-        "replaceString": function(versions) {
-            return versions.javabinding;
-        }
+        "replaceString": "bindings.java"
     },
-        {
+    {
         "taskType": "xmlReplaceTask",
         "filePath": "samples/java_sample/java_modules/Sensor/pom.xml",
         "search": "//mavenns:project/mavenns:version",
         "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
-        "replaceString": function(versions) {
-            return versions.javabinding;
-        }
+        "replaceString": "bindings.java"
     },
 ];

@@ -1,5 +1,11 @@
 {
-    "azureiotgateway": "1.0.0-beta.4",
-    "dotnetbinding": "0.0.3",
-    "javabinding":"0.0.3"
+    "gateway": 
+    {
+        "core" : "1.0.0-beta.4"
+    },
+    "bindings" :
+    {
+        "dotnet" : "0.0.3",
+        "java" : "0.0.3"
+    }
 }
