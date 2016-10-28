@@ -1,0 +1,5 @@
+{
+    "azureiotgateway": "1.0.0-beta.4",
+    "dotnetbinding": "0.0.3",
+    "javabinding":"0.0.3"
+}
