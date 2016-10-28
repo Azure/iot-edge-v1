@@ -10,7 +10,7 @@
 *               A module can only belong to one message broker; a message broker
 *               may have many modules associated with it.
 *
-*               Every module library exports a function (Module_GetAPIs) that
+*               Every module library exports a function (Module_GetApi) that
 *               returns a pointer to the #MODULE_API structure.
 */
 
@@ -115,7 +115,7 @@ extern "C"
 	/** @brief current gateway module API version */
 	static const MODULE_API_VERSION Module_ApiGatewayVersion = MODULE_API_VERSION_1;
 
-	/** @brief	Structure returned by ::Module_GetApis containing the API
+	/** @brief	Structure returned by ::Module_GetApi containing the API
 	*           version. By convention, the module returns a compund structure 
 	*			containing this structure and a function table.  The version 
 	*			determines the function table attached to the structure.

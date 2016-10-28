@@ -81,12 +81,16 @@ Json Configuration
     [
         {
             "module name" : "logger",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
+            "loading args" : {
+                "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+            }
             "args" : {"filename":"C:\\Temp\\Log.txt"} 
         },
         {
           "module name": "dotnet_sensor_module",
-          "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
+          "loading args" : {
+              "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
+          }
           "args": {
             "dotnet_module_path": "SensorModule",
             "dotnet_module_entry_class": "SensorModule.DotNetSensorModule",
@@ -95,7 +99,9 @@ Json Configuration
         },
         {
             "module name" : "dotnet_printer_module",
-            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll",
+            "loading args" : {
+                "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
+            }
             "args" : {
                 "dotnet_module_path": "PrinterModule",
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule",
@@ -156,7 +162,9 @@ Modules may also implement the `IGatewayModuleStart` interface.  The Start metho
     [
         {
             "module name" : "dotnet_printer_module", ==> Your new module name. 
-            "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll", ==> This is the location where the dotnet.dll is located.
+            "loading args" : {
+                "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll" ==> This is the location where the dotnet.dll is located.
+            }
             "args" : {
                 "dotnet_module_path": "PrinterModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
                 "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule", ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.

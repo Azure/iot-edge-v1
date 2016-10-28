@@ -34,7 +34,7 @@ only on Linux.  Here's what you'll need to do get your Intel Edison board setup:
 Connecting your BLE device
 --------------------------
 
-Here're the steps to be performed in order to *discover* and connect to a BLE
+Here are the steps to be performed in order to *discover* and connect to a BLE
 device:
 
   1. Run `bluetoothctl`. You should see output that looks like this:
