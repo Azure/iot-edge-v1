@@ -14,11 +14,17 @@ rem --     doxygen
 rem -----------------------------------------------------------------------------
 call :checkExists git
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+call :checkExists node
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+call :checkExists npm
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists doxygen
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists mvn
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 call :checkExists javadoc
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+call :checkExists jsdoc
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
@@ -38,6 +44,12 @@ rem -- Generate Java API docs
 rem -----------------------------------------------------------------------------
 echo Generating Java API docs
 call gen_javadocs.cmd
+
+rem -----------------------------------------------------------------------------
+rem -- Generate Node.js API docs
+rem -----------------------------------------------------------------------------
+echo Generating Node.js API docs
+call gen_jsdocs.cmd
 
 rem -----------------------------------------------------------------------------
 rem -- done

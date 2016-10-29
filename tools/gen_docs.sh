@@ -24,9 +24,12 @@ checkExists() {
 # --     doxygen
 # -----------------------------------------------------------------------------
 checkExists git
+checkExists node
+checkExists npm
 checkExists doxygen
 checkExists mvn
 checkExists javadoc
+checkExists jsdoc
 
 # -----------------------------------------------------------------------------
 # -- Generate C API docs
@@ -39,3 +42,9 @@ echo Generating C API docs
 # -----------------------------------------------------------------------------
 echo Generating C API docs
 ./gen_javadocs.sh
+
+# -----------------------------------------------------------------------------
+# -- Generate Node.js API docs
+# -----------------------------------------------------------------------------
+echo Generating Node.js API docs
+./gen_jsdocs.sh

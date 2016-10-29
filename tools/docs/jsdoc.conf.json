@@ -1,0 +1,32 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc","closure"]
+  },
+  "source": {
+    "include": [
+      "tools/docs/nodejs"
+    ],
+    "includePattern": ".+\\.js(doc)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "default": {
+        "useLongnameInNav": true
+    },
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "markdown": {
+    "tags": [
+      "module"
+    ]
+  },
+  "opts": {
+    "recurse": true,
+    "readme": "tools/docs/nodejs/README.md"
+  }
+}
