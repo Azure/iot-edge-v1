@@ -14,7 +14,7 @@ set(${testSuite}_c_files
 )
 
 set(${testSuite}_h_files
-    ../../inc/internal/event_system.h
+    ../../inc/experimental/event_system.h
 )
 
 include_directories(${GW_INC})

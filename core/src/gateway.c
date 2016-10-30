@@ -14,7 +14,7 @@
 #include "gateway.h"
 #include "broker.h"
 #include "module_loader.h"
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 #include "module_access.h"
 #include "gateway_internal.h"
 

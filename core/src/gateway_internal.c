@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <azure_c_shared_utility/vector.h>
 
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 #include "broker.h"
 #include "module_access.h"
 

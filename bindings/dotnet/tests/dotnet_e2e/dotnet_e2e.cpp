@@ -16,7 +16,7 @@
 #include "gateway.h"
 #include "messageproperties.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 #include "dotnet.h"
 #include "dynamic_loader.h"
 #include "azure_c_shared_utility/vector.h"

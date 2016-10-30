@@ -15,7 +15,7 @@
 #include "azure_c_shared_utility/list.h"
 
 #include "gateway.h"
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 
 #include <assert.h>
 #include <stdlib.h>

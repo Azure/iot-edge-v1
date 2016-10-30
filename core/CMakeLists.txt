@@ -71,7 +71,7 @@ set(gateway_h_sources
     ./inc/broker.h
     ./inc/module.h
     ./inc/module_access.h
-    ./inc/internal/event_system.h
+    ./inc/experimental/event_system.h
     ./inc/gateway.h
     ./inc/module_loader.h
     ./inc/dynamic_loader.h

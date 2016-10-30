@@ -13,7 +13,7 @@
 
 #include "module_loader.h"
 #include "dynamic_loader.h"
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 
 #include "gateway.h"
 #include "../src/gateway_internal.h"

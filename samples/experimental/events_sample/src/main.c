@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "gateway.h"
+#include "event_system.h"
 #include "dynamic_loader.h"
 
 const char *hello_module_path = "../../../modules/hello_world/Debug/hello_world.dll";
