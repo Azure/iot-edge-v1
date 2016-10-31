@@ -21,18 +21,18 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 REM check that jenkins-cli.jar is in the repository's tools folder
 if not exist %build-root%\tools\jenkins-cli.jar (
-	echo jenkins-cli does not exist
-	echo Downloading from repository:
-	echo http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar
-	
-	powershell -Command "Invoke-WebRequest http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar -OutFile %build-root%\tools\jenkins-cli.jar"
-	
-	if not !ERRORLEVEL!==0 (
-		echo Failed downloading jenkins-cli.jar
-		echo Use the following link to manually download it into the tools folder of your repository:
-		echo http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar
-		exit /b 1
-	)
+    echo jenkins-cli does not exist
+    echo Downloading from repository:
+    echo http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar
+    
+    powershell -Command "Invoke-WebRequest http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar -OutFile %build-root%\tools\jenkins-cli.jar"
+    
+    if not !ERRORLEVEL!==0 (
+        echo Failed downloading jenkins-cli.jar
+        echo Use the following link to manually download it into the tools folder of your repository:
+        echo http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/jnlpJars/jenkins-cli.jar
+        exit /b 1
+    )
 )
 
 REM find current branch

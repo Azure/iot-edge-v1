@@ -4,12 +4,12 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(iothub_sources
-	./src/iothub.c
-	./src/null_protocol.c
+    ./src/iothub.c
+    ./src/null_protocol.c
 )
 
 set(iothub_headers
-	./inc/iothub.h
+    ./inc/iothub.h
 )
 
 include_directories(./inc)
@@ -38,30 +38,30 @@ target_link_libraries(iothub_static
 )
 
 if(${use_amqp})
-	target_link_libraries(iothub_static iothub_client_amqp_transport)
-	target_link_libraries(iothub iothub_client_amqp_transport)
-	linkUAMQP(iothub_static)
-	linkUAMQP(iothub)
+    target_link_libraries(iothub_static iothub_client_amqp_transport)
+    target_link_libraries(iothub iothub_client_amqp_transport)
+    linkUAMQP(iothub_static)
+    linkUAMQP(iothub)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_AMQP)
+    add_definitions(-DIOTHUBMODULE_NULL_AMQP)
 endif()
 
 if(${use_http})
-	target_link_libraries(iothub_static iothub_client_http_transport)
-	target_link_libraries(iothub iothub_client_http_transport)
-	linkHttp(iothub_static)
-	linkHttp(iothub)
+    target_link_libraries(iothub_static iothub_client_http_transport)
+    target_link_libraries(iothub iothub_client_http_transport)
+    linkHttp(iothub_static)
+    linkHttp(iothub)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_HTTP)
+    add_definitions(-DIOTHUBMODULE_NULL_HTTP)
 endif()
 
 if(${use_mqtt})
-	target_link_libraries(iothub_static iothub_client_mqtt_transport)
-	target_link_libraries(iothub iothub_client_mqtt_transport)
-	linkMqttLibrary(iothub_static)
-	linkMqttLibrary(iothub)
+    target_link_libraries(iothub_static iothub_client_mqtt_transport)
+    target_link_libraries(iothub iothub_client_mqtt_transport)
+    linkMqttLibrary(iothub_static)
+    linkMqttLibrary(iothub)
 else()
-	add_definitions(-DIOTHUBMODULE_NULL_MQTT)
+    add_definitions(-DIOTHUBMODULE_NULL_MQTT)
 endif()
 
 linkSharedUtil(iothub)
@@ -72,5 +72,5 @@ add_module_to_solution(iothub)
 add_subdirectory(tests)
 
 if(install_modules)
-	install(TARGETS iothub LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS iothub LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()

@@ -56,7 +56,7 @@ int main(int argc, char*argv[])
                 g_main_loop_run(loop);
 
                 printf("Gateway is quitting\r\n");
-                Gateway_LL_Destroy(gateway);
+                Gateway_Destroy(gateway);
             }
             platform_deinit();
         }

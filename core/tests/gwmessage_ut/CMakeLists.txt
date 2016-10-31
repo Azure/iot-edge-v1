@@ -11,7 +11,7 @@ ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-	../../src/message.c
+    ../../src/message.c
 )
 
 set(${theseTestsName}_h_files

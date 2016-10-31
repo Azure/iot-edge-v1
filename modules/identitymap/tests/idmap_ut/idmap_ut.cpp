@@ -111,10 +111,10 @@ public:
 
 typedef struct IDENTITY_MAP_DATA_TAG
 {
-	BROKER_HANDLE broker;
-	size_t mappingSize;
-	IDENTITY_MAP_CONFIG * macToDevIdArray;
-	IDENTITY_MAP_CONFIG * devIdToMacArray;
+    BROKER_HANDLE broker;
+    size_t mappingSize;
+    IDENTITY_MAP_CONFIG * macToDevIdArray;
+    IDENTITY_MAP_CONFIG * devIdToMacArray;
 } IDENTITY_MAP_DATA;
 
 #define VALID_MAP_HANDLE    0xDEAF
@@ -3737,7 +3737,7 @@ BEGIN_TEST_SUITE(idmap_ut)
 
 
         ///Act
-		MODULE_RECEIVE(theAPIS)(n, m);
+        MODULE_RECEIVE(theAPIS)(n, m);
 
         ///Assert
         mocks.AssertActualAndExpectedCalls();

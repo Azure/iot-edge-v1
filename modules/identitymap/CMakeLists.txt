@@ -2,14 +2,13 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for the identitymap module
 
 set(identity_map_sources
-	./src/identitymap.c
+    ./src/identitymap.c
 )
 
 set(identity_map_headers
-	./inc/identitymap.h
+    ./inc/identitymap.h
 )
 
 include_directories(./inc)
@@ -30,7 +29,7 @@ linkSharedUtil(identity_map_static)
 add_module_to_solution(identity_map)
 
 if(install_modules)
-	install(TARGETS identity_map LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS identity_map LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 
 add_subdirectory(tests)

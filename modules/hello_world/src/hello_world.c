@@ -180,12 +180,12 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 
 static const MODULE_API_1 HelloWorld_API_all =
 {
-	{MODULE_API_VERSION_1},
-	HelloWorld_CreateFromJson,
-	HelloWorld_Create,
-	HelloWorld_Destroy,
-	HelloWorld_Receive,
-	HelloWorld_Start
+    {MODULE_API_VERSION_1},
+    HelloWorld_CreateFromJson,
+    HelloWorld_Create,
+    HelloWorld_Destroy,
+    HelloWorld_Receive,
+    HelloWorld_Start
 };
 
 #ifdef BUILD_MODULE_TYPE_STATIC
@@ -194,14 +194,14 @@ MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(HELLOWORLD_MODULE)(const MO
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
 #endif
 {
-	const MODULE_API * api;
-	if (gateway_api_version >= HelloWorld_API_all.base.version)
-	{
-		api= (const MODULE_API*)&HelloWorld_API_all;
-	}
-	else
-	{
-		api = NULL;
-	}
-	return api;
+    const MODULE_API * api;
+    if (gateway_api_version >= HelloWorld_API_all.base.version)
+    {
+        api= (const MODULE_API*)&HelloWorld_API_all;
+    }
+    else
+    {
+        api = NULL;
+    }
+    return api;
 }

@@ -10,8 +10,8 @@ int main(int argc, char** argv)
 {
     GATEWAY_HANDLE gateway;
 
-	platform_init();
-	
+    platform_init();
+    
     if (argc != 2)
     {
         printf("usage: azure_functions_sample configFile\n");
@@ -28,8 +28,8 @@ int main(int argc, char** argv)
             printf("gateway successfully created from JSON\n");
             printf("gateway shall run until ENTER is pressed\n");
             (void)getchar();
-            Gateway_LL_Destroy(gateway);
+            Gateway_Destroy(gateway);
         }
     }
-	return 0;
+    return 0;
 }

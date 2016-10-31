@@ -2151,7 +2151,7 @@ BEGIN_TEST_SUITE(logger_ut)
         const MODULE_API* result = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-		ASSERT_IS_NOT_NULL(result);
+        ASSERT_IS_NOT_NULL(result);
 
         ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(result) != NULL);
         ASSERT_IS_TRUE(MODULE_CREATE(result) != NULL);

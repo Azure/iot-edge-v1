@@ -14,7 +14,7 @@ ${theseTestsName}.cpp
 
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
-	set(modules_c_file ./module_config_windows.c)
+    set(modules_c_file ./module_config_windows.c)
 elseif(LINUX)
     set(modules_c_file ./module_config_linux.c)
 endif()
@@ -36,38 +36,38 @@ include_directories(${GW_INC})
 build_test_artifacts(${theseTestsName} ON)
 
 if(WIN32)
-	if(TARGET ${theseTestsName}_dll)
-		target_link_libraries(${theseTestsName}_dll
-			gateway
-			iothub_test
-			rpcrt4
-			iothub_client_http_transport
-		)
-	endif()
-	
-	if(TARGET ${theseTestsName}_exe)
-		target_link_libraries(${theseTestsName}_exe
-			gateway
-			iothub_test
-			rpcrt4
-			iothub_client_http_transport
-		)	
-		install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-	endif()
+    if(TARGET ${theseTestsName}_dll)
+        target_link_libraries(${theseTestsName}_dll
+            gateway
+            iothub_test
+            rpcrt4
+            iothub_client_http_transport
+        )
+    endif()
+    
+    if(TARGET ${theseTestsName}_exe)
+        target_link_libraries(${theseTestsName}_exe
+            gateway
+            iothub_test
+            rpcrt4
+            iothub_client_http_transport
+        )    
+        install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+    endif()
 else()
-	if(TARGET ${theseTestsName}_exe)
-		target_link_libraries(${theseTestsName}_exe
-			iothub_test
-			gateway
-			aziotsharedutil
-			uuid
-			iothub_service_client
-			iothub_client_http_transport
-		)
-		target_link_libraries(${theseTestsName}_exe pthread)
-		linkUAMQP(${theseTestsName}_exe)	
-		linkHttp(${theseTestsName}_exe)
-	endif()
+    if(TARGET ${theseTestsName}_exe)
+        target_link_libraries(${theseTestsName}_exe
+            iothub_test
+            gateway
+            aziotsharedutil
+            uuid
+            iothub_service_client
+            iothub_client_http_transport
+        )
+        target_link_libraries(${theseTestsName}_exe pthread)
+        linkUAMQP(${theseTestsName}_exe)    
+        linkHttp(${theseTestsName}_exe)
+    endif()
 
 endif()
 

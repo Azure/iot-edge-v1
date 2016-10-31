@@ -4,11 +4,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(azure_functions_sources
-	./src/azure_functions.c
+    ./src/azure_functions.c
 )
 
 set(azure_functions_headers
-	./inc/azure_functions.h
+    ./inc/azure_functions.h
 )
 
 include_directories(./inc)
@@ -29,7 +29,7 @@ linkSharedUtil(azure_functions_static)
 add_module_to_solution(azure_functions)
 
 if(install_executables)
-	install(TARGETS azure_functions LIBRARY DESTINATION lib) 
+    install(TARGETS azure_functions LIBRARY DESTINATION lib) 
 endif()
 
 add_subdirectory(tests)

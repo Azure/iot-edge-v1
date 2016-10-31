@@ -2,10 +2,9 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for hello_world sample
 
 set(hello_world_sources
-	./src/main.c
+    ./src/main.c
 )
 if(WIN32)
     set(hello_world_sources 

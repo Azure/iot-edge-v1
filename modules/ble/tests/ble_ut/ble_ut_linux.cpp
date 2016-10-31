@@ -4151,7 +4151,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
-	STRING_delete(instr1.characteristic_uuid);
+    STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_020: [ BLE_Receive shall ignore all messages except those that have the following properties:
@@ -4223,7 +4223,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
-	STRING_delete(instr1.characteristic_uuid);
+    STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_020: [ BLE_Receive shall ignore all messages except those that have the following properties:
@@ -4297,7 +4297,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
-	STRING_delete(instr1.characteristic_uuid);
+    STRING_delete(instr1.characteristic_uuid);
     }
 
     /*Tests_SRS_BLE_13_022: [ BLE_Receive shall ignore the message unless the 'macAddress' property matches the MAC address that was passed to this module when it was created. ]*/
@@ -4366,7 +4366,7 @@ BEGIN_TEST_SUITE(ble_ut)
         Map_Destroy(properties);
         Message_Destroy(message);
         VECTOR_destroy(instructions);
-	STRING_delete(instr1.characteristic_uuid);
+    STRING_delete(instr1.characteristic_uuid);
     }
 
     TEST_FUNCTION(BLE_Receive_does_nothing_when_message_does_not_have_content)

@@ -41,16 +41,16 @@ process_args $*
 
 # -----------------------------------------------------------------------------
 # -- How to build Wind River Linux for our project:
-# 1.	Acquire the Wind River Linux toolchain installer (licensed software)
-# 2.	Make sure the installer is executable and run it from the console to
+# 1.    Acquire the Wind River Linux toolchain installer (licensed software)
+# 2.    Make sure the installer is executable and run it from the console to
 #        extract the toolchain (example): 
 # ./wrlinux-7.0.0.13-glibc-x86_64-intel_baytrail_64-wrlinux-image-idp-sdk.sh
 # 3.    By default, will install to a directory like:
 #           /opt/windriver/wrlinux/7.0-intel-baytrail-64
 #           (see $toolchain_root above)
-# 4.	Use env.sh to setup your environment: 
+# 4.    Use env.sh to setup your environment: 
 #       . /opt/windriver/wrlinux/7.0-intel-baytrail-64/env.sh
-# 5.	Now you can navigate to the SDK build directory and use cmake to 
+# 5.    Now you can navigate to the SDK build directory and use cmake to 
 #       compile as normal. You will notice that gcc and libs from the 
 #       windriver sysroot are now used.
 # -----------------------------------------------------------------------------

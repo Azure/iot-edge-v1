@@ -2,10 +2,9 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for hello_world sample
 
 set(dotnet_binding_sample_sources
-	./src/main.c
+    ./src/main.c
     ./src/dotnet_binding_sample.json
 )
 

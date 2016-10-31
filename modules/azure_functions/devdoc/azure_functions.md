@@ -23,8 +23,8 @@ adds an HTTP HEADER for key/code credential (if key configurations if present).
 typedef struct AZURE_FUNCTIONS_CONFIG_TAG
 {
     STRING_HANDLE hostAddress;
-	STRING_HANDLE relativePath;
-	STRING_HANDLE securityKey;
+    STRING_HANDLE relativePath;
+    STRING_HANDLE securityKey;
 } AZURE_FUNCTIONS_CONFIG;
 
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
@@ -117,8 +117,8 @@ The valid module handle will be a pointer to the structure:
 ```C
 typedef struct AZURE_FUNCTIONS_DATA_TAG
 {
-	BROKER_HANDLE broker;
-	AZURE_FUNCTIONS_CONFIG *AzureFunctionsConfiguration;
+    BROKER_HANDLE broker;
+    AZURE_FUNCTIONS_CONFIG *AzureFunctionsConfiguration;
 } AZURE_FUNCTIONS_DATA;
 ```    
 

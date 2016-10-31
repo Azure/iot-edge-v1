@@ -502,8 +502,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_happy_path)
     //assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-	//cleanup
-	MODULE_DESTROY(apis)(result);
+    //cleanup
+    MODULE_DESTROY(apis)(result);
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */

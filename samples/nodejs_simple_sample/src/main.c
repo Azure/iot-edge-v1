@@ -39,7 +39,7 @@ int main(int argc, char*argv[])
                 }
 
                 printf("Gateway is quitting\r\n");
-                Gateway_LL_Destroy(gateway);
+                Gateway_Destroy(gateway);
             }
             platform_deinit();
         }

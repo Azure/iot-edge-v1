@@ -6,7 +6,7 @@
 //Windows Service not yet supported. 
 int configureAsAService(void)
 {
-	return 0;
+    return 0;
 }
 
 

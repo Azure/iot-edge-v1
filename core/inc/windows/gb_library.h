@@ -28,7 +28,7 @@ so we are free to define our own for testing
 #define LoadLibraryA         LoadLibraryA_never_called_never_implemented_always_forgotten
 #define FreeLibrary          FreeLibrary_never_called_never_implemented_always_forgotten
 #define GetProcAddress       GetProcAddress_never_called_never_implemented_always_forgotten
-#define GetLastError		 GetLastError_never_called_never_implemented_always_forgotten
+#define GetLastError         GetLastError_never_called_never_implemented_always_forgotten
 #define GetCurrentDirectoryA GetCurrentDirectoryA_never_called_never_implemented_always_forgotten
 
 #include <windows.h>

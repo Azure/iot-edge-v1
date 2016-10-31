@@ -4,13 +4,15 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 compileAsC99()
+
 set(theseTestsName logger_ut)
+
 set(${theseTestsName}_cpp_files
-${theseTestsName}.cpp
+    ${theseTestsName}.cpp
 )
 
 set(${theseTestsName}_c_files
-	../../src/logger.c
+    ../../src/logger.c
 )
 
 set(${theseTestsName}_h_files

@@ -4,14 +4,14 @@ This document provides a detailed overview of the Hello World sample [code](../s
 
 #The walkthrough covers
 
-1.	**Dev box setup** - steps necessary to build and run the sample
-2.	**Concepts** - conceptual overview of the components that compose any gateway created with the SDK  
-3.	**Hello World sample architecture** - describes how the concepts apply to the sample and how the components fit together
-4.	**Detailed architecture** - detailed view of the Hello World sample's architecture
+1.  **Dev box setup** - steps necessary to build and run the sample
+2.  **Concepts** - conceptual overview of the components that compose any gateway created with the SDK  
+3.  **Hello World sample architecture** - describes how the concepts apply to the sample and how the components fit together
+4.  **Detailed architecture** - detailed view of the Hello World sample's architecture
 5.  **How to build the sample**
 6.  **How to run the sample** 
 7.  **Typical output** - example of typical output when the hello world sample is run on Linux or Windows
-8.	**Code snippets** - code snippets which show how and where the Hello World sample implements key gateway components 
+8.  **Code snippets** - code snippets which show how and where the Hello World sample implements key gateway components 
 
 ##Dev box setup 
 
@@ -52,8 +52,8 @@ This is enough background to actually start discussing the Hello World sample.
 ##Hello World sample architecture
 
 Before diving into the details of filtering messages based on properties or links, first think of the Hello World sample simply in terms of modules. The sample is made up of a pipeline of two modules:
--	A "hello world" module
--	A logger module
+-  A "hello world" module
+-  A logger module
 
 The "hello world" module creates a message every 5 seconds and passes it to the logger module. The logger module simply writes the message to a file. 
 
@@ -129,14 +129,14 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
             "module name" : "logger",
             "module path" : "./modules/logger/liblogger.so",
             "args" : 
-			{
-				"filename":"log.txt"
-			}
+            {
+                "filename":"log.txt"
+            }
         },
         {
             "module name" : "hello_world",
             "module path" : "./modules/hello_world/libhello_world.so",
-			"args" : null
+            "args" : null
         }
     ],
     "links": 
@@ -173,14 +173,14 @@ This is an example of a JSON settings file for Windows. that will write to `log.
             "module name" : "logger",
             "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
             "args" : 
-			{
-				"filename":"log.txt"
-			}
+            {
+                "filename":"log.txt"
+            }
         },
         {
             "module name" : "hello_world",
              "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll",
-			"args" : null
+            "args" : null
         }
     ],
     "links": 
@@ -205,29 +205,29 @@ Below is an example of typical output that is written to the log file when the H
 
 ```json
 [{
-	"time": "Mon Apr 11 13:48:07 2016",
-	"content": "Log started"
+    "time": "Mon Apr 11 13:48:07 2016",
+    "content": "Log started"
 }, {
-	"time": "Mon Apr 11 13:48:48 2016",
-	"properties": {
-		"helloWorld": "from Azure IoT Gateway SDK simple sample!"
-	},
-	"content": "aGVsbG8gd29ybGQ="
+    "time": "Mon Apr 11 13:48:48 2016",
+    "properties": {
+        "helloWorld": "from Azure IoT Gateway SDK simple sample!"
+    },
+    "content": "aGVsbG8gd29ybGQ="
 }, {
-	"time": "Mon Apr 11 13:48:55 2016",
-	"properties": {
-		"helloWorld": "from Azure IoT Gateway SDK simple sample!"
-	},
-	"content": "aGVsbG8gd29ybGQ="
+    "time": "Mon Apr 11 13:48:55 2016",
+    "properties": {
+        "helloWorld": "from Azure IoT Gateway SDK simple sample!"
+    },
+    "content": "aGVsbG8gd29ybGQ="
 }, {
-	"time": "Mon Apr 11 13:49:01 2016",
-	"properties": {
-		"helloWorld": "from Azure IoT Gateway SDK simple sample!"
-	},
-	"content": "aGVsbG8gd29ybGQ="
+    "time": "Mon Apr 11 13:49:01 2016",
+    "properties": {
+        "helloWorld": "from Azure IoT Gateway SDK simple sample!"
+    },
+    "content": "aGVsbG8gd29ybGQ="
 }, {
-	"time": "Mon Apr 11 13:49:04 2016",
-	"content": "Log stopped"
+    "time": "Mon Apr 11 13:49:04 2016",
+    "content": "Log stopped"
 }]
 ```
 
@@ -254,9 +254,9 @@ int main(int argc, char** argv)
         printf("gateway successfully created from JSON\n");
         printf("gateway shall run until ENTER is pressed\n");
         (void)getchar();
-        Gateway_LL_Destroy(gateway);
+        Gateway_Destroy(gateway);
     }
-	return 0;
+    return 0;
 }
 ```
  
@@ -290,7 +290,7 @@ The JSON below is the code from one of the JSON files (hello_world_lin.json)[(..
         {
             "module name" : "hello_world",
             "module path" : "./modules/hello_world/libhello_world.so",
-			"args" : null
+            "args" : null
         }
     ],
     "links": 

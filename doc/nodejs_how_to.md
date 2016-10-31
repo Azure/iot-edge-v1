@@ -43,7 +43,9 @@ In order to run a gateway with a Node.js module do the following:
   "modules": [
     {
       "module name": "node_printer",
-      "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll",
+      "loading args" : {
+        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+      }
       "args": {
         "main_path": "../../../../samples/nodejs_simple_sample/nodejs_modules/printer.js",
         "args": null
@@ -51,7 +53,9 @@ In order to run a gateway with a Node.js module do the following:
     },
     {
       "module name": "node_sensor",
-      "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll",
+      "loading args" : {
+        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+      }
       "args": {
         "main_path": "../../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js",
         "args": null
@@ -59,7 +63,9 @@ In order to run a gateway with a Node.js module do the following:
     },
     {
       "module name": "Logger",
-      "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
+      "loading args" : {
+        "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+      }
       "args": {
         "filename": "Log.txt"
       }
@@ -87,7 +93,9 @@ Here is a sample of the gateway_sample.json file filled:
   "modules": [
     {
       "module name": "node_printer",
-      "module path": "../../bindings/nodejs/libnodejs_binding.so",
+      "loading args" : {
+        "module path": "../../bindings/nodejs/libnodejs_binding.so"
+      }
       "args": {
         "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js",
         "args": null
@@ -95,7 +103,9 @@ Here is a sample of the gateway_sample.json file filled:
     },
     {
       "module name": "node_sensor",
-      "module path": "../../bindings/nodejs/libnodejs_binding.so",
+      "loading args" : {
+        "module path": "../../bindings/nodejs/libnodejs_binding.so"
+      }
       "args": {
         "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js",
         "args": null
@@ -103,7 +113,9 @@ Here is a sample of the gateway_sample.json file filled:
     },
     {
       "module name": "Logger",
-      "module path": "../../modules/logger/liblogger.so",
+      "loading args" : {
+        "module path": "../../modules/logger/liblogger.so"
+      }
       "args": {
         "filename": "log.txt"
       }

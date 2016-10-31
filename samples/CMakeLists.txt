@@ -2,11 +2,10 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.11)
-#this is CMakeLists for samples folder
 
 add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
-add_subdirectory(callbacks_sample)
+add_subdirectory(experimental/events_sample)
 add_subdirectory(azure_functions_sample)
 
 if(${enable_dotnet_binding})

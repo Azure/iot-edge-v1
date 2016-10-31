@@ -60,16 +60,16 @@ stucture and assign its pointer to
 
 Once the JSON parsing is complete, and all the `GATEWAY_MODULES_ENTRY`s have 
 been put into the `GATEWAY_PROPERTIES` structure, `Gateway_CreateFromJson` will 
-call `Gateway_LL_Create`.
+call `Gateway_Create`.
 
-### Gateway\_LL\_Create
+### Gateway\_Create
 
-In order to get the `MODULE_API` for each module, `Gateway_LL_Create` 
+In order to get the `MODULE_API` for each module, `Gateway_Create` 
 will call the `GATEWAY_MODULES_ENTRY::loader_api->Load` function, passing in  
 `GATEWAY_MODULES_ENTRY::loader_configuration`, to get the library handle.  Then 
 it will call the `GetApi` function with the new library handle.
 
-### Dynamic\_Module\_Loader
+### DynamicLoader\_GetApi
 
 `DynamicLoader_GetApi` implements the `MODULE_LOADER_API` API. When `Load` is 
 called, it will take the module path and load the shared library using the 
@@ -85,7 +85,7 @@ function, and deallocate the `MODULE_LIBRARY_HANDLE`.
 When calling `Gateway_CreateFromJson`, all modules are by default loaded with 
 the `DynamicLoader_GetApi`. However, you may specify a different module loader 
 if you create your own vector of `GATEWAY_MODULES_ENTRY`, assign your custom 
-`MODULE_LOADER_API` call `Gateway_LL_Create` directly. A custom module loader 
+`MODULE_LOADER_API` call `Gateway_Create` directly. A custom module loader 
 needs to implement all the functions in the `MODULE_LOADER_API` structure:
 
 ```c
@@ -105,7 +105,7 @@ typedef struct MODULE_LOADER_API
 
 This function is to be implemented by the module loader creator. 
 
-`MODULE_LOADER_API::Load` accepts a void\* as input, and `Gateway_LL_Create` will 
+`MODULE_LOADER_API::Load` accepts a void\* as input, and `Gateway_Create` will 
 pass to the loader the `GATEWAY_MODULES_ENTRY::loader_configuration` for the 
 module entry in `GATEWAY_PROPERTIES`.  The module handle should produce an 
 opaque `MODULE_LIBRARY_HANDLE` which will be used for subsequent calls to 
@@ -137,5 +137,5 @@ If the function fails internally, it should return `NULL`.
 ### Calling the custom module loader.
 
 The gateway creator would be responsible for constructing the 
-`GATEWAY_PROPERTIES` vector, assigning a `MODULE_LOADER_API` for each module entry, and calling `Gateway_LL_Create`.  See the [Gateway requirements](gateway_ll_requirements.md) for details on this function.
+`GATEWAY_PROPERTIES` vector, assigning a `MODULE_LOADER_API` for each module entry, and calling `Gateway_Create`.  See the [Gateway requirements](gateway_requirements.md) for details on this function.
 

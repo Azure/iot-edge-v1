@@ -21,7 +21,7 @@ doc_target_dir=$build_root/doc/api_reference/java
 echo Copying Java binding API docs to $doc_target_dir
 if [ -d $doc_target_dir ]
 then
-	rm -rf $doc_target_dir
+    rm -rf $doc_target_dir
 fi
 mkdir -p $doc_target_dir
 cp -r target/site/apidocs/* $doc_target_dir

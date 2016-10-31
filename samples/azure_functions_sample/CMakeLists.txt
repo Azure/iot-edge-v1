@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(azure_functions_sources
-	./src/main.c
+    ./src/main.c
 )
 if(WIN32)
     set(azure_functions_sources 

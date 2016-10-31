@@ -7,18 +7,18 @@
 /* Codes_SRS_DYNAMIC_LIBRARY_17_001: [DynamicLibrary_LoadLibrary shall make the OS system call to load the named library, returning an opaque pointer as a library reference.] */
 DYNAMIC_LIBRARY_HANDLE DynamicLibrary_LoadLibrary(const char* dynamicLibraryFileName)
 {
-	return dlopen(dynamicLibraryFileName, RTLD_LAZY);
+    return dlopen(dynamicLibraryFileName, RTLD_LAZY);
 }
 
 /*Codes_SRS_DYNAMIC_LIBRARY_17_002: [DynamicLibrary_UnloadLibrary shall make the OS system call to unload the library referenced by libraryHandle.] */
 void DynamicLibrary_UnloadLibrary(DYNAMIC_LIBRARY_HANDLE libraryHandle)
 {
-	dlclose(libraryHandle);
+    dlclose(libraryHandle);
 }
 
 /*Codes_SRS_DYNAMIC_LIBRARY_17_003: [DynamicLibrary_FindSymbol shall make the OS system call to look up symbolName in the library referenced by libraryHandle.]*/
 void* DynamicLibrary_FindSymbol(DYNAMIC_LIBRARY_HANDLE libraryHandle, const char* symbolName)
 {
-	return dlsym(libraryHandle, symbolName);
+    return dlsym(libraryHandle, symbolName);
 }
 

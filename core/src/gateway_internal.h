@@ -12,31 +12,34 @@ extern "C"
 #endif
 
 typedef struct MODULE_DATA_TAG {
-    /** @brief The name of the module added. This name is unique on a gateway. */
+    /** @brief  The name of the module added. This name is unique on a gateway.
+     */
     char* module_name;
 
-    /** @brief The MODULE_LIBRARY_HANDLE associated with 'module'*/
+    /** @brief  The MODULE_LIBRARY_HANDLE associated with 'module' */
     MODULE_LIBRARY_HANDLE module_library_handle;
 
-	/** @brief The API to load and unload this module. */
-	const MODULE_LOADER_API * module_loader;
+    /** @brief  The API to load and unload this module. */
+    const MODULE_LOADER_API * module_loader;
 
-    /** @brief The MODULE_HANDLE of the same module that lives on the message broker.*/
+    /** @brief  The MODULE_HANDLE of the same module that lives on the message
+     *          broker.
+     */
     MODULE_HANDLE module;
 } MODULE_DATA;
 
 typedef struct GATEWAY_HANDLE_DATA_TAG {
 
-    /** @brief Vector of MODULE_DATA modules that the Gateway must track */
+    /** @brief  Vector of MODULE_DATA modules that the Gateway must track */
     VECTOR_HANDLE modules;
 
-    /** @brief The message broker contained within this Gateway */
+    /** @brief  The message broker contained within this Gateway */
     BROKER_HANDLE broker;
 
-    /** @brief Handle for callback event system coupled with this Gateway */
+    /** @brief  Handle for callback event system coupled with this Gateway */
     EVENTSYSTEM_HANDLE event_system;
 
-    /** @brief Vector of LINK_DATA links that the Gateway must track */
+    /** @brief  Vector of LINK_DATA links that the Gateway must track */
     VECTOR_HANDLE links;
 } GATEWAY_HANDLE_DATA;
 

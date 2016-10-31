@@ -44,11 +44,11 @@ Each module that is connected to the broker is represented using a structure of 
 typedef struct MODULE_INFO_TAG
 {
     MODULE_HANDLE           module;
-    MODULE_API             module_api;
+    MODULE_API              module_api;
     THREAD_HANDLE           thread;
     int                     receive_socket;
-    LOCK_HANDLE				socket_lock;
-    STRING_HANDLE			quit_message_guid;
+    LOCK_HANDLE             socket_lock;
+    STRING_HANDLE           quit_message_guid;
 }MODULE_INFO;
 ```
 

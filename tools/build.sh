@@ -49,7 +49,7 @@ process_args ()
       then
         # save arg to pass as toolchain file
         toolchainfile="$arg"
-		save_next_arg=0
+        save_next_arg=0
       else
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;

@@ -266,16 +266,16 @@ static void BLE_C2D_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 }
 
 /*
- *	Required for all modules: the public API and the designated implementation functions.
+ *    Required for all modules: the public API and the designated implementation functions.
  */
 static const MODULE_API_1 BLE_C2D_APIS_all =
 {
-	{MODULE_API_VERSION_1},
-	BLE_C2D_CreateFromJson,
-	BLE_C2D_Create,
-	BLE_C2D_Destroy,
-	BLE_C2D_Receive,
-	NULL
+    {MODULE_API_VERSION_1},
+    BLE_C2D_CreateFromJson,
+    BLE_C2D_Create,
+    BLE_C2D_Destroy,
+    BLE_C2D_Receive,
+    NULL
 };
 
 

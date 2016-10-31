@@ -11,9 +11,9 @@ ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-	../../src/java_module_host.c
-	../real_vector.c
-	../real_string.c
+    ../../src/java_module_host.c
+    ../real_vector.c
+    ../real_string.c
 )
 
 set(${theseTestsName}_h_files

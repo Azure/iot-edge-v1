@@ -4,11 +4,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 set(simulated_device_sources
-	./src/simulated_device.c
+    ./src/simulated_device.c
 )
 
 set(simulated_device_headers
-	./inc/simulated_device.h
+    ./inc/simulated_device.h
 )
 
 include_directories(./inc)
@@ -29,6 +29,6 @@ linkSharedUtil(simulated_device_static)
 add_module_to_solution(simulated_device)
 
 if(install_modules)
-	install(TARGETS simulated_device LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
+    install(TARGETS simulated_device LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 

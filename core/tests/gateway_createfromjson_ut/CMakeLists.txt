@@ -4,20 +4,23 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 compileAsC99()
-set(testSuite gateway_ll_ut)
+set(testSuite gateway_createfromjson_ut)
 set(${testSuite}_cpp_files
     ${testSuite}.cpp
 )
 
 set(${testSuite}_c_files
-    ../../src/gateway_ll.c
+    ../../src/gateway_createfromjson.c
     ../../src/gateway_internal.c
 )
 
 set(${testSuite}_h_files
-    ../../inc/gateway_ll.h
+    ../../inc/gateway.h
 )
 
-include_directories(${GW_INC})
+include_directories(
+    ${GW_INC}
+    ../../parson/
+)
 
 build_test_artifacts(${testSuite} ON)

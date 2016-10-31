@@ -8,7 +8,7 @@
 #ifndef EVENT_SYSTEM_H
 #define EVENT_SYSTEM_H
 
-#include "gateway_ll.h"
+#include "gateway.h"
 
 #ifdef __cplusplus
 extern "C"
