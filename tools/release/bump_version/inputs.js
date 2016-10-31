@@ -85,4 +85,16 @@ module.exports = [
         "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
         "replaceString": "bindings.java"
     },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/java_sample/src/java_sample_lin.json",
+        "search": "\\d+\.\\d+\.\\d+",
+        "replaceString": "bindings.java"
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/java_sample/src/java_sample_win.json",
+        "search": "\\d+\.\\d+\.\\d+",
+        "replaceString": "bindings.java"
+    }
 ];
