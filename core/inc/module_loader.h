@@ -1,6 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+/** @file       module_loader.h
+ *  @brief      Definition of the functions and structures that must be
+ *              implemented by a gateway module loader.
+ *
+ *  @details    A gateway module loader library must make available to the
+ *              gateway application (e.g. via a function) an instance of the
+ *              #MODULE_LOADER_API structure. This structure must contain valid
+ *              pointers to functions that can be invoked by the gateway to load
+ *              and unload a gateway module, and get its interface.
+ */
+
 #ifndef MODULE_LOADER_H
 #define MODULE_LOADER_H
 

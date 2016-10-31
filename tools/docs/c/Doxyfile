@@ -772,9 +772,10 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = mainpage.dox \
+             ../../../core/inc/broker.h \
+             ../../../core/inc/dynamic_loader.h \
              ../../../core/inc/gateway.h \
              ../../../core/inc/message.h \
-             ../../../core/inc/broker.h \
              ../../../core/inc/module.h \
              ../../../core/inc/module_loader.h \
 

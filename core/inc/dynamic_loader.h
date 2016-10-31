@@ -1,6 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+/** @file       dynamic_loader.h
+ *  @brief      Library for loading gateway modules from dynamically-linked
+ *              libraries (Windows) or shared objects (Linux).
+ *
+ *  @details    The gateway SDK uses this module loader library by default to
+ *              load modules from DLLs or SOs.
+ */
+
 #ifndef DYNAMIC_LOADER_H
 #define DYNAMIC_LOADER_H
 
