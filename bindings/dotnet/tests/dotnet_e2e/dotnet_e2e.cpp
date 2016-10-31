@@ -84,30 +84,30 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_a
 
 MODULE_LIBRARY_HANDLE E2E_Loader_Load(const void * config)
 {
-	return (MODULE_LIBRARY_HANDLE)&E2E_APIS_all;
+    return (MODULE_LIBRARY_HANDLE)&E2E_APIS_all;
 }
 void E2E_Loader_Unload(MODULE_LIBRARY_HANDLE handle)
 {
-	return;
+    return;
 }
 const MODULE_API* E2E_Loader_GetApi(MODULE_LIBRARY_HANDLE handle)
 {
-	const MODULE_API* result;
-	if (handle != NULL)
-	{
-		result = (const MODULE_API*)handle;
-	}
-	else
-	{
-		result = NULL;
-	}
-	return result;
+    const MODULE_API* result;
+    if (handle != NULL)
+    {
+        result = (const MODULE_API*)handle;
+    }
+    else
+    {
+        result = NULL;
+    }
+    return result;
 }
 const MODULE_LOADER_API E2E_Loader_api =
 {
-	E2E_Loader_Load,
-	E2E_Loader_Unload,
-	E2E_Loader_GetApi
+    E2E_Loader_Load,
+    E2E_Loader_Unload,
+    E2E_Loader_GetApi
 };
 
 BEGIN_TEST_SUITE(dotnet_e2e)
@@ -143,88 +143,88 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 
 TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 {
-	///arrange
-	GATEWAY_MODULES_ENTRY modulesEntryArray[3];
+    ///arrange
+    GATEWAY_MODULES_ENTRY modulesEntryArray[3];
 
-	//Add Managed Module 1
-	const DOTNET_HOST_CONFIG senderConfig{
-		"E2ETestModule",
-		"E2ETestModule.DotNetE2ETestModule",
-		"Sender"
-	};
+    //Add Managed Module 1
+    const DOTNET_HOST_CONFIG senderConfig{
+        "E2ETestModule",
+        "E2ETestModule.DotNetE2ETestModule",
+        "Sender"
+    };
 
     const DYNAMIC_LOADER_CONFIG loader_cfg =
     {
         "..\\..\\..\\Debug\\dotnet.dll"
     };
 
-	const char * nameModuleSender = "Sender";
+    const char * nameModuleSender = "Sender";
 
-	modulesEntryArray[0] = {
-		nameModuleSender,
-		&loader_cfg,
-		DynamicLoader_GetApi(),
-		&senderConfig
-	};
+    modulesEntryArray[0] = {
+        nameModuleSender,
+        &loader_cfg,
+        DynamicLoader_GetApi(),
+        &senderConfig
+    };
 
-	//Add Managed Module 2
-	const DOTNET_HOST_CONFIG receiverConfig{
-		"E2ETestModule",
-		"E2ETestModule.DotNetE2ETestModule",
-		"Receiver"
-	};
+    //Add Managed Module 2
+    const DOTNET_HOST_CONFIG receiverConfig{
+        "E2ETestModule",
+        "E2ETestModule.DotNetE2ETestModule",
+        "Receiver"
+    };
 
-	const char * nameModuleReceiver = "Receiver";
-	modulesEntryArray[1] = {
-		nameModuleReceiver,
-		&loader_cfg,
-		DynamicLoader_GetApi(),
-		&receiverConfig
-	};
+    const char * nameModuleReceiver = "Receiver";
+    modulesEntryArray[1] = {
+        nameModuleReceiver,
+        &loader_cfg,
+        DynamicLoader_GetApi(),
+        &receiverConfig
+    };
 
-	//Add test probe module
+    //Add test probe module
 
-	const char * nameProbeModule = "probe test";
-	modulesEntryArray[2] = {
-		nameProbeModule,
-		NULL,
-		&E2E_Loader_api,
-		NULL
-	};
+    const char * nameProbeModule = "probe test";
+    modulesEntryArray[2] = {
+        nameProbeModule,
+        NULL,
+        &E2E_Loader_api,
+        NULL
+    };
 
-	//Now set the links. From Sender -> Receiver and from both to Test probe
-	GATEWAY_LINK_ENTRY linksArray[3];
+    //Now set the links. From Sender -> Receiver and from both to Test probe
+    GATEWAY_LINK_ENTRY linksArray[3];
 
-	// sender to test probe
-	linksArray[0] = {
-		nameModuleSender,
-		nameProbeModule
-	};
+    // sender to test probe
+    linksArray[0] = {
+        nameModuleSender,
+        nameProbeModule
+    };
 
-	// sender to receiver
-	linksArray[1] = {
-		nameModuleSender,
-		nameModuleReceiver
-	};
+    // sender to receiver
+    linksArray[1] = {
+        nameModuleSender,
+        nameModuleReceiver
+    };
 
-	// receiver to test probe
-	linksArray[2] = {
-		nameModuleReceiver,
-		nameProbeModule
-	};
+    // receiver to test probe
+    linksArray[2] = {
+        nameModuleReceiver,
+        nameProbeModule
+    };
 
-	///act    
-	GATEWAY_PROPERTIES properties;
-	properties.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
-	properties.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
-	ASSERT_IS_NOT_NULL(properties.gateway_modules);
-	ASSERT_IS_NOT_NULL(properties.gateway_links);
-	VECTOR_push_back(properties.gateway_modules, modulesEntryArray, 3);
-	VECTOR_push_back(properties.gateway_links, linksArray, 3);
+    ///act    
+    GATEWAY_PROPERTIES properties;
+    properties.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+    properties.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+    ASSERT_IS_NOT_NULL(properties.gateway_modules);
+    ASSERT_IS_NOT_NULL(properties.gateway_links);
+    VECTOR_push_back(properties.gateway_modules, modulesEntryArray, 3);
+    VECTOR_push_back(properties.gateway_links, linksArray, 3);
 
-	GATEWAY_HANDLE e2eGatewayInstance = Gateway_Create(&properties);
+    GATEWAY_HANDLE e2eGatewayInstance = Gateway_Create(&properties);
 
-	Gateway_Start(e2eGatewayInstance);
+    Gateway_Start(e2eGatewayInstance);
 
     ///assert
     ASSERT_IS_NOT_NULL(e2eGatewayInstance);
