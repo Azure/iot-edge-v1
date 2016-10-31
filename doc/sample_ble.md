@@ -23,7 +23,7 @@ How does the data flow through the Gateway
 
 The telemetry upload data flow pipeline is best described via a block diagram:
 
-![](./media/gateway_ble_upload_data_flow.png)
+![](./media/ACOM/gateway_ble_upload_data_flow.png)
 
 Here's the journey that a piece of telemetry data takes originating from a BLE
 device before finding its way to an Azure IoT Hub.
@@ -46,7 +46,7 @@ device before finding its way to an Azure IoT Hub.
 The cloud to device command data flow pipeline is described via a block diagram
 below:
 
-![](./media/gateway_ble_command_data_flow.png)
+![](./media/ACOM/gateway_ble_command_data_flow.png)
 
   1. The IotHub module periodically polls Azure IoT Hub for new command
      messages that might be available.
