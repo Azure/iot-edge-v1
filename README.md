@@ -15,6 +15,7 @@ The following modules are available in this repository:
 >| iothub           | Sends/receives messages to/from mapped devices and IoT Hub              |
 >| logger           | Writes received message content to a file                               |
 >| simulated_device | Simulates a gateway-connected BLE device                                | 
+>| azure_functions  | Sends message content to an Azure Function                              | 
 
 ## Featured Modules
 Other people are creating modules for the gateway SDK too! See the **More information** link for a module to find out how to get it, who supports it, etc.
