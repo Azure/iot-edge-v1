@@ -28,20 +28,25 @@ goto args-loop
 
 :args-done
 
-REM -- use 32 bit java8 
-set JAVA_SAVE=%JAVA_HOME%
-if not "%build-platform%" equ "x64" set JAVA_HOME=%JAVA_8_32%&& set java-option=--enable-java-binding
+REM -- set JAVA_HOME based on platform 
+set "JAVA_SAVE=%JAVA_HOME%"
+if %build-platform% == x64 (
+    set "JAVA_HOME=%JAVA_8_64%"
+) else (
+    set "JAVA_HOME=%JAVA_8_32%"
+)
 
 REM -- C --
 cd %build-root%\tools
-set PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin\server;%PATH%;%NODE_LIB%
+set "PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin\server;%PATH%;%NODE_LIB%"
 
 REM -- Build first dotnet binding for End2End Test.
 call build_dotnet.cmd %*
-if errorlevel 1 goto :eof
+if errorlevel 1 goto :reset-java
 
-call build.cmd --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding %java-option% %*
-if errorlevel 1 goto :eof
+call build.cmd --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-java-binding  %*
+if errorlevel 1 goto :reset-java
 cd %build-root%
 
-set JAVA_HOME=%JAVA_SAVE%
+:reset-java
+set "JAVA_HOME=%JAVA_SAVE%"
