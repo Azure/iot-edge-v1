@@ -19,6 +19,7 @@ typedef struct IOTHUBDEVICEPING_CONFIG_TAG
     const char *EH_KEY;
     const char *EH_COMP_NAME;
     const char *EH_PARTITION_NUM;
+    const char *DataProtocol;
 } IOTHUBDEVICEPING_CONFIG; /*this needs to be passed to the Module_Create function*/
 
 typedef struct BINARY_DATA_TAG

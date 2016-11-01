@@ -16,7 +16,8 @@
                 "EH_KEY_NAME" : "[Shared access policies e.g.iothubowner]",
                 "EH_KEY" : "[Shared access keys]",
                 "EH_COMP_NAME" : "[Event Hub compatible name]",
-                "EH_PARTITION_NUM" : "[Number of Event Hub partitions]"
+                "EH_PARTITION_NUM" : "[Number of Event Hub partitions]",
+                "DataProtocol" : "[HTTP/AMQP/MQTT]"
             }
         }
     ],

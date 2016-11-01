@@ -30,6 +30,8 @@ of the azure-iot-gateway-sdk repository. You need to fill the following informat
 
 >`EH_PARTITION_NUM`: Go to your IoT hub 'Messaging' page and set the value to 'Partitions'.
 
+>`DataProtocol`: Three types of data protocol are supported: `HTTP`, `AMQP` and `MQTT`.
+
 - Navigate to `build/`.
 
 - Run `$ ./samples/device_ping/device_ping <path to JSON config file>`
@@ -52,6 +54,8 @@ of the azure-iot-gateway-sdk repository. You need to fill the following informat
 >`EH_COMP_NAME`: Go to your IoT hub 'Messaging' page and set the value to 'Event Hub-compatible name'.
 
 >`EH_PARTITION_NUM`: Go to your IoT hub 'Messaging' page and set the value to 'Partitions'.
+
+>`DataProtocol`: Three types of data protocol are supported: `HTTP`, `AMQP` and `MQTT`.
 
 - Navigate to `build\samples\device_ping\Debug`.
 

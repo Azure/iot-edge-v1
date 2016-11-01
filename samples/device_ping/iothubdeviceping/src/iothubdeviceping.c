@@ -5,12 +5,15 @@
 #ifdef _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+#include <ctype.h>
 #include "azure_c_shared_utility/gballoc.h"
 
 #include "iothubdeviceping.h"
 #include "iothub_client.h"
 #include "iothubtransport.h"
 #include "iothubtransporthttp.h"
+#include "iothubtransportamqp.h"
+#include "iothubtransportmqtt.h"
 #include "iothub_message.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "messageproperties.h"
@@ -70,6 +73,21 @@ typedef struct MESSAGE_RECEIVER_CONTEXT_TAG
 static const MESSAGE_COUNT = 1;
 static const int MAX_DRAIN_TIME_IN_SECONDS = 10;
 static bool g_echoreply = false;
+
+static int strcmp_i(const char* lhs, const char* rhs)
+{
+    char lc, rc;
+    int cmp;
+
+    do
+    {
+        lc = *lhs++;
+        rc = *rhs++;
+        cmp = tolower(lc) - tolower(rc);
+    } while (cmp == 0 && lc != 0 && rc != 0);
+
+    return cmp;
+}
 
 static IOTHUBMESSAGE_DISPOSITION_RESULT create_and_publish_gateway_message(MESSAGE_CONFIG messageConfig, MODULE_HANDLE moduleHandle, MESSAGE_HANDLE *messageHandle, int count)
 {
@@ -149,7 +167,6 @@ static AMQP_VALUE on_message_received(const void *context, MESSAGE_HANDLE messag
                 LogError("unable to Map_AddOrUpdate ECHOREPLY");
                 return result;
             }
-
             messageConfig.size = strlen("messaging_delivery_rejected");
             messageConfig.source = "messaging_delivery_rejected";
             messageConfig.sourceProperties = propertiesMap;
@@ -349,8 +366,6 @@ static int poll_eventhub_thread(void *param)
     xio_destroy(sasl_io);
     xio_destroy(tls_io);
     saslmechanism_destroy(sasl_mechanism_handle);
-    platform_deinit();
-
     return result;
 }
 
@@ -417,7 +432,7 @@ static int poll_eventhub_entry(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
                 int thread_result;
                 if (ThreadAPI_Join(message_receiver_context_arr[i].threadHandle, &thread_result) != THREADAPI_OK)
                 {
-                    LogError("ThreadAPI_Join() returned an error");
+                    LogError("ThreadAPI_Join() for message receiver threads returned an error");
                     return -1;
                 }
                 else
@@ -425,6 +440,8 @@ static int poll_eventhub_entry(IOTHUBDEVICEPING_HANDLE_DATA *handleData)
                     LogInfo("%d messages received by thread %d result %d\r\n", message_receiver_context_arr[i].num_message_received, message_receiver_context_arr[i].threadHandle, thread_result);
                 }
             }
+            //deinit the platform once
+            platform_deinit();
         }
         free(message_receiver_context_arr);
     }
@@ -521,6 +538,10 @@ static int device_ping_thread(void *param)
         {
             LogError("unable to Map_AddOrUpdate ECHOREUQEST");
         }
+        else if (Map_AddOrUpdate(propertiesMap, "REQUEST_PROTOCOL", moduleHandleData->config->DataProtocol) != MAP_OK)
+        {
+            LogError("unable to Map_AddOrUpdate REQUEST_PROTOCOL");
+        }
         else
         {
             MESSAGE_CONFIG messageConfig;
@@ -549,12 +570,19 @@ static int device_ping_thread(void *param)
                     Message_Destroy(messageHandle);
                     return 1;
                 }
-                IoTHubClient_LL_DoWork(moduleHandleData->iotHubClientHandle);
-                ThreadAPI_Sleep(1000);
+
+                IOTHUB_CLIENT_STATUS status;
+                while ((IoTHubClient_LL_GetSendStatus(moduleHandleData->iotHubClientHandle, &status) == IOTHUB_CLIENT_OK) && (status == IOTHUB_CLIENT_SEND_STATUS_BUSY))
+                {
+                    IoTHubClient_LL_DoWork(moduleHandleData->iotHubClientHandle);
+                    ThreadAPI_Sleep(100);
+                }
+
                 IoTHubMessage_Destroy(iotHubMessage);
             }
             Message_Destroy(messageHandle);
         }
+
     }
     return 0;
 }
@@ -616,6 +644,14 @@ static IOTHUBDEVICEPING_CONFIG *clone_iothub_device_ping_config(const IOTHUBDEVI
         {
             LogError("config->EH_PARTITION_NUM malloc returned NULL\r\n");
         }
+        if ((clonedConfig->DataProtocol = (const char *)malloc(strlen(config->DataProtocol) + 1)) != NULL)
+        {
+            memcpy((char *)clonedConfig->DataProtocol, (char *)config->DataProtocol, strlen(config->DataProtocol) + 1);
+        }
+        else
+        {
+            LogError("config->DataProtocol malloc returned NULL\r\n");
+        }
     }
     return clonedConfig;
 }
@@ -632,7 +668,8 @@ static MODULE_HANDLE IoTHubDevicePing_Create(BROKER_HANDLE brokerHandle, const v
         (((const IOTHUBDEVICEPING_CONFIG *)configuration)->EH_HOST == "NULL") ||
         (((const IOTHUBDEVICEPING_CONFIG *)configuration)->EH_KEY_NAME == "NULL") ||
         (((const IOTHUBDEVICEPING_CONFIG *)configuration)->EH_KEY == "NULL") ||
-        (((const IOTHUBDEVICEPING_CONFIG *)configuration)->EH_COMP_NAME == "NULL"))
+        (((const IOTHUBDEVICEPING_CONFIG *)configuration)->EH_COMP_NAME == "NULL") ||
+        (((const IOTHUBDEVICEPING_CONFIG *)configuration)->DataProtocol == "NULL"))
     {
         LogError("invalid arg brokerHandle=%p, configuration=%p\r\n", brokerHandle, configuration);
         result = NULL;
@@ -647,7 +684,25 @@ static MODULE_HANDLE IoTHubDevicePing_Create(BROKER_HANDLE brokerHandle, const v
         else
         {
             result->config = (IOTHUBDEVICEPING_CONFIG *)clone_iothub_device_ping_config(configuration);
-            result->iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(((const IOTHUBDEVICEPING_CONFIG *)configuration)->DeviceConnectionString, HTTP_Protocol);
+            IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
+            if (strcmp_i(((const IOTHUBDEVICEPING_CONFIG *)configuration)->DataProtocol, "MQTT") == 0)
+            {
+                transportProvider = MQTT_Protocol;
+            }
+            else if (strcmp_i(((const IOTHUBDEVICEPING_CONFIG *)configuration)->DataProtocol, "AMQP") == 0)
+            {
+                transportProvider = AMQP_Protocol;
+            }
+            else if (strcmp_i(((const IOTHUBDEVICEPING_CONFIG *)configuration)->DataProtocol, "HTTP") == 0)
+            {
+                transportProvider = HTTP_Protocol;
+            }
+            else
+            {
+                LogError("invalid data protocol\r\n");
+                return result;
+            }
+            result->iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(((const IOTHUBDEVICEPING_CONFIG *)configuration)->DeviceConnectionString, transportProvider);
             if (result->iotHubClientHandle == NULL)
             {
                 free(result);
@@ -716,12 +771,14 @@ static MODULE_HANDLE IoTHubDevicePing_CreateFromJson(BROKER_HANDLE brokerHandle,
                 const char *eventHubKey;
                 const char *eventHubCompatibleName;
                 const char *eventHubPartitionNum;
+                const char *dataProtocol;
                 if ((DeviceConnectionString = json_object_get_string(obj, "DeviceConnectionString")) == "NULL" ||
                     (eventHubHost = json_object_get_string(obj, "EH_HOST")) == "NULL" ||
                     (eventHubKeyName = json_object_get_string(obj, "EH_KEY_NAME")) == "NULL" ||
                     (eventHubKey = json_object_get_string(obj, "EH_KEY")) == "NULL" ||
                     (eventHubCompatibleName = json_object_get_string(obj, "EH_COMP_NAME")) == "NULL" ||
-                    (eventHubPartitionNum = json_object_get_string(obj, "EH_PARTITION_NUM")) == "NULL") // NULL
+                    (eventHubPartitionNum = json_object_get_string(obj, "EH_PARTITION_NUM")) == "NULL" ||
+                    (dataProtocol = json_object_get_string(obj, "DataProtocol")) == "NULL") // NULL
                 {
                     LogError("Did not find expected configuration");
                     result = NULL;
@@ -737,6 +794,7 @@ static MODULE_HANDLE IoTHubDevicePing_CreateFromJson(BROKER_HANDLE brokerHandle,
                     llConfiguration.EH_KEY = eventHubKey;
                     llConfiguration.EH_COMP_NAME = eventHubCompatibleName;
                     llConfiguration.EH_PARTITION_NUM = eventHubPartitionNum;
+                    llConfiguration.DataProtocol = dataProtocol;
                     result = apis.Module_Create(brokerHandle, &llConfiguration);
                 }
             }

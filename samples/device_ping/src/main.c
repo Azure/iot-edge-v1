@@ -22,8 +22,8 @@ int main(int argc, char** argv)
         }
         else
         {
-            printf("gateway successfully created from JSON\n");
-            printf("pinging the device...\n");
+            //printf("gateway successfully created from JSON\n");
+            //printf("pinging the device...\n");
             (void)getchar();
             Gateway_LL_Destroy(gateway);
         }

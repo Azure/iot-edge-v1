@@ -33,6 +33,13 @@ else()
     message(FATAL_ERROR "FATAL_ERROR: use_amqp not set")
 endif()
 
+if(${use_mqtt})
+    target_link_libraries(iothubdeviceping iothub_client_mqtt_transport)
+    linkMqttLibrary(iothubdeviceping)
+else()
+    message(FATAL_ERROR "FATAL_ERROR: use_mqtt not set")
+endif()
+
 if(${use_http})
     target_link_libraries(iothubdeviceping iothub_client_http_transport)
     linkHttp(iothubdeviceping)

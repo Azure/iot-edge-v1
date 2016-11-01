@@ -1,1 +1,0 @@
-# IoT Hub Device Ping Module (Send Over HTTP/Receive Over AMQP)
