@@ -20,6 +20,7 @@ if(${enable_nodejs_binding})
     add_subdirectory(nodejs_simple_sample)
 endif()
 
-if(LINUX)
+
+if(${build_ble_module} AND LINUX)
     add_subdirectory(ble_gateway)
 endif()

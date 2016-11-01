@@ -13,6 +13,7 @@ run_valgrind=0
 enable_java_binding=OFF
 enable_nodejs_binding=OFF
 toolchainfile=
+build_ble_module=ON
 
 cd "$build_root"
 usage ()
@@ -29,6 +30,7 @@ usage ()
     echo " --enable-java-binding         enables building of Java binding; environment variable JAVA_HOME must be defined"
     echo " --enable-nodejs-binding       enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined"
     echo " --toolchain-file <file>       pass cmake a toolchain file for cross compiling"
+    echo " --remove-ble-module           remove building of BLE module (ble module build is ON by default in Linux)"
     exit 1
 }
 
@@ -60,6 +62,7 @@ process_args ()
               "-rv" | "--run-valgrind" ) run_valgrind=1;;
               "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
+              "--remove-ble-module" ) build_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
               * ) usage;;
           esac
@@ -92,6 +95,7 @@ cmake $toolchainfile \
       -Drun_e2e_tests:BOOL=$run_e2e_tests \
       -Denable_java_binding:BOOL=$enable_java_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
+      -Dbuild_ble_module:BOOL=$build_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \
       "$build_root"
 
