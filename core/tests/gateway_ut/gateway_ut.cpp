@@ -13,7 +13,7 @@
 
 #include "gateway.h"
 #include "broker.h"
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 #include "module_loader.h"
 
 #define DUMMY_LIBRARY_PATH "x.dll"

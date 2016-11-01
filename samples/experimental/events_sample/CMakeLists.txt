@@ -10,8 +10,7 @@ set(events_sources
 set(events_headers
 )
 
-include_directories(./inc ${IOTHUB_CLIENT_INC_FOLDER})
-include_directories(${GW_INC})
+include_directories(${IOTHUB_CLIENT_INC_FOLDER} ${GW_INC} ${GW_INC}/experimental)
 
 add_executable(events_sample ${events_headers} ${events_sources})
 

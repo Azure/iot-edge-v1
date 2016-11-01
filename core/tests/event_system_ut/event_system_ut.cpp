@@ -17,7 +17,7 @@
 #include "azure_c_shared_utility/condition.h"
 #include "azure_c_shared_utility/list.h"
 
-#include "internal/event_system.h"
+#include "experimental/event_system.h"
 
 #define GBALLOC_H
 
