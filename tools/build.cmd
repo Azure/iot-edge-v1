@@ -24,7 +24,7 @@ set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
-set enable_ble_module=ON
+set CMAKE_enable_ble_module=ON
 
 :args-loop
 if "%1" equ "" goto args-done
