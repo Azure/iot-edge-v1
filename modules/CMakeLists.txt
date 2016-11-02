@@ -7,7 +7,10 @@ set(MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Modules include direct
 
 include_directories(./common)
 
-add_subdirectory(ble)
+if(${enable_ble_module})
+    add_subdirectory(ble)
+endif()
+
 add_subdirectory(simulated_device)
 add_subdirectory(identitymap)
 add_subdirectory(iothub)

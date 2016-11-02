@@ -24,6 +24,7 @@ set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
+set CMAKE_enable_ble_module=ON
 
 :args-loop
 if "%1" equ "" goto args-done
@@ -33,6 +34,8 @@ if "%1" equ "--run-e2e-tests" goto arg-run-e2e-tests
 if "%1" equ "--enable-dotnet-binding" goto arg-enable-dotnet-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
+if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
+
 call :usage && exit /b 1
 
 :arg-build-config
@@ -59,6 +62,10 @@ goto args-continue
 set enable-java-binding=ON
 call %current-path%\build_java.cmd
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+goto args-continue
+
+:arg-disable_ble_module
+set CMAKE_enable_ble_module=OFF
 goto args-continue
 
 :arg-enable_nodejs_binding
@@ -106,11 +113,11 @@ rem no error checking
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%" -G "Visual Studio 14 Win64"
+        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% "%build-root%"
+        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
@@ -135,6 +142,7 @@ echo  --platform ^<value^>       [Win32] build platform (e.g. Win32, x64, ...)
 echo  --run-e2e-tests            run end-to-end tests
 echo  --enable-dotnet-binding    build dotnet binding binaries
 echo  --enable-java-binding      enables building of Java binding; environment variable JAVA_HOME must be defined
-echo  --enable-nodejs-binding   enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined
+echo  --enable-nodejs-binding    enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined
+echo  --disable-ble-module       disable ble module from the build.
 goto :eof
 

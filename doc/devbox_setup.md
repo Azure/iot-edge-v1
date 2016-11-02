@@ -37,6 +37,7 @@ This section shows you how to set up a development environment for the Azure IoT
 sudo apt-get update 
 sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-dev uuid-dev valgrind libglib2.0-dev
 ``` 
+* libglib2.0-dev is required for ble module/sample
 2. Clone the latest version of this repository to your Ubuntu machine with the recursive parameter
 ```
 git clone --recursive https://github.com/Azure/azure-iot-gateway-sdk.git
