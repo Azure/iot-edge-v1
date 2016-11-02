@@ -21,6 +21,6 @@ if(${enable_nodejs_binding})
 endif()
 
 
-if(${build_ble_module} AND LINUX)
+if(${enable_ble_module} AND LINUX)
     add_subdirectory(ble_gateway)
 endif()
