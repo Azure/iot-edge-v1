@@ -103,6 +103,17 @@ function(add_pic_flag target)
     endif()
 endfunction()
 
+set(node_target_dll $ENV{NODE_LIB}/node.dll CACHE INTERNAL "The location of node.dll (windows)" FORCE)
+
+function(copy_node_dll whatIsBuilding whatIsBuildingLocation)
+  if(WIN32)
+  add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${node_target_dll}
+          ${whatIsBuildingLocation})
+  endif()
+endfunction(copy_node_dll)
+
 # build nodejs_binding module as a dynamic library
 add_library(nodejs_binding MODULE ${nodejs_sources} ${nodejs_headers})
 target_link_libraries(nodejs_binding ${LIBS})

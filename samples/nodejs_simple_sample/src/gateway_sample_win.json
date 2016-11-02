@@ -1,0 +1,50 @@
+{
+  "modules": [
+    {
+      "module name": "node_printer",
+      "loading args": {
+        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+      },
+      "args": {
+        "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js",
+        "args": null
+      }
+    },
+    {
+      "module name": "node_sensor",
+      "loading args": {
+        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+      },
+      "args": {
+        "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js",
+        "args": null
+      }
+    },
+    {
+      "module name": "iothub_writer",
+      "loading args": {
+        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+      },
+      "args": {
+        "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js",
+        "args": {
+          "connection_string": "<<IoT Hub Device Connection String>>"
+        }
+      }
+    },
+    {
+      "module name": "Logger",
+      "loading args": {
+        "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    }
+  ],
+  "links" : [
+    { "source" : "*", "sink" : "Logger" },
+    { "source" : "node_sensor", "sink" : "iothub_writer" },
+    { "source" : "node_sensor", "sink" : "node_printer" }
+  ]
+}
