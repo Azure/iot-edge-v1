@@ -30,7 +30,7 @@ option(enable_java_binding "set enable_java_binding to ON to enable building of 
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
-option(build_ble_module "set build_ble_module to OFF to remove ble module from gateway build (default is ON for linux)" ON)
+option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
 
 SET(use_condition ON CACHE BOOL "Build C shared utility with condition code" FORCE)
 
