@@ -7,7 +7,7 @@ set(MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Modules include direct
 
 include_directories(./common)
 
-if(${build_ble_module})
+if(${enable_ble_module})
     add_subdirectory(ble)
 endif()
 
