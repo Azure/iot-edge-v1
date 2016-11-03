@@ -7,4 +7,6 @@ if(WIN32)
     )
 endif()
 
+link_directories("${CMAKE_CURRENT_LIST_DIR}/../lib")
+
 include("${CMAKE_CURRENT_LIST_DIR}/azure_iot_gateway_sdkTargets.cmake")

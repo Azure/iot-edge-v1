@@ -94,13 +94,10 @@ add_library(gateway_install
 set_target_properties(gateway_install PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
 
 if(WIN32)
-    target_link_libraries(gateway_install debug "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Debug/aziotsharedutil.lib" debug "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Debug/nanomsg.lib")
-    target_link_libraries(gateway_install optimized "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/Release/aziotsharedutil.lib" optimized "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/Release/nanomsg.lib")
-    target_link_libraries(gateway_install parson ${dynamic_loader_library})
-    
+    target_link_libraries(gateway_install "aziotsharedutil.lib" "nanomsg.lib" parson ${dynamic_loader_library})
     target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
 else()
-    target_link_libraries(gateway_install "${CMAKE_CURRENT_BINARY_DIR}/../deps/c-utility/libaziotsharedutil.a" "${CMAKE_CURRENT_BINARY_DIR}/../deps/nanomsg/libnanomsg.a" parson ${dynamic_loader_library})
+    target_link_libraries(gateway_install "libaziotsharedutil.a" "libnanomsg.a" parson ${dynamic_loader_library})
     target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
     
     nn_check_lib (anl getaddrinfo_a NN_HAVE_GETADDRINFO_A)
