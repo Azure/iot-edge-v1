@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['pfmodule_5fcreate',['pfModule_Create',['../module_8h.html#a3132568b0f846040e5a6315eb102bd11',1,'module.h']]],
-  ['pfmodule_5fdestroy',['pfModule_Destroy',['../module_8h.html#a36b33ce08187861d5e0b99feb4d55e62',1,'module.h']]],
-  ['pfmodule_5fgetapis',['pfModule_GetAPIS',['../module_8h.html#a686ebba845ffad34626905fe2bd07e1f',1,'module.h']]],
-  ['pfmodule_5freceive',['pfModule_Receive',['../module_8h.html#ad3a2b86fa831d95da8ce1f52fb0316ab',1,'module.h']]],
-  ['pfmodule_5fstart',['pfModule_Start',['../module_8h.html#a591b2f22e62e6c151217a95b86443289',1,'module.h']]]
+  ['load',['Load',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#af6022262a5bcd5f3ab9002bcf76287fa',1,'MODULE_LOADER_API_TAG']]],
+  ['loader_5fapi',['loader_api',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#ab1bb1ae8bf4e9b556fd2ec68b47d5683',1,'GATEWAY_MODULES_ENTRY_TAG']]],
+  ['loader_5fconfiguration',['loader_configuration',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#a6a0f915c33aa5d3abe4051ea78101bf7',1,'GATEWAY_MODULES_ENTRY_TAG']]]
 ];

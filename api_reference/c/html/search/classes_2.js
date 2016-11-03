@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['message_5fbuffer_5fconfig_5ftag',['MESSAGE_BUFFER_CONFIG_TAG',['../struct_m_e_s_s_a_g_e___b_u_f_f_e_r___c_o_n_f_i_g___t_a_g.html',1,'']]],
-  ['message_5fconfig_5ftag',['MESSAGE_CONFIG_TAG',['../struct_m_e_s_s_a_g_e___c_o_n_f_i_g___t_a_g.html',1,'']]],
-  ['module_5fapis_5ftag',['MODULE_APIS_TAG',['../struct_m_o_d_u_l_e___a_p_i_s___t_a_g.html',1,'']]],
-  ['module_5ftag',['MODULE_TAG',['../struct_m_o_d_u_l_e___t_a_g.html',1,'']]]
+  ['gateway_5flink_5fentry_5ftag',['GATEWAY_LINK_ENTRY_TAG',['../struct_g_a_t_e_w_a_y___l_i_n_k___e_n_t_r_y___t_a_g.html',1,'']]],
+  ['gateway_5fmodule_5finfo_5ftag',['GATEWAY_MODULE_INFO_TAG',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e___i_n_f_o___t_a_g.html',1,'']]],
+  ['gateway_5fmodules_5fentry_5ftag',['GATEWAY_MODULES_ENTRY_TAG',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html',1,'']]],
+  ['gateway_5fproperties_5fdata_5ftag',['GATEWAY_PROPERTIES_DATA_TAG',['../struct_g_a_t_e_w_a_y___p_r_o_p_e_r_t_i_e_s___d_a_t_a___t_a_g.html',1,'']]]
 ];

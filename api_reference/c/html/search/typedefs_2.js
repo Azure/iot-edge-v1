@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['message_5fbuffer_5fconfig',['MESSAGE_BUFFER_CONFIG',['../message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3',1,'message.h']]],
-  ['message_5fconfig',['MESSAGE_CONFIG',['../message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47',1,'message.h']]],
-  ['message_5fhandle',['MESSAGE_HANDLE',['../message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb',1,'message.h']]],
-  ['module',['MODULE',['../module_8h.html#a6ee84ec83b6f012c75135dc184317cf5',1,'module.h']]],
-  ['module_5fapis',['MODULE_APIS',['../module_8h.html#a4345bc84fa2cd4a24306d80caf06aff3',1,'module.h']]],
-  ['module_5fhandle',['MODULE_HANDLE',['../module_8h.html#a9d933e9ca562b9aa0dff10b0979ec7b5',1,'module.h']]]
+  ['gateway_5fadd_5flink_5fresult',['GATEWAY_ADD_LINK_RESULT',['../gateway_8h.html#a315cd329016ccba7844e0ddd8b05f082',1,'gateway.h']]],
+  ['gateway_5fhandle',['GATEWAY_HANDLE',['../gateway_8h.html#ad9b92a496394e33c9d12b3b3e71a41e0',1,'gateway.h']]],
+  ['gateway_5flink_5fentry',['GATEWAY_LINK_ENTRY',['../gateway_8h.html#a1b9ee3bd6d18a10d16de102f3a1f2d29',1,'gateway.h']]],
+  ['gateway_5fmodule_5finfo',['GATEWAY_MODULE_INFO',['../gateway_8h.html#aa08d409bd2c343e2d40c233dc6831ca3',1,'gateway.h']]],
+  ['gateway_5fmodules_5fentry',['GATEWAY_MODULES_ENTRY',['../gateway_8h.html#abc96e2b7c756185cbedcfca06c423858',1,'gateway.h']]],
+  ['gateway_5fproperties',['GATEWAY_PROPERTIES',['../gateway_8h.html#a28fc4104517800be5e2d396fd5371a8c',1,'gateway.h']]],
+  ['gateway_5fstart_5fresult',['GATEWAY_START_RESULT',['../gateway_8h.html#ad664beda78e10e50a0f7457bc6035990',1,'gateway.h']]]
 ];
