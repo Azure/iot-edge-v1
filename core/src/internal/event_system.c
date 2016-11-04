@@ -12,7 +12,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/condition.h"
-#include "azure_c_shared_utility/list.h"
+#include "azure_c_shared_utility/singlylinkedlist.h"
 
 #include "gateway.h"
 #include "experimental/event_system.h"
@@ -33,7 +33,7 @@ struct EVENTSYSTEM_DATA {
     LOCK_HANDLE internal_change_lock;
     LOCK_HANDLE thread_queue_lock;
     COND_HANDLE thread_queue_condition;
-    LIST_HANDLE thread_queue;
+    SINGLYLINKEDLIST_HANDLE thread_queue;
 };
 
 typedef struct CALLBACK_CLOSURE_TAG {
@@ -110,7 +110,7 @@ EVENTSYSTEM_HANDLE EventSystem_Init(void)
             {
                 result->delay_when_queue_empty = 1;
 
-                result->thread_queue = list_create();
+                result->thread_queue = singlylinkedlist_create();
                 /* Codes_SRS_EVENTSYSTEM_26_002: [ This function shall return NULL upon any internal error during event system creation. ] */
                 if (result->thread_queue == NULL)
                 {
@@ -265,12 +265,12 @@ static void destroy_event_system(EVENTSYSTEM_HANDLE handle)
 
         /* Something might have been left on the list if thread errored out */
         LIST_ITEM_HANDLE node = NULL;
-        while ((node = list_get_head_item(handle->thread_queue)) != NULL)
+        while ((node = singlylinkedlist_get_head_item(handle->thread_queue)) != NULL)
         {
-            destroy_thread_row((THREAD_QUEUE_ROW*)list_item_get_value(node));
-            list_remove(handle->thread_queue, node);
+            destroy_thread_row((THREAD_QUEUE_ROW*)singlylinkedlist_item_get_value(node));
+            singlylinkedlist_remove(handle->thread_queue, node);
         }
-        list_destroy(handle->thread_queue);
+        singlylinkedlist_destroy(handle->thread_queue);
 
         for (int i = 0; i < GATEWAY_EVENTS_COUNT; i++)
             VECTOR_destroy(handle->event_callbacks[i]);
@@ -332,7 +332,7 @@ static int add_to_thread_queue(EVENTSYSTEM_HANDLE event_system, THREAD_QUEUE_ROW
 {
     Lock(event_system->thread_queue_lock);
 
-    int errored = !list_add(event_system->thread_queue, row);
+    int errored = !singlylinkedlist_add(event_system->thread_queue, row);
     Condition_Post(event_system->thread_queue_condition);
 
     Unlock(event_system->thread_queue_lock);
@@ -346,18 +346,18 @@ static THREAD_QUEUE_ROW* get_from_thread_queue(EVENTSYSTEM_HANDLE event_system, 
     
     Lock(event_system->thread_queue_lock);
     
-    LIST_ITEM_HANDLE node = list_get_head_item(event_system->thread_queue);
+    LIST_ITEM_HANDLE node = singlylinkedlist_get_head_item(event_system->thread_queue);
     if (node == NULL && event_system->delay_when_queue_empty)
     {
         Condition_Wait(event_system->thread_queue_condition, event_system->thread_queue_lock, timeout_ms);
-        node = list_get_head_item(event_system->thread_queue);
+        node = singlylinkedlist_get_head_item(event_system->thread_queue);
     }
 
     /* Condition might have timed out or we don't have delayed destroy so the node can be NULL */
     if (node != NULL)
     {
-        row = (THREAD_QUEUE_ROW*)list_item_get_value(node);
-        list_remove(event_system->thread_queue, node);
+        row = (THREAD_QUEUE_ROW*)singlylinkedlist_item_get_value(node);
+        singlylinkedlist_remove(event_system->thread_queue, node);
     }
     
     Unlock(event_system->thread_queue_lock);

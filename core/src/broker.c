@@ -17,7 +17,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/refcount.h"
-#include "azure_c_shared_utility/list.h"
+#include "azure_c_shared_utility/singlylinkedlist.h"
 #include "azure_c_shared_utility/uniqueid.h"
 
 #include "nn.h"
@@ -37,7 +37,7 @@
 /*The structure backing the message broker handle*/
 typedef struct BROKER_HANDLE_DATA_TAG
 {
-    LIST_HANDLE             modules;
+    SINGLYLINKEDLIST_HANDLE modules;
     LOCK_HANDLE             modules_lock;
     int                     publish_socket;
     STRING_HANDLE           url;
@@ -110,7 +110,7 @@ BROKER_HANDLE Broker_Create(void)
     else
     {
         /*Codes_SRS_BROKER_13_007: [Broker_Create shall initialize BROKER_HANDLE_DATA::modules with a valid VECTOR_HANDLE.]*/
-        result->modules = list_create();
+        result->modules = singlylinkedlist_create();
         if (result->modules == NULL)
         {
             /*Codes_SRS_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]*/
@@ -126,7 +126,7 @@ BROKER_HANDLE Broker_Create(void)
             {
                 /*Codes_SRS_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]*/
                 LogError("Lock_Init failed");
-                list_destroy(result->modules);
+                singlylinkedlist_destroy(result->modules);
                 free(result);
                 result = NULL;
             }
@@ -138,7 +138,7 @@ BROKER_HANDLE Broker_Create(void)
                 {
                     /*Codes_SRS_BROKER_13_003: [ This function shall return NULL if an underlying API call to the platform causes an error. ]*/
                     LogError("nanomsg puclish socket create failedL %d", result->publish_socket);
-                    list_destroy(result->modules);
+                    singlylinkedlist_destroy(result->modules);
                     Lock_Deinit(result->modules_lock);
                     free(result);
                     result = NULL;
@@ -149,7 +149,7 @@ BROKER_HANDLE Broker_Create(void)
                     if (result->url == NULL)
                     {
                         /*Codes_SRS_BROKER_13_003: [ This function shall return NULL if an underlying API call to the platform causes an error. ]*/
-                        list_destroy(result->modules);
+                        singlylinkedlist_destroy(result->modules);
                         Lock_Deinit(result->modules_lock);
                         nn_close(result->publish_socket);
                         free(result);
@@ -163,7 +163,7 @@ BROKER_HANDLE Broker_Create(void)
                         {
                             /*Codes_SRS_BROKER_13_003: [ This function shall return NULL if an underlying API call to the platform causes an error. ]*/
                             LogError("nanomsg bind failed");
-                            list_destroy(result->modules);
+                            singlylinkedlist_destroy(result->modules);
                             Lock_Deinit(result->modules_lock);
                             nn_close(result->publish_socket);
                             STRING_delete(result->url);                
@@ -504,11 +504,11 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
                 else
                 {
                     /*Codes_SRS_BROKER_13_045: [Broker_AddModule shall append the new instance of BROKER_MODULEINFO to BROKER_HANDLE_DATA::modules.]*/
-                    LIST_ITEM_HANDLE moduleListItem = list_add(broker_data->modules, module_info);
+                    LIST_ITEM_HANDLE moduleListItem = singlylinkedlist_add(broker_data->modules, module_info);
                     if (moduleListItem == NULL)
                     {
                         /*Codes_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
-                        LogError("list_add failed");
+                        LogError("singlylinkedlist_add failed");
                         deinit_module(module_info);
                         free(module_info);
                         result = BROKER_ERROR;
@@ -519,7 +519,7 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
                         {
                             LogError("start_module failed");
                             deinit_module(module_info);
-                            list_remove(broker_data->modules, moduleListItem);
+                            singlylinkedlist_remove(broker_data->modules, moduleListItem);
                             free(module_info);
                             result = BROKER_ERROR;
                         }
@@ -543,7 +543,7 @@ BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module)
 
 static bool find_module_predicate(LIST_ITEM_HANDLE list_item, const void* value)
 {
-    BROKER_MODULEINFO* element = (BROKER_MODULEINFO*)list_item_get_value(list_item);
+    BROKER_MODULEINFO* element = (BROKER_MODULEINFO*)singlylinkedlist_item_get_value(list_item);
     return element->module->module_handle == ((MODULE*)value)->module_handle;
 }
 
@@ -570,7 +570,7 @@ BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)
         else
         {
             /*Codes_SRS_BROKER_13_049: [Broker_RemoveModule shall perform a linear search for module in BROKER_HANDLE_DATA::modules.]*/
-            LIST_ITEM_HANDLE module_info_item = list_find(broker_data->modules, find_module_predicate, module);
+            LIST_ITEM_HANDLE module_info_item = singlylinkedlist_find(broker_data->modules, find_module_predicate, module);
 
             if (module_info_item == NULL)
             {
@@ -580,7 +580,7 @@ BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)
             }
             else
             {
-                BROKER_MODULEINFO* module_info = (BROKER_MODULEINFO*)list_item_get_value(module_info_item);
+                BROKER_MODULEINFO* module_info = (BROKER_MODULEINFO*)singlylinkedlist_item_get_value(module_info_item);
                 if (stop_module(broker_data->publish_socket, module_info) == 0)
                 {
                     deinit_module(module_info);
@@ -591,7 +591,7 @@ BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module)
                 }
 
                 /*Codes_SRS_BROKER_13_052: [The function shall remove the module from BROKER_HANDLE_DATA::modules.]*/
-                list_remove(broker_data->modules, module_info_item);
+                singlylinkedlist_remove(broker_data->modules, module_info_item);
                 free(module_info);
 
                 /*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
@@ -613,14 +613,14 @@ BROKER_MODULEINFO* broker_locate_handle(BROKER_HANDLE_DATA* broker_data, MODULE_
     module.module_apis = NULL;
     module.module_handle = handle;
 
-    LIST_ITEM_HANDLE module_info_item = list_find(broker_data->modules, find_module_predicate, &module);
+    LIST_ITEM_HANDLE module_info_item = singlylinkedlist_find(broker_data->modules, find_module_predicate, &module);
     if (module_info_item == NULL)
     {
         result = NULL;
     }
     else
     {
-        result = (BROKER_MODULEINFO*)list_item_get_value(module_info_item);
+        result = (BROKER_MODULEINFO*)singlylinkedlist_item_get_value(module_info_item);
     }
     return result;
 }
@@ -760,14 +760,14 @@ static void broker_decrement_ref(BROKER_HANDLE broker)
         if (DEC_REF(BROKER_HANDLE_DATA, broker) == DEC_RETURN_ZERO)
         {
             BROKER_HANDLE_DATA* broker_data = (BROKER_HANDLE_DATA*)broker; 
-            if (list_get_head_item(broker_data->modules) != NULL)
+            if (singlylinkedlist_get_head_item(broker_data->modules) != NULL)
             {
                 LogError("WARNING: There are still active modules attached to the broker and the broker is being destroyed.");
             }
             /* May want to do nn_shutdown first for cleanliness. */
             nn_close(broker_data->publish_socket);
             STRING_delete(broker_data->url);
-            list_destroy(broker_data->modules);
+            singlylinkedlist_destroy(broker_data->modules);
             Lock_Deinit(broker_data->modules_lock);
             free(broker_data);
         }

@@ -12,7 +12,7 @@
 #include "micromockcharstararenullterminatedstrings.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/vector.h"
-#include "azure_c_shared_utility/list.h"
+#include "azure_c_shared_utility/singlylinkedlist.h"
 #include "message.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/refcount.h"
@@ -64,14 +64,14 @@ static size_t whenShallVECTOR_push_back_fail;
 static size_t currentVECTOR_find_if_call;
 static size_t whenShallVECTOR_find_if_fail;
 
-static size_t currentlist_find_call;
-static size_t whenShalllist_find_fail;
+static size_t currentsinglylinkedlist_find_call;
+static size_t whenShallsinglylinkedlist_find_fail;
 
-static size_t currentlist_create_call;
-static size_t whenShalllist_create_fail;
+static size_t currentsinglylinkedlist_create_call;
+static size_t whenShallsinglylinkedlist_create_fail;
 
-static size_t currentlist_add_call;
-static size_t whenShalllist_add_fail;
+static size_t currentsinglylinkedlist_add_call;
+static size_t whenShallsinglylinkedlist_add_fail;
 
 
 static size_t currentLock_Init_call;
@@ -241,7 +241,7 @@ public:
         auto result2 = LOCK_OK;
     MOCK_METHOD_END(LOCK_RESULT, result2)
 
-        MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
+    MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
         VECTOR_HANDLE result2;
         ++currentVECTOR_create_call;
         if ((whenShallVECTOR_create_fail > 0) &&
@@ -321,7 +321,7 @@ public:
             thread_func_to_call = func;
             thread_func_args = arg;
 
-            result2 = THREADAPI_OK;        
+            result2 = THREADAPI_OK;
         }
     MOCK_METHOD_END(THREADAPI_RESULT, result2)
 
@@ -350,20 +350,20 @@ public:
 
     // list.h
 
-    MOCK_STATIC_METHOD_0(, LIST_HANDLE, list_create)
-        ++currentlist_create_call;
-        LIST_HANDLE result1;
-        if (currentlist_create_call == whenShalllist_create_fail)
+    MOCK_STATIC_METHOD_0(, SINGLYLINKEDLIST_HANDLE, singlylinkedlist_create)
+        ++currentsinglylinkedlist_create_call;
+        SINGLYLINKEDLIST_HANDLE result1;
+        if (currentsinglylinkedlist_create_call == whenShallsinglylinkedlist_create_fail)
         {
             result1 = NULL;
         }
         else
         {
-            result1 = (LIST_HANDLE)new ListNode();
+            result1 = (SINGLYLINKEDLIST_HANDLE)new ListNode();
         }
-    MOCK_METHOD_END(LIST_HANDLE, result1)
+    MOCK_METHOD_END(SINGLYLINKEDLIST_HANDLE, result1)
 
-    MOCK_STATIC_METHOD_1(, void, list_destroy, LIST_HANDLE, list)
+    MOCK_STATIC_METHOD_1(, void, singlylinkedlist_destroy, SINGLYLINKEDLIST_HANDLE, list)
         ListNode *current = (ListNode*)list;
         while (current != nullptr)
         {
@@ -373,10 +373,10 @@ public:
         }
     MOCK_VOID_METHOD_END()
 
-    MOCK_STATIC_METHOD_2(, LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item)
+    MOCK_STATIC_METHOD_2(, LIST_ITEM_HANDLE, singlylinkedlist_add, SINGLYLINKEDLIST_HANDLE, list, const void*, item)
         LIST_ITEM_HANDLE result1;
-        ++currentlist_add_call;
-        if (currentlist_add_call == whenShalllist_add_fail)
+        ++currentsinglylinkedlist_add_call;
+        if (currentsinglylinkedlist_add_call == whenShallsinglylinkedlist_add_fail)
         {
             result1 = NULL;
         }
@@ -402,7 +402,7 @@ public:
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
-    MOCK_STATIC_METHOD_2(, int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item)
+    MOCK_STATIC_METHOD_2(, int, singlylinkedlist_remove, SINGLYLINKEDLIST_HANDLE, list, LIST_ITEM_HANDLE, item)
         int result2;
         if ((list == NULL) ||
             (item == NULL))
@@ -421,7 +421,7 @@ public:
 
     MOCK_METHOD_END(int, result2)
 
-    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list)
+    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, singlylinkedlist_get_head_item, SINGLYLINKEDLIST_HANDLE, list)
         LIST_ITEM_HANDLE result1;
         if (list == NULL)
         {
@@ -434,7 +434,7 @@ public:
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
-    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle)
+    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, singlylinkedlist_get_next_item, LIST_ITEM_HANDLE, item_handle)
         LIST_ITEM_HANDLE result1;
         if (item_handle == NULL)
         {
@@ -446,10 +446,10 @@ public:
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
-    MOCK_STATIC_METHOD_3(, LIST_ITEM_HANDLE, list_find, LIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context)
+    MOCK_STATIC_METHOD_3(, LIST_ITEM_HANDLE, singlylinkedlist_find, SINGLYLINKEDLIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context)
         LIST_ITEM_HANDLE result1;
-        currentlist_find_call++;
-        if (currentlist_find_call == whenShalllist_find_fail)
+        currentsinglylinkedlist_find_call++;
+        if (currentsinglylinkedlist_find_call == whenShallsinglylinkedlist_find_fail)
         {
             result1 = NULL;
         }
@@ -475,7 +475,7 @@ public:
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
 
-    MOCK_STATIC_METHOD_1(, const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle)
+    MOCK_STATIC_METHOD_1(, const void*, singlylinkedlist_item_get_value, LIST_ITEM_HANDLE, item_handle)
         const void* result1;
         if (item_handle == NULL)
         {
@@ -507,22 +507,22 @@ public:
     MOCK_METHOD_END(size_t, BASEIMPLEMENTATION::STRING_length(s))
 
     MOCK_STATIC_METHOD_2(, UNIQUEID_RESULT, UniqueId_Generate, char*, uid, size_t, bufferSize)
-        for (int i = 0; i < (int)bufferSize; i++) 
-        { 
+        for (int i = 0; i < (int)bufferSize; i++)
+        {
             if (i == (bufferSize - 1))
                 uid[i] = '\0';
             else
-                uid[i] = 'u'; 
+                uid[i] = 'u';
         }
     MOCK_METHOD_END(UNIQUEID_RESULT, UNIQUEID_OK)
 
 
     MOCK_STATIC_METHOD_2(, void *, nn_allocmsg, size_t, size, int, type)
-    nn_current_msg_size = size;
+        nn_current_msg_size = size;
     MOCK_METHOD_END(void*, malloc(size))
 
     MOCK_STATIC_METHOD_1(, int, nn_freemsg, void*, msg)
-    free(msg);
+        free(msg);
     MOCK_METHOD_END(int, 0)
 
     MOCK_STATIC_METHOD_2(, int, nn_socket, int, domain, int, protocol)
@@ -539,8 +539,8 @@ public:
 
     MOCK_STATIC_METHOD_2(, int, nn_connect, int, s, const char *, addr)
     MOCK_METHOD_END(int, 1)
-        
-    MOCK_STATIC_METHOD_5(, int, nn_setsockopt, int, s, int, level, int, option, const void *,optval, size_t, optvallen)
+
+    MOCK_STATIC_METHOD_5(, int, nn_setsockopt, int, s, int, level, int, option, const void *, optval, size_t, optvallen)
     MOCK_METHOD_END(int, 1)
 
 
@@ -558,7 +558,7 @@ public:
     MOCK_METHOD_END(int, send_length)
 
     MOCK_STATIC_METHOD_4(, int, nn_recv, int, s, void*, buf, size_t, len, int, flags)
-        int rcv_length; 
+        int rcv_length;
         if (len == NN_MSG)
         {
             char * text = (char*)"nn_recv";
@@ -600,15 +600,15 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, Message_Destroy, MESSAGE_HAND
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char *, buffer, int32_t, size);
 
-// list.h
-DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , LIST_HANDLE, list_create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, list_destroy, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item);
-DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , LIST_ITEM_HANDLE, list_find, LIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context);
-DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
+// singlylinkedlist.h
+DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , SINGLYLINKEDLIST_HANDLE, singlylinkedlist_create);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, singlylinkedlist_destroy, SINGLYLINKEDLIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , LIST_ITEM_HANDLE, singlylinkedlist_add, SINGLYLINKEDLIST_HANDLE, list, const void*, item);
+DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , int, singlylinkedlist_remove, SINGLYLINKEDLIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, singlylinkedlist_get_head_item, SINGLYLINKEDLIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , LIST_ITEM_HANDLE, singlylinkedlist_get_next_item, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_3(CBrokerMocks, , LIST_ITEM_HANDLE, singlylinkedlist_find, SINGLYLINKEDLIST_HANDLE, list, LIST_MATCH_FUNCTION, match_function, const void*, match_context);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , const void*, singlylinkedlist_item_get_value, LIST_ITEM_HANDLE, item_handle);
 
 //strings.h
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void, STRING_delete, STRING_HANDLE, s)
@@ -667,14 +667,14 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     currentLock_Init_call = 0;
     whenShallLock_Init_fail = 0;
 
-    currentlist_find_call = 0;
-    whenShalllist_find_fail = 0;
+    currentsinglylinkedlist_find_call = 0;
+    whenShallsinglylinkedlist_find_fail = 0;
 
-    currentlist_create_call = 0;
-    whenShalllist_create_fail = 0;
+    currentsinglylinkedlist_create_call = 0;
+    whenShallsinglylinkedlist_create_fail = 0;
 
-    currentlist_add_call = 0;
-    whenShalllist_add_fail = 0;
+    currentsinglylinkedlist_add_call = 0;
+    whenShallsinglylinkedlist_add_fail = 0;
 
     currentLock_call = 0;
     whenShallLock_fail = 0;
@@ -729,7 +729,7 @@ TEST_FUNCTION(Broker_Create_succeeds)
 
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_PUB));
     STRICT_EXPECTED_CALL(mocks, UniqueId_Generate(IGNORED_PTR_ARG, 37))
@@ -740,7 +740,7 @@ TEST_FUNCTION(Broker_Create_succeeds)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, nn_bind(IGNORED_NUM_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
-        .IgnoreArgument(2); 
+        .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     ///act
@@ -776,7 +776,7 @@ TEST_FUNCTION(Broker_Create_fails_when_malloc_fails)
 }
 
 //Tests_SRS_BROKER_13_003: [This function shall return NULL if an underlying API call to the platform causes an error.]
-TEST_FUNCTION(Broker_Create_fails_when_list_create_fails)
+TEST_FUNCTION(Broker_Create_fails_when_singlylinkedlist_create_fails)
 {
     ///arrange
 
@@ -785,8 +785,8 @@ TEST_FUNCTION(Broker_Create_fails_when_list_create_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    whenShalllist_create_fail = 1;
-    STRICT_EXPECTED_CALL(mocks, list_create());
+    whenShallsinglylinkedlist_create_fail = 1;
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
 
     ///act
     auto r = Broker_Create();
@@ -808,8 +808,8 @@ TEST_FUNCTION(Broker_Create_fails_when_Lock_Init_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     whenShallLock_Init_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
@@ -835,8 +835,8 @@ TEST_FUNCTION(Broker_Create_fails_when_socket_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
@@ -866,8 +866,8 @@ TEST_FUNCTION(Broker_Create_fails_when_uuid_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
@@ -901,8 +901,8 @@ TEST_FUNCTION(Broker_Create_fails_when_url_create_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
@@ -937,8 +937,8 @@ TEST_FUNCTION(Broker_Create_fails_when_url_concat_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
@@ -977,8 +977,8 @@ TEST_FUNCTION(Broker_Create_fails_when_bind_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_create());
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
@@ -1288,7 +1288,7 @@ TEST_FUNCTION(Broker_AddModule_fails_Lock_modules_lock_fails)
 }
 
 //Tests_SRS_BROKER_13_047: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]
-TEST_FUNCTION(Broker_AddModule_fails_when_list_add_fails)
+TEST_FUNCTION(Broker_AddModule_fails_when_singlylinkedlist_add_fails)
 {
     ///arrange
     CBrokerMocks mocks;
@@ -1317,8 +1317,8 @@ TEST_FUNCTION(Broker_AddModule_fails_when_list_add_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    whenShalllist_add_fail = 1;
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    whenShallsinglylinkedlist_add_fail = 1;
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
 
     ///act
@@ -1363,9 +1363,9 @@ TEST_FUNCTION(Broker_AddModule_fails_when_nn_socket_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_SUB))
         .SetFailReturn(-1);
@@ -1411,9 +1411,9 @@ TEST_FUNCTION(Broker_AddModule_fails_when_nn_connect_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_SUB));
     STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
@@ -1465,9 +1465,9 @@ TEST_FUNCTION(Broker_AddModule_fails_when_nn_setSocketOpts_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_SUB));
     STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
@@ -1526,9 +1526,9 @@ TEST_FUNCTION(Broker_AddModule_fails_when_ThreadAPI_Create_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_SUB));
     STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
@@ -1584,7 +1584,7 @@ TEST_FUNCTION(Broker_AddModule_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the module struct*/
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(mocks, Lock_Init());
     STRICT_EXPECTED_CALL(mocks, UniqueId_Generate(IGNORED_PTR_ARG, 37))
@@ -1994,12 +1994,12 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
         .IgnoreArgument(1)
@@ -2019,7 +2019,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2067,7 +2067,7 @@ TEST_FUNCTION(Broker_RemoveModule_fails_when_Lock_fails)
 
 
 //Tests_SRS_BROKER_13_050: [Broker_RemoveModule shall unlock BROKER_HANDLE_DATA::modules_lock and return BROKER_ERROR if the module is not found in BROKER_HANDLE_DATA::modules.]
-TEST_FUNCTION(Broker_RemoveModule_fails_when_list_find_fails)
+TEST_FUNCTION(Broker_RemoveModule_fails_when_singlylinkedlist_find_fails)
 {
     ///arrange
     CBrokerMocks mocks;
@@ -2080,8 +2080,8 @@ TEST_FUNCTION(Broker_RemoveModule_fails_when_list_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    whenShalllist_find_fail = 1;
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    whenShallsinglylinkedlist_find_fail = 1;
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
@@ -2112,12 +2112,12 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_when_nn_send_fails)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
         .IgnoreArgument(1)
@@ -2134,7 +2134,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_when_nn_send_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2168,12 +2168,12 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_Lock_fails)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
         .IgnoreArgument(1)
@@ -2192,7 +2192,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_Lock_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2226,12 +2226,12 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_nn_close_fails)
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
         .IgnoreArgument(1)
@@ -2252,7 +2252,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_nn_close_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2287,12 +2287,12 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_unlock_fails)
         .IgnoreArgument(1)
         .SetFailReturn(LOCK_ERROR);
 
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
         .IgnoreArgument(1)
@@ -2312,7 +2312,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_unlock_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2440,21 +2440,21 @@ TEST_FUNCTION(Broker_AddLink_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
         .IgnoreArgument(1)
@@ -2491,21 +2491,21 @@ TEST_FUNCTION(Broker_AddLink_fails_setsocketoption_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_SUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
         .IgnoreArgument(1)
@@ -2543,15 +2543,15 @@ TEST_FUNCTION(Broker_AddLink_fails_source_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3)
@@ -2576,7 +2576,7 @@ TEST_FUNCTION(Broker_AddLink_fails_source_find_fails)
 }
 
 //Tests_SRS_BROKER_17_034: [ Upon an error, Broker_AddLink shall return BROKER_ADD_LINK_ERROR ]
-TEST_FUNCTION(Broker_AddLink_fails_list_find_fails)
+TEST_FUNCTION(Broker_AddLink_fails_singlylinkedlist_find_fails)
 {
     ///arrange
     CBrokerMocks mocks;
@@ -2588,7 +2588,7 @@ TEST_FUNCTION(Broker_AddLink_fails_list_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3)
@@ -2759,21 +2759,21 @@ TEST_FUNCTION(Broker_RemoveLink_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_UNSUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
@@ -2812,21 +2812,21 @@ TEST_FUNCTION(Broker_RemoveLink_fails_sockopt_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_setsockopt(IGNORED_NUM_ARG, NN_SUB, NN_SUB_UNSUBSCRIBE, IGNORED_PTR_ARG, sizeof(MODULE_HANDLE)))
         .IgnoreArgument(1)
@@ -2864,15 +2864,15 @@ TEST_FUNCTION(Broker_RemoveLink_fails_source_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3)
@@ -2892,7 +2892,7 @@ TEST_FUNCTION(Broker_RemoveLink_fails_source_find_fails)
 
 
 //Tests_SRS_BROKER_17_040: [ Upon an error, Broker_RemoveLink shall return BROKER_REMOVE_LINK_ERROR. ]
-TEST_FUNCTION(Broker_RemoveLink_fails_list_find_fails)
+TEST_FUNCTION(Broker_RemoveLink_fails_singlylinkedlist_find_fails)
 {
     ///arrange
     CBrokerMocks mocks;
@@ -2911,7 +2911,7 @@ TEST_FUNCTION(Broker_RemoveLink_fails_list_find_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .IgnoreArgument(3)
@@ -3059,9 +3059,9 @@ TEST_FUNCTION(Broker_Destroy_works)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -3091,9 +3091,9 @@ TEST_FUNCTION(Broker_DecRef_works)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -3354,7 +3354,7 @@ TEST_FUNCTION(Broker_Publish_succeeds)
     STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
     STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
     STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
-    STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1+sizeof(MODULE_HANDLE), 0))
+    STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1 + sizeof(MODULE_HANDLE), 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG, 1))
         .IgnoreArgument(2);

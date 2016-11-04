@@ -15,7 +15,7 @@
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/condition.h"
-#include "azure_c_shared_utility/list.h"
+#include "azure_c_shared_utility/singlylinkedlist.h"
 
 #include "experimental/event_system.h"
 
@@ -96,20 +96,21 @@ public:
     MOCK_METHOD_END(void*, BASEIMPLEMENTATION::VECTOR_find_if(handle, pred, value));
 
 
-    MOCK_STATIC_METHOD_0(, LIST_HANDLE, list_create)
-    MOCK_METHOD_END(LIST_HANDLE, (LIST_HANDLE)new ListNode());
+    MOCK_STATIC_METHOD_0(, SINGLYLINKEDLIST_HANDLE, singlylinkedlist_create)
+    MOCK_METHOD_END(SINGLYLINKEDLIST_HANDLE, (SINGLYLINKEDLIST_HANDLE)new ListNode());
 
-    MOCK_STATIC_METHOD_1(, void, list_destroy, LIST_HANDLE, list)
+    MOCK_STATIC_METHOD_1(, void, singlylinkedlist_destroy, SINGLYLINKEDLIST_HANDLE, list)
         ListNode *current = (ListNode*)list;
-        while (current != nullptr)
-        {
-            auto tmp = current;
-            current = current->next;
-            delete tmp;
-        }
-    MOCK_VOID_METHOD_END();
+    while (current != nullptr)
+    {
+        auto tmp = current;
+        current = current->next;
+        delete tmp;
+    }
+    MOCK_VOID_METHOD_END()
 
-    MOCK_STATIC_METHOD_2(, LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item)
+
+    MOCK_STATIC_METHOD_2(, LIST_ITEM_HANDLE, singlylinkedlist_add, SINGLYLINKEDLIST_HANDLE, list, const void*, item)
         ListNode *new_item = new ListNode();
         new_item->item = item;
         ListNode *real_list = (ListNode*)list;
@@ -118,26 +119,26 @@ public:
             ptr = ptr->next;
         ptr->next = new_item;
         new_item->prev = ptr;
-    MOCK_METHOD_END(LIST_ITEM_HANDLE, (LIST_ITEM_HANDLE)new_item);
+    MOCK_METHOD_END(LIST_ITEM_HANDLE, (LIST_ITEM_HANDLE)new_item)
 
-    MOCK_STATIC_METHOD_2(, int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item)
+    MOCK_STATIC_METHOD_2(, int, singlylinkedlist_remove, SINGLYLINKEDLIST_HANDLE, list, LIST_ITEM_HANDLE, item)
         ListNode *node = (ListNode*)item;
         node->prev->next = node->next;
         if (node->next != nullptr)
             node->next->prev = node->prev;
         delete node;
-    MOCK_METHOD_END(int, 0);
+    MOCK_METHOD_END(int, 0)
 
-    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list)
+    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, singlylinkedlist_get_head_item, SINGLYLINKEDLIST_HANDLE, list)
         ListNode* my_result = NULL;
         if (list != NULL)
             my_result = ((ListNode*)list)->next;
     MOCK_METHOD_END(LIST_ITEM_HANDLE, (LIST_ITEM_HANDLE)my_result);
 
-    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle)
+    MOCK_STATIC_METHOD_1(, LIST_ITEM_HANDLE, singlylinkedlist_get_next_item, LIST_ITEM_HANDLE, item_handle)
     MOCK_METHOD_END(LIST_ITEM_HANDLE, (LIST_ITEM_HANDLE)(((ListNode*)item_handle)->next));
 
-    MOCK_STATIC_METHOD_1(, const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle)
+    MOCK_STATIC_METHOD_1(, const void*, singlylinkedlist_item_get_value, LIST_ITEM_HANDLE, item_handle)
     MOCK_METHOD_END(const void*, ((ListNode*)item_handle)->item);
 
 
@@ -211,13 +212,14 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , void*, VECTOR_front, const VEC
 DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , size_t, VECTOR_size, const VECTOR_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_3(CEventSystemMocks, , void*, VECTOR_find_if, const VECTOR_HANDLE, handle, PREDICATE_FUNCTION, pred, const void*, value);
 
-DECLARE_GLOBAL_MOCK_METHOD_0(CEventSystemMocks, , LIST_HANDLE, list_create);
-DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , void, list_destroy, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_2(CEventSystemMocks, , LIST_ITEM_HANDLE, list_add, LIST_HANDLE, list, const void*, item);
-DECLARE_GLOBAL_MOCK_METHOD_2(CEventSystemMocks, , int, list_remove, LIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , LIST_ITEM_HANDLE, list_get_head_item, LIST_HANDLE, list);
-DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , LIST_ITEM_HANDLE, list_get_next_item, LIST_ITEM_HANDLE, item_handle);
-DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , const void*, list_item_get_value, LIST_ITEM_HANDLE, item_handle);
+// singlylinkedlist.h
+DECLARE_GLOBAL_MOCK_METHOD_0(CEventSystemMocks, , SINGLYLINKEDLIST_HANDLE, singlylinkedlist_create);
+DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , void, singlylinkedlist_destroy, SINGLYLINKEDLIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_2(CEventSystemMocks, , LIST_ITEM_HANDLE, singlylinkedlist_add, SINGLYLINKEDLIST_HANDLE, list, const void*, item);
+DECLARE_GLOBAL_MOCK_METHOD_2(CEventSystemMocks, , int, singlylinkedlist_remove, SINGLYLINKEDLIST_HANDLE, list, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , LIST_ITEM_HANDLE, singlylinkedlist_get_head_item, SINGLYLINKEDLIST_HANDLE, list);
+DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , LIST_ITEM_HANDLE, singlylinkedlist_get_next_item, LIST_ITEM_HANDLE, item_handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , const void*, singlylinkedlist_item_get_value, LIST_ITEM_HANDLE, item_handle);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CEventSystemMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_2(CEventSystemMocks, , void*, gballoc_realloc, void*, ptr, size_t, size);
@@ -253,14 +255,14 @@ static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thre
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
     
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(nodes_in_queue + 1);
-    EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(nodes_in_queue);
-    EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .ExpectedTimesExactly(nodes_in_queue);
 
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
 
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT + nodes_in_queue);
@@ -340,7 +342,7 @@ TEST_FUNCTION(EventSystem_Init_Basic)
     EXPECTED_CALL(mocks, Condition_Init());
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
-    EXPECTED_CALL(mocks, list_create());
+    EXPECTED_CALL(mocks, singlylinkedlist_create());
 
     // Act
     EVENTSYSTEM_HANDLE event_system = EventSystem_Init();
@@ -410,9 +412,9 @@ TEST_FUNCTION(EventSystem_Init_Fail_Lock)
     EXPECTED_CALL(mocks, Condition_Deinit(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(1);
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -445,9 +447,9 @@ TEST_FUNCTION(EventSystem_Init_Fail_Condition)
     EXPECTED_CALL(mocks, Condition_Deinit(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(1);
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -474,8 +476,8 @@ TEST_FUNCTION(EventSystem_Init_Fail_List)
     EXPECTED_CALL(mocks, Condition_Init());
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
-    EXPECTED_CALL(mocks, list_create())
-        .SetFailReturn((LIST_HANDLE)NULL);
+    EXPECTED_CALL(mocks, singlylinkedlist_create())
+        .SetFailReturn((SINGLYLINKEDLIST_HANDLE)NULL);
 
     expectEventSystemDestroy(mocks, false, 0);
 
@@ -620,7 +622,7 @@ TEST_FUNCTION(EventSystem_Thread_Creation_Fails)
     EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
-    EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
     EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -631,14 +633,14 @@ TEST_FUNCTION(EventSystem_Thread_Creation_Fails)
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
 
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
-    EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(1);
-    EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .ExpectedTimesExactly(1);
 
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
 
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT + 1);
@@ -691,14 +693,14 @@ TEST_FUNCTION(EventSystem_Recreates_Thread_When_Quit)
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
 
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(1);
-    EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(0);
-    EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .ExpectedTimesExactly(0);
 
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
 
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
@@ -793,8 +795,8 @@ TEST_FUNCTION(EventSystem_AddEventCallback_NULLs)
     EXPECTED_CALL(mocks, Condition_Deinit(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(2);
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG));
-    EXPECTED_CALL(mocks, list_destroy(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(GATEWAY_EVENTS_COUNT);
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
@@ -941,7 +943,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_malloc_fail)
     EventSystem_Destroy(handle);
 }
 
-TEST_FUNCTION(EventSystem_ReportEvent_list_add_fail)
+TEST_FUNCTION(EventSystem_ReportEvent_singlylinkedlist_add_fail)
 {
     // Arrange
     CEventSystemMocks mocks;
@@ -964,7 +966,7 @@ TEST_FUNCTION(EventSystem_ReportEvent_list_add_fail)
         .ExpectedTimesExactly(1);
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .ExpectedTimesExactly(1);
-    EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .SetFailReturn((LIST_ITEM_HANDLE)NULL);
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG));
@@ -1006,14 +1008,14 @@ TEST_FUNCTION(EventSystem_ReportEvent_Modules_Proper_List_Given)
     EXPECTED_CALL(mocks, VECTOR_front(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Gateway_GetModuleList(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
-    EXPECTED_CALL(mocks, list_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_add(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, Condition_Post(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     // simulated thread
-    EXPECTED_CALL(mocks, list_get_head_item(IGNORED_PTR_ARG))
+    EXPECTED_CALL(mocks, singlylinkedlist_get_head_item(IGNORED_PTR_ARG))
         .ExpectedTimesExactly(3);
-    EXPECTED_CALL(mocks, list_item_get_value(IGNORED_PTR_ARG));
-    EXPECTED_CALL(mocks, list_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG));
+    EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
         .ExpectedTimesExactly(2);
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
