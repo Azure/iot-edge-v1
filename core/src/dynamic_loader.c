@@ -32,7 +32,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
     {
         /*Codes_SRS_MODULE_LOADER_17_001: [DynamicModuleLoader_Load shall validate the moduleLibraryFileName, if it is NULL, it will return NULL.]*/
         result = NULL;
-        LogError("DynamicModuleLoader_Load() - loader_config is NULL");
+        LogError("loader_config is NULL");
     }
     else
     {
@@ -40,7 +40,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
         if (dynamic_loader_config->moduleLibraryFileName == NULL)
         {
             result = NULL;
-            LogError("DynamicModuleLoader_Load() - moduleLibraryFileName is NULL");
+            LogError("moduleLibraryFileName is NULL");
         }
         else
         {
@@ -50,7 +50,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
             if (result == NULL)
             {
                 /*Codes_SRS_MODULE_LOADER_17_014: [If memory allocation is not successful, the load shall fail, and it shall return NULL.]*/
-                LogError("DynamicModuleLoader_Load() - malloc(sizeof(MODULE_LIBRARY_HANDLE_DATA)) failed");
+                LogError("malloc(sizeof(MODULE_LIBRARY_HANDLE_DATA)) failed");
             }
             else
             {
@@ -62,7 +62,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
                     /* Codes_SRS_MODULE_LOADER_17_012: [If the attempt is not successful, the load shall fail, and it shall return NULL.]*/
                     free(result);
                     result = NULL;
-                    LogError("DynamicModuleLoader_Load() - DynamicLibrary_LoadLibrary() returned NULL");
+                    LogError("DynamicLibrary_LoadLibrary() failed to load [%s]", moduleLibraryFileName);
                 }
                 else
                 {
@@ -74,7 +74,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
                         DynamicLibrary_UnloadLibrary(result->library);
                         free(result);
                         result = NULL;
-                        LogError("DynamicModuleLoader_Load() - DynamicLibrary_FindSymbol() returned NULL");
+                        LogError("DynamicLibrary_FindSymbol() returned NULL");
                     }
                     else
                     {
@@ -92,7 +92,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const void* loader_config)
                             DynamicLibrary_UnloadLibrary(result->library);
                             free(result);
                             result = NULL;
-                            LogError("DynamicModuleLoader_Load() - pfnGetapi() returned NULL");
+                            LogError("pfnGetapi() returned NULL");
                         }
                     }
                 }
