@@ -216,6 +216,20 @@ public:
                 {
                     STRING_delete(instruction->characteristic_uuid);
                 }
+                if (
+                    (
+                        instruction->instruction_type == WRITE_AT_INIT ||
+                        instruction->instruction_type == WRITE_ONCE ||
+                        instruction->instruction_type == WRITE_AT_EXIT
+                    )
+                    &&
+                    (
+                        instruction->data.buffer != NULL
+                    )
+                  )
+                {
+                    BUFFER_delete(instruction->data.buffer);
+                }
             }
 
             VECTOR_destroy(_instructions);
@@ -349,6 +363,10 @@ public:
     MOCK_STATIC_METHOD_1(, void, BUFFER_delete, BUFFER_HANDLE, handle)
         BASEIMPLEMENTATION::BUFFER_delete(handle);
     MOCK_VOID_METHOD_END()
+
+    MOCK_STATIC_METHOD_1(, BUFFER_HANDLE, BUFFER_clone, BUFFER_HANDLE, handle)
+        BUFFER_HANDLE result2 = BASEIMPLEMENTATION::BUFFER_clone(handle);
+    MOCK_METHOD_END(BUFFER_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, unsigned char*, BUFFER_u_char, BUFFER_HANDLE, handle)
         auto result2 = BASEIMPLEMENTATION::BUFFER_u_char(handle);
@@ -706,6 +724,7 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CBLEMocks, , BUFFER_HANDLE, BUFFER_create, const un
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , void, BUFFER_delete, BUFFER_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , unsigned char*, BUFFER_u_char, BUFFER_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , size_t, BUFFER_length, BUFFER_HANDLE, handle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , BUFFER_HANDLE, BUFFER_clone, BUFFER_HANDLE, handle);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBLEMocks, , void, STRING_delete, STRING_HANDLE, handle);
 
@@ -2260,6 +2279,8 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
         STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
              .IgnoreArgument(1);
@@ -2588,6 +2609,67 @@ BEGIN_TEST_SUITE(ble_ut)
         STRING_delete(instr1.characteristic_uuid);
     }
 
+    TEST_FUNCTION(BLE_Create_returns_NULL_when_BUFFER_clone_fails)
+    {
+        ///arrange
+        CBLEMocks mocks;
+        VECTOR_HANDLE instructions = VECTOR_create(sizeof(BLE_INSTRUCTION));
+        BLE_INSTRUCTION instr1 =
+        {
+            WRITE_ONCE,
+            STRING_construct("fake_char_id"),
+            { 0 }
+        };
+        instr1.data.buffer = BUFFER_create((const unsigned char*)"AQ==", 4);
+        VECTOR_push_back(instructions, &instr1, 1);
+        BLE_CONFIG config =
+        {
+            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            instructions
+        };
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_create(&(config.device_config)));
+        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, BUFFER_clone(instr1.data.buffer))
+            .SetFailReturn((BUFFER_HANDLE)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLEIO_SEQ_INSTRUCTION)));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)) // CBLEIOSequence::run
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NULL(result);
+
+        ///cleanup
+        should_g_main_loop_quit_call_thread_func = true;
+        BLE_Destroy(result);
+        VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
+        BUFFER_delete(instr1.data.buffer);
+    }
+
     /*Tests_SRS_BLE_13_006: [ BLE_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
     /*Tests_SRS_BLE_13_009: [ BLE_Create shall allocate memory for an instance of the BLE_HANDLE_DATA structure and use that as the backing structure for the module handle. ]*/
     /*Tests_SRS_BLE_13_008: [ BLE_Create shall create and initialize the bleio_gatt field in the BLE_HANDLE_DATA object by calling BLEIO_gatt_create. ]*/
@@ -2656,6 +2738,80 @@ BEGIN_TEST_SUITE(ble_ut)
         BLE_Destroy(result);
         VECTOR_destroy(instructions);
         STRING_delete(instr1.characteristic_uuid);
+    }
+
+    /*Tests_SRS_BLE_13_006: [ BLE_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
+    /*Tests_SRS_BLE_13_009: [ BLE_Create shall allocate memory for an instance of the BLE_HANDLE_DATA structure and use that as the backing structure for the module handle. ]*/
+    /*Tests_SRS_BLE_13_008: [ BLE_Create shall create and initialize the bleio_gatt field in the BLE_HANDLE_DATA object by calling BLEIO_gatt_create. ]*/
+    /*Tests_SRS_BLE_13_010: [ BLE_Create shall create and initialize the bleio_seq field in the BLE_HANDLE_DATA object by calling BLEIO_Seq_Create. ]*/
+    /*Tests_SRS_BLE_13_011: [ BLE_Create shall asynchronously open a connection to the BLE device by calling BLEIO_gatt_connect. ]*/
+    /*Tests_SRS_BLE_13_014: [ If the asynchronous call to BLEIO_gatt_connect is successful then the BLEIO_Seq_Run function shall be called on the bleio_seq field from BLE_HANDLE_DATA. ]*/
+    TEST_FUNCTION(BLE_Create_succeeds_with_write_instruction)
+    {
+        ///arrange
+        CBLEMocks mocks;
+        VECTOR_HANDLE instructions = VECTOR_create(sizeof(BLE_INSTRUCTION));
+        BLE_INSTRUCTION instr1 =
+        {
+            WRITE_ONCE,
+            STRING_construct("fake_char_id"),
+            { 0 }
+        };
+        instr1.data.buffer = BUFFER_create((const unsigned char*)"AQ==", 4);
+        VECTOR_push_back(instructions, &instr1, 1);
+        BLE_CONFIG config =
+        {
+            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            instructions
+        };
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_create(&(config.device_config)));
+        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_connect(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        STRICT_EXPECTED_CALL(mocks, BLEIO_Seq_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+        STRICT_EXPECTED_CALL(mocks, BLEIO_Seq_Run(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, BUFFER_clone(instr1.data.buffer));
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLEIO_SEQ_INSTRUCTION)));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(config.instructions));
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)) // CBLEIOSequence::run
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(instructions, 0));
+
+        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);                 
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, g_main_loop_new(NULL, FALSE));
+        STRICT_EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments()
+            .SetReturn((THREADAPI_RESULT)THREADAPI_OK);
+
+        ///act
+        auto result = BLE_Create((BROKER_HANDLE)0x42, &config);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+        ASSERT_IS_NOT_NULL(result);
+
+        ///cleanup
+        should_g_main_loop_quit_call_thread_func = true;
+        BLE_Destroy(result);
+        VECTOR_destroy(instructions);
+        STRING_delete(instr1.characteristic_uuid);
+        BUFFER_delete(instr1.data.buffer);
     }
 
     TEST_FUNCTION(on_read_complete_does_not_publish_message_when_read_fails)

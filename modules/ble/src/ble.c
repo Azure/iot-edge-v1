@@ -349,7 +349,7 @@ static MODULE_HANDLE BLE_CreateFromJson(BROKER_HANDLE broker, const char* config
                                 }
                             }
                             free_instructions(ble_instructions);
-                        VECTOR_destroy(ble_instructions);
+                            VECTOR_destroy(ble_instructions);
                         }
                     }
                 }
@@ -462,7 +462,32 @@ static VECTOR_HANDLE ble_instr_to_bleioseq_instr(BLE_HANDLE_DATA* module, VECTOR
             BLEIO_SEQ_INSTRUCTION instr;
             instr.instruction_type = src_instr->instruction_type;
             instr.characteristic_uuid = STRING_clone(src_instr->characteristic_uuid);
-            memcpy(&(instr.data), &(src_instr->data), sizeof(instr.data));
+
+            if (
+                (
+                    src_instr->instruction_type == WRITE_AT_INIT ||
+                    src_instr->instruction_type == WRITE_ONCE ||
+                    src_instr->instruction_type == WRITE_AT_EXIT
+                )
+                &&
+                (
+                    src_instr->data.buffer != NULL
+                )
+              )
+            {
+                instr.data.buffer = BUFFER_clone(src_instr->data.buffer);
+                if(instr.data.buffer == NULL)
+                {
+                    LogError("BUFFER_clone failed");
+                    STRING_delete(instr.characteristic_uuid);
+                    break;
+                }
+            }
+            else
+            {
+                memcpy(&(instr.data), &(src_instr->data), sizeof(instr.data));
+            }
+
             instr.context = (void*)module;
 
             if (VECTOR_push_back(result, &instr, 1) != 0)
@@ -477,6 +502,7 @@ static VECTOR_HANDLE ble_instr_to_bleioseq_instr(BLE_HANDLE_DATA* module, VECTOR
         // then something went wrong
         if (i < len)
         {
+            free_bleioseq_instr(result);
             VECTOR_destroy(result);
             result = NULL;
         }
