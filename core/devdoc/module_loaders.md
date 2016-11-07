@@ -8,11 +8,13 @@ The Gateway SDK is essentially a plugin based system that is composed of
 *modules* that provide the functionality of an IoT Gateway device. One of the
 design goals of the Gateway SDK is the idea that the SDK will allow for
 flexibility with respect to how a module is packaged and distributed and loaded
-in the gateway. This document describes at a high level how this works. Gateway
-modules can be written using different technology stacks. At the time of writing
-modules can be written using C, .NET, Node.js or Java. The responsibility of
-bootstrapping the respective runtimes (in case of stacks that have a runtime
-that is) and loading the module code lies with the *module loader*.
+in the gateway. A sandboxed environment like the Windows 10 Universal Windows
+Platform (UWP) might choose to implement a custom module loading strategy for
+example, to accommodate the constraints of that platform.
+
+This document describes at a high level how this works. Gateway modules can be
+written using different technology stacks. At the time of writing modules can be
+written using C, .NET, Node.js or Java.
 
 What is a Module Loader?
 ------------------------
@@ -20,7 +22,7 @@ What is a Module Loader?
 The primary duty of a module loader in the gateway is to locate and load a
 module - or in other words, to abstract away from the gateway the details of
 locating and loading a module. A gateway module may be native or managed (.NET,
-Node.js or Java). If its a managed module then the loader is responsible for
+Node.js or Java). If it is a managed module then the loader is responsible for
 ensuring that the runtime needed to successfully load and run the module is
 loaded and initialized first.
 
@@ -36,14 +38,12 @@ A loader is defined by the following attributes:
 
 -   **Type**: Can be *native*, *java*, *node* or *dotnet*
 
--   **Name**: A string that can be used to reference this particular loader
-
--   **Binding Module Path**: Optional path to a language binding implementation
-    for non-native loaders
+-   **Name**: A string that can be used to reference a given loader
 
 -   **Configuration**: Optional additional configuration parameters that may be
-    used to configure the runtime that is to be loaded. For example, one might
-    specify custom runtime options for the Java Virtual Machine here.
+    used to configure the loader. A typical use case is to configure the runtime
+    that is to be loaded. For example, one might specify custom runtime options
+    for the Java Virtual Machine here.
 
 When initializing a gateway from a JSON configuration file via the
 `Gateway_CreateFromJson` function, the loader configuration can be specified via
@@ -62,7 +62,7 @@ the top level `loaders` array. For example:
     {
       "type": "node",
       "name": "node_loader",
-      "module.path": "/path/to/nodejs_binding.so"
+      "binding.path": "/path/to/nodejs_binding.so"
     }
   ],
 
@@ -73,7 +73,7 @@ the top level `loaders` array. For example:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Only the `type` and `name` properties for a given loader are required values.
-The `module.path` property is optional and can be used to override the path to
+The `binding.path` property is optional and can be used to override the path to
 the DLL/SO that implements the language binding for a language binding loader.
 There may be other supported properties that are specific to a given type of
 loader (like `jvm.options` above which can be used to specify the Java Virtual
@@ -105,12 +105,15 @@ Here’s an example of a module configuration that makes use of the Java loader:
 {
   "modules": [
     {
-       "name": "printer",
-       "loader": {
-         "name": "java",
-         "class.name": "org.contoso.gateway.module.Printer",
-         "class.path": "./printer.jar"
-       }
+        "name": "analyzer",
+        "loader": {
+            "name": "java",
+            "entrypoint": {
+                "class.name": "org.contoso.gateway.AnalyzerModule",
+                "class.path": "./bin/analyzer.jar"
+            }
+        },
+        "args" : null
     }
   ]
 }
@@ -119,121 +122,133 @@ Here’s an example of a module configuration that makes use of the Java loader:
 How module loaders work
 -----------------------
 
-Briefly, here’s how the gateway bootstraps itself:
+A module loader is defined using a struct called `MODULE_LOADER` that looks like
+this:
 
-1.  A module loader is defined using a struct called `MODULE_LOADER` that looks
-    like this:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/**
+ * The Module Loader.
+ */
+typedef struct MODULE_LOADER_TAG
+{
+    MODULE_LOADER_TYPE                  type;
+    const char*                         name;
+    MODULE_LOADER_BASE_CONFIGURATION*   configuration;
+    MODULE_LOADER_API*                  api;
+} MODULE_LOADER;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /**
-     * Function typedefs for a module loader's function
-     * pointer table.
-     */
-    typedef MODULE_LIBRARY_HANDLE (*pfModuleLoader_Load)
-        (const void * config);
-    typedef void (*pfModuleLoader_Unload)
-        (MODULE_LIBRARY_HANDLE handle);
-    typedef const MODULE_APIS* (*pfModuleLoader_GetApi)
-        (MODULE_LIBRARY_HANDLE handle);
+`MODULE_LOADER_API` is a struct containing function pointers that has been
+defined like so:
 
-    /**
-     * The module loader's function pointer table.
-     */
-    typedef struct MODULE_LOADER_API_TAG
-    {
-        pfModuleLoader_Load    Load;
-        pfModuleLoader_Unload  Unload;
-        pfModuleLoader_GetApi  GetApi;
-    } MODULE_LOADER_API;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+typedef struct MODULE_LOADER_API_TAG
+{
+    pfModuleLoader_Load Load;
 
-    /**
-     * Module loader type enumeration.
-     */
-    typedef enum MODULE_LOADER_TYPE_TAG
-    {
-        NATIVE,
-        JAVA,
-        DOTNET,
-        NODEJS
-    } MODULE_LOADER_TYPE;
+    pfModuleLoader_Unload Unload;
 
-    /**
-     * The Module Loader.
-     */
-    typedef struct MODULE_LOADER_TAG
-    {
-        MODULE_LOADER_TYPE   type;
-        const char*          name;
-        const char*          binding_module_path;
-        const void*          loader_configuration;
-        MODULE_LOADER_API*   api;
-    } MODULE_LOADER;
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    pfModuleLoader_GetApi GetApi;
 
-2.  Module loaders for a given language binding may or may not be available
-    depending on what *CMake* build options were used when the source was built.
-    For example if CMake was run with the `enable_dotnet_binding` variable set
-    to `false`/`off` then the corresponding loader becomes unavailable for use.
+    pfModuleLoader_ParseEntrypointFromJson ParseEntrypointFromJson;
+    pfModuleLoader_FreeEntrypoint FreeEntrypoint;
 
-3.  Every module loader implementation provides a global function that is
-    responsible for returning a pointer to a `MODULE_LOADER` instance. The
-    *native* loader that implements dynamic module loading for instance might
-    provide a function that looks like this:
+    pfModuleLoader_ParseConfigurationFromJson ParseConfigurationFromJson;
+    pfModuleLoader_FreeConfiguration FreeConfiguration;
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    extern const MODULE_LOADER *DynamicLoader_Get(void);
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    pfModuleLoader_BuildModuleConfiguration BuildModuleConfiguration;
+    pfModuleLoader_FreeModuleConfiguration FreeModuleConfiguration;
+} MODULE_LOADER_API;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-4.  The gateway, during initialization, would create and populate a vector of
-    `MODULE_LOADER` instances so that it has a default set of module loaders to
-    work with. As discussed before, the gateway SDK, depending on build options
-    used will ship with a set of pre-defined loaders. Here’s an example how this
-    initialization code might look like:
+Module loaders for a given language binding may or may not be available
+depending on the *CMake* build options that were used when the source was built.
+For example if CMake was run with the `enable_dotnet_binding` variable set to
+`false`/`off` then the corresponding loader becomes unavailable for use.
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    MODULE_LOADER* module_loaders[] = {
+Every module loader implementation provides a global function that is
+responsible for returning a pointer to a `MODULE_LOADER` instance. The *native*
+loader that implements dynamic module loading for instance might provide a
+function that looks like this:
 
-        DynamicLoader_Get()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+extern const MODULE_LOADER *DynamicLoader_Get(void);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The gateway, during initialization, creates and populates a vector of
+`MODULE_LOADER` instances so that it has a default set of module loaders to work
+with. As discussed before, the gateway SDK, depending on build options used will
+ship with a set of pre-defined loaders. Here’s an example how this
+initialization code might look like:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MODULE_LOADER* module_loaders[] = {
+    DynamicLoader_Get()
 
     #ifdef JAVA_BINDING_ENABLED
-        , JavaBindingLoader_Get()
+    , JavaBindingLoader_Get()
     #endif
 
     #ifdef DOTNET_BINDING_ENABLED
-        , DotnetBindingLoader_Get()
+    , DotnetBindingLoader_Get()
     #endif
 
     #ifdef NODE_BINDING_ENABLED
-        , NodeBindingLoader_Get()
+    , NodeBindingLoader_Get()
     #endif
-    };
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+};
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-5.  The `GATEWAY_PROPERTIES` struct will include a vector of `MODULE_LOADER`
-    instances to capture custom loaders that the gateway might want to make use
-    of. If the name of a loader in this vector matches the name of a default
-    loader then it has the effect of overriding the default loader.
+The gateway maintains a global vector of `MODULE_LOADER` instances to store the
+list of module loaders that the gateway might want to make use of.
 
-6.  When initializing custom loaders, if the caller has provided a value in
-    `MODULE_LOADER::binding_module_path` then the gateway proceeds to make use
-    of it. If there’s no `binding_module_path` provided then the gateway looks
-    for a DLL/SO with a well-known name by invoking the underlying operating
-    system’s default DLL/SO search algorithm. We also search in the folder where
-    the gateway binary was run from and from the `./bin` folder. If the module
-    cannot be located at the end of this search then it is an error.
+### Loading Loaders
 
-7.  In case of a *native* module loader, there is no binding module. In order to
-    avoid writing specialized code for just this case we will have a shim
-    *binding* module where the module API implementation simply delegates to the
-    *real* module’s API.
+The process of initializing the list of loaders that a gateway is configured to
+work is given below:
 
-8.  The gateway calls the module loader’s `Load` function to acquire a
-    `MODULE_LIBRARY_HANDLE`. Each module loader’s implementation of this
-    function would do what’s necessary to also load the associated runtime (in
-    case of language binding modules).
+1.  Initialize the list of default loaders based on what has been compiled into
+    the gateway as described in the previous section.
 
-9.  The language binding module loader implementations will use the dynamic
-    loader to load the binding module DLLs/SOs.
+2.  Inspect the gateway configuration and create custom loaders. When
+    initializing from JSON, if a loader’s name matches the name of an existing
+    loader then it has the effect of replacing the loader’s configuration. New
+    loaders are added to the gateway’s loaders list (the loader’s function
+    pointer table is copied over from the corresponding *default* loader with
+    the same loader type).
 
-10. The gateway then proceeds to acquire the module’s function pointer table and
-    calls `Module_Create` or `Module_CreateFromJson` to instantiate the module.
+3.  When initializing from JSON, each loader’s configuration is parsed by
+    invoking the `ParseConfigurationFromJson` function from the loader’s API.
+
+### Loading Modules
+
+The process of loading a given gateway module is described below:
+
+1.  When initializing the gateway from JSON, it first attempts to parse the
+    module’s entrypoint data by calling the loader’s `ParseEntryPointFromJson`
+    function.
+
+2.  It then proceeds to load the module by invoking the loader’s `Load` function
+    passing in the entrypoint it acquired in the previous step. Each loader is
+    free to do what it needs to in order to load the module. The native loader
+    for example will inspect the entrypoint to retrieve the path to the DLL/SO
+    that implements the module and loads it into memory. A language binding
+    module’s loader on the other hand might choose to load the binding module
+    implementation and it’s associated runtime and defer the loading of the
+    actual module code till the time when `Module_Create` is called on the
+    binding module.
+
+3.  Next, when the gateway is loaded from JSON, the module’s `args` JSON is
+    parsed by invoking `ParseConfigurationFromJson` on the module’s API.
+
+4.  Language binding modules expect a configuration structure that’s typically
+    an amalgamation of the entrypoint data and the module loader’s
+    configuration. In order to provide language binding modules an opportunity
+    to perform this merging of configuration information, the loader is expected
+    to implement the `BuildModuleConfiguration` function. This function is
+    provided with pointers to the entrypoint data and the module loader’s
+    configuration and it returns a pointer to a merged variant of the
+    configuration as expected by the binding module.
+
+5.  Finally, the `Module_Create` API is called on the module itself at which
+    point the module is loaded.
