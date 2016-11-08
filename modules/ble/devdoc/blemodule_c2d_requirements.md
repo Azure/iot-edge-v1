@@ -26,14 +26,14 @@ The message content is a JSON object of the format:
 }
 ```
 
-## BLE_C2D_ParseFromJson
+## BLE_C2D_ParseConfigurationFromJson
 ```c
-void* BLE_C2D_ParseFromJson(const char* configuration)
+void* BLE_C2D_ParseConfigurationFromJson(const char* configuration)
 ```
 
 Creates configuration for a BLE C2D module. `configuration` is ignored.
 
-**SRS_BLE_CTOD_17_027: [** `BLE_C2D_ParseFromJson` shall return `NULL`. **]**
+**SRS_BLE_CTOD_17_027: [** `BLE_C2D_ParseConfigurationFromJson` shall return `NULL`. **]**
 
 ## BLE_C2D_FreeConfiguration
 ```c
