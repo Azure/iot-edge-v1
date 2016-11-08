@@ -60,9 +60,9 @@ static MODULE_HANDLE BLE_C2D_Create(BROKER_HANDLE broker, const void* configurat
     return (MODULE_HANDLE)result;
 }
 
-static void* BLE_C2D_ParseFromJson(const char* configuration)
+static void* BLE_C2D_ParseConfigurationFromJson(const char* configuration)
 {
-    /*Codes_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseFromJson shall return NULL. ]*/
+    /*Codes_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseConfigurationFromJson shall return NULL. ]*/
     return NULL;
 }
 
@@ -275,7 +275,7 @@ static void BLE_C2D_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 static const MODULE_API_1 BLE_C2D_APIS_all =
 {
     {MODULE_API_VERSION_1},
-    BLE_C2D_ParseFromJson,
+    BLE_C2D_ParseConfigurationFromJson,
 	BLE_C2D_FreeConfiguration,
     BLE_C2D_Create,
     BLE_C2D_Destroy,

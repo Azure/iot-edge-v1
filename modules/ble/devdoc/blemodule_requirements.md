@@ -58,9 +58,9 @@ typedef struct BLE_HANDLE_DATA_TAG
 }BLE_HANDLE_DATA;
 ```
 
-## BLE_ParseFromJson
+## BLE_ParseConfigurationFromJson
 ```c
-BLE_CONFIG * BLE_ParseFromJson(const char* configuration)
+BLE_CONFIG * BLE_ParseConfigurationFromJson(const char* configuration)
 ```
 
 Creates a new BLE_CONFIG structure from JSON input. `configuration` is a `const char*` that contains a JSON string, as typically passed through the Gateway SDK function `Gateway_CreateFromJson`. The JSON object should conform to the following structure:
@@ -128,49 +128,49 @@ Creates a new BLE_CONFIG structure from JSON input. `configuration` is a `const 
 }
 ```
 
-**SRS_BLE_05_001: [** `BLE_ParseFromJson` shall return `NULL` if the `configuration` parameter is `NULL`. **]**
+**SRS_BLE_05_001: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `configuration` parameter is `NULL`. **]**
 
-**SRS_BLE_05_002: [** `BLE_ParseFromJson` shall return `NULL` if any of the underlying platform calls fail. **]**
+**SRS_BLE_05_002: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if any of the underlying platform calls fail. **]**
 
-**SRS_BLE_05_003: [** `BLE_ParseFromJson` shall return `NULL` if the JSON does not start with an `object`. **]**
+**SRS_BLE_05_003: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the JSON does not start with an `object`. **]**
 
-**SRS_BLE_05_004: [** `BLE_ParseFromJson` shall return `NULL` if there is no `device_mac_address` property in the JSON. **]**
+**SRS_BLE_05_004: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if there is no `device_mac_address` property in the JSON. **]**
 
-**SRS_BLE_05_013: [** `BLE_ParseFromJson` shall return `NULL` if the `device_mac_address` property's value is not a well-formed MAC address. **]**
+**SRS_BLE_05_013: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `device_mac_address` property's value is not a well-formed MAC address. **]**
 
-**SRS_BLE_05_005: [** `BLE_ParseFromJson` shall return `NULL` if the `controller_index` value in the JSON is less than zero. **]**
+**SRS_BLE_05_005: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `controller_index` value in the JSON is less than zero. **]**
 
-**SRS_BLE_05_006: [** `BLE_ParseFromJson` shall return `NULL` if the `instructions` array does not exist in the JSON. **]**
+**SRS_BLE_05_006: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `instructions` array does not exist in the JSON. **]**
 
-**SRS_BLE_05_020: [** `BLE_ParseFromJson` shall return `NULL` if the `instructions` array length is equal to zero. **]**
+**SRS_BLE_05_020: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `instructions` array length is equal to zero. **]**
 
-**SRS_BLE_05_007: [** `BLE_ParseFromJson` shall return `NULL` if each instruction is not an `object`. **]**
+**SRS_BLE_05_007: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if each instruction is not an `object`. **]**
 
-**SRS_BLE_05_008: [** `BLE_ParseFromJson` shall return `NULL` if a given instruction does not have a `type` property. **]**
+**SRS_BLE_05_008: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if a given instruction does not have a `type` property. **]**
 
-**SRS_BLE_05_021: [** `BLE_ParseFromJson` shall return `NULL` if a given instruction's `type` property is unrecognized. **]**
+**SRS_BLE_05_021: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if a given instruction's `type` property is unrecognized. **]**
 
-**SRS_BLE_05_009: [** `BLE_ParseFromJson` shall return `NULL` if a given instruction does not have a `characteristic_uuid` property. **]**
+**SRS_BLE_05_009: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if a given instruction does not have a `characteristic_uuid` property. **]**
 
-**SRS_BLE_05_010: [** `BLE_ParseFromJson` shall return `NULL` if the `interval_in_ms` value for a `read_periodic` instruction isn't greater than zero. **]**
+**SRS_BLE_05_010: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if the `interval_in_ms` value for a `read_periodic` instruction isn't greater than zero. **]**
 
-**SRS_BLE_05_011: [** `BLE_ParseFromJson` shall return `NULL` if an instruction of type `write_at_init` or `write_at_exit` does not have a `data` property. **]**
+**SRS_BLE_05_011: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if an instruction of type `write_at_init` or `write_at_exit` does not have a `data` property. **]**
 
-**SRS_BLE_05_012: [** `BLE_ParseFromJson` shall return `NULL` if an instruction of type `write_at_init` or `write_at_exit` has a `data` property whose value does not decode successfully from base 64. **]**
+**SRS_BLE_05_012: [** `BLE_ParseConfigurationFromJson` shall return `NULL` if an instruction of type `write_at_init` or `write_at_exit` has a `data` property whose value does not decode successfully from base 64. **]**
 
-**SRS_BLE_17_001: [** `BLE_ParseFromJson` shall allocate a new `BLE_CONFIG` structure containing BLE instructions and configuration as parsed from the JSON input.  **]**
+**SRS_BLE_17_001: [** `BLE_ParseConfigurationFromJson` shall allocate a new `BLE_CONFIG` structure containing BLE instructions and configuration as parsed from the JSON input.  **]**
 
-**SRS_BLE_05_023: [** `BLE_ParseFromJson` shall return a non-`NULL` pointer to the `BLE_CONFIG` struct allocated if successful. **]**
+**SRS_BLE_05_023: [** `BLE_ParseConfigurationFromJson` shall return a non-`NULL` pointer to the `BLE_CONFIG` struct allocated if successful. **]**
 
 ## BLE_FreeConfiguration
 ```c
 void BLE_FreeConfiguration(void* configuration)
 ```
-Frees all resources allocated by `BLE_ParseFromJson`.
+Frees all resources allocated by `BLE_ParseConfigurationFromJson`.
 
 **SRS_BLE_17_002: [** `BLE_FreeConfiguration` shall do nothing if `configuration` is `NULL`. **]**
 
-**SRS_BLE_17_003: [** `BLE_FreeConfiguration` shall releases all resources allocated in the `BLE_CONFIG` structure and release `configuration`. **]**
+**SRS_BLE_17_003: [** `BLE_FreeConfiguration` shall release all resources allocated in the `BLE_CONFIG` structure and release `configuration`. **]**
 
 
 ## BLE_Create

@@ -40,7 +40,7 @@ static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 /*these are simple cached variables*/
-static pfModule_ParseConfigurationFromJson BLE_ParseFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_ParseConfigurationFromJson BLE_ParseConfigurationFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_FreeConfiguration BLE_FreeConfiguration = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Create  BLE_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy BLE_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -774,7 +774,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
         const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
-        BLE_ParseFromJson = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis);
+        BLE_ParseConfigurationFromJson = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis);
         BLE_FreeConfiguration = MODULE_FREE_CONFIGURATION(apis);
         BLE_Create = MODULE_CREATE(apis);
         BLE_Destroy = MODULE_DESTROY(apis);
@@ -809,14 +809,14 @@ BEGIN_TEST_SUITE(ble_ut)
         }
     }
 
-    /*Tests_SRS_BLE_05_001: [ BLE_ParseFromJson shall return NULL if the configuration parameter is NULL. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_config_is_NULL)
+    /*Tests_SRS_BLE_05_001: [ BLE_ParseConfigurationFromJson shall return NULL if the configuration parameter is NULL. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_config_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
 
         ///act
-        auto result = BLE_ParseFromJson(NULL);
+        auto result = BLE_ParseConfigurationFromJson(NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -825,8 +825,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_json_parse_string_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseConfigurationFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_json_parse_string_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -836,7 +836,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -845,8 +845,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_003: [ BLE_ParseFromJson shall return NULL if the JSON does not start with an object. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_json_value_get_object_for_root_fails)
+    /*Tests_SRS_BLE_05_003: [ BLE_ParseConfigurationFromJson shall return NULL if the JSON does not start with an object. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_json_value_get_object_for_root_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -860,7 +860,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -869,8 +869,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_005: [ BLE_ParseFromJson shall return NULL if the controller_index value in the JSON is less than zero. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_controller_index_is_negative)
+    /*Tests_SRS_BLE_05_005: [ BLE_ParseConfigurationFromJson shall return NULL if the controller_index value in the JSON is less than zero. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_controller_index_is_negative)
     {
         ///arrange
         CBLEMocks mocks;
@@ -886,7 +886,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((int)-1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -895,8 +895,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_004: [ BLE_ParseFromJson shall return NULL if there is no device_mac_address property in the JSON. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_NULL)
+    /*Tests_SRS_BLE_05_004: [ BLE_ParseConfigurationFromJson shall return NULL if there is no device_mac_address property in the JSON. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_mac_address_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -914,7 +914,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((const char*)NULL);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -923,8 +923,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_006: [ BLE_ParseFromJson shall return NULL if the instructions array does not exist in the JSON. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instructions_is_NULL)
+    /*Tests_SRS_BLE_05_006: [ BLE_ParseConfigurationFromJson shall return NULL if the instructions array does not exist in the JSON. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instructions_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -944,7 +944,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Array *)NULL);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -953,8 +953,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_020: [ BLE_ParseFromJson shall return NULL if the instructions array length is equal to zero. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instructions_is_empty)
+    /*Tests_SRS_BLE_05_020: [ BLE_ParseConfigurationFromJson shall return NULL if the instructions array length is equal to zero. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instructions_is_empty)
     {
         ///arrange
         CBLEMocks mocks;
@@ -976,7 +976,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetReturn((size_t)0);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -985,8 +985,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_VECTOR_create_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseConfigurationFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_VECTOR_create_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1010,7 +1010,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((VECTOR_HANDLE)NULL);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1019,8 +1019,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_007: [ BLE_ParseFromJson shall return NULL if each instruction is not an object. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_entry_is_NULL)
+    /*Tests_SRS_BLE_05_007: [ BLE_ParseConfigurationFromJson shall return NULL if each instruction is not an object. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instruction_entry_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1051,7 +1051,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1060,8 +1060,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_008: [ BLE_ParseFromJson shall return NULL if a given instruction does not have a type property. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_type_is_NULL)
+    /*Tests_SRS_BLE_05_008: [ BLE_ParseConfigurationFromJson shall return NULL if a given instruction does not have a type property. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instruction_type_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1098,7 +1098,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1107,8 +1107,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_009: [ BLE_ParseFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_characteristic_is_NULL)
+    /*Tests_SRS_BLE_05_009: [ BLE_ParseConfigurationFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instruction_characteristic_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1146,7 +1146,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1155,8 +1155,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_STRING_construct_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseConfigurationFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_STRING_construct_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1198,7 +1198,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1207,8 +1207,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_010: [ BLE_ParseFromJson shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_read_periodic_interval_is_zero)
+    /*Tests_SRS_BLE_05_010: [ BLE_ParseConfigurationFromJson shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_read_periodic_interval_is_zero)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1254,7 +1254,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1263,8 +1263,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_011: [ BLE_ParseFromJson shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_write_instr_data_is_NULL)
+    /*Tests_SRS_BLE_05_011: [ BLE_ParseConfigurationFromJson shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_write_instr_data_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1310,7 +1310,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1319,8 +1319,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_012: [ BLE_ParseFromJson shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_write_instr_base64_decode_fails)
+    /*Tests_SRS_BLE_05_012: [ BLE_ParseConfigurationFromJson shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_write_instr_base64_decode_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1369,7 +1369,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1378,8 +1378,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_021: [ BLE_ParseFromJson shall return NULL if a given instruction's type property is unrecognized. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instr_type_is_unknown)
+    /*Tests_SRS_BLE_05_021: [ BLE_ParseConfigurationFromJson shall return NULL if a given instruction's type property is unrecognized. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_instr_type_is_unknown)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1423,7 +1423,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1432,8 +1432,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_VECTOR_push_back_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseConfigurationFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_VECTOR_push_back_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1488,7 +1488,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1497,8 +1497,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_and_frees_first_instr_when_second_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseConfigurationFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_and_frees_first_instr_when_second_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1578,7 +1578,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1587,8 +1587,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_013: [ BLE_ParseFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_invalid)
+    /*Tests_SRS_BLE_05_013: [ BLE_ParseConfigurationFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_mac_address_is_invalid)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1647,7 +1647,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1656,8 +1656,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_013: [ BLE_ParseFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_invalid2)
+    /*Tests_SRS_BLE_05_013: [ BLE_ParseConfigurationFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_mac_address_is_invalid2)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1715,7 +1715,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1724,9 +1724,9 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_17_001: [ BLE_ParseFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
+    /*Tests_SRS_BLE_17_001: [ BLE_ParseConfigurationFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
     /*Tests_SRS_BLE_05_023: [ BLE_CreateFromJson shall return a non-NULL pointer to the BLE_CONFIG struct allocated if successful. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_succeeds)
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_succeeds)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1790,7 +1790,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1801,8 +1801,8 @@ BEGIN_TEST_SUITE(ble_ut)
         BLE_FreeConfiguration(result);
     }
 
-    /*Tests_SRS_BLE_17_001: [ BLE_ParseFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
-    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_malloc_fails)
+    /*Tests_SRS_BLE_17_001: [ BLE_ParseConfigurationFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
+    TEST_FUNCTION(BLE_ParseConfigurationFromJson_returns_NULL_when_malloc_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1888,7 +1888,7 @@ BEGIN_TEST_SUITE(ble_ut)
 
 
         ///act
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1898,7 +1898,7 @@ BEGIN_TEST_SUITE(ble_ut)
     }
 
     /*Tests_SRS_BLE_17_002: [ BLE_FreeConfiguration shall do nothing if configuration is NULL. ]*/
-    /*Tests_SRS_BLE_17_003: [ BLE_FreeConfiguration shall releases all resources allocated in the BLE_CONFIG structure and release configuration. ]*/
+    /*Tests_SRS_BLE_17_003: [ BLE_FreeConfiguration shall release all resources allocated in the BLE_CONFIG structure and release configuration. ]*/
     TEST_FUNCTION(BLE_FreeConfiguration_does_nothing_with_null)
     {
         CBLEMocks mocks;
@@ -1911,7 +1911,7 @@ BEGIN_TEST_SUITE(ble_ut)
     TEST_FUNCTION(BLE_FreeConfiguration_frees_configuration)
     {
         CBLEMocks mocks;
-        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+        auto result = BLE_ParseConfigurationFromJson(FAKE_CONFIG);
 
         mocks.ResetAllCalls();
 
