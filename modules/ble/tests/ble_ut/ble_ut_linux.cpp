@@ -40,7 +40,8 @@ static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 /*these are simple cached variables*/
-static pfModule_CreateFromJson  BLE_CreateFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_ParseConfigurationFromJson BLE_ParseFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_FreeConfiguration BLE_FreeConfiguration = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Create  BLE_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy BLE_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive BLE_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -773,7 +774,8 @@ BEGIN_TEST_SUITE(ble_ut)
 
         const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
-        BLE_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        BLE_ParseFromJson = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis);
+        BLE_FreeConfiguration = MODULE_FREE_CONFIGURATION(apis);
         BLE_Create = MODULE_CREATE(apis);
         BLE_Destroy = MODULE_DESTROY(apis);
         BLE_Receive = MODULE_RECEIVE(apis);
@@ -807,14 +809,14 @@ BEGIN_TEST_SUITE(ble_ut)
         }
     }
 
-    /*Tests_SRS_BLE_05_001: [ BLE_CreateFromJson shall return NULL if the broker or configuration parameters are NULL. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_broker_is_NULL)
+    /*Tests_SRS_BLE_05_001: [ BLE_ParseFromJson shall return NULL if the configuration parameter is NULL. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_config_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
 
         ///act
-        auto result = BLE_CreateFromJson(NULL, (const char*)0x42);
+        auto result = BLE_ParseFromJson(NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -823,24 +825,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_001: [ BLE_CreateFromJson shall return NULL if the broker or configuration parameters are NULL. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_configuration_is_NULL)
-    {
-        ///arrange
-        CBLEMocks mocks;
-
-        ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, NULL);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
-    /*Tests_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_json_parse_string_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_json_parse_string_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -850,7 +836,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -859,8 +845,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_003: [ BLE_CreateFromJson shall return NULL if the JSON does not start with an object. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_json_value_get_object_for_root_fails)
+    /*Tests_SRS_BLE_05_003: [ BLE_ParseFromJson shall return NULL if the JSON does not start with an object. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_json_value_get_object_for_root_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -874,7 +860,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -883,8 +869,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_005: [ BLE_CreateFromJson shall return NULL if the controller_index value in the JSON is less than zero. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_controller_index_is_negative)
+    /*Tests_SRS_BLE_05_005: [ BLE_ParseFromJson shall return NULL if the controller_index value in the JSON is less than zero. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_controller_index_is_negative)
     {
         ///arrange
         CBLEMocks mocks;
@@ -900,7 +886,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((int)-1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -909,8 +895,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_004: [ BLE_CreateFromJson shall return NULL if there is no device_mac_address property in the JSON. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_mac_address_is_NULL)
+    /*Tests_SRS_BLE_05_004: [ BLE_ParseFromJson shall return NULL if there is no device_mac_address property in the JSON. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -928,7 +914,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((const char*)NULL);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -937,8 +923,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_006: [ BLE_CreateFromJson shall return NULL if the instructions array does not exist in the JSON. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instructions_is_NULL)
+    /*Tests_SRS_BLE_05_006: [ BLE_ParseFromJson shall return NULL if the instructions array does not exist in the JSON. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instructions_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -958,7 +944,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .SetFailReturn((JSON_Array *)NULL);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -967,8 +953,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_020: [ BLE_CreateFromJson shall return NULL if the instructions array length is equal to zero. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instructions_is_empty)
+    /*Tests_SRS_BLE_05_020: [ BLE_ParseFromJson shall return NULL if the instructions array length is equal to zero. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instructions_is_empty)
     {
         ///arrange
         CBLEMocks mocks;
@@ -988,13 +974,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .SetReturn((size_t)0);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1003,8 +985,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_VECTOR_create_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_VECTOR_create_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1026,13 +1008,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(BLE_INSTRUCTION)))
             .IgnoreArgument(1)
             .SetFailReturn((VECTOR_HANDLE)NULL);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1041,8 +1019,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_007: [ BLE_CreateFromJson shall return NULL if each instruction is not an object. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instruction_entry_is_NULL)
+    /*Tests_SRS_BLE_05_007: [ BLE_ParseFromJson shall return NULL if each instruction is not an object. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_entry_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1071,13 +1049,9 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1)
             .SetFailReturn((JSON_Object*)NULL);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1086,8 +1060,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_008: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a type property. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instruction_type_is_NULL)
+    /*Tests_SRS_BLE_05_008: [ BLE_ParseFromJson shall return NULL if a given instruction does not have a type property. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_type_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1122,13 +1096,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1137,8 +1107,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_009: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instruction_characteristic_is_NULL)
+    /*Tests_SRS_BLE_05_009: [ BLE_ParseFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instruction_characteristic_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1175,13 +1145,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1190,8 +1155,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_STRING_construct_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_STRING_construct_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1231,13 +1196,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1246,8 +1207,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_010: [ BLE_CreateFromJson shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_read_periodic_interval_is_zero)
+    /*Tests_SRS_BLE_05_010: [ BLE_ParseFromJson shall return NULL if the interval_in_ms value for a read_periodic instruction isn't greater than zero. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_read_periodic_interval_is_zero)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1292,13 +1253,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1307,8 +1263,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_011: [ BLE_CreateFromJson shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_write_instr_data_is_NULL)
+    /*Tests_SRS_BLE_05_011: [ BLE_ParseFromJson shall return NULL if an instruction of type write_at_init or write_at_exit does not have a data property. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_write_instr_data_is_NULL)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1353,13 +1309,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1368,8 +1319,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_012: [ BLE_CreateFromJson shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_write_instr_base64_decode_fails)
+    /*Tests_SRS_BLE_05_012: [ BLE_ParseFromJson shall return NULL if an instruction of type write_at_init or write_at_exit has a data property whose value does not decode successfully from base 64. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_write_instr_base64_decode_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1417,13 +1368,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1432,8 +1378,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_021: [ BLE_CreateFromJson shall return NULL if a given instruction's type property is unrecognized. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_instr_type_is_unknown)
+    /*Tests_SRS_BLE_05_021: [ BLE_ParseFromJson shall return NULL if a given instruction's type property is unrecognized. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_instr_type_is_unknown)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1475,13 +1421,9 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1490,8 +1432,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_VECTOR_push_back_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_VECTOR_push_back_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1545,13 +1487,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1560,8 +1497,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_and_frees_first_instr_when_second_fails)
+    /*Tests_SRS_BLE_05_002: [ BLE_ParseFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_and_frees_first_instr_when_second_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1640,13 +1577,8 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1655,8 +1587,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_013: [ BLE_CreateFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_mac_address_is_invalid)
+    /*Tests_SRS_BLE_05_013: [ BLE_ParseFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_invalid)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1715,7 +1647,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1724,8 +1656,8 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_013: [ BLE_CreateFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_mac_address_is_invalid2)
+    /*Tests_SRS_BLE_05_013: [ BLE_ParseFromJson shall return NULL if the device_mac_address property's value is not a well-formed MAC address. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_mac_address_is_invalid2)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1783,7 +1715,7 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1);
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1792,9 +1724,9 @@ BEGIN_TEST_SUITE(ble_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_05_014: [ BLE_CreateFromJson shall call the underlying module's 'create' function. ]*/
-    /*Tests_SRS_BLE_05_023: [ BLE_CreateFromJson shall return a non-NULL handle if calling the underlying module's create function succeeds. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_succeeds)
+    /*Tests_SRS_BLE_17_001: [ BLE_ParseFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
+    /*Tests_SRS_BLE_05_023: [ BLE_CreateFromJson shall return a non-NULL pointer to the BLE_CONFIG struct allocated if successful. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_succeeds)
     {
         ///arrange
         CBLEMocks mocks;
@@ -1851,90 +1783,14 @@ BEGIN_TEST_SUITE(ble_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
-        // calls BLE_Create
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))  // sizeof(BLE_HANDLE_DATA)
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_create(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_create(32));
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, BLEIO_Seq_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .IgnoreArgument(3)
-            .IgnoreArgument(4);
-        STRICT_EXPECTED_CALL(mocks, g_main_loop_new(NULL, 0));
-        STRICT_EXPECTED_CALL(mocks, ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .IgnoreArgument(3);
-        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_connect(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .IgnoreArgument(3);
-        STRICT_EXPECTED_CALL(mocks, BLEIO_Seq_Run(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(BLE_CONFIG)));
+
         STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        //CleanUp
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1); 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1); 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
-            .IgnoreArgument(1); 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
-            .IgnoreArgument(1); 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1942,11 +1798,11 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///cleanup
         should_g_main_loop_quit_call_thread_func = true;
-        BLE_Destroy(result);
+        BLE_FreeConfiguration(result);
     }
 
-    /*Tests_SRS_BLE_05_022: [ BLE_CreateFromJson shall return NULL if calling the underlying module's `create` function fails. ]*/
-    TEST_FUNCTION(BLE_CreateFromJson_returns_NULL_when_BLE_Create_returns_NULL)
+    /*Tests_SRS_BLE_17_001: [ BLE_ParseFromJson shall allocate a new BLE_CONFIG structure containing BLE instructions and configuration as parsed from the JSON input. ]*/
+    TEST_FUNCTION(BLE_ParseFromJson_returns_NULL_when_malloc_fails)
     {
         ///arrange
         CBLEMocks mocks;
@@ -2004,47 +1860,86 @@ BEGIN_TEST_SUITE(ble_ut)
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 
-        // calls BLE_Create
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(BLE_CONFIG)))
+            .SetFailReturn(nullptr);
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) // sizeof(BLE_HANDLE_DATA)
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, BLEIO_gatt_create(IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((BLEIO_GATT_HANDLE)NULL);
-        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1); 
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1); 
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1); 
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1); 
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+
 
         ///act
-        auto result = BLE_CreateFromJson((BROKER_HANDLE)0x42, FAKE_CONFIG);
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
         ASSERT_IS_NULL(result);
 
         ///cleanup
+    }
+
+    /*Tests_SRS_BLE_17_002: [ BLE_FreeConfiguration shall do nothing if configuration is NULL. ]*/
+    /*Tests_SRS_BLE_17_003: [ BLE_FreeConfiguration shall releases all resources allocated in the BLE_CONFIG structure and release configuration. ]*/
+    TEST_FUNCTION(BLE_FreeConfiguration_does_nothing_with_null)
+    {
+        CBLEMocks mocks;
+
+        BLE_FreeConfiguration(NULL);
+
+        mocks.AssertActualAndExpectedCalls();
+    }
+
+    TEST_FUNCTION(BLE_FreeConfiguration_frees_configuration)
+    {
+        CBLEMocks mocks;
+        auto result = BLE_ParseFromJson(FAKE_CONFIG);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 2))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 3))
+            .IgnoreArgument(1); 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(result));
+
+
+        BLE_FreeConfiguration(result);
+        mocks.AssertActualAndExpectedCalls();
     }
 
     /*Tests_SRS_BLE_13_001: [ BLE_Create shall return NULL if broker is NULL. ]*/
@@ -4143,7 +4038,8 @@ BEGIN_TEST_SUITE(ble_ut)
 
         ///assert
         ASSERT_IS_NOT_NULL(apis);
-        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_PARSE_CONFIGURATION_FROM_JSON(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_FREE_CONFIGURATION(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);

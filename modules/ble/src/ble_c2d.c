@@ -60,12 +60,16 @@ static MODULE_HANDLE BLE_C2D_Create(BROKER_HANDLE broker, const void* configurat
     return (MODULE_HANDLE)result;
 }
 
-static MODULE_HANDLE BLE_C2D_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void* BLE_C2D_ParseFromJson(const char* configuration)
 {
-    /*Codes_SRS_BLE_CTOD_05_001: [ `BLE_C2D_CreateFromJson` shall return `NULL` if the `broker` parameter is `NULL`. ]*/
-    /*Codes_SRS_BLE_CTOD_05_002: [ `BLE_C2D_CreateFromJson` shall return `NULL` if any of the underlying platform calls fail. ]*/
-    /*Codes_SRS_BLE_CTOD_05_003: [ `BLE_C2D_CreateFromJson` shall return a non-`NULL` handle when the function succeeds. ]*/
-    return BLE_C2D_Create(broker, NULL);
+    /*Codes_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseFromJson shall return NULL. ]*/
+    return NULL;
+}
+
+static void BLE_C2D_FreeConfiguration(void* configuration)
+{
+	/*Codes_SRS_BLE_CTOD_17_028: [ BLE_C2D_FreeConfiguration shall do nothing. ]*/
+	return;
 }
 
 static void BLE_C2D_Destroy(MODULE_HANDLE module)
@@ -271,7 +275,8 @@ static void BLE_C2D_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 static const MODULE_API_1 BLE_C2D_APIS_all =
 {
     {MODULE_API_VERSION_1},
-    BLE_C2D_CreateFromJson,
+    BLE_C2D_ParseFromJson,
+	BLE_C2D_FreeConfiguration,
     BLE_C2D_Create,
     BLE_C2D_Destroy,
     BLE_C2D_Receive,
