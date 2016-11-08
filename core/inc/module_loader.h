@@ -66,18 +66,33 @@ typedef struct MODULE_LOADER_API_TAG
     /** @brief GetApi function, gets the MODULE_API for the loaded module */
     pfModuleLoader_GetApi GetApi;
 
+    /** @brief ParseEntrypointFromJson function, parses entrypoint information
+    provided in JSON form and returns a pointer to a struct that the module will
+    be able to use */
     pfModuleLoader_ParseEntrypointFromJson ParseEntrypointFromJson;
+    /** @brief FreeEntrypoint function, frees the memory returned by
+    ParseEntryPoint */
     pfModuleLoader_FreeEntrypoint FreeEntrypoint;
 
+    /** @brief ParseConfigurationFromJson function, parses module loader
+    configuration information provided in JSON form and returns a pointer to a
+    struct that the module loader will be able to use */
     pfModuleLoader_ParseConfigurationFromJson ParseConfigurationFromJson;
+    /** @brief FreeEntrypoint function, frees the memory returned by
+    ParseConfigurationFromJson */
     pfModuleLoader_FreeConfiguration FreeConfiguration;
 
+    /** @brief ParseConfigurationFromJson function, responsible for merging
+    entrypoint data and data from module configuration into a struct that
+    language binding modules expect*/
     pfModuleLoader_BuildModuleConfiguration BuildModuleConfiguration;
+    /** @brief FreeEntrypoint function, frees the memory returned by
+    BuildModuleConfiguration */
     pfModuleLoader_FreeModuleConfiguration FreeModuleConfiguration;
 } MODULE_LOADER_API;
 
 /**
- * Module loader type enumeration.
+ * @brief Module loader type.
  */
 typedef enum MODULE_LOADER_TYPE_TAG
 {
@@ -93,9 +108,18 @@ typedef enum MODULE_LOADER_TYPE_TAG
  */
 typedef struct MODULE_LOADER_TAG
 {
+    /** @brief The module loader type from the MODULE_LOADER_TYPE enumeration. */
     MODULE_LOADER_TYPE                  type;
+
+    /** @brief The module loader's name used to reference this loader when
+     *         using JSON to configure a gateway. */
     const char*                         name;
+
+    /** @brief The module loader's' configuration. For example the Java
+     *         language binding loader might store JVM runtime options here. */
     MODULE_LOADER_BASE_CONFIGURATION*   configuration;
+
+    /** @brief The module loader's' API implementation. */
     MODULE_LOADER_API*                  api;
 } MODULE_LOADER;
 
@@ -106,8 +130,8 @@ typedef struct MODULE_LOADER_TAG
 DEFINE_ENUM(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
 
 /**
- * Utility function for parsing a JSON object that has a property called
- * "binding.path" into a MODULE_LOADER_BASE_CONFIGURATION instance.
+ * @brief Utility function for parsing a JSON object that has a property called
+ *       "binding.path" into a MODULE_LOADER_BASE_CONFIGURATION instance.
  */
 MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
     MODULE_LOADER_BASE_CONFIGURATION* configuration,
@@ -115,28 +139,31 @@ MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
 );
 
 /**
- * Utility function for freeing a MODULE_LOADER_BASE_CONFIGURATION* instance
- * from a previous call to ModuleLoader_ParseBaseConfigurationFromJson.
+ * @brief Utility function for freeing a MODULE_LOADER_BASE_CONFIGURATION*
+ *        instance from a previous call to
+ *        ModuleLoader_ParseBaseConfigurationFromJson.
  */
 void ModuleLoader_FreeBaseConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration);
 
 /**
- * This function creates the default set of module loaders that the gateway supports.
+ * @brief This function creates the default set of module loaders that the
+ *        gateway supports.
  */
 MODULE_LOADER_RESULT ModuleLoader_Initialize(void);
 
 /**
- * This function frees resources allocated for tracking module loaders.
+ * @brief This function frees resources allocated for tracking module loaders.
  */
 void ModuleLoader_Destroy(void);
 
 /**
- * Adds a new module loader to the gateway's collection of module loaders.
+ * @brief Adds a new module loader to the gateway's collection of module loaders.
  */
 MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader);
 
 /**
- * Safely replaces the module loader configuration for the given loader.
+ * @brief Replaces the module loader configuration for the given loader in a
+ *        thread-safe manner.
  */
 MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
     MODULE_LOADER* loader,
@@ -144,28 +171,30 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
 );
 
 /**
- * Searches the module loader collection given the loader's name.
+ * @brief Searches the module loader collection given the loader's name.
  */
 MODULE_LOADER* ModuleLoader_FindByName(const char* name);
 
 /**
- * Given a module loader type - returns the default loader.
+ * @brief Given a module loader type, returns the default loader.
  */
 MODULE_LOADER* ModuleLoader_GetDefaultLoaderForType(MODULE_LOADER_TYPE type);
 
 /**
- * Given a string representation of a module loader type, returns the corresponding
- * enum value.
+ * @brief Given a string representation of a module loader type, returns the
+ * corresponding enum value.
  */
 MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type);
 
 /**
- * Given a module name, determines if it is a default module loader or a custom one.
+ * @brief Given a module name, determines if it is a default module loader or a
+ *        custom one.
  */
 bool ModuleLoader_IsDefaultLoader(const char* name);
 
 /**
- * Updates the global loaders array from a JSON that looks like this:
+ * @brief Updates the global loaders array from a JSON that looks like this:
+ *
  *   "loaders": [
  *       {
  *           "type": "node",
