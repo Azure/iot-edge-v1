@@ -83,20 +83,6 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
     VECTOR_HANDLE gateway_links;
 } GATEWAY_PROPERTIES;
 
-/** @brief      Struct representing current information about a single module */
-typedef struct GATEWAY_MODULE_INFO_TAG
-{
-    /** @brief  The name of the module */
-    const char* module_name;
-
-    /** @brief  A vector of pointers to @c GATEWAY_MODULE_INFO that this module
-     *          will receive data from (link sources, this one being the sink). 
-     * 
-     *  If the handle == NULL this module receives data from all other modules. 
-     */
-    VECTOR_HANDLE module_sources;
-} GATEWAY_MODULE_INFO;
-
 /** @brief      Creates a gateway using a JSON configuration file as input
  *              which describes each module. Each module described in the
  *              configuration must support Module_CreateFromJson. 
