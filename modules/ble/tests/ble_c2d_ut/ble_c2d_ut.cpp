@@ -23,7 +23,8 @@ static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
 /*these are simple cached variables*/
-static pfModule_CreateFromJson  BLE_C2D_CreateFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_ParseConfigurationFromJson  BLE_C2D_ParseFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_FreeConfiguration  BLE_C2D_FreeConfiguration = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Create  BLE_C2D_Create = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Destroy BLE_C2D_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive BLE_C2D_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -523,7 +524,8 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         ASSERT_IS_NOT_NULL(g_testByTest);
 
         const MODULE_API *apis = Module_GetApi(MODULE_API_VERSION_1);
-        BLE_C2D_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        BLE_C2D_ParseFromJson = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis);
+        BLE_C2D_FreeConfiguration = MODULE_FREE_CONFIGURATION(apis);
         BLE_C2D_Create = MODULE_CREATE(apis);
         BLE_C2D_Destroy = MODULE_DESTROY(apis);
         BLE_C2D_Receive = MODULE_RECEIVE(apis);
@@ -551,14 +553,14 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         }
     }
 
-    /*Tests_SRS_BLE_CTOD_05_001: [ `BLE_C2D_CreateFromJson` shall return `NULL` if the `broker` parameter is `NULL`. ]*/
-    TEST_FUNCTION(BLE_C2D_CreateFromJson_returns_NULL_when_broker_is_NULL)
+    /*Tests_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseFromJson shall return NULL. ]*/
+    TEST_FUNCTION(BLE_C2D_ParseFromJson_returns_NULL_when_config_is_NULL)
     {
         ///arrange
         CBLEC2DMocks mocks;
 
         ///act
-        auto result = BLE_C2D_CreateFromJson(NULL, (const char*)0x42);
+        auto result = BLE_C2D_ParseFromJson(NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -567,18 +569,14 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_CTOD_05_002: [ `BLE_C2D_CreateFromJson` shall return `NULL` if any of the underlying platform calls fail. ]*/
-    TEST_FUNCTION(BLE_C2D_CreateFromJson_returns_NULL_when_malloc_fails)
+    /*Tests_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseFromJson shall return NULL. ]*/
+    TEST_FUNCTION(BLE_C2D_ParseFromJson_returns_NULL_when_config_is_not_null)
     {
         ///arrange
         CBLEC2DMocks mocks;
 
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1)
-            .SetFailReturn((void*)NULL);
-
         ///act
-        auto result = BLE_C2D_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+        auto result = BLE_C2D_ParseFromJson((const char *)0x42);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -587,25 +585,22 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_BLE_CTOD_05_003: [ `BLE_C2D_CreateFromJson` shall return a non-`NULL` handle when the function succeeds. ]*/
-    TEST_FUNCTION(BLE_C2D_CreateFromJson_succeeds)
+    /*Tests_SRS_BLE_CTOD_17_028: [ BLE_C2D_FreeConfiguration shall do nothing. ]*/
+    TEST_FUNCTION(BLE_C2D_FreeConfiguration_empty)
     {
         ///arrange
         CBLEC2DMocks mocks;
 
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
-
         ///act
-        auto result = BLE_C2D_CreateFromJson((BROKER_HANDLE)0x42, NULL);
+        auto result = BLE_C2D_ParseFromJson((const char *)0x42);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NOT_NULL(result);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        BLE_C2D_Destroy(result);
     }
+
 
     /*Tests_SRS_BLE_CTOD_13_001: [ BLE_C2D_Create shall return NULL if the broker parameter is NULL. ]*/
     TEST_FUNCTION(BLE_C2D_Create_returns_NULL_when_broker_is_NULL)

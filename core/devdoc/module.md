@@ -39,8 +39,8 @@ struct MODULE_API_TAG
 typedef struct MODULE_API_1_TAG
 {
     MODULE_API base;
-    pfModule_CreateFromJson Module_CreateFromJson;
-    pfModule_Create Module_Create;
+    pfModule_ParseConfigurationFromJson Module_ParseConfigurationFromJson;
+    pfModule_FreeConfiguration Module_FreeConfiguration;
     pfModule_Destroy Module_Destroy;
     pfModule_Receive Module_Receive;
     pfModule_Start Module_Start;
@@ -60,6 +60,22 @@ This function is to be implemented by the module creator. It will return a
 pointer to a MODULES_API, or NULL if not successful.
 
 The `MODULE_API` structure shall contain the `api_version` and shall fill in the corresponding api structure in the `api` union. The `gateway_api_version` is passed to the module so a module may decide how to fill in the `MODULE_API` structure.
+
+## Module_ParseConfigurationFromJson
+```c
+void* Module_ParseConfigurationFromJson(const char* configuration);
+```
+This function may be implemented by the module creator. It is required if the module is created from a JSON configuration. It receives a JSON string 
+corresponding to the module arguments in the JSON gateway description. It 
+returns a pointer the configuration expected by the `Module_Create` function,
+which may be `NULL`.
+
+## Module_FreeConfiguration
+```c
+void(*pfModule_FreeConfiguration)(void* configuration)
+```
+
+This function may be implemented by the module creator. It is required if the module is created from a JSON configuration.  The input is the `configuration` as created by `Module_ParseConfigurationFromJson`, and should free any resources allocated by that function.
 
 ##Module_Create
 ```C
