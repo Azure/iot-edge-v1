@@ -44,12 +44,11 @@ typedef struct IOTHUB_CONFIG_TAG
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 ```
 
-### IotHub_CreateFromJson
+### IotHub_ParseConfigurationFromJson
 ```C
-MODULE_HANDLE IotHub_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+void* IotHub_ParseConfigurationFromJson(const char* configuration);
 ```
-Creates a new module instance. `configuration` is a pointer to a null-terminated string containing the JSON object 
-given to `Gateway_CreateFromJson`.
+Deserializes a JSON string into an IOTHUB_CONFIG structure suitable for passing into `IotHub_Create`. `configuration` is a pointer to a null-terminated string containing the JSON object given to `Gateway_CreateFromJson`.
 
 ### Expected module arguments
 ```json
@@ -60,19 +59,22 @@ given to `Gateway_CreateFromJson`.
 }
 ```
 
-**SRS_IOTHUBMODULE_05_001: [**If `broker` is NULL then `IotHub_CreateFromJson` shall fail and return NULL.**]**
-**SRS_IOTHUBMODULE_05_002: [** If `configuration` is NULL then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_003: [** If `configuration` is not a JSON string, then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_004: [** `IotHub_CreateFromJson` shall parse `configuration` as a JSON string. **]**
-**SRS_IOTHUBMODULE_05_005: [** If parsing of `configuration` fails, `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_006: [** If the JSON object does not contain a value named "IoTHubName" then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_007: [** If the JSON object does not contain a value named "IoTHubSuffix" then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_011: [** If the JSON object does not contain a value named "Transport" then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_012: [** If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_CreateFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_05_008: [** `IotHub_CreateFromJson` shall invoke the IotHub module's create function, using the broker, IotHubName, IoTHubSuffix, and Transport. **]**
-**SRS_IOTHUBMODULE_05_009: [** When the lower layer IotHub module creation succeeds, `IotHub_CreateFromJson` shall succeed and return a non-NULL value. **]**
-**SRS_IOTHUBMODULE_05_010: [** If the lower layer IotHub module creation fails, `IotHub_CreateFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_002: [** If `configuration` is NULL then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_004: [** `IotHub_ParseConfigurationFromJson` shall parse `configuration` as a JSON string. **]**
+**SRS_IOTHUBMODULE_05_005: [** If parsing of `configuration` fails, `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_006: [** If the JSON object does not contain a value named "IoTHubName" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_007: [** If the JSON object does not contain a value named "IoTHubSuffix" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_011: [** If the JSON object does not contain a value named "Transport" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_05_012: [** If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
+### IotHub_FreeConfiguration
+```C
+void IotHub_FreeConfiguration(void* configuration);
+```
+Deallocates the structure that was returned from `IotHub_ParseConfigurationFromJson`.
+
+**SRS_IOTHUBMODULE_05_014: [** If `configuration` is NULL then `IotHub_FreeConfiguration` shall do nothing. **]**
+**SRS_IOTHUBMODULE_05_015: [** `IotHub_FreeConfiguration` shall free the strings referenced by the `IoTHubName` and `IoTHubSuffix` data members, and then free the `IOTHUB_CONFIG` structure itself. **]**
 
 ### IotHub_Create
 ```C
@@ -108,7 +110,7 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 
 **SRS_IOTHUBMODULE_02_013: [** If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. **]**
 **SRS_IOTHUBMODULE_02_017: [** Otherwise `IotHub_Receive` shall not create a new personality. **]**
-**SRS_IOTHUBMODULE_05_002: [** If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. **]**
+**SRS_IOTHUBMODULE_05_013: [** If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. **]**
 **SRS_IOTHUBMODULE_05_003: [** If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. **]**
 **SRS_IOTHUBMODULE_17_003: [** If a new personality is created, then the associated IoTHubClient will be set to receive messages by calling `IoTHubClient_SetMessageCallback` with callback function `IotHub_ReceiveMessageCallback`, and the personality as context. **]**
 **SRS_IOTHUBMODULE_02_014: [** If creating the personality fails then `IotHub_Receive` shall return. **]**
