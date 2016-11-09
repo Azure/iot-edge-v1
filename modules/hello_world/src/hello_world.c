@@ -120,9 +120,15 @@ static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configu
     return result;
 }
 
-static MODULE_HANDLE HelloWorld_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void* HelloWorld_ParseConfigurationFromJson(char* configuration)
 {
-    return HelloWorld_Create(broker, configuration);
+	(void)configuration;
+    return NULL;
+}
+
+static void HelloWorld_FreeConfiguration(void * configuration)
+{
+	(void)configuration;
 }
 
 static void HelloWorld_Start(MODULE_HANDLE module)
@@ -181,7 +187,8 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 static const MODULE_API_1 HelloWorld_API_all =
 {
     {MODULE_API_VERSION_1},
-    HelloWorld_CreateFromJson,
+    HelloWorld_ParseConfigurationFromJson,
+	HelloWorld_FreeConfiguration,
     HelloWorld_Create,
     HelloWorld_Destroy,
     HelloWorld_Receive,

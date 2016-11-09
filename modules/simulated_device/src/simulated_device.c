@@ -169,8 +169,8 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
             /* set module is running to true */
             result->simulatedDeviceRunning = 1;
             /* save fake MacAddress */
-            char * newFakeAdress;
-            int status = mallocAndStrcpy_s(&newFakeAdress, configuration);
+            char * newFakeAddress;
+            int status = mallocAndStrcpy_s(&newFakeAddress, configuration);
 
             if (status != 0)
             {
@@ -178,7 +178,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
             }
             else
             {
-                result->fakeMacAddress = newFakeAdress;
+                result->fakeMacAddress = newFakeAddress;
                 result->simulatedDeviceThread = NULL;
 
             }
@@ -188,10 +188,10 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
     return result;
 }
 
-static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void * SimulatedDevice_ParseConfigurationFromJson(const char* configuration)
 {
-    MODULE_HANDLE result;
-    if (broker == NULL || configuration == NULL)
+	char * result;
+    if (configuration == NULL)
     {
         LogError("invalid module args.");
         result = NULL;
@@ -222,13 +222,24 @@ static MODULE_HANDLE SimulatedDevice_CreateFromJson(BROKER_HANDLE broker, const 
                 }
                 else
                 {
-                    result = SimulatedDevice_Create(broker, macAddress);
+					if (mallocAndStrcpy_s(&result, macAddress) != 0)
+					{
+						result = NULL;
+					}
                 }
             }
             json_value_free(json);
         }
     }
     return result;
+}
+
+void SimulatedDevice_FreeConfiguration(void * configuration)
+{
+	if (configuration != NULL)
+	{
+		free(configuration);
+	}
 }
 
 /*
@@ -238,7 +249,8 @@ static const MODULE_API_1 SimulatedDevice_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-    SimulatedDevice_CreateFromJson,
+	SimulatedDevice_ParseConfigurationFromJson,
+	SimulatedDevice_FreeConfiguration,
     SimulatedDevice_Create,
     SimulatedDevice_Destroy,
     SimulatedDevice_Receive,

@@ -267,7 +267,7 @@ int main(int argc, char** argv)
 The JSON file specifying the modules to be loaded is quite simple. It contains a list of modules to load. Each module must specify a:
 - `module name` – a unique name for the module
 - `module path` – the path to the library containing the module. For Linux this will be a .so while on Windows this will be a .dll file
-- `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_Create` function.
+- `args` – any arguments/configuration the module needs. Specifically, they are really another json value which is passed (as string) to the Module's `_ParseConfigurationFromJson` function.
 
 The JSON file also contains the links that are going to be passed to the broker. A link has two properties:
 - `source` - a module name from the `modules` section, or "\*".  
