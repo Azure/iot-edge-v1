@@ -64,7 +64,7 @@ case-insenstive.
 
 [module.h](../../../core/devdoc/module.md)
 
-[vector.h](../../../deps/c-utility/c/inc/vector.h)
+[vector.h](../../../deps/c-utility/inc/azure_c_shared_utility/vector.h)
 
 IEEE Std 802-2014, section 8.1 (MAC Address canonical form)
 
