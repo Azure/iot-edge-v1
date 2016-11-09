@@ -152,8 +152,8 @@ BEGIN_TEST_SUITE(gateway_e2e)
         /* Setup: data for IoT Hub Module */
         IOTHUB_CONFIG iotHubConfig;
 
-        iotHubConfig.IoTHubName = STRING_construct(IoTHubAccount_GetIoTHubName(g_iothubAcctInfo));
-        iotHubConfig.IoTHubSuffix = STRING_construct(IoTHubAccount_GetIoTHubSuffix(g_iothubAcctInfo));
+        iotHubConfig.IoTHubName = IoTHubAccount_GetIoTHubName(g_iothubAcctInfo);
+        iotHubConfig.IoTHubSuffix = IoTHubAccount_GetIoTHubSuffix(g_iothubAcctInfo);
         iotHubConfig.transportProvider = HTTP_Protocol;
 
 
