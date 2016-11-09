@@ -14,8 +14,8 @@ extern "C"
 
 typedef struct IOTHUB_CONFIG_TAG
 {
-    STRING_HANDLE IoTHubName;
-    STRING_HANDLE IoTHubSuffix;
+    const char* IoTHubName;
+    const char* IoTHubSuffix;
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 

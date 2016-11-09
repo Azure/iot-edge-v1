@@ -120,41 +120,59 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                 }
                 else
                 {
-                    /*Codes_SRS_IOTHUBMODULE_05_012: [ If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
-                    bool foundTransport = true;
-                    IOTHUB_CONFIG config;
-                    config.IoTHubName = STRING_construct(IoTHubName);
-                    config.IoTHubSuffix = STRING_construct(IoTHubSuffix);
-
-                    if (strcmp_i(transport, "HTTP") == 0)
+                    char* name;
+                    char* suffix;
+                    IOTHUB_CONFIG* config;
+                    if ((name = malloc(strlen(IoTHubName) + 1)) == NULL)
                     {
-                        config.transportProvider = HTTP_Protocol;
+                        LogError("Could not allocate memory for IoTHubName");
+                        result = NULL;
                     }
-                    else if (strcmp_i(transport, "AMQP") == 0)
+                    else if ((suffix = malloc(strlen(IoTHubSuffix) + 1)) == NULL)
                     {
-                        config.transportProvider = AMQP_Protocol;
+                        LogError("Could not allocate memory for IoTHubSuffix");
+                        free(name);
+                        result = NULL;
                     }
-                    else if (strcmp_i(transport, "MQTT") == 0)
+                    else if ((config = malloc(sizeof(IOTHUB_CONFIG))) == NULL)
                     {
-                        config.transportProvider = MQTT_Protocol;
+                        LogError("Could not allocate memory for configuration");
+                        free(name);
+                        free(suffix);
+                        result = NULL;
                     }
                     else
                     {
-                        foundTransport = false;
-                        result = NULL;
-                    }
-
-                    if (foundTransport)
-                    {
-                        result = malloc(sizeof(IOTHUB_CONFIG));
-                        if (result == NULL)
+                        /*Codes_SRS_IOTHUBMODULE_05_012: [ If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
+                        if (strcmp_i(transport, "HTTP") == 0)
                         {
-                            LogError("Could not allocate memory for configuration");
+                            config->transportProvider = HTTP_Protocol;
+                        }
+                        else if (strcmp_i(transport, "AMQP") == 0)
+                        {
+                            config->transportProvider = AMQP_Protocol;
+                        }
+                        else if (strcmp_i(transport, "MQTT") == 0)
+                        {
+                            config->transportProvider = MQTT_Protocol;
                         }
                         else
                         {
-                            (void)memcpy(result, &config, sizeof(IOTHUB_CONFIG));
+                            free(name);
+                            free(suffix);
+                            free(config);
+                            config = NULL;
                         }
+
+                        if (config != NULL)
+                        {
+                            strcpy(name, IoTHubName);
+                            strcpy(suffix, IoTHubSuffix);
+                            config->IoTHubName = name;
+                            config->IoTHubSuffix = suffix;
+                        }
+
+                        result = config;
                     }
                 }
             }
@@ -172,8 +190,8 @@ static void IotHub_FreeConfiguration(void* configuration)
         IOTHUB_CONFIG* config = (IOTHUB_CONFIG*)configuration;
 
         /*Codes_SRS_IOTHUBMODULE_05_015: [ `IotHub_FreeConfiguration` shall free the strings referenced by the `IoTHubName` and `IoTHubSuffix` data members, and then free the `IOTHUB_CONFIG` structure itself. ]*/
-        STRING_delete(config->IoTHubName);
-        STRING_delete(config->IoTHubSuffix);
+        free((void*)config->IoTHubName);
+        free((void*)config->IoTHubSuffix);
         free(config);
     }
 }
@@ -202,8 +220,8 @@ static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configurati
         )
     {
         LogError("invalid configuration IoTHubName=%s IoTHubSuffix=%s transportProvider=%p",
-            (config != NULL) ? STRING_c_str(config->IoTHubName) : "<null>",
-            (config != NULL) ? STRING_c_str(config->IoTHubSuffix) : "<null>",
+            (config != NULL) ? config->IoTHubName : "<null>",
+            (config != NULL) ? config->IoTHubSuffix : "<null>",
             (config != NULL) ? config->transportProvider : 0);
         result = NULL;
     }
@@ -233,7 +251,7 @@ static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configurati
                 if (result->transportProvider == HTTP_Protocol)
                 {
                     /*Codes_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. ]*/
-                    result->transportHandle = IoTHubTransport_Create(config->transportProvider, STRING_c_str(config->IoTHubName), STRING_c_str(config->IoTHubSuffix));
+                    result->transportHandle = IoTHubTransport_Create(config->transportProvider, config->IoTHubName, config->IoTHubSuffix);
                     if (result->transportHandle == NULL)
                     {
                         /*Codes_SRS_IOTHUBMODULE_17_002: [ If creating the shared transport fails, `IotHub_Create` shall fail and return `NULL`. ]*/
@@ -252,15 +270,17 @@ static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configurati
                 {
                     /*Codes_SRS_IOTHUBMODULE_02_028: [ `IotHub_Create` shall create a copy of `configuration->IoTHubName`. ]*/
                     /*Codes_SRS_IOTHUBMODULE_02_029: [ `IotHub_Create` shall create a copy of `configuration->IoTHubSuffix`. ]*/
-                    if ((result->IoTHubName = STRING_clone(config->IoTHubName)) == NULL)
+                    if ((result->IoTHubName = STRING_construct(config->IoTHubName)) == NULL)
                     {
+                        LogError("STRING_construct returned NULL");
                         IoTHubTransport_Destroy(result->transportHandle);
                         VECTOR_destroy(result->personalities);
                         free(result);
                         result = NULL;
                     }
-                    else if ((result->IoTHubSuffix = STRING_clone(config->IoTHubSuffix)) == NULL)
+                    else if ((result->IoTHubSuffix = STRING_construct(config->IoTHubSuffix)) == NULL)
                     {
+                        LogError("STRING_construct returned NULL");
                         STRING_delete(result->IoTHubName);
                         IoTHubTransport_Destroy(result->transportHandle);
                         VECTOR_destroy(result->personalities);

@@ -58,40 +58,12 @@ DEFINE_MICROMOCK_ENUM_TO_STRING(IOTHUBMESSAGE_DISPOSITION_RESULT, IOTHUBMESSAGE_
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-static size_t currentmalloc_call;
-static size_t whenShallmalloc_fail;
-
-static size_t currentConstMap_Create_call;
-static size_t whenShallConstMap_Create_fail;
-
-static size_t currentCONSTBUFFER_Create_call;
-static size_t whenShallCONSTBUFFER_Create_fail;
-static size_t currentCONSTBUFFER_refCount;
-
-static size_t currentVECTOR_create_call;
-static size_t whenShallVECTOR_create_fail;
-
 static size_t currentVECTOR_push_back_call;
 static size_t whenShallVECTOR_push_back_fail;
 
 /*different STRING constructors*/
-static size_t currentSTRING_new_call;
-static size_t whenShallSTRING_new_fail;
-
-static size_t currentSTRING_clone_call;
-static size_t whenShallSTRING_clone_fail;
-
 static size_t currentSTRING_construct_call;
 static size_t whenShallSTRING_construct_fail;
-
-static size_t currentSTRING_concat_call;
-static size_t whenShallSTRING_concat_fail;
-
-static size_t currentSTRING_empty_call;
-static size_t whenShallSTRING_empty_fail;
-
-static size_t currentSTRING_concat_with_STRING_call;
-static size_t whenShallSTRING_concat_with_STRING_fail;
 
 static size_t currentIoTHubMessage_CreateFromByteArray_call;
 static size_t whenShallIoTHubMessage_CreateFromByteArray_fail;
@@ -179,14 +151,20 @@ static pfModule_Create Module_Create = NULL; /*gets assigned in TEST_SUITE_INITI
 static pfModule_Destroy Module_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 static pfModule_Receive Module_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
 
+const char name[] = "name";
+const char suffix[] = "suffix";
+
 IOTHUB_CONFIG CreateConfigWithTransport(IOTHUB_CLIENT_TRANSPORT_PROVIDER transport)
 {
-    return IOTHUB_CONFIG {
-        STRING_construct("theIoTHub42"),
-        STRING_construct("theAwesomeSuffix.com"),
-        transport
-    };
+    char* name_ = (char*)malloc(sizeof(name));
+    char* suffix_ = (char*)malloc(sizeof(suffix));
+    strcpy(name_, name);
+    strcpy(suffix_, suffix);
+
+    return IOTHUB_CONFIG { name_, suffix_, transport };
 }
+
+IOTHUB_CONFIG CreateConfig() { return CreateConfigWithTransport(HTTP_Protocol); }
 
 class AutoConfig
 {
@@ -195,9 +173,7 @@ class AutoConfig
     AutoConfig& operator=(const AutoConfig&);
 
 public:
-    AutoConfig() :
-        config_(CreateConfigWithTransport(HTTP_Protocol))
-    {}
+    AutoConfig() : config_(CreateConfig()) {}
 
     AutoConfig(IOTHUB_CLIENT_TRANSPORT_PROVIDER transport) :
         config_(CreateConfigWithTransport(transport))
@@ -205,14 +181,11 @@ public:
 
     ~AutoConfig()
     {
-        STRING_delete(config_.IoTHubName);
-        STRING_delete(config_.IoTHubSuffix);
+        free((void*)config_.IoTHubName);
+        free((void*)config_.IoTHubSuffix);
     }
 
-    operator IOTHUB_CONFIG*()
-    {
-        return &config_;
-    }
+    operator IOTHUB_CONFIG*() { return &config_; }
 };
 
 
@@ -222,23 +195,7 @@ public:
 
     // memory
     MOCK_STATIC_METHOD_1(, void*, gballoc_malloc, size_t, size)
-        void* result2;
-        currentmalloc_call++;
-        if (whenShallmalloc_fail>0)
-        {
-            if (currentmalloc_call == whenShallmalloc_fail)
-            {
-                result2 = NULL;
-            }
-            else
-            {
-                result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
-            }
-        }
-        else
-        {
-            result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
-    }
+        void* result2 = BASEIMPLEMENTATION::gballoc_malloc(size);
     MOCK_METHOD_END(void*, result2);
 
     MOCK_STATIC_METHOD_1(, void, gballoc_free, void*, ptr)
@@ -271,65 +228,8 @@ public:
         }
     MOCK_METHOD_END(CONSTMAP_RESULT, CONSTMAP_OK)
 
-    // CONSTBUFFER mocks.
-    MOCK_STATIC_METHOD_2(, CONSTBUFFER_HANDLE, CONSTBUFFER_Create, const unsigned char*, source, size_t, size)
-        CONSTBUFFER_HANDLE result1;
-        currentCONSTBUFFER_Create_call++;
-        if (whenShallCONSTBUFFER_Create_fail == currentCONSTBUFFER_Create_call)
-        {
-            result1 = NULL;
-        }
-        else
-        {
-            result1 = (CONSTBUFFER_HANDLE)malloc(sizeof(CONSTBUFFER));
-            (*(CONSTBUFFER*)result1).size = size;
-            if (size == 0)
-            {
-                (*(CONSTBUFFER*)result1).buffer = NULL;
-            }
-            else
-            {
-                unsigned char* temp = (unsigned char*)malloc(size);
-                memcpy(temp, source, size);
-                (*(CONSTBUFFER*)result1).buffer = temp;
-            }
-            currentCONSTBUFFER_refCount = 1;
-        }
-    MOCK_METHOD_END(CONSTBUFFER_HANDLE, result1)
-
-    MOCK_STATIC_METHOD_1(, CONSTBUFFER_HANDLE, CONSTBUFFER_Clone, CONSTBUFFER_HANDLE, constbufferHandle)
-        CONSTBUFFER_HANDLE result2 =constbufferHandle;
-        currentCONSTBUFFER_refCount++;
-    MOCK_METHOD_END(CONSTBUFFER_HANDLE, result2)
-
-    MOCK_STATIC_METHOD_1(, const CONSTBUFFER*, CONSTBUFFER_GetContent, CONSTBUFFER_HANDLE, constbufferHandle)
-        CONSTBUFFER* result3 = (CONSTBUFFER*)constbufferHandle;
-    MOCK_METHOD_END(const CONSTBUFFER*, result3)
-
-    MOCK_STATIC_METHOD_1(, void, CONSTBUFFER_Destroy, CONSTBUFFER_HANDLE, constbufferHandle)
-        --currentCONSTBUFFER_refCount;
-        if (currentCONSTBUFFER_refCount == 0)
-        {
-            CONSTBUFFER * fakeBuffer = (CONSTBUFFER*)constbufferHandle;
-            if (fakeBuffer->buffer != NULL)
-            {
-                free((void*)fakeBuffer->buffer);
-            }
-            free(fakeBuffer);
-        }
-    MOCK_VOID_METHOD_END()
-
     MOCK_STATIC_METHOD_1(, VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
-        VECTOR_HANDLE result2;
-        currentVECTOR_create_call++;
-        if (currentVECTOR_create_call == whenShallVECTOR_create_fail)
-        {
-            result2 = NULL;
-        }
-        else
-        {
-            result2 = BASEIMPLEMENTATION::VECTOR_create(elementSize);
-        }
+        VECTOR_HANDLE result2 = BASEIMPLEMENTATION::VECTOR_create(elementSize);
     MOCK_METHOD_END(VECTOR_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, void, VECTOR_destroy, VECTOR_HANDLE, handle)
@@ -366,43 +266,11 @@ public:
     MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_0(, STRING_HANDLE, STRING_new)
-        STRING_HANDLE result2;
-        currentSTRING_new_call++;
-        if (whenShallSTRING_new_fail > 0)
-        {
-            if (currentSTRING_new_call == whenShallSTRING_new_fail)
-            {
-                result2 = (STRING_HANDLE)NULL;
-            }
-            else
-            {
-                result2 = BASEIMPLEMENTATION::STRING_new();
-            }
-        }
-        else
-        {
-            result2 = BASEIMPLEMENTATION::STRING_new();
-        }
+        STRING_HANDLE result2 = BASEIMPLEMENTATION::STRING_new();
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_clone, STRING_HANDLE, handle)
-        STRING_HANDLE result2;
-        currentSTRING_clone_call++;
-        if (whenShallSTRING_clone_fail > 0)
-        {
-            if (currentSTRING_clone_call == whenShallSTRING_clone_fail)
-            {
-                result2 = (STRING_HANDLE)NULL;
-            }
-            else
-            {
-                result2 = BASEIMPLEMENTATION::STRING_clone(handle);
-            }
-        }
-        else
-        {
-            result2 = BASEIMPLEMENTATION::STRING_clone(handle);
-        }
+        STRING_HANDLE result2 = BASEIMPLEMENTATION::STRING_clone(handle);
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, STRING_HANDLE, STRING_construct, const char*, source)
@@ -426,15 +294,12 @@ public:
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
     MOCK_STATIC_METHOD_2(, int, STRING_concat, STRING_HANDLE, s1, const char*, s2)
-        currentSTRING_concat_call++;
-    MOCK_METHOD_END(int, (((whenShallSTRING_concat_fail > 0) && (currentSTRING_concat_call == whenShallSTRING_concat_fail)) ? __LINE__ : BASEIMPLEMENTATION::STRING_concat(s1, s2)));
+    MOCK_METHOD_END(int, BASEIMPLEMENTATION::STRING_concat(s1, s2));
 
     MOCK_STATIC_METHOD_2(, int, STRING_concat_with_STRING, STRING_HANDLE, s1, STRING_HANDLE, s2)
-        currentSTRING_concat_with_STRING_call++;
-    MOCK_METHOD_END(int, (((currentSTRING_concat_with_STRING_call > 0) && (currentSTRING_concat_with_STRING_call == whenShallSTRING_concat_with_STRING_fail)) ? __LINE__ : BASEIMPLEMENTATION::STRING_concat_with_STRING(s1, s2)));
+    MOCK_METHOD_END(int, BASEIMPLEMENTATION::STRING_concat_with_STRING(s1, s2));
 
     MOCK_STATIC_METHOD_1(, int, STRING_empty, STRING_HANDLE, s)
-        currentSTRING_concat_call++;
     MOCK_METHOD_END(int, BASEIMPLEMENTATION::STRING_empty(s));
 
     MOCK_STATIC_METHOD_1(, const char*, STRING_c_str, STRING_HANDLE, s)
@@ -683,10 +548,6 @@ DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, gballoc_malloc, size_t, size)
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, ConstMap_Destroy, CONSTMAP_HANDLE, map);
-DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Create, const unsigned char*, source, size_t, size);
-DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTBUFFER_HANDLE, CONSTBUFFER_Clone, CONSTBUFFER_HANDLE, constbufferHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const CONSTBUFFER*, CONSTBUFFER_GetContent, CONSTBUFFER_HANDLE, constbufferHandle);
-DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, CONSTBUFFER_Destroy, CONSTBUFFER_HANDLE, constbufferHandle);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements)
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , void*, VECTOR_element, VECTOR_HANDLE, handle, size_t, index)
@@ -695,7 +556,6 @@ DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , size_t, VECTOR_size, VECTOR_HANDLE, 
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, VECTOR_destroy, VECTOR_HANDLE, handle)
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, STRING_delete, STRING_HANDLE, s);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , STRING_HANDLE, STRING_construct, const char*, source);
-DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , STRING_HANDLE, STRING_clone, STRING_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2);
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , int, STRING_concat_with_STRING, STRING_HANDLE, s1, STRING_HANDLE, s2);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , int, STRING_empty, STRING_HANDLE, s1);
@@ -757,39 +617,11 @@ BEGIN_TEST_SUITE(iothub_ut)
             ASSERT_FAIL("our mutex is ABANDONED. Failure in test framework");
         }
 
-        currentmalloc_call = 0;
-        whenShallmalloc_fail = 0;
-
-        currentConstMap_Create_call = 0;
-        whenShallConstMap_Create_fail = 0;
-
-        currentCONSTBUFFER_Create_call = 0;
-        whenShallCONSTBUFFER_Create_fail = 0;
-        currentCONSTBUFFER_refCount = 0;
-
-        currentVECTOR_create_call = 0;
-        whenShallVECTOR_create_fail = 0;
-
         currentVECTOR_push_back_call = 0;
         whenShallVECTOR_push_back_fail = 0;
 
-        currentSTRING_new_call = 0;
-        whenShallSTRING_new_fail = 0;
-
-        currentSTRING_clone_call = 0;
-        whenShallSTRING_clone_fail = 0;
-
         currentSTRING_construct_call = 0;
         whenShallSTRING_construct_fail = 0;
-
-        currentSTRING_concat_call = 0;
-        whenShallSTRING_concat_fail = 0;
-
-        currentSTRING_empty_call = 0;
-        whenShallSTRING_empty_fail = 0;
-
-        currentSTRING_concat_with_STRING_call = 0;
-        whenShallSTRING_concat_with_STRING_fail = 0;
 
         currentIoTHubMessage_CreateFromByteArray_call = 0;
         whenShallIoTHubMessage_CreateFromByteArray_fail = 0;
@@ -847,9 +679,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
             .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IOTHUB_CONFIG)));
-        STRICT_EXPECTED_CALL(mocks, STRING_construct("aHubName"));
-        STRICT_EXPECTED_CALL(mocks, STRING_construct("suffix.name"));
         STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
@@ -864,11 +696,123 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_FreeConfiguration(result);
     }
 
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_NULL_when_malloc_fails_1)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1));
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IOTHUB_CONFIG)))
+            .SetReturn((void*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson(validJsonString);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_NULL_when_malloc_fails_2)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1))
+            .SetReturn((void*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson(validJsonString);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_NULL_when_malloc_fails_3)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        const char * validJsonString = "calling it valid makes it so";
+        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1))
+            .SetReturn((void*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson(validJsonString);
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
     TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_HTTP_transport)
     {
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
-        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = HTTP_Protocol;
 
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
@@ -888,7 +832,6 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
-        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = AMQP_Protocol;
 
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
@@ -908,7 +851,6 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
-        IOTHUB_CLIENT_TRANSPORT_PROVIDER provider = MQTT_Protocol;
 
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
@@ -972,7 +914,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
-        Module_FreeConfiguration(result);
     }
 
     /*Tests_SRS_IOTHUBMODULE_05_011: [ If the JSON object does not contain a value named "Transport" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
@@ -1132,15 +1073,15 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        IOTHUB_CONFIG config = CreateConfigWithTransport(HTTP_Protocol);
+        IOTHUB_CONFIG config = CreateConfig();
         auto configp = (IOTHUB_CONFIG*)malloc(sizeof(IOTHUB_CONFIG));
         memcpy(configp, &config, sizeof(IOTHUB_CONFIG));
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1191,13 +1132,8 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        IOTHUB_CONFIG config_with_NULL_IoTHubName = {NULL, STRING_construct("devices.azure.com"), HTTP_Protocol };
+        IOTHUB_CONFIG config_with_NULL_IoTHubName = { NULL, suffix, HTTP_Protocol };
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
         auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubName);
@@ -1207,7 +1143,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
-        STRING_delete(config_with_NULL_IoTHubName.IoTHubSuffix);
     }
 
     /*Tests_SRS_IOTHUBMODULE_02_004: [ If `configuration->IoTHubSuffix` is `NULL` then `IotHub_Create` shall fail and return `NULL`. ]*/
@@ -1215,13 +1150,8 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        IOTHUB_CONFIG config_with_NULL_IoTHubSuffix = { STRING_construct("theIoTHub42"), NULL, HTTP_Protocol };
+        IOTHUB_CONFIG config_with_NULL_IoTHubSuffix = { name, NULL, HTTP_Protocol };
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
         auto result = Module_Create((BROKER_HANDLE)1, &config_with_NULL_IoTHubSuffix);
@@ -1231,7 +1161,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
-        STRING_delete(config_with_NULL_IoTHubSuffix.IoTHubName);
     }
 
     /*Tests_SRS_IOTHUBMODULE_02_008: [ Otherwise, `IotHub_Create` shall return a non-`NULL` handle. ]*/
@@ -1253,18 +1182,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_construct(name));
 
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_construct(suffix));
 
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix))
             .IgnoreAllArguments();
 
         ///act
@@ -1289,9 +1211,9 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(name));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(suffix));
 
         EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .NeverInvoked();
@@ -1318,9 +1240,9 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(name));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(suffix));
 
         EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .NeverInvoked();
@@ -1347,9 +1269,9 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(name));
 
-        EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG));
+        EXPECTED_CALL(mocks, STRING_construct(suffix));
 
         EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .NeverInvoked();
@@ -1383,23 +1305,16 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"));
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix));
         STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, STRING_construct(name));
         STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        whenShallSTRING_clone_fail = currentSTRING_clone_call + 2;
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        whenShallSTRING_construct_fail = currentSTRING_construct_call + 2;
+        STRICT_EXPECTED_CALL(mocks, STRING_construct(suffix));
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1430,20 +1345,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix))
             .IgnoreAllArguments();
         STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        whenShallSTRING_clone_fail = currentSTRING_clone_call + 1;
-        STRICT_EXPECTED_CALL(mocks, STRING_clone(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
+        whenShallSTRING_construct_fail = currentSTRING_construct_call + 1;
+        STRICT_EXPECTED_CALL(mocks, STRING_construct(name));
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1474,12 +1382,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, "theIoTHub42", "theAwesomeSuffix.com"))
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix))
             .SetFailReturn((TRANSPORT_HANDLE)NULL);
 
         ///act
@@ -1506,9 +1409,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        whenShallVECTOR_create_fail = currentVECTOR_create_call + 1;
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1)
+            .SetReturn((VECTOR_HANDLE)NULL);
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1528,9 +1431,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         AutoConfig config;
         mocks.ResetAllCalls();
 
-        whenShallmalloc_fail = currentmalloc_call + 1;
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1)
+            .SetReturn((void*)NULL);
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
