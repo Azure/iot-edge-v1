@@ -91,11 +91,12 @@ The following functions are the implementation of those APIs.
 **SRS_IDMAP_26_001: [** `Module_GetApi` shall return a pointer to a `MODULE_API` structure. **]**
 
 
-## IdentityMap_CreateFromJson
+## IdentityMap_ParseConfigurationFromJson
 ```C
-MODULE_HANDLE IdentityMap_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+static void * IdentityMap_ParseConfigurationFromJson(const char* configuration)
+;
 ```
-This function creates the identity map module. `configuration` is a JSON array
+This function parses the JSON configuration for the identity map module. `configuration` is a JSON array
 of the following object:
 ```json
 {
@@ -120,63 +121,64 @@ of the following object:
 ]
 ```
 
-**SRS_IDMAP_05_003: [** If `broker` is NULL then
- `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
-
 **SRS_IDMAP_05_004: [** If `configuration` is NULL then
- `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+ `IdentityMap_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
 **SRS_IDMAP_05_005: [** If `configuration` is not a JSON array of 
-JSON objects, then `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+JSON objects, then `IdentityMap_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_IDMAP_05_006: [** `IdentityMap_CreateFromJson` shall parse the 
+**SRS_IDMAP_05_006: [** `IdentityMap_ParseConfigurationFromJson` shall parse the 
 `configuration` as a JSON array of objects. **]**
 
-**SRS_IDMAP_05_007: [** `IdentityMap_CreateFromJson` shall call 
+**SRS_IDMAP_05_007: [** `IdentityMap_ParseConfigurationFromJson` shall call 
 VECTOR_create to make the identity map module input vector. **]**
 
 **SRS_IDMAP_05_019: [** If creating the vector fails, then 
-`IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+`IdentityMap_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_IDMAP_05_008: [** `IdentityMap_CreateFromJson` shall walk 
+**SRS_IDMAP_05_008: [** `IdentityMap_ParseConfigurationFromJson` shall walk 
 through each object of the array. **]**
 
 **SRS_IDMAP_05_009: [** If the array object does not contain a value 
-named "macAddress" then `IdentityMap_CreateFromJson` shall fail and return 
+named "macAddress" then `IdentityMap_ParseConfigurationFromJson` shall fail and return 
 NULL. **]**
 
 **SRS_IDMAP_05_010: [** If the array object does not contain a value 
-named "deviceId" then `IdentityMap_CreateFromJson` shall fail and return 
+named "deviceId" then `IdentityMap_ParseConfigurationFromJson` shall fail and return 
 NULL. **]**
 
 **SRS_IDMAP_05_011: [** If the array object does not contain a value 
-named "deviceKey" then `IdentityMap_CreateFromJson` shall fail and return 
+named "deviceKey" then `IdentityMap_ParseConfigurationFromJson` shall fail and return 
 NULL. **]**
 
-**SRS_IDMAP_05_012: [** `IdentityMap_CreateFromJson` shall use 
+**SRS_IDMAP_05_012: [** `IdentityMap_ParseConfigurationFromJson` shall use 
 "macAddress", "deviceId", and "deviceKey" values as the fields for an 
 IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element 
 to the vector. **]**
 
 **SRS_IDMAP_05_020: [** If pushing into the vector is not successful, 
-then `IdentityMap_CreateFromJson` shall fail and return NULL. **]** 
+then `IdentityMap_ParseConfigurationFromJson` shall fail and return NULL. **]** 
 
-**SRS_IDMAP_05_013: [** `IdentityMap_CreateFromJson` shall invoke 
-identity map module's create, passing in the message broker handle and the input vector. 
-**]**
+**SRS_IDMAP_17_060: [** `IdentityMap_ParseConfigurationFromJson` shall allocate memory for the configuration vector. **]**
 
-**SRS_IDMAP_05_014: [** When the lower layer identity map module 
-create succeeds, `IdentityMap_CreateFromJson` shall succeed and return a 
-non-NULL value. **]**
+**SRS_IDMAP_17_061: [** If allocation fails, `IdentityMap_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_IDMAP_05_015: [** If the lower layer identity map module create 
-fails, `IdentityMap_CreateFromJson` shall fail and return NULL. **]**
+**SRS_IDMAP_17_062: [** `IdentityMap_ParseConfigurationFromJson` shall return the pointer to the configuration vector on success. **]**
 
-**SRS_IDMAP_05_016: [** `IdentityMap_CreateFromJson` shall release 
-all data it allocated. **]**
+## IdentityMap_FreeConfiguration
+```c
+static void IdentityMap_FreeConfiguration(void * configuration);
+```
+
+This function releases any allocated resources creates by `IdentityMap_ParseConfigurationFromJson`.
+
+**SRS_IDMAP_17_059: [** `IdentityMap_FreeConfiguration` shall do nothing if `configuration` is NULL. **]**
+
+**SRS_IDMAP_05_016: [** `IdentityMap_FreeConfiguration` shall release 
+all data `IdentityMap_ParseConfigurationFromJson` allocated. **]**
 
 
-##IdentityMap_Create
+## IdentityMap_Create
 ```C
 MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* configuration);
 ```

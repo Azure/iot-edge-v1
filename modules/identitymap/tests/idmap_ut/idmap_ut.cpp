@@ -644,7 +644,8 @@ BEGIN_TEST_SUITE(idmap_ut)
 
         ///Assert
         ASSERT_IS_NOT_NULL(theAPIS);
-        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(theAPIS) != NULL);
+		ASSERT_IS_TRUE(MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS) != NULL);
+		ASSERT_IS_TRUE(MODULE_FREE_CONFIGURATION(theAPIS) != NULL);
         ASSERT_IS_TRUE(MODULE_CREATE(theAPIS) != NULL);
         ASSERT_IS_TRUE(MODULE_DESTROY(theAPIS) != NULL);
         ASSERT_IS_TRUE(MODULE_RECEIVE(theAPIS) != NULL);
@@ -652,25 +653,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Ablution
     }
 
-    //Tests_SRS_IDMAP_05_003: [ If broker is NULL then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_Broker_Null)
-    {
-        ///Arrange
-        CIdentitymapMocks mocks;
-        const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-
-        BROKER_HANDLE broker = NULL;
-        const char config = 0;
-
-        ///Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, &config);
-
-        ///Assert
-        ASSERT_IS_NULL(n);
-    }
-
-    //Tests_SRS_IDMAP_05_004: [ If configuration is NULL then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_Config_Null)
+    //Tests_SRS_IDMAP_05_004: [ If configuration is NULL then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_Config_Null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -680,21 +664,19 @@ BEGIN_TEST_SUITE(idmap_ut)
         BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 
         ///Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, NULL);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(NULL);
 
         ///Assert
         ASSERT_IS_NULL(n);
     }
 
-    //Tests_SRS_IDMAP_05_006: [ IdentityMap_CreateFromJson shall parse the configuration as a JSON array of objects. ]
-    //Tests_SRS_IDMAP_05_007: [ IdentityMap_CreateFromJson shall call VECTOR_create to make the identity map module input vector. ]
-    //Tests_SRS_IDMAP_05_008: [ IdentityMap_CreateFromJson shall walk through each object of the array. ]
-    //Tests_SRS_IDMAP_05_012: [ IdentityMap_CreateFromJson shall use "macAddress", "deviceId", and "deviceKey" values as the fields for an IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element to the vector. ]
-    //Tests_SRS_IDMAP_05_013: [ IdentityMap_CreateFromJson shall invoke identity map module's create, passing in the message broker handle and the input vector. ]
-    //Tests_SRS_IDMAP_05_014: [ When the lower layer identity map module create succeeds, IdentityMap_CreateFromJson shall succeed and return a non-NULL value. ]
-    //Tests_SRS_IDMAP_05_015: [ If the lower layer identity map module create fails, IdentityMap_CreateFromJson shall fail and return NULL. ]
-    //Tests_SRS_IDMAP_05_016: [ IdentityMap_CreateFromJson shall release all data it allocated. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_Success)
+    //Tests_SRS_IDMAP_05_006: [ IdentityMap_ParseConfigurationFromJson shall parse the configuration as a JSON array of objects. ]
+    //Tests_SRS_IDMAP_05_007: [ IdentityMap_ParseConfigurationFromJson shall call VECTOR_create to make the identity map module input vector. ]
+    //Tests_SRS_IDMAP_05_008: [ IdentityMap_ParseConfigurationFromJson shall walk through each object of the array. ]
+    //Tests_SRS_IDMAP_05_012: [ IdentityMap_ParseConfigurationFromJson shall use "macAddress", "deviceId", and "deviceKey" values as the fields for an IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element to the vector. ]
+    //Tests_SRS_IDMAP_17_060: [ IdentityMap_ParseConfigurationFromJson shall allocate memory for the configuration vector. ]
+    //Tests_SRS_IDMAP_17_062: [ IdentityMap_ParseConfigurationFromJson shall return the pointer to the configuration vector on success. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_Success)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -719,50 +701,135 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "00:00:00:00:00:00"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "id"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "key"))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IDENTITY_MAP_DATA)));
-        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(1 * sizeof(IDENTITY_MAP_CONFIG)));
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(1 * sizeof(IDENTITY_MAP_CONFIG)));
-        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "00:00:00:00:00:00"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "id"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "key"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "00:00:00:00:00:00"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "id"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "key"))
-            .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+
         STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NOT_NULL(n);
         mocks.AssertActualAndExpectedCalls();
 
         ///Cleanup
-        MODULE_DESTROY(theAPIS)(n);
-    }
+		MODULE_FREE_CONFIGURATION(theAPIS)(n);
+	}
 
-    //Tests_SRS_IDMAP_05_020: [ If pushing into the vector is not successful, then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_push_back_failed_returns_null)
+    //Tests_SRS_IDMAP_17_061: [ If allocation fails, IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+	TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_alloc_data_fails)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
+
+		unsigned char fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
+		const char* config = "pretend this is a valid JSON string";
+
+		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)))
+			.SetFailReturn(nullptr);
+
+		STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+
+		//Act
+		auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
+
+		///Assert
+		ASSERT_IS_NULL(n);
+		mocks.AssertActualAndExpectedCalls();
+
+		///Cleanup
+	}
+
+	//Tests_SRS_IDMAP_05_020: [ If pushing into the vector is not successful, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+	TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_push_back_failed_returns_null)
+	{
+		///Arrange
+		CIdentitymapMocks mocks;
+		const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
+
+		unsigned char fake;
+		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
+		const char* config = "pretend this is a valid JSON string";
+
+		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
+		STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
+		STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
+			.IgnoreArgument(1)
+			.SetReturn((size_t)2);
+		STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "macAddress"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceId"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2)
+			.ExpectedTimesExactly(6);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1)
+			.ExpectedTimesExactly(6);
+		STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "macAddress"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceId"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2)
+			.SetFailReturn(__LINE__);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+			.IgnoreArgument(1);
+
+
+		//Act
+		auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
+
+		///Assert
+		ASSERT_IS_NULL(n);
+		mocks.AssertActualAndExpectedCalls();
+
+		///Cleanup
+	}
+    //Tests_SRS_IDMAP_05_020: [ If pushing into the vector is not successful, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_deep_copy_failed_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -777,6 +844,9 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -792,13 +862,16 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .SetFailReturn(__LINE__);
+		STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2)
+			.SetFailReturn(__LINE__);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -807,8 +880,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_009: [ If the array object does not contain a value named "macAddress" then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_no_key_returns_null)
+    //Tests_SRS_IDMAP_05_009: [ If the array object does not contain a value named "macAddress" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_no_key_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -823,6 +896,9 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -839,9 +915,11 @@ BEGIN_TEST_SUITE(idmap_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
             .IgnoreArgument(1)
             .SetFailReturn((const char*)NULL);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -850,8 +928,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_010: [ If the array object does not contain a value named "deviceId" then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_no_id_returns_null)
+    //Tests_SRS_IDMAP_05_010: [ If the array object does not contain a value named "deviceId" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_no_id_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -866,6 +944,9 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -880,9 +961,11 @@ BEGIN_TEST_SUITE(idmap_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceId"))
             .IgnoreArgument(1)
             .SetFailReturn((const char*)NULL);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -891,8 +974,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_011: [ If the array object does not contain a value named "deviceKey" then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_no_mac_returns_null)
+    //Tests_SRS_IDMAP_05_011: [ If the array object does not contain a value named "deviceKey" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_no_mac_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -906,6 +989,9 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -918,9 +1004,11 @@ BEGIN_TEST_SUITE(idmap_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "macAddress"))
             .IgnoreArgument(1)
             .SetFailReturn((const char*)NULL);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -929,8 +1017,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_no_object_returns_null)
+    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_no_object_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -944,6 +1032,9 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -954,9 +1045,11 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .SetFailReturn((JSON_Object*)NULL);
+		STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -965,8 +1058,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_019: [ If creating the vector fails, then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_vector_create_returns_null)
+    //Tests_SRS_IDMAP_05_019: [ If creating the vector fails, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_vector_create_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -980,11 +1073,15 @@ BEGIN_TEST_SUITE(idmap_ut)
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)))
             .SetFailReturn((VECTOR_HANDLE)NULL);
 
+
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -993,8 +1090,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_no_array_returns_null)
+    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_no_array_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -1009,9 +1106,12 @@ BEGIN_TEST_SUITE(idmap_ut)
         STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .SetFailReturn((JSON_Array*)NULL);
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
@@ -1020,8 +1120,8 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Cleanup
     }
 
-    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]
-    TEST_FUNCTION(IdentityMap_CreateFromJson_parse_fails_returns_null)
+    //Tests_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
+    TEST_FUNCTION(IdentityMap_ParseConfigurationFromJson_parse_fails_returns_null)
     {
         ///Arrange
         CIdentitymapMocks mocks;
@@ -1034,10 +1134,111 @@ BEGIN_TEST_SUITE(idmap_ut)
             .SetFailReturn((JSON_Value*)NULL);
 
         //Act
-        auto n = MODULE_CREATE_FROM_JSON(theAPIS)(broker, config);
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
 
         ///Assert
         ASSERT_IS_NULL(n);
+        mocks.AssertActualAndExpectedCalls();
+
+        ///Cleanup
+    }
+
+    /*Tests_SRS_IDMAP_05_016: [ IdentityMap_FreeConfiguration shall release all data IdentityMap_ParseConfigurationFromJson allocated. ]*/
+    TEST_FUNCTION(IdentityMap_FreeConfiguration_frees_stuff)
+    {
+        ///Arrange
+        CIdentitymapMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
+
+        unsigned char fake;
+        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
+        const char* config = "pretend this is a valid JSON string";
+
+        STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
+        STRICT_EXPECTED_CALL(mocks, json_value_get_array(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(IDENTITY_MAP_CONFIG)));
+        STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetReturn(1UL);
+        STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "macAddress"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceId"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "deviceKey"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "00:00:00:00:00:00"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "id"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, "key"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(VECTOR_HANDLE)));
+
+        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(config);
+
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .ExpectedTimesExactly(4);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 0))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        //Act
+
+        ///Act
+        MODULE_FREE_CONFIGURATION(theAPIS)(n);
+
+        ///Assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///Cleanup
+    }
+
+    /*Tests_SRS_IDMAP_05_016: [ IdentityMap_FreeConfiguration shall release all data IdentityMap_ParseConfigurationFromJson allocated. ]*/
+    TEST_FUNCTION(IdentityMap_FreeConfiguration_frees_config_null_vector)
+    {
+        ///Arrange
+        CIdentitymapMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
+        VECTOR_HANDLE* pv = (VECTOR_HANDLE*)BASEIMPLEMENTATION::gballoc_malloc(sizeof(VECTOR_HANDLE));
+        *pv = NULL;
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(pv));
+
+        ///Act
+        MODULE_FREE_CONFIGURATION(theAPIS)(pv);
+
+        ///Assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///Cleanup
+    }
+
+    /*Tests_SRS_IDMAP_17_059: [ IdentityMap_FreeConfiguration shall do nothing if configuration is NULL. ]*/
+    TEST_FUNCTION(IdentityMap_FreeConfiguration_does_nothing_with_null_config)
+    {
+        ///Arrange
+        CIdentitymapMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
+
+        ///Act
+        MODULE_FREE_CONFIGURATION(theAPIS)(NULL);
+
+        ///Assert
         mocks.AssertActualAndExpectedCalls();
 
         ///Cleanup
