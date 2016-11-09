@@ -44,12 +44,15 @@ DEFINE_ENUM_STRINGS(BROKER_RESULT, BROKER_RESULT_VALUES);
 #define DEVICENAME "deviceId"
 #define DEVICEKEY "deviceKey"
 
+static IDENTITYMAP_RESULT IdentityMapConfig_CopyDeep(IDENTITY_MAP_CONFIG * dest, IDENTITY_MAP_CONFIG * source);
+static void IdentityMapConfig_Free(IDENTITY_MAP_CONFIG * element);
+
 static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
 {
     bool success;
     if (record == NULL)
     {
-        /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+        /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
         success = false;
     }
     else
@@ -59,39 +62,48 @@ static bool addOneRecord(VECTOR_HANDLE inputVector, JSON_Object * record)
         const char * deviceKey;
         if ((macAddress = json_object_get_string(record, MACADDR)) == NULL)
         {
-            /*Codes_SRS_IDMAP_05_009: [ If the array object does not contain a value named "macAddress" then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+            /*Codes_SRS_IDMAP_05_009: [ If the array object does not contain a value named "macAddress" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
             LogError("Did not find expected %s configuration", MACADDR);
             success = false;
         }
         else if ((deviceId = json_object_get_string(record, DEVICENAME)) == NULL)
         {
-            /*Codes_SRS_IDMAP_05_010: [ If the array object does not contain a value named "deviceId" then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+            /*Codes_SRS_IDMAP_05_010: [ If the array object does not contain a value named "deviceId" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
             LogError("Did not find expected %s configuration", DEVICENAME);
             success = false;
         }
         else if ((deviceKey = json_object_get_string(record, DEVICEKEY)) == NULL)
         {
-            /*Codes_SRS_IDMAP_05_011: [ If the array object does not contain a value named "deviceKey" then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+            /*Codes_SRS_IDMAP_05_011: [ If the array object does not contain a value named "deviceKey" then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
             LogError("Did not find expected %s configuration", DEVICEKEY);
             success = false;
         }
         else
         {
-            /*Codes_SRS_IDMAP_05_012: [ IdentityMap_CreateFromJson shall use "macAddress", "deviceId", and "deviceKey" values as the fields for an IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element to the vector. ]*/
-            IDENTITY_MAP_CONFIG config;
+            /*Codes_SRS_IDMAP_05_012: [ IdentityMap_ParseConfigurationFromJson shall use "macAddress", "deviceId", and "deviceKey" values as the fields for an IDENTITY_MAP_CONFIG structure and call VECTOR_push_back to add this element to the vector. ]*/
+            IDENTITY_MAP_CONFIG config, newrecord;
             config.macAddress = macAddress;
             config.deviceId = deviceId;
             config.deviceKey = deviceKey;
-            if (VECTOR_push_back(inputVector, &config, 1) != 0)
-            {
-                /*Codes_SRS_IDMAP_05_020: [ If pushing into the vector is not successful, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
-                LogError("Did not push vector");
-                success = false;
-            }
-            else
-            {
-                success = true;
-            }
+			if (IdentityMapConfig_CopyDeep(&newrecord, &config) != IDENTITYMAP_OK)
+			{
+				LogError("Could not copy map configuration strings");
+				success = false;
+			}
+			else
+			{
+				if (VECTOR_push_back(inputVector, &newrecord, 1) != 0)
+				{
+					IdentityMapConfig_Free(&newrecord);
+					/*Codes_SRS_IDMAP_05_020: [ If pushing into the vector is not successful, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
+					LogError("Did not push vector");
+					success = false;
+				}
+				else
+				{
+					success = true;
+				}
+			}
         }
     }
     return success;
@@ -398,86 +410,123 @@ static MODULE_HANDLE IdentityMap_Create(BROKER_HANDLE broker, const void* config
 }
 
 /*
-* @brief    Create an identity map module.
+* @brief    Parse configuration for identity map module.
 */
-static MODULE_HANDLE IdentityMap_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void * IdentityMap_ParseConfigurationFromJson(const char* configuration)
 {
-    MODULE_HANDLE result;
-    if ((broker == NULL) || (configuration == NULL))
+    VECTOR_HANDLE * result;
+    if (configuration == NULL)
     {
-        /*Codes_SRS_IDMAP_05_003: [ If broker is NULL then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
-        /*Codes_SRS_IDMAP_05_004: [ If configuration is NULL then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
-        LogError("Invalid NULL parameter, broker=[%p] configuration=[%p]", broker, configuration);
+        /*Codes_SRS_IDMAP_05_004: [ If configuration is NULL then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
+        LogError("Invalid NULL configuration parameter");
         result = NULL;
     }
     else
     {
-        /*Codes_SRS_IDMAP_05_006: [ IdentityMap_CreateFromJson shall parse the configuration as a JSON array of objects. ]*/
+        /*Codes_SRS_IDMAP_05_006: [ IdentityMap_ParseConfigurationFromJson shall parse the configuration as a JSON array of objects. ]*/
         JSON_Value* json = json_parse_string((const char*)configuration);
         if (json == NULL)
         {
-            /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+            /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
             LogError("Unable to parse json string");
             result = NULL;
         }
         else
         {
-            /*Codes_SRS_IDMAP_05_006: [ IdentityMap_CreateFromJson shall parse the configuration as a JSON array of objects. ]*/
-            JSON_Array* jsonArray = json_value_get_array(json);
-            if (jsonArray == NULL)
+            /*Codes_SRS_IDMAP_17_060: [ IdentityMap_ParseConfigurationFromJson shall allocate memory for the configuration vector. ]*/
+            result = malloc(sizeof(VECTOR_HANDLE));
+            if (result == NULL)
             {
-                /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+                /*Codes_SRS_IDMAP_17_061: [ If allocation fails, IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
                 LogError("Expected a JSON Array in configuration");
                 result = NULL;
             }
             else
             {
-                /*Codes_SRS_IDMAP_05_007: [ IdentityMap_CreateFromJson shall call VECTOR_create to make the identity map module input vector. ]*/
-                VECTOR_HANDLE inputVector = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
-                if (inputVector == NULL)
+                /*Codes_SRS_IDMAP_05_006: [ IdentityMap_ParseConfigurationFromJson shall parse the configuration as a JSON array of objects. ]*/
+                JSON_Array *jsonArray = json_value_get_array(json);
+                if (jsonArray == NULL)
                 {
-                    /*Codes_SRS_IDMAP_05_019: [ If creating the vector fails, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
-                    LogError("Failed to create the input vector");
+                    /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
+                    LogError("Expected a JSON Array in configuration");
+                    free(result);
                     result = NULL;
                 }
                 else
                 {
-                    size_t numberOfRecords = json_array_get_count(jsonArray);
-                    size_t record;
-                    bool arrayParsed = true;
-                    /*Codes_SRS_IDMAP_05_008: [ IdentityMap_CreateFromJson shall walk through each object of the array. ]*/
-                    for (record = 0; record < numberOfRecords; record++)
+                    /*Codes_SRS_IDMAP_05_007: [ IdentityMap_ParseConfigurationFromJson shall call VECTOR_create to make the identity map module input vector. ]*/
+                    VECTOR_HANDLE inputVector = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
+                    if (inputVector == NULL)
                     {
-                        /*Codes_SRS_IDMAP_05_006: [ IdentityMap_CreateFromJson shall parse the configuration as a JSON array of objects. ]*/
-                        if (addOneRecord(inputVector, json_array_get_object(jsonArray, record)) != true)
-                        {
-                            arrayParsed = false;
-                            break;
-                        }
-                    }
-                    if (arrayParsed != true)
-                    {
-                        /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_CreateFromJson shall fail and return NULL. ]*/
+                        /*Codes_SRS_IDMAP_05_019: [ If creating the vector fails, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
+                        LogError("Failed to create the input vector");
+                        free(result);
                         result = NULL;
                     }
                     else
                     {
-                        /*Codes_SRS_IDMAP_05_013: [ IdentityMap_CreateFromJson shall invoke identity map module's create, passing in the message broker handle and the input vector. ]*/
-                        /*Codes_SRS_IDMAP_05_014: [ When the lower layer identity map module create succeeds, IdentityMap_CreateFromJson shall succeed and return a non-NULL value. ]*/
-                        /*Codes_SRS_IDMAP_05_015: [ If the lower layer identity map module create fails, IdentityMap_CreateFromJson shall fail and return NULL. ]*/
-                        result = IdentityMap_Create(broker, inputVector);
+                        size_t numberOfRecords = json_array_get_count(jsonArray);
+                        size_t record;
+                        bool arrayParsed = true;
+                        /*Codes_SRS_IDMAP_05_008: [ IdentityMap_ParseConfigurationFromJson shall walk through each object of the array. ]*/
+                        for (record = 0; record < numberOfRecords; record++)
+                        {
+                            /*Codes_SRS_IDMAP_05_006: [ IdentityMap_ParseConfigurationFromJson shall parse the configuration as a JSON array of objects. ]*/
+                            if (addOneRecord(inputVector, json_array_get_object(jsonArray, record)) != true)
+                            {
+                                arrayParsed = false;
+                                break;
+                            }
+                        }
+                        if (arrayParsed != true)
+                        {
+                            numberOfRecords = VECTOR_size(inputVector);
+                            for (record = 0; record < numberOfRecords; record++)
+                            {
+                                IDENTITY_MAP_CONFIG *element = (IDENTITY_MAP_CONFIG *)VECTOR_element(inputVector, record);
+                                IdentityMapConfig_Free(element);
+                            }
+                            VECTOR_destroy(inputVector);
+                            /*Codes_SRS_IDMAP_05_005: [ If configuration is not a JSON array of JSON objects, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
+                            free(result);
+                            result = NULL;
+                        }
+                        else
+                        {
+                            /*Codes_SRS_IDMAP_17_062: [ IdentityMap_ParseConfigurationFromJson shall return the pointer to the configuration vector on success. ]*/
+                            *result = inputVector;
+                        }   
                     }
-                    /*Codes_SRS_IDMAP_05_016: [ IdentityMap_CreateFromJson shall release all data it allocated. ]*/
-                    VECTOR_destroy(inputVector);
                 }
             }
-            /*Codes_SRS_IDMAP_05_016: [ IdentityMap_CreateFromJson shall release all data it allocated. ]*/
-            json_value_free(json);
-        }
+			json_value_free(json);
+		}
     }
     return result;
 }
 
+
+static void IdentityMap_FreeConfiguration(void * configuration)
+{
+    /*Codes_SRS_IDMAP_17_059: [ IdentityMap_FreeConfiguration shall do nothing if configuration is NULL. ]*/
+    if (configuration != NULL)
+    {
+        VECTOR_HANDLE * map_vector = (VECTOR_HANDLE*)configuration;
+        if (*map_vector != NULL)
+        {
+            size_t map_size = VECTOR_size(*map_vector);
+            size_t record;
+            for (record = 0; record < map_size; record++)
+            {
+                /*Codes_SRS_IDMAP_05_016: [ IdentityMap_FreeConfiguration shall release all data IdentityMap_ParseConfigurationFromJson allocated. ]*/
+                IDENTITY_MAP_CONFIG * element = (IDENTITY_MAP_CONFIG *)VECTOR_element(*map_vector, record);
+                IdentityMapConfig_Free(element);
+            }
+            VECTOR_destroy(*map_vector);
+        }
+        free(map_vector);
+    }
+}
 /*
 * @brief    Destroy an identity map module.
 */
@@ -786,7 +835,8 @@ static const MODULE_API_1 IdentityMap_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-    IdentityMap_CreateFromJson,
+    IdentityMap_ParseConfigurationFromJson,
+	IdentityMap_FreeConfiguration,
     IdentityMap_Create,
     IdentityMap_Destroy,
     IdentityMap_Receive,
