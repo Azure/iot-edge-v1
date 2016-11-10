@@ -112,14 +112,11 @@ Windows
 
 Linux
 
-- build.sh produces its outputs in `azure-iot-gateway-sdk/build`. This is where the two modules used in this sample are built. 
+- build.sh produces its outputs in `azure-iot-gateway-sdk/build`. This is where the two module SOs and executable used in this sample are built.
+> Note: The logger module is built as `/modules/logger/logger.so`. The hello world module is built as `/modules/hello_world/hello_world.so`. The sample executable is built as `/samples/hello_world/hello_world_sample`. 
 
-> Note: `liblogger.so`'s relative path is `/modules/logger/liblogger.so` and `libhello_world.so` is built in `/modules/hello_world/libhello_world.so`. Use these paths for the "module path" value in the json below.
-
-- Copy the JSON file from azure-iot-gateway-sdk/samples/hello_world/src/hello_world_lin.json to the build folder.
-
-- For the logger module, replace in "args" the "filename" value with the path to the file that will contain the log.
-This is an example of a JSON settings file for Linux that will write to `log.txt`, if started from `azure-iot-gateway-sdk/build`. The Hello World sample already has a JSON settings file and you do not need to change it. This example has been provided in case you want to change the output location for the log file.
+- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/hello_world/src/hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
+> Note: The module paths are relative to the current working directory from where the hello_world_sample executable is launched, not the directory where the executable is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
 
 ```json
 {
@@ -127,7 +124,9 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
     [ 
         {
             "module name" : "logger",
-            "module path" : "./modules/logger/liblogger.so",
+            "loading args": {
+                "module path" : "./build/modules/logger/liblogger.so"
+            },
             "args" : 
             {
                 "filename":"log.txt"
@@ -135,7 +134,9 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
         },
         {
             "module name" : "hello_world",
-            "module path" : "./modules/hello_world/libhello_world.so",
+            "loading args": {
+                "module path" : "./build/modules/hello_world/libhello_world.so"
+            },
             "args" : null
         }
     ],
@@ -149,29 +150,28 @@ This is an example of a JSON settings file for Linux that will write to `log.txt
 }
 ```
 
-- Navigate to `azure-iot-gateway-sdk/build/`.
+- Navigate to `azure-iot-gateway-sdk/`.
 
--  Run `$ ./samples/hello_world/hello_world_sample <path to JSON config file>`
+-  Run `$ ./build/samples/hello_world/hello_world_sample samples/hello_world/src/hello_world_lin.json`
 
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/hello_world/src/hello_world_lin.json'. 
 
 Windows
 
-- From a Developer Command for VS2015 run `build.cmd`. `build.cmd` produces a folder called `build` in the root repo folder. This is where the two modules used in this sample are built.
+- From a Developer Command for VS2015 run `build.cmd`. `build.cmd` produces a folder called `build` in the root repo folder. This is where the two module dlls and executable used in this sample are built.
+> Note: The logger module is built as `\modules\logger\Debug\logger.dll`. The hello world module is built as `\modules\hello_world\Debug\hello_world.dll`. The sample exe is built as `\samples\hello_world\Debug\hello_world_sample.exe`.
 
-> Note: 'logger.dll''s relative path is 'modules\logger\logger.dll' and 'hello_world.dll' is built in 'modules\hello_world\hello_world.dll'. Use these paths for the "module path" value in the json below.
+- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\hello_world\src\hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
+> Note: The module paths are relative to the directory where the hello_world_sample.exe is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
 
-- Copy the JSON file from folder: `samples\hello_world\src\hello_world_win.json` to folder: `build\samples\hello_world\Debug\`.
-
-- For the logger module, replace in `args` the `filename` value with the path to the file that will contain the log.
-This is an example of a JSON settings file for Windows. that will write to `log.txt` in your current working directory.
 ```json
 {
     "modules" :
     [ 
         {
             "module name" : "logger",
-            "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll",
+            "loading args": {
+                "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+            },
             "args" : 
             {
                 "filename":"log.txt"
@@ -179,7 +179,9 @@ This is an example of a JSON settings file for Windows. that will write to `log.
         },
         {
             "module name" : "hello_world",
-             "module path" : "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll",
+            "loading args": {
+                "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
+            },
             "args" : null
         }
     ],
@@ -193,11 +195,9 @@ This is an example of a JSON settings file for Windows. that will write to `log.
 }
 ```
 
-- Navigate to `build\samples\hello_world\Debug\`.
+- Navigate to `azure-iot-gateway-sdk\`.
 
-- Run `.\hello_world_sample.exe <path to JSON config file>`
-
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\hello_world\src\hello_world_win.json'.
+- Run `.\build\samples\hello_world\Debug\hello_world_sample.exe samples\hello_world\src\hello_world_win.json`
 
 
 ## Typical Output

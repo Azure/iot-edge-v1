@@ -78,10 +78,11 @@ Please verify the following:
 
 Ensure the `PATH` environment variable contains the full path to the bin folder containing **_Maven 3_**.
 
-    ```
-    which mvn
-    echo $PATH
-    ```
+```
+which mvn
+echo $PATH
+```
+
 Ensure that the bin directory shown by the ```which mvn``` command matches one of the directories shown in your $PATH variable.
     If it does not:
     ```
@@ -104,7 +105,7 @@ Open a command prompt and use the following commands for the steps above:
 
 ```
     git clone https://github.com/Azure/azure-iot-gateway-sdk.git
-    cd bindings/java/gateway-java-binding
+    cd azure-iot-gateway-sdk/bindings/java/gateway-java-binding
     mvn clean install
 ```
 
