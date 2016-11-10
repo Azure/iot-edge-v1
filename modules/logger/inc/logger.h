@@ -19,7 +19,7 @@ typedef struct LOGGER_CONFIG_TAG
     {
         struct LOGGER_CONFIG_FILE_TAG
         {
-            char * name;
+            const char * name;
         } loggerConfigFile;
     } selectee;
 } LOGGER_CONFIG; /*this needs to be passed to the Module_Create function*/

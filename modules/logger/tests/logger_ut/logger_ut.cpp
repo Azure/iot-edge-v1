@@ -412,6 +412,7 @@ BEGIN_TEST_SUITE(logger_ut)
     /*Tests_SRS_LOGGER_17_001: [ Logger_ParseConfigurationFromJson shall allocate a new LOGGER_CONFIG structure. ]*/
     /*Tests_SRS_LOGGER_17_002: [ Logger_ParseConfigurationFromJson shall duplicate the filename string into the LOGGER_CONFIG structure. ]*/
     /*Tests_SRS_LOGGER_17_006: [ Logger_ParseConfigurationFromJson shall return a pointer to the created LOGGER_CONFIG structure. ]*/
+    /*Tests_SRS_LOGGER_17_007: [ Logger_ParseConfigurationFromJson shall set the selector in LOGGER_CONFIG to LOGGING_TO_FILE. ]*/
     TEST_FUNCTION(Logger_ParseConfigurationFromJson_happy_path_succeeds)
     {
         ///arrange
@@ -434,6 +435,7 @@ BEGIN_TEST_SUITE(logger_ut)
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
+        ASSERT_ARE_EQUAL(int, (int)((LOGGER_CONFIG*)result)->selector, (int)LOGGING_TO_FILE);
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup

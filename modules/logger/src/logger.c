@@ -20,7 +20,6 @@
 #include <azure_c_shared_utility/constmap.h>
 #include <azure_c_shared_utility/strings.h>
 
-// TODO: wrap in #ifdef
 #include <parson.h>
 
 typedef struct LOGGER_HANDLE_DATA_TAG
@@ -309,8 +308,10 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                     else
                     {
                         /*Codes_SRS_LOGGER_17_002: [ Logger_ParseConfigurationFromJson shall duplicate the filename string into the LOGGER_CONFIG structure. ]*/
+                        /*Codes_SRS_LOGGER_17_007: [ Logger_ParseConfigurationFromJson shall set the selector in LOGGER_CONFIG to LOGGING_TO_FILE. ]*/
                         result->selector = LOGGING_TO_FILE;
-						int copy_result = mallocAndStrcpy_s(&(result->selectee.loggerConfigFile.name), fileNameValue);
+                        char * logfileName;
+						int copy_result = mallocAndStrcpy_s(&logfileName, fileNameValue);
                         if (copy_result != 0)
                         {
                             /*Codes_SRS_LOGGER_17_003: [ If any system call fails, Logger_ParseConfigurationFromJson shall fail and return NULL. ]*/
@@ -324,6 +325,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                             /**
                              * Everything's good.
                              */
+                             result->selectee.loggerConfigFile.name = (const char *)logfileName;
                         }
                     }
                 }
@@ -346,7 +348,7 @@ static void Logger_FreeConfiguration(void* configuration)
     {
         /*Codes_SRS_LOGGER_17_005: [ Logger_FreeConfiguration shall free all resources created by Logger_ParseConfigurationFromJson. ]*/
         LOGGER_CONFIG* config = (LOGGER_CONFIG*)configuration;
-        free(config->selectee.loggerConfigFile.name);
+        free((char*)config->selectee.loggerConfigFile.name);
         free(config);
     }
 }
