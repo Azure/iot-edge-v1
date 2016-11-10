@@ -159,19 +159,19 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                 else
                 {
                     /*Codes_SRS_LOGGER_02_006: [Logger_Create shall open the file configuration the filename selectee.loggerConfigFile.name in update (reading and writing) mode and assign the result of fopen to fout field. ]*/
-                    result->fout = fopen(STRING_c_str(config->selectee.loggerConfigFile.name), "r+b"); /*open binary file for update (reading and writing)*/
+                    result->fout = fopen(config->selectee.loggerConfigFile.name, "r+b"); /*open binary file for update (reading and writing)*/
                     if (result->fout == NULL) 
                     {
                         /*if the file does not exist [or other error, indistinguishable here] try to create it*/
                         /*Codes_SRS_LOGGER_02_020: [If the file selectee.loggerConfigFile.name does not exist, it shall be created.]*/
-                        result->fout = fopen(STRING_c_str(config->selectee.loggerConfigFile.name), "w+b");/*truncate to zero length or create binary file for update*/
+                        result->fout = fopen(config->selectee.loggerConfigFile.name, "w+b");/*truncate to zero length or create binary file for update*/
                     }
 
                     /*Codes_SRS_LOGGER_02_007: [If Logger_Create encounters any errors while creating the LOGGER_HANDLE_DATA then it shall fail and return NULL.]*/
                     /*Codes_SRS_LOGGER_02_021: [If creating selectee.loggerConfigFile.name fails then Logger_Create shall fail and return NULL.]*/
                     if (result->fout == NULL)
                     {
-                        LogError("unable to open file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
+                        LogError("unable to open file %s", config->selectee.loggerConfigFile.name);
                         free(result);
                         result = NULL;
                     }
@@ -291,6 +291,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                 const char* fileNameValue = json_object_get_string(obj, "filename");
                 if (fileNameValue == NULL)
                 {
+                    /*Codes_SRS_LOGGER_17_003: [ If any system call fails, Logger_ParseConfigurationFromJson shall fail and return NULL. ]*/
                     LogError("json_object_get_string failed");
                     result = NULL;
                 }
@@ -298,23 +299,28 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                 {
                     /*fileNameValue is believed at this moment to be a string that might point to a filename on the system*/
                     
+                    /*Codes_SRS_LOGGER_17_001: [ Logger_ParseConfigurationFromJson shall allocate a new LOGGER_CONFIG structure. ]*/
                     result = (LOGGER_CONFIG*)malloc(sizeof(LOGGER_CONFIG));
                     if (result == NULL)
                     {
+                        /*Codes_SRS_LOGGER_17_003: [ If any system call fails, Logger_ParseConfigurationFromJson shall fail and return NULL. ]*/
                         LogError("malloc failed");
                     }
                     else
                     {
+                        /*Codes_SRS_LOGGER_17_002: [ Logger_ParseConfigurationFromJson shall duplicate the filename string into the LOGGER_CONFIG structure. ]*/
                         result->selector = LOGGING_TO_FILE;
-                        result->selectee.loggerConfigFile.name = STRING_construct(fileNameValue);
-                        if (result->selectee.loggerConfigFile.name == NULL)
+						int copy_result = mallocAndStrcpy_s(&(result->selectee.loggerConfigFile.name), fileNameValue);
+                        if (copy_result != 0)
                         {
-                            LogError("STRING_construct failed");
+                            /*Codes_SRS_LOGGER_17_003: [ If any system call fails, Logger_ParseConfigurationFromJson shall fail and return NULL. ]*/
+                            LogError("Copying the filename failed, error= %d", copy_result);
                             free(result);
                             result = NULL;
                         }
                         else
                         {
+                            /*Codes_SRS_LOGGER_17_006: [ Logger_ParseConfigurationFromJson shall return a pointer to the created LOGGER_CONFIG structure. ]*/
                             /**
                              * Everything's good.
                              */
@@ -333,12 +339,14 @@ static void Logger_FreeConfiguration(void* configuration)
 {
     if (configuration == NULL)
     {
+        /*Codes_SRS_LOGGER_17_004: [ Logger_FreeConfiguration shall do nothing is configuration is NULL. ]*/
         LogError("configuration is NULL");
     }
     else
     {
+        /*Codes_SRS_LOGGER_17_005: [ Logger_FreeConfiguration shall free all resources created by Logger_ParseConfigurationFromJson. ]*/
         LOGGER_CONFIG* config = (LOGGER_CONFIG*)configuration;
-        STRING_delete(config->selectee.loggerConfigFile.name);
+        free(config->selectee.loggerConfigFile.name);
         free(config);
     }
 }
