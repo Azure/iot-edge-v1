@@ -29,11 +29,11 @@ typedef struct LOGGER_CONFIG_TAG
 }LOGGER_CONFIG;
 ```
 
-###Logger_CreateFromJson
+### Logger_ParseConfigurationFromJson
 ```c
-MODULE_HANDLE Logger_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+void* Logger_ParseConfigurationFromJson(const char* configuration);
 ```
-Creates a new LOGGER MODULE instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_CreateFromJson`.
+Creates a new configuration for LOGGER MODULE instance from a JSON string. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_CreateFromJson`.
 The json object should contain: 
 ```json
 {
@@ -56,19 +56,35 @@ The following Gateway config file describes a module named "logger" that is an i
             }
         }
    ]
-}```
+}
+```
 
 
-**SRS_LOGGER_05_001: [** If `broker` is NULL then `Logger_CreateFromJson` shall fail and return NULL. **]**
-**SRS_LOGGER_05_003: [** If `configuration` is NULL then `Logger_CreateFromJson` shall fail and return NULL. **]**
-**SRS_LOGGER_05_011: [** If configuration is not a JSON object, then `Logger_CreateFromJson` shall fail and return NULL. **]**
-**SRS_LOGGER_05_012: [** If the JSON object does not contain a value named "filename" then `Logger_CreateFromJson` shall fail and return NULL. **]**
-**SRS_LOGGER_05_005: [** `Logger_CreateFromJson` shall pass `broker` and the filename to `Logger_Create`. **]**
-**SRS_LOGGER_05_006: [** If `Logger_Create` succeeds then `Logger_CreateFromJson` shall succeed and return a non-NULL value. **]**
-**SRS_LOGGER_05_007: [** If `Logger_Create` fails then `Logger_CreateFromJson` shall fail and return NULL. **]**
+**SRS_LOGGER_05_003: [** If `configuration` is NULL then `Logger_ParseConfigurationFromJson` shall fail and return NULL. **]**
+
+**SRS_LOGGER_05_011: [** If configuration is not a JSON object, then `Logger_ParseConfigurationFromJson` shall fail and return NULL. **]**
+
+**SRS_LOGGER_05_012: [** If the JSON object does not contain a value named "filename" then `Logger_ParseConfigurationFromJson` shall fail and return NULL. **]**
+
+**SRS_LOGGER_17_001: [** `Logger_ParseConfigurationFromJson` shall allocate a new `LOGGER_CONFIG` structure. **]**
+
+**SRS_LOGGER_17_002: [** `Logger_ParseConfigurationFromJson` shall duplicate the filename string into the `LOGGER_CONFIG` structure. **]**
+
+**SRS_LOGGER_17_006: [** `Logger_ParseConfigurationFromJson` shall return a pointer to the created `LOGGER_CONFIG` structure. **]**
+
+**SRS_LOGGER_17_003: [** If any system call fails, `Logger_ParseConfigurationFromJson` shall fail and return NULL. **]**
+
+### Logger_FreeConfiguration
+```c
+static void Logger_FreeConfiguration(void* configuration);
+```
+
+**SRS_LOGGER_17_004: [** `Logger_FreeConfiguration` shall do nothing is configuration is `NULL`. **]**
+
+**SRS_LOGGER_17_005: [** `Logger_FreeConfiguration` shall free all resources created by `Logger_ParseConfigurationFromJson`. **]**
 
 
-###Logger_Create
+### Logger_Create
 ```c
 MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configuration);
 ```
@@ -106,7 +122,7 @@ to fout field.
 
 **SRS_LOGGER_02_008: [**Otherwise Logger_Create shall return a non-NULL pointer.**]**
 
-###Logger_Receive
+### Logger_Receive
 ```c
 void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
@@ -136,7 +152,7 @@ void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_LOGGER_02_013: [**Logger_Receive shall return.**]**
 
 
-###Logger_Destroy
+### Logger_Destroy
 ```c
 void Logger_Destroy(MODULE_HANDLE moduleHandle);
 ```
@@ -151,7 +167,7 @@ void Logger_Destroy(MODULE_HANDLE moduleHandle);
 **SRS_LOGGER_02_015: [**Otherwise Logger_Destroy shall unuse all used resources.**]**
 
 
-###Module_GetAPIs
+### Module_GetAPIs
 ```c
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
 ```
