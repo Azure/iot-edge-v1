@@ -256,7 +256,7 @@ ModuleLoader_IsDefaultLoader
 bool ModuleLoader_IsDefaultLoader(const char* name);
 ```
 
-**SRS_MODULE_LOADER_13_061: [** `ModuleLoader_IsDefaultLoader` shall return `true` if `name` is the name of a default module loader and `false` otherwise. **]**
+**SRS_MODULE_LOADER_13_061: [** `ModuleLoader_IsDefaultLoader` shall return `true` if `name` is the name of a default module loader and `false` otherwise. The default module loader names are 'native', 'node', 'java' and 'dotnet'. **]**
 
 ModuleLoader_InitializeFromJson
 -------------------------------

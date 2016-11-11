@@ -29,7 +29,7 @@
 #include "module_loaders/dotnet_loader.h"
 #endif
 
-MODULE_LOADER_RESULT add_module_loader(const MODULE_LOADER* loader);
+static MODULE_LOADER_RESULT add_module_loader(const MODULE_LOADER* loader);
 
 static struct
 {
@@ -49,7 +49,7 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
     g_module_loaders.lock = Lock_Init();
     if (g_module_loaders.lock == NULL)
     {
-        LogError("ModuleLoader_Initialize() - Lock_Init failed");
+        LogError("Lock_Init failed");
 
         /*Codes_SRS_MODULE_LOADER_13_002: [ ModuleLoader_Initialize shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
         result = MODULE_LOADER_ERROR;
@@ -59,7 +59,7 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
         /*Codes_SRS_MODULE_LOADER_13_003: [ ModuleLoader_Initialize shall acquire the lock on g_module_loader.lock. ]*/
         if (Lock(g_module_loaders.lock) != LOCK_OK)
         {
-            LogError("ModuleLoader_Initialize() - Lock failed");
+            LogError("Lock failed");
             Lock_Deinit(g_module_loaders.lock);
             g_module_loaders.lock = NULL;
 
@@ -72,7 +72,7 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
             g_module_loaders.module_loaders = VECTOR_create(sizeof(MODULE_LOADER*));
             if (g_module_loaders.module_loaders == NULL)
             {
-                LogError("ModuleLoader_Initialize() - VECTOR_create failed");
+                LogError("VECTOR_create failed");
                 Unlock(g_module_loaders.lock);
                 Lock_Deinit(g_module_loaders.lock);
                 g_module_loaders.lock = NULL;
@@ -102,9 +102,9 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
                 for (i = 0; i < loaders_count; i++)
                 {
                     /*Codes_SRS_MODULE_LOADER_13_005: [ ModuleLoader_Initialize shall add the default support module loaders to g_module.module_loaders. ]*/
-                    if (add_module_loader(NodeLoader_Get()) != MODULE_LOADER_SUCCESS)
+                    if (add_module_loader(supported_loaders[i]) != MODULE_LOADER_SUCCESS)
                     {
-                        LogError("ModuleLoader_Initialize() - Could not add loader");
+                        LogError("Could not add loader");
                         break;
                     }
                 }
@@ -152,18 +152,17 @@ MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader)
     MODULE_LOADER_RESULT result;
 
     if (
-        loader == NULL || loader->api == NULL ||
-        loader->name == NULL || loader->type == UNKNOWN ||
+        loader == NULL || loader->name == NULL || loader->type == UNKNOWN ||
         validate_module_loader_api(loader->api) == false
        )
     {
         LogError(
-            "ModuleLoader_Add() - invalid input supplied. loader = %p, loader->api = %p, "
+            "invalid input supplied. loader = %p, loader->api = %p, "
             "loader->name = %s, loader->type = %d",
             loader,
-            loader != NULL ? loader->api : "NULL",
+            loader != NULL ? loader->api : 0x0,
             loader != NULL ? loader->name : "NULL",
-            loader != NULL ? loader->type : "NULL"
+            loader != NULL ? loader->type : UNKNOWN
         );
 
         /*
@@ -187,7 +186,7 @@ MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader)
     {
         if (g_module_loaders.lock == NULL || g_module_loaders.module_loaders == NULL)
         {
-            LogError("ModuleLoader_Add() - ModuleLoader_Initialize has not been called yet");
+            LogError("ModuleLoader_Initialize has not been called yet");
 
             /*
             Codes_SRS_MODULE_LOADER_13_009: [ ModuleLoader_Add shall return MODULE_LOADER_ERROR if g_module_loaders.lock is NULL. ]
@@ -200,7 +199,7 @@ MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader)
             /*Codes_SRS_MODULE_LOADER_13_027: [ ModuleLoader_Add shall lock g_module_loaders.lock. ]*/
             if (Lock(g_module_loaders.lock) != LOCK_OK)
             {
-                LogError("ModuleLoader_Add() - Lock failed");
+                LogError("Lock failed");
 
                 /*Codes_SRS_MODULE_LOADER_13_023: [ModuleLoader_Add shall return MODULE_LOADER_ERROR if an underlying platform call fails..]*/
                 result = MODULE_LOADER_ERROR;
@@ -210,7 +209,7 @@ MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader)
                 /*Codes_SRS_MODULE_LOADER_13_024: [ ModuleLoader_Add shall add the new module to the global module loaders list. ]*/
                 if (add_module_loader(loader) != MODULE_LOADER_SUCCESS)
                 {
-                    LogError("ModuleLoader_Add() - add_module_loader failed");
+                    LogError("add_module_loader failed");
 
                     /*Codes_SRS_MODULE_LOADER_13_023: [ModuleLoader_Add shall return MODULE_LOADER_ERROR if an underlying platform call fails..]*/
                     result = MODULE_LOADER_ERROR;
@@ -238,7 +237,7 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
     MODULE_LOADER_RESULT result;
     if (loader == NULL)
     {
-        LogError("ModuleLoader_UpdateConfiguration() - loader is NULL");
+        LogError("loader is NULL");
 
         /*Codes_SRS_MODULE_LOADER_13_028: [ ModuleLoader_UpdateConfiguration shall return MODULE_LOADER_ERROR if loader is NULL. ]*/
         result = MODULE_LOADER_ERROR;
@@ -247,7 +246,7 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
     {
         if (g_module_loaders.lock == NULL || g_module_loaders.module_loaders == NULL)
         {
-            LogError("ModuleLoader_UpdateConfiguration() - ModuleLoader_Initialize has not been called yet");
+            LogError("ModuleLoader_Initialize has not been called yet");
 
             /*
             Codes_SRS_MODULE_LOADER_13_029: [ ModuleLoader_UpdateConfiguration shall return MODULE_LOADER_ERROR if g_module_loaders.lock is NULL. ]
@@ -260,7 +259,7 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
             /*Codes_SRS_MODULE_LOADER_13_032: [ ModuleLoader_UpdateConfiguration shall lock g_module_loaders.lock ]*/
             if (Lock(g_module_loaders.lock) != LOCK_OK)
             {
-                LogError("ModuleLoader_UpdateConfiguration() - Lock failed");
+                LogError("Lock failed");
 
                 /*Codes_SRS_MODULE_LOADER_13_031: [ ModuleLoader_UpdateConfiguration shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
                 result = MODULE_LOADER_ERROR;
@@ -284,7 +283,7 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
 
 static bool find_module_loader_predicate(const void* element, const void* value)
 {
-    MODULE_LOADER* loader = (MODULE_LOADER*)element;
+    MODULE_LOADER* loader = *((MODULE_LOADER**)element);
     return strcmp(loader->name, (const char*)value) == 0;
 }
 
@@ -293,7 +292,7 @@ MODULE_LOADER* ModuleLoader_FindByName(const char* name)
     MODULE_LOADER* result;
     if (name == NULL)
     {
-        LogError("ModuleLoader_FindByName() - name is NULL");
+        LogError("name is NULL");
 
         /*Codes_SRS_MODULE_LOADER_13_036: [ ModuleLoader_FindByName shall return NULL if name is NULL. ]*/
         result = NULL;
@@ -302,7 +301,7 @@ MODULE_LOADER* ModuleLoader_FindByName(const char* name)
     {
         if (g_module_loaders.lock == NULL || g_module_loaders.module_loaders == NULL)
         {
-            LogError("ModuleLoader_FindByName() - ModuleLoader_Initialize has not been called yet");
+            LogError("ModuleLoader_Initialize has not been called yet");
 
             /*Codes_SRS_MODULE_LOADER_13_037: [ ModuleLoader_FindByName shall return NULL if g_module_loaders.lock is NULL. ]*/
             /*Codes_SRS_MODULE_LOADER_13_038: [ ModuleLoader_FindByName shall return NULL if g_module_loaders.module_loaders is NULL.]*/
@@ -313,7 +312,7 @@ MODULE_LOADER* ModuleLoader_FindByName(const char* name)
             /*Codes_SRS_MODULE_LOADER_13_040: [ ModuleLoader_FindByName shall lock g_module_loaders.lock. ]*/
             if (Lock(g_module_loaders.lock) != LOCK_OK)
             {
-                LogError("ModuleLoader_FindByName() - Lock failed");
+                LogError("Lock failed");
 
                 /*Codes_SRS_MODULE_LOADER_13_039: [ ModuleLoader_FindByName shall return NULL if an underlying platform call fails. ]*/
                 result = NULL;
@@ -323,11 +322,12 @@ MODULE_LOADER* ModuleLoader_FindByName(const char* name)
                 /*Codes_SRS_MODULE_LOADER_13_041: [ ModuleLoader_FindByName shall search for a module loader whose name is equal to name. The comparison is case sensitive. ]*/
                 /*Codes_SRS_MODULE_LOADER_13_042: [ ModuleLoader_FindByName shall return NULL if a matching module loader is not found. ]*/
                 /*Codes_SRS_MODULE_LOADER_13_043: [ ModuleLoader_FindByName shall return a pointer to the MODULE_LOADER if a matching entry is found. ]*/
-                result = VECTOR_find_if(
+                MODULE_LOADER** loader_ref = (MODULE_LOADER**)VECTOR_find_if(
                     g_module_loaders.module_loaders,
                     find_module_loader_predicate,
                     name
                 );
+                result = loader_ref == NULL ? NULL : *loader_ref;
 
                 /*Codes_SRS_MODULE_LOADER_13_044: [ ModuleLoader_FindByName shall unlock g_module_loaders.lock. ]*/
                 Unlock(g_module_loaders.lock);
@@ -342,9 +342,10 @@ void ModuleLoader_Destroy(void)
 {
     if (g_module_loaders.lock != NULL)
     {
-        /*Codes_SRS_MODULE_LOADER_13_045: [ ModuleLoader_Destroy shall free g_module_loaders.lock if it is not NULL. ]*/
-        Lock_Deinit(g_module_loaders.lock);
-        g_module_loaders.lock = NULL;
+        if (Lock(g_module_loaders.lock) != LOCK_OK)
+        {
+            LogError("Lock failed. Proceeding with destruction anyway.");
+        }
     }
     if(g_module_loaders.module_loaders != NULL)
     {
@@ -375,6 +376,18 @@ void ModuleLoader_Destroy(void)
         VECTOR_destroy(g_module_loaders.module_loaders);
         g_module_loaders.module_loaders = NULL;
     }
+
+    if (g_module_loaders.lock != NULL)
+    {
+        if (Unlock(g_module_loaders.lock) != LOCK_OK)
+        {
+            LogError("Unlock failed.");
+        }
+
+        /*Codes_SRS_MODULE_LOADER_13_045: [ ModuleLoader_Destroy shall free g_module_loaders.lock if it is not NULL. ]*/
+        Lock_Deinit(g_module_loaders.lock);
+        g_module_loaders.lock = NULL;
+    }
 }
 
 static MODULE_LOADER_RESULT add_module_loader(const MODULE_LOADER* loader)
@@ -387,7 +400,7 @@ static MODULE_LOADER_RESULT add_module_loader(const MODULE_LOADER* loader)
     }
     else
     {
-        LogError("add_module_loader() - VECTOR_push_back failed");
+        LogError("VECTOR_push_back failed");
         result = MODULE_LOADER_ERROR;
     }
 
@@ -402,18 +415,20 @@ MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
     // The JSON is expected to be an object that has a string
     // property called "binding.path"
     MODULE_LOADER_RESULT result;
+
+    JSON_Value_Type value_type = json_value_get_type(json);
     if (
         configuration == NULL ||
         json == NULL ||
-        json_value_get_type(json) != JSONObject
+        value_type != JSONObject
        )
     {
         LogError(
-            "ModuleLoader_ParseBaseConfigurationFromJson() - Invalid input arguments. "
+            "Invalid input arguments. "
             "configuration = %p, json = %p, json value type = %d",
             configuration,
             json,
-            (json != NULL) ? json_value_get_type(json) : 0
+            (json != NULL) ? value_type : 0
         );
 
         /*
@@ -428,7 +443,7 @@ MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
         JSON_Object* config = json_value_get_object(json);
         if (config == NULL)
         {
-            LogError("ModuleLoader_ParseBaseConfigurationFromJson() - json_value_get_object failed");
+            LogError("json_value_get_object failed");
 
             /*Codes_SRS_MODULE_LOADER_13_052: [ ModuleLoader_ParseBaseConfigurationFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
             result = MODULE_LOADER_ERROR;
@@ -459,7 +474,7 @@ void ModuleLoader_FreeBaseConfiguration(MODULE_LOADER_BASE_CONFIGURATION* config
     else
     {
         /*Codes_SRS_MODULE_LOADER_13_055: [ ModuleLoader_FreeBaseConfiguration shall do nothing if configuration is NULL. ]*/
-        LogError("ModuleLoader_FreeBaseConfiguration() - configuration is NULL");
+        LogError("configuration is NULL");
     }
 }
 
@@ -544,7 +559,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
 
     if (json_value_get_type(loader) != JSONObject)
     {
-        LogError("add_loader_from_json() - loader %zu is not a JSON object", index);
+        LogError("loader %zu is not a JSON object", index);
 
         /*Codes_SRS_MODULE_LOADER_13_065: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an entry in the loaders array is not a JSON object. ]*/
         result = MODULE_LOADER_ERROR;
@@ -554,7 +569,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
         JSON_Object* loader_object = json_value_get_object(loader);
         if (loader_object == NULL)
         {
-            LogError("add_loader_from_json() - json_value_get_object failed for loader %zu", index);
+            LogError("json_value_get_object failed for loader %zu", index);
 
             /*Codes_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
             result = MODULE_LOADER_ERROR;
@@ -567,7 +582,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                 (strlen(type) == 0 || strlen(loader_name) == 0))
             {
                 LogError(
-                    "add_loader_from_json() - invalid type and/or name for loader %zu. "
+                    "invalid type and/or name for loader %zu. "
                     "type = %s, name = %s",
                     index, type, loader_name
                 );
@@ -580,7 +595,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                 MODULE_LOADER_TYPE loader_type = ModuleLoader_ParseType(type);
                 if (loader_type == UNKNOWN)
                 {
-                    LogError("add_loader_from_json() - loader type %s for loader %zu is invalid", type, index);
+                    LogError("loader type %s for loader %zu is invalid", type, index);
 
                     /*Codes_SRS_MODULE_LOADER_13_067: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if a loader entry's type field has an unknown value. ]*/
                     result = MODULE_LOADER_ERROR;
@@ -592,7 +607,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                     if (default_loader == NULL)
                     {
                         LogError(
-                            "add_loader_from_json() - no default module loader for type %s was "
+                            "no default module loader for type %s was "
                             "found for loader entry %zu",
                             type, index
                         );
@@ -620,7 +635,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                                                         (MODULE_LOADER*)malloc(sizeof(MODULE_LOADER));
                         if (new_loader == NULL)
                         {
-                            LogError("add_loader_from_json() - malloc failed for MODULE_LOADER struct for loader %zu", index);
+                            LogError("malloc failed for MODULE_LOADER struct for loader %zu", index);
 
                             /*Codes_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
                             result = MODULE_LOADER_ERROR;
@@ -632,7 +647,12 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                                 new_loader->name = malloc(strlen(loader_name) + 1);
                                 if (new_loader->name == NULL)
                                 {
-                                    LogError("add_loader_from_json() - malloc failed for loader name string for loader %zu", index);
+                                    LogError("malloc failed for loader name string for loader %zu", index);
+                                    if (loader_configuration != NULL)
+                                    {
+                                        default_loader->api->FreeConfiguration(loader_configuration);
+                                    }
+                                    free(new_loader);
 
                                     /*Codes_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
                                     result = MODULE_LOADER_ERROR;
@@ -651,10 +671,10 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                                     if (result != MODULE_LOADER_SUCCESS)
                                     {
                                         /*Codes_SRS_MODULE_LOADER_13_071: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if ModuleLoader_Add fails. ]*/
-                                        LogError("add_loader_from_json() - ModuleLoader_Add failed");
+                                        LogError("ModuleLoader_Add failed");
                                         if (loader_configuration != NULL)
                                         {
-                                            new_loader->api->FreeConfiguration(loader_configuration);
+                                            default_loader->api->FreeConfiguration(loader_configuration);
                                         }
                                         free((void *)new_loader->name);
                                         free(new_loader);
@@ -685,7 +705,7 @@ MODULE_LOADER_RESULT ModuleLoader_InitializeFromJson(const JSON_Value* loaders)
 
     if (loaders == NULL)
     {
-        LogError("ModuleLoader_InitializeFromJson() - loaders is NULL");
+        LogError("loaders is NULL");
 
         /*Codes_SRS_MODULE_LOADER_13_062: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if loaders is NULL. ]*/
         result = MODULE_LOADER_ERROR;
@@ -694,7 +714,7 @@ MODULE_LOADER_RESULT ModuleLoader_InitializeFromJson(const JSON_Value* loaders)
     {
         if (json_value_get_type(loaders) != JSONArray)
         {
-            LogError("ModuleLoader_InitializeFromJson() - loaders is not a JSON array");
+            LogError("loaders is not a JSON array");
 
             /*Codes_SRS_MODULE_LOADER_13_063: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if loaders is not a JSON array. ]*/
             result = MODULE_LOADER_ERROR;
@@ -704,7 +724,7 @@ MODULE_LOADER_RESULT ModuleLoader_InitializeFromJson(const JSON_Value* loaders)
             JSON_Array* loaders_array = json_value_get_array(loaders);
             if (loaders_array == NULL)
             {
-                LogError("ModuleLoader_InitializeFromJson() - json_value_get_array failed");
+                LogError("json_value_get_array failed");
 
                 /*Codes_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
                 result = MODULE_LOADER_ERROR;
@@ -719,13 +739,13 @@ MODULE_LOADER_RESULT ModuleLoader_InitializeFromJson(const JSON_Value* loaders)
                     if (loader == NULL)
                     {
                         /*Codes_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]*/
-                        LogError("ModuleLoader_InitializeFromJson() - json_array_get_value failed for loader %zu", i);
+                        LogError("json_array_get_value failed for loader %zu", i);
                         break;
                     }
 
                     if (add_loader_from_json(loader, i) != MODULE_LOADER_SUCCESS)
                     {
-                        LogError("ModuleLoader_InitializeFromJson() - add_loader_from_json failed for loader %zu", i);
+                        LogError("add_loader_from_json failed for loader %zu", i);
                         break;
                     }
                 }

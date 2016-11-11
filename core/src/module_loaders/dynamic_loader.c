@@ -248,7 +248,7 @@ static void DynamicModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATI
      */
 }
 
-void* DynamicModuleLoader_BuildModuleConfiguration(
+static void* DynamicModuleLoader_BuildModuleConfiguration(
     const MODULE_LOADER* loader,
     const void* entrypoint,
     const void* module_configuration
@@ -261,7 +261,7 @@ void* DynamicModuleLoader_BuildModuleConfiguration(
     return (void *)module_configuration;
 }
 
-void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuration)
+static void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuration)
 {
     /**
      * Nothing to free.
@@ -269,7 +269,7 @@ void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuratio
 }
 
 /* Codes_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ]*/
-MODULE_LOADER_API Dynamic_Module_Loader_API =
+static MODULE_LOADER_API Dynamic_Module_Loader_API =
 {
     .Load = DynamicModuleLoader_Load,
     .Unload = DynamicModuleLoader_Unload,
@@ -285,7 +285,7 @@ MODULE_LOADER_API Dynamic_Module_Loader_API =
     .FreeModuleConfiguration = DynamicModuleLoader_FreeModuleConfiguration
 };
 
-MODULE_LOADER Dynamic_Module_Loader =
+static MODULE_LOADER Dynamic_Module_Loader =
 {
     NATIVE,
     DYNAMIC_LOADER_NAME,

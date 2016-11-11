@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8.12)
 
 compileAsC99()
 
-set(testSuiteName module_loader_ut)
+set(testSuiteName dynamic_loader_ut)
 
 set(${testSuiteName}_cpp_files
     ${testSuiteName}.cpp

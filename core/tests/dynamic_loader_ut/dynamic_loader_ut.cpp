@@ -60,7 +60,7 @@ static pfModuleLoader_GetApi ModuleLoader_Get_Api;
 // Value for a library that does not load.
 #define TEST_MODULE_LIBRARY_BAD_NAME ("bad")
 
-MODULE_API_1 test_module_Api = 
+MODULE_API_1 test_module_Api =
 {
     {MODULE_API_VERSION_1},
 
@@ -187,7 +187,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CModuleLoaderMocks, , void, gballoc_free, void*, pt
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 
-BEGIN_TEST_SUITE(module_loader_ut)
+BEGIN_TEST_SUITE(dynamic_loader_ut)
 
     TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
@@ -473,7 +473,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
         MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
         ASSERT_IS_NOT_NULL(moduleHandle);
         mocks.ResetAllCalls();
-        
+
         ///act
         const MODULE_API* apisHandle = ModuleLoader_Get_Api(moduleHandle );
 
@@ -525,7 +525,7 @@ BEGIN_TEST_SUITE(module_loader_ut)
         MODULE_LIBRARY_HANDLE moduleHandle = ModuleLoader_Load(&loader_args);
         ASSERT_IS_NOT_NULL(moduleHandle);
         mocks.ResetAllCalls();
-        
+
         STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary(TEST_MODULE_LIBRARY_GOOD_HANDLE)).IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -539,4 +539,4 @@ BEGIN_TEST_SUITE(module_loader_ut)
         ///cleanup
     }
 
-END_TEST_SUITE(module_loader_ut)
+END_TEST_SUITE(dynamic_loader_ut)

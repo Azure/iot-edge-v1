@@ -16,6 +16,7 @@
 #define MODULE_LOADER_H
 
 #include "azure_c_shared_utility/macro_utils.h"
+#include "azure_c_shared_utility/umock_c_prod.h"
 
 #include "module.h"
 #include "parson.h"
@@ -133,9 +134,9 @@ DEFINE_ENUM(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
  * @brief Utility function for parsing a JSON object that has a property called
  *       "binding.path" into a MODULE_LOADER_BASE_CONFIGURATION instance.
  */
-MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
-    MODULE_LOADER_BASE_CONFIGURATION* configuration,
-    const JSON_Value* json
+MOCKABLE_FUNCTION(, MODULE_LOADER_RESULT, ModuleLoader_ParseBaseConfigurationFromJson,
+    MODULE_LOADER_BASE_CONFIGURATION*, configuration,
+    const JSON_Value*, json
 );
 
 /**
@@ -143,54 +144,54 @@ MODULE_LOADER_RESULT ModuleLoader_ParseBaseConfigurationFromJson(
  *        instance from a previous call to
  *        ModuleLoader_ParseBaseConfigurationFromJson.
  */
-void ModuleLoader_FreeBaseConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration);
+MOCKABLE_FUNCTION(, void, ModuleLoader_FreeBaseConfiguration, MODULE_LOADER_BASE_CONFIGURATION*, configuration);
 
 /**
  * @brief This function creates the default set of module loaders that the
  *        gateway supports.
  */
-MODULE_LOADER_RESULT ModuleLoader_Initialize(void);
+MOCKABLE_FUNCTION(, MODULE_LOADER_RESULT, ModuleLoader_Initialize);
 
 /**
  * @brief This function frees resources allocated for tracking module loaders.
  */
-void ModuleLoader_Destroy(void);
+MOCKABLE_FUNCTION(, void, ModuleLoader_Destroy);
 
 /**
  * @brief Adds a new module loader to the gateway's collection of module loaders.
  */
-MODULE_LOADER_RESULT ModuleLoader_Add(const MODULE_LOADER* loader);
+MOCKABLE_FUNCTION(, MODULE_LOADER_RESULT, ModuleLoader_Add, const MODULE_LOADER*, loader);
 
 /**
  * @brief Replaces the module loader configuration for the given loader in a
  *        thread-safe manner.
  */
-MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
-    MODULE_LOADER* loader,
-    MODULE_LOADER_BASE_CONFIGURATION* configuration
+MOCKABLE_FUNCTION(, MODULE_LOADER_RESULT, ModuleLoader_UpdateConfiguration,
+    MODULE_LOADER*, loader,
+    MODULE_LOADER_BASE_CONFIGURATION*, configuration
 );
 
 /**
  * @brief Searches the module loader collection given the loader's name.
  */
-MODULE_LOADER* ModuleLoader_FindByName(const char* name);
+MOCKABLE_FUNCTION(, MODULE_LOADER*, ModuleLoader_FindByName, const char*, name);
 
 /**
  * @brief Given a module loader type, returns the default loader.
  */
-MODULE_LOADER* ModuleLoader_GetDefaultLoaderForType(MODULE_LOADER_TYPE type);
+MOCKABLE_FUNCTION(, MODULE_LOADER*, ModuleLoader_GetDefaultLoaderForType, MODULE_LOADER_TYPE, type);
 
 /**
  * @brief Given a string representation of a module loader type, returns the
  * corresponding enum value.
  */
-MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type);
+MOCKABLE_FUNCTION(, MODULE_LOADER_TYPE, ModuleLoader_ParseType, const char*, type);
 
 /**
  * @brief Given a module name, determines if it is a default module loader or a
  *        custom one.
  */
-bool ModuleLoader_IsDefaultLoader(const char* name);
+MOCKABLE_FUNCTION(, bool, ModuleLoader_IsDefaultLoader, const char*, name);
 
 /**
  * @brief Updates the global loaders array from a JSON that looks like this:
@@ -224,7 +225,7 @@ bool ModuleLoader_IsDefaultLoader(const char* name);
  *       }
  *   ]
  */
-MODULE_LOADER_RESULT ModuleLoader_InitializeFromJson(const JSON_Value* loaders);
+MOCKABLE_FUNCTION(, MODULE_LOADER_RESULT, ModuleLoader_InitializeFromJson, const JSON_Value*, loaders);
 
 #ifdef __cplusplus
 }

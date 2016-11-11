@@ -65,7 +65,7 @@ typedef MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_vers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function is to be implemented by the module creator. It will return a
-pointer to a MODULES\_API, or NULL if not successful.
+pointer to a `MODULES_API`, or `NULL` if not successful.
 
 The `MODULE_API` structure shall contain the `api_version` and shall fill in the
 corresponding api structure in the `api` union. The `gateway_api_version` is
@@ -132,8 +132,8 @@ static void* Module_ParseConfigurationFromJson(const char* configuration);
 This function may be implemented by the module creator. It is required if the
 module is created from a JSON configuration. It receives a JSON string
 corresponding to the module arguments in the JSON gateway description. It
-returns a pointer the configuration expected by the \`Module\_Create\` function,
-which may be \`NULL\`.
+returns a pointer the configuration expected by the `Module_Create` function,
+which may be `NULL`.
 
 Module\_FreeConfiguration
 -------------------------
@@ -143,6 +143,6 @@ static void Module_FreeConfiguration(void* configuration);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function may be implemented by the module creator. It is required if the
-module is created from a JSON configuration.  The input is the \`configuration\`
-as created by \`Module\_ParseConfigurationFromJson\`, and should free any
+module is created from a JSON configuration.  The input is the `configuration`
+as created by `Module_ParseConfigurationFromJson`, and should free any
 resources allocated by that function.
