@@ -12,7 +12,6 @@
 #include "azure_c_shared_utility/lock.h"
 
 #include "module_loader.h"
-#include "dynamic_loader.h"
 #include "experimental/event_system.h"
 
 #include "gateway.h"
@@ -395,7 +394,7 @@ public:
     MOCK_STATIC_METHOD_0(, const MODULE_LOADER_API*, DynamicLoader_GetApi)
     MOCK_METHOD_END(const MODULE_LOADER_API*, &default_module_loader);
 
-    MOCK_STATIC_METHOD_1(, MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const void*, moduleLibraryFileName)
+    MOCK_STATIC_METHOD_2(, MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const struct MODULE_LOADER_TAG*, loader, const void*, entrypoint)
     MOCK_METHOD_END(MODULE_LIBRARY_HANDLE, (MODULE_LIBRARY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
 
     MOCK_STATIC_METHOD_1(, const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle)
@@ -405,6 +404,36 @@ public:
     MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
         BASEIMPLEMENTATION::gballoc_free(moduleLibraryHandle);
     MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, void*, DynamicModuleLoader_ParseEntrypointFromJson, const JSON_Value*, json)
+		void* r = BASEIMPLEMENTATION::gballoc_malloc(1);
+	MOCK_METHOD_END(void*, r);
+
+	MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_FreeEntrypoint, void*, entrypoint)
+		BASEIMPLEMENTATION::gballoc_free(entrypoint);
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, MODULE_LOADER_BASE_CONFIGURATION*, DynamicModuleLoader_ParseConfigurationFromJson, const JSON_Value*, json)
+		MODULE_LOADER_BASE_CONFIGURATION* r = (MODULE_LOADER_BASE_CONFIGURATION*)BASEIMPLEMENTATION::gballoc_malloc(1);
+	MOCK_METHOD_END(MODULE_LOADER_BASE_CONFIGURATION*, r);
+
+	MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_FreeConfiguration, MODULE_LOADER_BASE_CONFIGURATION*, configuration)
+		BASEIMPLEMENTATION::gballoc_free(configuration);
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_3(, void*, DynamicModuleLoader_BuildModuleConfiguration, const struct MODULE_LOADER_TAG*, loader, const void*, entrypoint, const void*, module_configuration)
+		void* r = BASEIMPLEMENTATION::gballoc_malloc(1);
+	MOCK_METHOD_END(void*, r);
+
+	MOCK_STATIC_METHOD_1(, void, DynamicModuleLoader_FreeModuleConfiguration, const void*, module_configuration)
+		BASEIMPLEMENTATION::gballoc_free((void*)module_configuration);
+	MOCK_VOID_METHOD_END();
+
+	MOCK_STATIC_METHOD_1(, MODULE_LOADER_RESULT, ModuleLoader_InitializeFromJson, const JSON_Value*, loaders);
+	MOCK_METHOD_END(MODULE_LOADER_RESULT, MODULE_LOADER_SUCCESS);
+
+	MOCK_STATIC_METHOD_0(, void, ModuleLoader_Destroy);
+	MOCK_VOID_METHOD_END();
 
     /*EventSystem Mocks*/
     MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
@@ -475,8 +504,11 @@ public:
         BASEIMPLEMENTATION::gballoc_free(ptr);
     MOCK_VOID_METHOD_END()
 
-    MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_CreateFromJson, BROKER_HANDLE, broker, const char*, configuration)
+    MOCK_STATIC_METHOD_1(, MODULE_HANDLE, mock_Module_ParseConfigurationFromJson, const char*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, (MODULE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
+
+	MOCK_STATIC_METHOD_1(, void, mock_Module_FreeConfiguration, void*, configuration)
+	MOCK_VOID_METHOD_END();
 
     MOCK_STATIC_METHOD_2(, MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration)
     MOCK_METHOD_END(MODULE_HANDLE, (MODULE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
@@ -516,9 +548,17 @@ DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , BROKER_RESULT, Broker_AddLink, BRO
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , BROKER_RESULT, Broker_RemoveLink, BROKER_HANDLE, handle, const BROKER_LINK_DATA*, link);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , const MODULE_LOADER_API*, DynamicLoader_GetApi);
-DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const void*, moduleLibraryFileName);
+DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const struct MODULE_LOADER_TAG*, loader, const void*, entrypoint);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , const MODULE_API*, DynamicModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, module_library_handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, DynamicModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void*, DynamicModuleLoader_ParseEntrypointFromJson, const JSON_Value*, json);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, DynamicModuleLoader_FreeEntrypoint, void*, entrypoint);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LOADER_BASE_CONFIGURATION*, DynamicModuleLoader_ParseConfigurationFromJson, const JSON_Value*, json);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, DynamicModuleLoader_FreeConfiguration, MODULE_LOADER_BASE_CONFIGURATION*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayMocks, , void*, DynamicModuleLoader_BuildModuleConfiguration, const struct MODULE_LOADER_TAG*, loader, const void*, entrypoint, const void*, module_configuration);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, DynamicModuleLoader_FreeModuleConfiguration, const void*, module_configuration);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LOADER_RESULT, ModuleLoader_InitializeFromJson, const JSON_Value*, loaders);
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , void, ModuleLoader_Destroy);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
 DECLARE_GLOBAL_MOCK_METHOD_4(CGatewayMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param);
@@ -541,7 +581,8 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void*, gballoc_malloc, size_t, siz
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , void*, gballoc_realloc, void*, ptr, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, gballoc_free, void*, ptr)
 
-DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , MODULE_HANDLE, mock_Module_CreateFromJson, BROKER_HANDLE, broker, const char*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_HANDLE, mock_Module_ParseConfigurationFromJson, const char*, configuration);
+DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, mock_Module_FreeConfiguration, void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , MODULE_HANDLE, mock_Module_Create, BROKER_HANDLE, broker, const void*, configuration);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , void, mock_Module_Destroy, MODULE_HANDLE, moduleHandle);
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayMocks, , void, mock_Module_Receive, MODULE_HANDLE, moduleHandle, MESSAGE_HANDLE, messageHandle);
@@ -563,18 +604,27 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     {
         { MODULE_API_VERSION_1 },
 
-        mock_Module_CreateFromJson,
+        mock_Module_ParseConfigurationFromJson,
+		mock_Module_FreeConfiguration,
         mock_Module_Create,
         mock_Module_Destroy,
-        mock_Module_Receive
+        mock_Module_Receive,
+		NULL
     };
 
-    default_module_loader =
-    {
-        DynamicModuleLoader_Load,
-        DynamicModuleLoader_Unload,
-        DynamicModuleLoader_GetModuleApi
-    };
+	default_module_loader =
+	{
+		DynamicModuleLoader_Load,
+		DynamicModuleLoader_Unload,
+		DynamicModuleLoader_GetModuleApi,
+		DynamicModuleLoader_ParseEntrypointFromJson,
+		DynamicModuleLoader_FreeEntrypoint,
+		DynamicModuleLoader_ParseConfigurationFromJson,
+		DynamicModuleLoader_FreeConfiguration,
+		DynamicModuleLoader_BuildModuleConfiguration,
+		DynamicModuleLoader_FreeModuleConfiguration
+	};
+
 }
 
 TEST_SUITE_CLEANUP(TestClassCleanup)
@@ -670,8 +720,12 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(GATEWAY_PROPERTIES)));
     STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "modules"))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "loaders"))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_InitializeFromJson(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "modules"))
+		.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
@@ -679,7 +733,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
         .SetReturn(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -698,7 +751,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -761,11 +813,12 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG, "[serialized string]"))
+    STRICT_EXPECTED_CALL(mocks, mock_Module_ParseConfigurationFromJson("[serialized string]"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -788,11 +841,12 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG, "[serialized string]"))
+    STRICT_EXPECTED_CALL(mocks, mock_Module_ParseConfigurationFromJson("[serialized string]"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -901,6 +955,10 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(GATEWAY_PROPERTIES)));
     STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "loaders"))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_InitializeFromJson(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "modules"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
@@ -910,7 +968,6 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .SetReturn(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -929,7 +986,6 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -992,11 +1048,12 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG,"[serialized string]"))
+    STRICT_EXPECTED_CALL(mocks, mock_Module_ParseConfigurationFromJson("[serialized string]"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -1019,11 +1076,12 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .IgnoreArgument(2)
         .IgnoreArgument(3);
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MODULE_DATA)));
-    STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_Load(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_GetModuleApi(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, mock_Module_CreateFromJson(IGNORED_PTR_ARG,"[serialized string]"))
+    STRICT_EXPECTED_CALL(mocks, mock_Module_ParseConfigurationFromJson("[serialized string]"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_AddModule(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
         .IgnoreArgument(1)
@@ -1231,6 +1289,10 @@ TEST_FUNCTION(Gateway_CreateFromJson_Traverses_JSON_Push_Back_Fail)
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(GATEWAY_PROPERTIES)));
     STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "loaders"))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_InitializeFromJson(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "modules"))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_array(IGNORED_PTR_ARG, "links"))
@@ -1240,7 +1302,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Traverses_JSON_Push_Back_Fail)
         .SetReturn(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY)));
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1259,7 +1320,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Traverses_JSON_Push_Back_Fail)
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1387,7 +1447,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Traverses_JSON_Value_VECTOR_Create_for_link
         .IgnoreArgument(1)
         .SetReturn(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1406,7 +1465,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Traverses_JSON_Value_VECTOR_Create_for_link
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1507,7 +1565,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Fails_For_Missing_Info_In_JSON_Configuratio
         .IgnoreArgument(1)
         .SetReturn(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1559,7 +1616,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Fails_For_Missing_Loading_args_In_JSON_Conf
         .IgnoreArgument(1)
         .SetReturn(2);
 
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)));
     STRICT_EXPECTED_CALL(mocks, json_array_get_object(IGNORED_PTR_ARG, 0))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "module name"))
@@ -1607,9 +1663,6 @@ TEST_FUNCTION(Gateway_CreateFromJson_Fails_For_not_allocating_loading_args)
     STRICT_EXPECTED_CALL(mocks, json_array_get_count(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .SetReturn(2);
-
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(DYNAMIC_LOADER_CONFIG)))
-        .SetFailReturn((void*)nullptr);
 
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);

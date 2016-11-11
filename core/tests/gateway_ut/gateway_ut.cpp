@@ -406,7 +406,6 @@ static MODULE_LOADER_API module_loader_api =
 
 static MODULE_LOADER dummyModuleLoader =
 {
-
 	NATIVE,
 	"dummy loader",
 	NULL,
@@ -416,7 +415,7 @@ static MODULE_LOADER dummyModuleLoader =
 static GATEWAY_MODULE_LOADER_INFO dummyLoaderInfo =
 {
 	&dummyModuleLoader,
-	NULL
+	(void*)0x42
 };
 
 static int sampleCallbackFuncCallCount;
@@ -545,6 +544,7 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Success)
     CGatewayLLMocks mocks;
 
     //Expectations
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
@@ -566,11 +566,24 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Success)
 }
 
 /*Tests_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
-TEST_FUNCTION(Gateway_Create_returns_null_on_invalid_GW_entry)
+TEST_FUNCTION(Gateway_Create_returns_null_on_bad_module_api_entry)
 {
     //Arrange
     CGatewayLLMocks mocks;
 
+	MODULE_LOADER badModuleLoader =
+	{
+		NATIVE,
+		"dummy loader",
+		NULL,
+		NULL
+	};
+
+	static GATEWAY_MODULE_LOADER_INFO dummyLoaderInfo =
+	{
+		&badModuleLoader,
+		(void*)0x42
+	};
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module 2",
         dummyLoaderInfo,
@@ -585,7 +598,9 @@ TEST_FUNCTION(Gateway_Create_returns_null_on_invalid_GW_entry)
 
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
@@ -620,6 +635,26 @@ TEST_FUNCTION(Gateway_Create_returns_null_on_invalid_GW_entry)
     //Nothing to cleanup
 }
 
+TEST_FUNCTION(Gateway_Create_ModuleLoader_Init_Failure)
+{
+	//Arrange
+	CGatewayLLMocks mocks;
+
+	//Expectations
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize())
+		.SetFailReturn(MODULE_LOADER_ERROR);
+
+	//Act
+	GATEWAY_HANDLE gateway = Gateway_Create(NULL);
+
+	//Assert
+	ASSERT_IS_NULL(gateway);
+	mocks.AssertActualAndExpectedCalls();
+
+	//Cleanup
+	//Nothing to cleanup
+}
+
 /*Tests_SRS_GATEWAY_14_002: [This function shall return NULL upon any memory allocation failure.]*/
 TEST_FUNCTION(Gateway_Create_Creates_Handle_Malloc_Failure)
 {
@@ -627,7 +662,9 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Malloc_Failure)
     CGatewayLLMocks mocks;
 
     //Expectations
-    whenShallmalloc_fail = 1;
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	whenShallmalloc_fail = 1;
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
 
@@ -649,7 +686,9 @@ TEST_FUNCTION(Gateway_Create_Cannot_Create_Broker_Handle_Failure)
     CGatewayLLMocks mocks;
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     whenShallBroker_Create_fail = 1;
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
@@ -674,7 +713,9 @@ TEST_FUNCTION(Gateway_Create_VECTOR_Create_Fails)
     CGatewayLLMocks mocks;
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
 
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
@@ -705,7 +746,9 @@ TEST_FUNCTION(Gateway_Create_VECTOR_Create2_Fails)
     CGatewayLLMocks mocks;
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
 
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
@@ -751,7 +794,9 @@ TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
@@ -886,7 +931,9 @@ TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &dummyEntry2, 1);
 
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
@@ -1010,7 +1057,9 @@ TEST_FUNCTION(Gateway_Create_AddModule_WithDuplicatedModuleName_Fails)
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_modules, &duplicatedEntry, 1);
     
     //Expectations
-    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
@@ -1121,6 +1170,7 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_In_Props_Success)
         .IgnoreAllArguments()
         .NeverInvoked();
 
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
     STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
@@ -1235,6 +1285,8 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink, 1);
 
     //Expectations
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+
     EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
@@ -1343,7 +1395,9 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_Links_fromNonExistingModule_Fa
     BASEIMPLEMENTATION::VECTOR_push_back(dummyProps->gateway_links, &dummyLink, 1);
 
     //Expectations
-    EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(mocks, Broker_Create());
     STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
         .IgnoreArgument(1); //modules vector.
@@ -1437,12 +1491,13 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_Links_fromNonExistingModule_Fa
 }
 
 /*Tests_SRS_GATEWAY_14_005: [ If gw is NULL the function shall do nothing. ]*/
-TEST_FUNCTION(Gateway_Destroy_Does_Nothing_If_NULL)
+TEST_FUNCTION(Gateway_Destroy_destroys_loader_If_NULL)
 {
     //Arrange
     CGatewayLLMocks mocks;
 
     GATEWAY_HANDLE gateway = NULL;
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
 
     //Act
     Gateway_Destroy(gateway);
@@ -1535,6 +1590,7 @@ TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
 
     //Act
     Gateway_Destroy(gateway);
@@ -1646,6 +1702,7 @@ TEST_FUNCTION(Gateway_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
 
     //Act
     Gateway_Destroy(gateway);
@@ -2584,7 +2641,8 @@ TEST_FUNCTION(Gateway_Event_System_Create_And_Report)
     CGatewayLLMocks mocks;
     
     //Expectations
-    EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     EXPECTED_CALL(mocks, Broker_Create());
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG)); //Modules.
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG)); //Links
@@ -2607,7 +2665,9 @@ TEST_FUNCTION(Gateway_Event_System_Create_Fail)
     CGatewayLLMocks mocks;
 
     //Expectations
-    EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Initialize());
+	STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+	EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG));
     EXPECTED_CALL(mocks, Broker_Create());
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG)); //Modules.
     EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG)); //Links
@@ -2649,6 +2709,7 @@ TEST_FUNCTION(Gateway_Event_System_Report_Destroy)
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG)); //Links
     EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
+	EXPECTED_CALL(mocks, ModuleLoader_Destroy());
 
     // Act
     Gateway_Destroy(gw);

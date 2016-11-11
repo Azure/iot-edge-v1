@@ -349,7 +349,8 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
         module_entry == NULL ||
         module_entry->module_name == NULL ||
         module_entry->module_loader_info.loader == NULL ||
-        module_entry->module_loader_info.entrypoint == NULL
+        module_entry->module_loader_info.entrypoint == NULL ||
+		module_entry->module_loader_info.loader->api == NULL
        )
     {
         module_result = NULL;
@@ -357,8 +358,8 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
             "Failed to add module because a required input parameter is NULL. gw = %p, module_name = '%s', loader = %p, entrypoint = %p.",
             gateway_handle,
             module_entry != NULL ? module_entry->module_name : "NULL",
-            module_entry != NULL ? module_entry->module_loader_info.loader : "NULL",
-            module_entry != NULL ? module_entry->module_loader_info.entrypoint : "NULL"
+            module_entry != NULL ? module_entry->module_loader_info.loader : NULL,
+            module_entry != NULL ? module_entry->module_loader_info.entrypoint : NULL
         );
     }
     else if (strcmp(module_entry->module_name, GATEWAY_ALL) == 0)

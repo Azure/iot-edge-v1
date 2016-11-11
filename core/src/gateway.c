@@ -162,6 +162,10 @@ GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
     else
     {
         result = gateway_create_internal(properties, false);
+		if (result == NULL)
+		{
+			ModuleLoader_Destroy();
+		}
     }
 
     return result;
