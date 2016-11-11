@@ -14,6 +14,7 @@ enable_java_binding=OFF
 enable_nodejs_binding=OFF
 toolchainfile=
 enable_ble_module=ON
+dependency_install_prefix=
 
 cd "$build_root"
 usage ()
@@ -31,6 +32,7 @@ usage ()
     echo " --enable-nodejs-binding       enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined"
     echo " --toolchain-file <file>       pass cmake a toolchain file for cross compiling"
     echo " --disable-ble-module           remove building of BLE module (ble module build is ON by default in Linux)"
+    echo " --install-dependencies-in-tree installs dependencies in the repo if unable to run the script as an admin"
     exit 1
 }
 
@@ -64,6 +66,7 @@ process_args ()
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
+              "--install-dependencies-in-tree" ) dependency_install_prefix="-Ddependency_install_prefix=$build_root/install-deps";;
               * ) usage;;
           esac
       fi
@@ -89,6 +92,7 @@ rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
 cmake $toolchainfile \
+      $dependency_install_prefix \
       -DcompileOption_C:STRING="$extracloptions" \
       -DCMAKE_BUILD_TYPE=Debug \
       -Dskip_unittests:BOOL=$skip_unittests \

@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 project(azure_iot_gateway_sdk)
 
 set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
@@ -23,6 +23,14 @@ if(WIN32)
 endif()
 
 message(STATUS "CMake Install Prefix is ${CMAKE_INSTALL_PREFIX}")
+
+set(${dependency_install_prefix} ${dependency_install_prefix} CACHE INTERNAL "")
+
+if(DEFINED ${dependency_install_prefix})
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${dependency_install_prefix})
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${dependency_install_prefix}/lib)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 #the following variables are project-wide and can be used with cmake-gui
 option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
@@ -103,11 +111,15 @@ endfunction()
 
 function(add_binding_to_solution bindingLanguage)
     set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
-    set_target_properties(${bindingLanguage}_static PROPERTIES FOLDER "Bindings")
 endfunction()
     
 function(add_sample_to_solution sampleName)
   set_target_properties(${sampleName} PROPERTIES FOLDER "Samples")
+  if(DEFINED ${dependency_install_prefix})
+    set_target_properties(${sampleName} PROPERTIES
+      BUILD_WITH_INSTALL_RPATH TRUE
+    )
+  endif()
 endfunction()
 
 

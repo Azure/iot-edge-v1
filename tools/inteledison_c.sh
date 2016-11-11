@@ -8,6 +8,8 @@
 toolchain_root="/opt/poky-edison"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 
+dependency_install_prefix=
+
 cd $build_root
 
 # -----------------------------------------------------------------------------
@@ -103,11 +105,12 @@ EOM
 # -- Build the SDK
 # -----------------------------------------------------------------------------
 echo ---------- Building the SDK samples ----------
+dependency_install_prefix="-Ddependency_install_prefix=$build_root/install-deps"
 cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -DCMAKE_TOOLCHAIN_FILE=$FILE -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Dskip_unittests:BOOL=ON -Drun_valgrind:BOOL=OFF "$build_root"
+cmake $dependency_install_prefix -DCMAKE_TOOLCHAIN_FILE=$FILE -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Dskip_unittests:BOOL=ON -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)

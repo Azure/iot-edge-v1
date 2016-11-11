@@ -1,7 +1,10 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
+if(POLICY CMP0054)
+    cmake_policy(SET CMP0054 OLD)
+endif()
 cmake_policy(SET CMP0022 NEW)
 
 add_subdirectory(deps)

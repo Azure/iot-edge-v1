@@ -6,6 +6,8 @@
 toolchain_root="/opt/windriver/wrlinux/7.0-intel-baytrail-64"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 
+dependency_install_prefix=
+
 cd $build_root
 
 usage ()
@@ -13,6 +15,7 @@ usage ()
     echo "windriver_linux_c.sh [options]"
     echo "options"
     echo " --toolchain              set the toolchain directory location"
+    echo " --install-dependencies-in-tree       tells cmake to install all dependencies within the repo "
     exit 1
 }
 
@@ -31,6 +34,7 @@ process_args ()
       else
           case "$arg" in
               "--toolchain" ) save_next_arg=1;;
+              "--install-dependencies-in-tree" ) dependency_install_prefix="-Ddependency_install_prefix=$build_root/install-deps";;
               * ) usage;;
           esac
       fi
@@ -106,7 +110,7 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -DCMAKE_BUILD_TYPE=Debug -Dskip_unittests:BOOL=ON -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cmake $dependency_install_prefix -DCMAKE_BUILD_TYPE=Debug -Dskip_unittests:BOOL=ON -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)

@@ -1,7 +1,9 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
+
+include("dependencies.cmake")
 
 #Disable Valgrind just for Gateway E2E test, since they are having problems with Open SSL and Valgrind.
 set(run_valgrind OFF)
@@ -34,6 +36,12 @@ include_directories(${IOTHUB_SERVICE_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 
 build_test_artifacts(${theseTestsName} ON)
+if(DEFINED ${dependency_install_prefix})
+    set_target_properties(
+        ${theseTestsName}_exe PROPERTIES
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+endif()
 
 if(WIN32)
     if(TARGET ${theseTestsName}_dll)

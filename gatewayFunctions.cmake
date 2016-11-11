@@ -31,6 +31,9 @@ function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDi
         foreach(arg ${ARGN})
             set(CMD ${CMD} ${arg})
         endforeach()
+        if(DEFINED ${dependency_install_prefix})
+            set(CMD ${CMD} -DCMAKE_INSTALL_PREFIX=${dependency_install_prefix})
+        endif()
         set(CMD ${CMD} ../)
 
         file(MAKE_DIRECTORY ${cmakeRootDirectory}/build)
@@ -62,7 +65,7 @@ endfunction()
 function(findAndInstall libraryName submoduleRootDirectory cmakeRootDirectory)
 
     if(NOT ${libraryName}_FOUND)
-        find_package(${libraryName} QUIET CONFIG)
+        find_package(${libraryName} QUIET CONFIG HINTS ${dependency_install_prefix})
         if(NOT ${libraryName}_FOUND)
             message(STATUS "${libraryName} not found...")
             message(STATUS "Building ${libraryName}...")
@@ -86,6 +89,9 @@ function(findAndInstall libraryName submoduleRootDirectory cmakeRootDirectory)
             foreach(arg ${ARGN})
                 set(CMD ${CMD} ${arg})
             endforeach()
+            if(DEFINED ${dependency_install_prefix})
+                set(CMD ${CMD} -DCMAKE_INSTALL_PREFIX=${dependency_install_prefix})
+            endif()
             set(CMD ${CMD} ../)
 
             file(MAKE_DIRECTORY ${cmakeRootDirectory}/build)
@@ -112,7 +118,7 @@ function(findAndInstall libraryName submoduleRootDirectory cmakeRootDirectory)
             endif()
 
             #Attempt to find library with the REQUIRED option
-            find_package(${libraryName} REQUIRED CONFIG)
+            find_package(${libraryName} REQUIRED CONFIG HINTS ${dependency_install_prefix})
         endif()
     endif()
 

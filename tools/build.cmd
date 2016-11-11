@@ -25,6 +25,7 @@ set CMAKE_enable_dotnet_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set CMAKE_enable_ble_module=ON
+set dependency_install_prefix=""
 
 :args-loop
 if "%1" equ "" goto args-done
@@ -35,6 +36,7 @@ if "%1" equ "--enable-dotnet-binding" goto arg-enable-dotnet-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
+if "%1" equ "--install-dependencies-in-tree" goto arg-install-dependencies-in-tree
 
 call :usage && exit /b 1
 
@@ -70,6 +72,10 @@ goto args-continue
 
 :arg-enable_nodejs_binding
 set enable_nodejs_binding=ON
+goto args-continue
+
+:arg-install-dependencies-in-tree
+set dependency_install_prefix="-Ddependency_install_prefix=%build-root%\install-deps"
 goto args-continue
 
 :args-continue
@@ -113,11 +119,11 @@ rem no error checking
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
+        cmake %dependency_install_prefix% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
+        cmake %dependency_install_prefix% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
@@ -137,12 +143,13 @@ rem ----------------------------------------------------------------------------
 :usage
 echo build.cmd [options]
 echo options:
-echo  --config ^<value^>         [Debug] build configuration (e.g. Debug, Release)
-echo  --platform ^<value^>       [Win32] build platform (e.g. Win32, x64, ...)
-echo  --run-e2e-tests            run end-to-end tests
-echo  --enable-dotnet-binding    build dotnet binding binaries
-echo  --enable-java-binding      enables building of Java binding; environment variable JAVA_HOME must be defined
-echo  --enable-nodejs-binding    enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined
-echo  --disable-ble-module       disable ble module from the build.
+echo  --config ^<value^>                [Debug] build configuration (e.g. Debug, Release)
+echo  --platform ^<value^>              [Win32] build platform (e.g. Win32, x64, ...)
+echo  --run-e2e-tests                   run end-to-end tests
+echo  --enable-dotnet-binding           build dotnet binding binaries
+echo  --enable-java-binding             enables building of Java binding; environment variable JAVA_HOME must be defined
+echo  --enable-nodejs-binding           enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined
+echo  --disable-ble-module              disable ble module from the build.
+echo  --install-dependencies-in-tree    tells cmake to install all dependencies within the repo 
 goto :eof
 
