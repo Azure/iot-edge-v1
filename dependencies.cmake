@@ -81,3 +81,17 @@ else()
             IMPORTED_LOCATION "${NANOMSG_LIBRARY_DIRS}/lib${NANOMSG_LIBRARIES}.so"
         )
 endif()
+
+###############################################################################
+#############################Init Parson Submodule#############################
+###############################################################################
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/parson/parson.c)
+    execute_process(
+        COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/parson
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        RESULT_VARIABLE res   
+    )
+    if(${res})
+        message(FATAL_ERROR "Error pulling parson submodule: ${res}")
+    endif()
+endif()
