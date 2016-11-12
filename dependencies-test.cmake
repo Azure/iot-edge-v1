@@ -6,14 +6,14 @@ include("gatewayFunctions.cmake")
 ###############################################################################
 ############################Find/Install/Build ctest###########################
 ###############################################################################
-findAndInstall(ctest ${PROJECT_SOURCE_DIR}/deps/ctest ${PROJECT_SOURCE_DIR}/deps/ctest)
+findAndInstall(ctest ${PROJECT_SOURCE_DIR}/deps/ctest ${PROJECT_SOURCE_DIR}/deps/ctest -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 #########################Find/Install/Build testrunner#########################
 ###############################################################################
-findAndInstall(testrunnerswitcher ${PROJECT_SOURCE_DIR}/deps/testrunner ${PROJECT_SOURCE_DIR}/deps/testrunner)
+findAndInstall(testrunnerswitcher ${PROJECT_SOURCE_DIR}/deps/testrunner ${PROJECT_SOURCE_DIR}/deps/testrunner -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 ###########################Find/Install/Build umock############################
 ###############################################################################
-findAndInstall(umock_c ${PROJECT_SOURCE_DIR}/deps/umock-c ${PROJECT_SOURCE_DIR}/deps/umock-c -Duse_installed_dependencies=ON -Dskip_unittests=ON)
+findAndInstall(umock_c ${PROJECT_SOURCE_DIR}/deps/umock-c ${PROJECT_SOURCE_DIR}/deps/umock-c -Duse_installed_dependencies=ON -Dskip_unittests=ON -G "${CMAKE_GENERATOR}")
