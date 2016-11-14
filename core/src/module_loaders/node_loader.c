@@ -126,7 +126,6 @@ static const MODULE_API* NodeModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE mod
     return result;
 }
 
-
 static void NodeModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
     if (moduleLibraryHandle != NULL)
@@ -261,7 +260,7 @@ static void NodeModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION*
     }
 }
 
-void* NodeModuleLoader_BuildModuleConfiguration(
+static void* NodeModuleLoader_BuildModuleConfiguration(
     const MODULE_LOADER* loader,
     const void* entrypoint,
     const void* module_configuration
@@ -325,7 +324,7 @@ void* NodeModuleLoader_BuildModuleConfiguration(
     return result;
 }
 
-void NodeModuleLoader_FreeModuleConfiguration(const void* module_configuration)
+static void NodeModuleLoader_FreeModuleConfiguration(const void* module_configuration)
 {
     if (module_configuration == NULL)
     {
