@@ -60,12 +60,12 @@ endmacro (nn_check_lib)
 
 set(gateway_c_sources
     ./src/message.c
-    ./src/dynamic_loader.c
     ./src/internal/event_system.c
     ./src/gateway_internal.c
     ./src/gateway.c
     ./src/gateway_createfromjson.c
     ./src/broker.c
+    ./src/module_loader.c
     ${dynamic_library_c_file}
 )
 
@@ -78,10 +78,64 @@ set(gateway_h_sources
     ./inc/experimental/event_system.h
     ./inc/gateway.h
     ./inc/module_loader.h
-    ./inc/dynamic_loader.h
     ./inc/dynamic_library.h
     ./src/gateway_internal.h
 )
+
+# Add the module loaders
+set(gateway_c_sources
+    ${gateway_c_sources}
+    ./src/module_loaders/dynamic_loader.c
+)
+set(gateway_h_sources
+    ${gateway_h_sources}
+    ./inc/module_loaders/dynamic_loader.h
+)
+
+if(${enable_dotnet_binding})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ./src/module_loaders/dotnet_loader.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ./inc/module_loaders/dotnet_loader.h
+    )
+    # This symbol needs to be defined to cause this module loader to be
+    # available for the gateway.
+    add_definitions(-DDOTNET_BINDING_ENABLED)
+    include_directories(../bindings/dotnet/inc)
+endif()
+
+if(${enable_java_binding})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ./src/module_loaders/java_loader.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ./inc/module_loaders/java_loader.h
+    )
+    # This symbol needs to be defined to cause this module loader to be
+    # available for the gateway.
+    add_definitions(-DJAVA_BINDING_ENABLED)
+    include_directories(../bindings/java/inc)
+endif()
+
+if(${enable_nodejs_binding})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ./src/module_loaders/node_loader.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ./inc/module_loaders/node_loader.h
+    )
+    # This symbol needs to be defined to cause this module loader to be
+    # available for the gateway.
+    add_definitions(-DNODE_BINDING_ENABLED)
+    include_directories(../bindings/nodejs/inc)
+endif()
 
 include_directories(./inc)
 
@@ -90,7 +144,7 @@ add_library(gateway
     ${gateway_h_sources}
 )
 
-if(WIN32)    
+if(WIN32)
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
 else()
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
@@ -119,20 +173,20 @@ endif()
 #############################################################
 
 #installs the gateway libs and headers
-if (CMAKE_INSTALL_LIBDIR) 
-    set (LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}") 
-else () 
-    set (LIB_INSTALL_DIR "lib") 
-endif () 
+if (CMAKE_INSTALL_LIBDIR)
+    set (LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
+else ()
+    set (LIB_INSTALL_DIR "lib")
+endif ()
 
 # (re)set the include and lib dirs for the install based on platform
 if(WIN32)
     set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
-    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE INTERNAL "Library install dir") 
+    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE INTERNAL "Library install dir")
     set(package_location "cmake")
 else()
     set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}")
-    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}/${VERSION_PREFIX}" CACHE INTERNAL "Library install dir") 
+    set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}/${VERSION_PREFIX}" CACHE INTERNAL "Library install dir")
     set(package_location "${LIB_INSTALL_DIR}/cmake")
 endif()
 
