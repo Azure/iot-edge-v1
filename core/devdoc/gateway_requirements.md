@@ -109,7 +109,11 @@ Gateway_Create creates a new gateway using information from the `GATEWAY_PROPERT
 
 **SRS_GATEWAY_14_001: [** This function shall create a `GATEWAY_HANDLE` representing the newly created gateway. **]**
 
-**SRS_GATEWAY_14_002: [** This function shall return `NULL` upon any memory allocation failure. **]**
+**SRS_GATEWAY_14_002: [** This function shall return `NULL` upon any failure. **]**
+
+**SRS_GATEWAY_17_016: [** This function shall initialize the default module loaders. **]**
+
+**SRS_GATEWAY_17_017: [** This function shall destroy the default module loaders upon any failure. **]**
 
 **SRS_GATEWAY_14_003: [** This function shall create a new `BROKER_HANDLE` for the gateway representing this gateway's message broker. **]**
 
@@ -125,10 +129,13 @@ Gateway_Create creates a new gateway using information from the `GATEWAY_PROPERT
 
 **SRS_GATEWAY_14_035: [** This function shall destroy the previously created `BROKER_HANDLE` and free the `GATEWAY_HANDLE` if the `VECTOR_HANDLE` cannot be created. **]**
 
-**SRS_GATEWAY_17_015: [** The function shall use `GATEWAY_PROPERTIES::loader_api->Load` and each `GATEWAY_PROPERTIES::loader_configuration` to get each module's MODULE_LIBRARY_HANDLE. **]**
+**SRS_GATEWAY_17_015: [** The function shall use the module's specified loader and the module's entrypoint to get each module's `MODULE_LIBRARY_HANDLE`. **]**
+
+**SRS_GATEWAY_17_018: [** The function shall construct module configuration from module's `entrypoint` and module's `module_configuration`. **]**
+
+**SRS_GATEWAY_17_020: [** The function shall clean up any constructed resources. **]**
 
 **SRS_GATEWAY_14_009: [** The function shall use each of `GATEWAY_PROPERTIES`'s `gateway_modules` to create and add a module to the gateway's message broker. **]**
-
 
 **SRS_GATEWAY_14_036: [** If any `MODULE_HANDLE` is unable to be created from a `GATEWAY_MODULES_ENTRY` the `GATEWAY_HANDLE` will be destroyed. **]**
 
@@ -179,6 +186,8 @@ Gateway_Destroy destroys a gateway represented by the `gw` parameter.
 
 **SRS_GATEWAY_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 
+**SRS_GATEWAY_17_019: [** The function shall destroy the module loader list. **]**
+
 **SRS_GATEWAY_26_003: [** If the Event System module is initialized, this function shall report `GATEWAY_DESTROYED` event. **]**
 
 **SRS_GATEWAY_26_004: [** This function shall destroy the attached Event System.  **]**
@@ -189,9 +198,13 @@ extern MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_PROPERTI
 ```
 Gateway_AddModule adds a module to the gateway's message broker using the provided `GATEWAY_PROPERTIES_ENTRY`'s `loader_configuration`, `loader_api` and `module_configuration`.
 
-**SRS_GATEWAY_14_011: [** If `gw`, `entry`, or `GATEWAY_MODULES_ENTRY`'s `loader_configuration` or `loader_api` is `NULL` the function shall return `NULL`. **]**
+**SRS_GATEWAY_14_011: [** If `gw`, `entry`, or `GATEWAY_MODULES_ENTRY`'s specified loader or entrypoint is `NULL` the function shall return `NULL`. **]**
 
-**SRS_GATEWAY_14_012: [** The function shall load the module via the `GATEWAY_MODULES_ENTRY`'s `loader_configuration` into a `MODULE_LIBRARY_HANDLE`. **]**
+**SRS_GATEWAY_14_012: [** The function shall load the module via the module's specified loader and the module's entrypoint to get each module's `MODULE_LIBRARY_HANDLE`. **]**
+
+**SRS_GATEWAY_17_021: [** The function shall construct module configuration from module's `entrypoint` and module's `module_configuration`. **]**
+
+**SRS_GATEWAY_17_022: [** The function shall clean up any constructed resources. **]**
 
 **SRS_GATEWAY_14_031: [** If unsuccessful, the function shall return `NULL`. **]**
 

@@ -265,7 +265,7 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
             }
         }
     }
-    /*Codes_SRS_GATEWAY_14_002: [This function shall return NULL upon any memory allocation failure.]*/
+    /*Codes_SRS_GATEWAY_14_002: [This function shall return NULL upon any  failure.]*/
     else
     {
         LogError("Gateway_Create(): malloc failed.");
@@ -349,7 +349,8 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
         module_entry == NULL ||
         module_entry->module_name == NULL ||
         module_entry->module_loader_info.loader == NULL ||
-        module_entry->module_loader_info.entrypoint == NULL
+        module_entry->module_loader_info.entrypoint == NULL ||
+		module_entry->module_loader_info.loader->api == NULL
        )
     {
         module_result = NULL;
@@ -357,8 +358,8 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
             "Failed to add module because a required input parameter is NULL. gw = %p, module_name = '%s', loader = %p, entrypoint = %p.",
             gateway_handle,
             module_entry != NULL ? module_entry->module_name : "NULL",
-            module_entry != NULL ? module_entry->module_loader_info.loader : "NULL",
-            module_entry != NULL ? module_entry->module_loader_info.entrypoint : "NULL"
+            module_entry != NULL ? module_entry->module_loader_info.loader : NULL,
+            module_entry != NULL ? module_entry->module_loader_info.entrypoint : NULL
         );
     }
     else if (strcmp(module_entry->module_name, GATEWAY_ALL) == 0)
@@ -384,7 +385,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
             else
             {
                 /*Codes_SRS_GATEWAY_14_012: [The function shall load the module located at GATEWAY_MODULES_ENTRY's module_path into a MODULE_LIBRARY_HANDLE. ]*/
-                /*Codes_SRS_GATEWAY_17_015: [ The function shall use GATEWAY_PROPERTIES::loader_api->Load and each GATEWAY_PROPERTIES::loader_configuration to get each module's MODULE_LIBRARY_HANDLE. ]*/
+                /*Codes_SRS_GATEWAY_17_015: [ The function shall use the module's specified loader and the module's entrypoint to get each module's MODULE_LIBRARY_HANDLE. ]*/
                 MODULE_LIBRARY_HANDLE module_library_handle = module_entry->module_loader_info.loader->api->Load(
                     module_entry->module_loader_info.loader,
                     module_entry->module_loader_info.entrypoint
@@ -405,30 +406,35 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
 
                     // parse module args if needed
                     const void* module_configuration = module_entry->module_configuration;
-                    const void* transformed_module_configuration = module_configuration;
+                    const void* transformed_module_configuration;
                     if (use_json)
                     {
                         module_configuration = MODULE_PARSE_CONFIGURATION_FROM_JSON(module_apis)(
                             (const char *)(module_entry->module_configuration)
                         );
+					}
 
-                        // request the loader to transform the module configuration to what the module expects
-                        transformed_module_configuration = module_entry->module_loader_info.loader->api->BuildModuleConfiguration(
-                            module_entry->module_loader_info.loader,
-                            module_entry->module_loader_info.entrypoint,
-                            module_configuration
-                        );
-                    }
+                    // request the loader to transform the module configuration to what the module expects
+                    /*Codes_SRS_GATEWAY_17_018: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/
+                    /*Codes_SRS_GATEWAY_17_021: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/
+                    /*Codes_SRS_GATEWAY_JSON_17_011: [ The function shall the loader's BuildModuleConfiguration to construct module input from module's "args" and "loader.entrypoint". ]*/
+                    transformed_module_configuration = module_entry->module_loader_info.loader->api->BuildModuleConfiguration(
+                        module_entry->module_loader_info.loader,
+                        module_entry->module_loader_info.entrypoint,
+                        module_configuration
+                    );
 
                     /*Codes_SRS_GATEWAY_14_015: [The function shall use the MODULE_API to create a MODULE_HANDLE using the GATEWAY_MODULES_ENTRY's module_configuration. ]*/
                     MODULE_HANDLE module_handle = MODULE_CREATE(module_apis)(gateway_handle->broker, transformed_module_configuration);
 
                     // free the configurations
+                    /*Codes_SRS_GATEWAY_17_020: [ The function shall clean up any constructed resources. ]*/
+                    /*Codes_SRS_GATEWAY_17_022: [ The function shall clean up any constructed resources. ]*/
                     if (use_json)
                     {
                         MODULE_FREE_CONFIGURATION(module_apis)((void*)module_configuration);
-                        module_entry->module_loader_info.loader->api->FreeModuleConfiguration(transformed_module_configuration);
                     }
+					module_entry->module_loader_info.loader->api->FreeModuleConfiguration(transformed_module_configuration);
 
                     /*Codes_SRS_GATEWAY_14_016: [If the module creation is unsuccessful, the function shall return NULL.]*/
                     if (module_handle == NULL)

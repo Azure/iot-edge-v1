@@ -40,69 +40,83 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 
     if (file_path != NULL)
     {
-        JSON_Value *root_value;
+        /*Codes_SRS_GATEWAY_JSON_17_005: [ The function shall initialize the default module loader list. ]*/
+		if (ModuleLoader_Initialize() != MODULE_LOADER_SUCCESS)
+		{
+            /*Codes_SRS_GATEWAY_JSON_17_012: [ This function shall return NULL if the module list is not initialized. ]*/
+			LogError("ModuleLoader_Initialize failed");
+			gw = NULL;
+		}
+		else
+		{
+			JSON_Value *root_value;
 
-        /*Codes_SRS_GATEWAY_JSON_14_002: [The function shall use parson to read the file and parse the JSON string to a parson JSON_Value structure.]*/
-        root_value = json_parse_file(file_path);
-        if (root_value != NULL)
-        {
-            /*Codes_SRS_GATEWAY_JSON_14_004: [The function shall traverse the JSON_Value object to initialize a GATEWAY_PROPERTIES instance.]*/
-            GATEWAY_PROPERTIES *properties = (GATEWAY_PROPERTIES*)malloc(sizeof(GATEWAY_PROPERTIES));
+			/*Codes_SRS_GATEWAY_JSON_14_002: [The function shall use parson to read the file and parse the JSON string to a parson JSON_Value structure.]*/
+			root_value = json_parse_file(file_path);
+			if (root_value != NULL)
+			{
+				/*Codes_SRS_GATEWAY_JSON_14_004: [The function shall traverse the JSON_Value object to initialize a GATEWAY_PROPERTIES instance.]*/
+				GATEWAY_PROPERTIES *properties = (GATEWAY_PROPERTIES*)malloc(sizeof(GATEWAY_PROPERTIES));
 
-            if (properties != NULL)
-            {
-                properties->gateway_modules = NULL;
-                properties->gateway_links = NULL;
-                if (parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS)
-                {
-                    /*Codes_SRS_GATEWAY_JSON_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
-                    /*Codes_SRS_GATEWAY_JSON_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
-                    gw = gateway_create_internal(properties, true);
+				if (properties != NULL)
+				{
+					properties->gateway_modules = NULL;
+					properties->gateway_links = NULL;
+					if (parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS)
+					{
+						/*Codes_SRS_GATEWAY_JSON_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
+						/*Codes_SRS_GATEWAY_JSON_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
+						gw = gateway_create_internal(properties, true);
 
-                    if (gw == NULL)
-                    {
-                        LogError("Failed to create gateway using lower level library.");
-                    }
-                    else
-                    {
-                        /*Codes_SRS_GATEWAY_JSON_17_001: [ Upon successful creation, this function shall start the gateway. ]*/
-                        GATEWAY_START_RESULT start_result;
-                        start_result = Gateway_Start(gw);
-                        if (start_result != GATEWAY_START_SUCCESS)
-                        {
-                            /*Codes_SRS_GATEWAY_JSON_17_002: [ This function shall return NULL if starting the gateway fails. ]*/
-                            LogError("failed to start gateway");
-                            gateway_destroy_internal(gw);
-                            gw = NULL;
-                        }
-                    }
-                }
-                /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
-                else
-                {
-                    gw = NULL;
-                    LogError("Failed to create properties structure from JSON configuration.");
-                }
-                destroy_properties_internal(properties);
-                free(properties);
-            }
-            /*Codes_SRS_GATEWAY_JSON_14_008: [This function shall return NULL upon any memory allocation failure.]*/
-            else
-            {
-                gw = NULL;
-                LogError("Failed to allocate GATEWAY_PROPERTIES.");
-            }
+						if (gw == NULL)
+						{
+							LogError("Failed to create gateway using lower level library.");
+						}
+						else
+						{
+							/*Codes_SRS_GATEWAY_JSON_17_001: [ Upon successful creation, this function shall start the gateway. ]*/
+							GATEWAY_START_RESULT start_result;
+							start_result = Gateway_Start(gw);
+							if (start_result != GATEWAY_START_SUCCESS)
+							{
+								/*Codes_SRS_GATEWAY_JSON_17_002: [ This function shall return NULL if starting the gateway fails. ]*/
+								LogError("failed to start gateway");
+								gateway_destroy_internal(gw);
+								gw = NULL;
+							}
+						}
+					}
+					/*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
+					else
+					{
+						gw = NULL;
+						LogError("Failed to create properties structure from JSON configuration.");
+					}
+					destroy_properties_internal(properties);
+					free(properties);
+				}
+				/*Codes_SRS_GATEWAY_JSON_14_008: [This function shall return NULL upon any memory allocation failure.]*/
+				else
+				{
+					gw = NULL;
+					LogError("Failed to allocate GATEWAY_PROPERTIES.");
+				}
 
-            json_value_free(root_value);
-        }
-        else
-        {
-            /*Codes_SRS_GATEWAY_JSON_14_003: [The function shall return NULL if the file contents could not be read and / or parsed to a JSON_Value.]*/
-            gw = NULL;
-            LogError("Input file [%s] could not be read.", file_path);
-        }
-    }
-    /*Codes_SRS_GATEWAY_JSON_14_001: [If file_path is NULL the function shall return NULL.]*/
+				json_value_free(root_value);
+			}
+			else
+			{
+				/*Codes_SRS_GATEWAY_JSON_14_003: [The function shall return NULL if the file contents could not be read and / or parsed to a JSON_Value.]*/
+				gw = NULL;
+				LogError("Input file [%s] could not be read.", file_path);
+			}
+			if (gw == NULL)
+			{
+                /*Codes_SRS_GATEWAY_JSON_17_006: [ Upon failure this function shall destroy the module loader list. ]*/
+				ModuleLoader_Destroy();
+			}
+		}
+	}    /*Codes_SRS_GATEWAY_JSON_14_001: [If file_path is NULL the function shall return NULL.]*/
     else
     {
         gw = NULL;
@@ -140,18 +154,22 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
     PARSE_JSON_RESULT result;
 
     // get loader name
+    /*Codes_SRS_GATEWAY_JSON_17_013: [ The function shall parse each modules object for "loader.name" and "loader.entrypoint". ]*/
     const char* loader_name = json_object_get_string(loader_json, LOADER_NAME_KEY);
     if (loader_name == NULL || strlen(loader_name) == 0)
     {
+        /*Codes_SRS_GATEWAY_JSON_17_010: [ If the module's loader is not found by name, the the function shall fail and return NULL. ]*/
         LogError("Loader JSON does not have a valid 'name' attribute.");
         result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
     }
     else
     {
         // locate the loader
+        /*Codes_SRS_GATEWAY_JSON_17_014: [ The function shall find the correct loader by "loader.name". ]*/
         const MODULE_LOADER* loader = ModuleLoader_FindByName(loader_name);
         if (loader == NULL)
         {
+            /*Codes_SRS_GATEWAY_JSON_17_010: [ If the module's loader is not found by name, the the function shall fail and return NULL. ]*/
             LogError("Loader JSON has a non-existent loader 'name' specified - %s.", loader_name);
             result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
         }
@@ -188,8 +206,10 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
     if (json_document != NULL)
     {
         // initialize the module loader configuration
-        JSON_Value *loaders = json_object_get_value(json_document, LOADERS_KEY);
-        if (loaders != NULL && ModuleLoader_InitializeFromJson(loaders) == MODULE_LOADER_SUCCESS)
+        /*Codes_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array and initialize new module loaders or update the existing default loaders. ]*/
+		// "loaders" is not required in gateway JSON
+		JSON_Value *loaders = json_object_get_value(json_document, LOADERS_KEY);
+        if (loaders == NULL || ModuleLoader_InitializeFromJson(loaders) == MODULE_LOADER_SUCCESS)
         {
             JSON_Array *modules_array = json_object_get_array(json_document, MODULES_KEY);
             JSON_Array *links_array = json_object_get_array(json_document, LINKS_KEY);
@@ -199,13 +219,16 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                 out_properties->gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
                 if (out_properties->gateway_modules != NULL)
                 {
+                    /*Codes_SRS_GATEWAY_JSON_17_008: [ The function shall parse the "modules" JSON array for each module entry. ]*/
                     JSON_Object *module;
                     size_t module_count = json_array_get_count(modules_array);
+					result = PARSE_JSON_SUCCESS;
+
                     for (size_t module_index = 0; module_index < module_count; ++module_index)
                     {
                         module = json_array_get_object(modules_array, module_index);
 
-                        /*Codes_SRS_GATEWAY_JSON_17_005: [ The function shall parse the "loading args" for "module path" and fill a DYNAMIC_LOADER_ENTRYPOINT structure with the module path information. ]*/
+                        /*Codes_SRS_GATEWAY_JSON_17_009: [ For each module, the function shall call the loader's ParseEntrypointFromJson function to parse the entrypoint JSON. ]*/
                         JSON_Object* loader_args = json_object_get_object(module, LOADER_KEY);
                         GATEWAY_MODULE_LOADER_INFO loader_info;
                         if (parse_loader(loader_args, &loader_info) != PARSE_JSON_SUCCESS)
@@ -220,7 +243,6 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                             if (module_name != NULL)
                             {
                                 /*Codes_SRS_GATEWAY_JSON_14_005: [The function shall set the value of const void* module_properties in the GATEWAY_PROPERTIES instance to a char* representing the serialized args value for the particular module.]*/
-                                /*Codes_SRS_GATEWAY_JSON_17_003: [ The function shall set the value of const void * loader_configuration in the GATEWAY_PROPERTIES instance to a pointer of the module's DYNAMIC_LOADER_ENTRYPOINT structure. ]*/
                                 JSON_Value *args = json_object_get_value(module, ARG_KEY);
                                 char* args_str = json_serialize_to_string(args);
 
