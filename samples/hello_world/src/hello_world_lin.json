@@ -2,17 +2,23 @@
     "modules" :
     [
         {
-            "module name" : "logger",
-            "loading args": {
-                "module path" : "./modules/logger/liblogger.so"
-            },
-            "args" : {"filename":"log.txt"}
+          "name" : "logger",
+          "loader": {
+            "name": "native",
+            "entrypoint": {
+              "module.path": "./modules/logger/liblogger.so"
+            }
+          },
+          "args" : {"filename":"log.txt"}
         },
         {
-            "module name" : "hello_world",
-            "loading args": {
-                "module path" : "./modules/hello_world/libhello_world.so"
-            },
+            "name" : "hello_world",
+          "loader": {
+            "name": "native",
+            "entrypoint": {
+              "module.path": "./modules/hello_world/libhello_world.so"
+            }
+          },
             "args" : null
         }
     ],

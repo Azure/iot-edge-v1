@@ -89,9 +89,14 @@ MODULE_HANDLE BLEPrinter_Create(BROKER_HANDLE broker, const void* configuration)
     return (MODULE_HANDLE)0x42;
 }
 
-MODULE_HANDLE BLEPrinter_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+void* BLEPrinter_ParseConfigurationFromJson(const char* configuration)
 {
-    return BLEPrinter_Create(broker, NULL);
+    return NULL;
+}
+
+void BLEPrinter_FreeConfiguration(void * configuration)
+{
+    return;
 }
 
 void BLEPrinter_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
@@ -161,7 +166,8 @@ static const MODULE_API_1 Module_GetApi_Impl =
 {
     {MODULE_API_VERSION_1},
 
-    BLEPrinter_CreateFromJson,
+    BLEPrinter_ParseConfigurationFromJson,
+    BLEPrinter_FreeConfiguration,
     BLEPrinter_Create,
     BLEPrinter_Destroy,
     BLEPrinter_Receive

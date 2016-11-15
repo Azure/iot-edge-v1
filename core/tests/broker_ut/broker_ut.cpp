@@ -145,6 +145,7 @@ static MODULE_API_1 fake_module_apis =
 {
     { MODULE_API_VERSION_1 },
     NULL,
+	NULL,
     FakeModule_Create,
     FakeModule_Destroy,
     FakeModule_Receive,

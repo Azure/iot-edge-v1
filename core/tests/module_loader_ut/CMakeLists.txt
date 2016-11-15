@@ -22,7 +22,4 @@ set(${theseTestsName}_h_files
 
 include_directories(${GW_INC})
 
-# Enable all bindings since we are going to use mocks.
-add_definitions(-DNODE_BINDING_ENABLED -DJAVA_BINDING_ENABLED -DDOTNET_BINDING_ENABLED)
-
 build_c_test_artifacts(${theseTestsName} ON "tests/UnitTests")

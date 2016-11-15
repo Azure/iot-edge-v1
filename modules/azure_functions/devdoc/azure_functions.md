@@ -39,60 +39,64 @@ The following functions are the implementation of those APIs.
 
 **SRS_AZUREFUNCTIONS_04_020: [** `Module_GetApi` shall return the `MODULE_API` structure. **]**
 
-## AzureFunctions_CreateFromJson
+## AzureFunctions_ParseConfigurationFromJson
 ```C
-MODULE_HANDLE AzureFunctions_CreateFromJson(BROKER_HANDLE broker, const void* configuration);
+void* AzureFunctions_ParseConfigurationFromJson(const void* configuration);
 ```
-This function creates the Azure Functions module. This function expects a 
-string representing a JSON object with two values--hostAddress and relativePath
---which together form the URL to an Azure Function.
-
-**SRS_AZUREFUNCTIONS_05_002: [** If `broker` is NULL then
- `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+This function creates the configuration data for the Azure Functions module.
+This function expects a string representing a JSON object with two 
+values--hostAddress and relativePath--which together form the URL to an Azure 
+Function.
 
 **SRS_AZUREFUNCTIONS_05_003: [** If `configuration` is NULL then
- `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+ `AzureFunctions_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_AZUREFUNCTIONS_05_004: [** If `configuration` is not a JSON string, then `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+**SRS_AZUREFUNCTIONS_05_004: [** If `configuration` is not a JSON string, then `AzureFunctions_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_AZUREFUNCTIONS_05_005: [** `AzureFunctions_CreateFromJson` shall parse the 
+**SRS_AZUREFUNCTIONS_05_005: [** `AzureFunctions_ParseConfigurationFromJson` shall parse the 
 `configuration` as a JSON array of strings. **]**
 
 **SRS_AZUREFUNCTIONS_05_006: [** If the array object does not contain a value 
-named "hostAddress" then `AzureFunctions_CreateFromJson` shall fail and return 
+named "hostAddress" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return 
 NULL. **]**
 
 **SRS_AZUREFUNCTIONS_05_007: [** If the array object does not contain a value 
-named "relativePath" then `AzureFunctions_CreateFromJson` shall fail and return 
+named "relativePath" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return 
 NULL. **]**
 
 **SRS_AZUREFUNCTIONS_05_019: [** If the array object contains a value named 
-"key" then `AzureFunctions_CreateFromJson` shall create a securityKey based on 
+"key" then `AzureFunctions_ParseConfigurationFromJson` shall create a securityKey based on 
 input key **]**
 
-**SRS_AZUREFUNCTIONS_05_008: [** `AzureFunctions_CreateFromJson` shall call 
+**SRS_AZUREFUNCTIONS_05_008: [** `AzureFunctions_ParseConfigurationFromJson` shall call 
 STRING_construct to create hostAddress based on input host address. **]**
 
-**SRS_AZUREFUNCTIONS_05_009: [** `AzureFunctions_CreateFromJson` shall call 
+**SRS_AZUREFUNCTIONS_05_009: [** `AzureFunctions_ParseConfigurationFromJson` shall call 
 STRING_construct to create relativePath based on input host address. **]**
 
 **SRS_AZUREFUNCTIONS_05_010: [** If creating the strings fails, then 
-`AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
+`AzureFunctions_ParseConfigurationFromJson` shall fail and return NULL. **]**
+
+**SRS_AZUREFUNCTIONS_17_001: [** `AzureFunctions_ParseConfigurationFromJson` shall allocate an `AZURE_FUNCTIONS_CONFIG` structure. **]**
+
+**SRS_AZUREFUNCTIONS_17_002: [** `AzureFunctions_ParseConfigurationFromJson` shall fill the structure with the constructed strings and return it upon success. **]**
+
+**SRS_AZUREFUNCTIONS_17_003: [** `AzureFunctions_ParseConfigurationFromJson` shall return `NULL` on failure. **]**
 
 
-**SRS_AZUREFUNCTIONS_05_011: [** `AzureFunctions_CreateFromJson` shall invoke 
-Azure Functions module's create, passing in the message broker handle and the `Azure_Functions_CONFIG`. 
-**]**
-
-**SRS_AZUREFUNCTIONS_05_012: [** When the lower layer Azure Functions module 
-create succeeds, `AzureFunctions_CreateFromJson` shall succeed and return a 
-non-NULL value. **]**
-
-**SRS_AZUREFUNCTIONS_05_013: [** If the lower layer Azure Functions module create 
-fails, `AzureFunctions_CreateFromJson` shall fail and return NULL. **]**
-
-**SRS_AZUREFUNCTIONS_05_014: [** `AzureFunctions_CreateFromJson` shall release 
+**SRS_AZUREFUNCTIONS_05_014: [** `AzureFunctions_ParseConfigurationFromJson` shall release 
 all data it allocated. **]**
+
+## AzureFunctions_FreeConfiguration
+```c
+static void AzureFunctions_FreeConfiguration(void * configuration)
+```
+
+Thsi function releases any resources allocated by `AzureFunctions_ParseConfigurationFromJson`.
+
+**SRS_AZUREFUNCTIONS_17_004: [** `AzureFunctions_FreeConfiguration` shall do nothing if `configuration` is `NULL`. **]**
+
+**SRS_AZUREFUNCTIONS_17_005: [** `AzureFunctions_FreeConfiguration` shall release all allocated resources if `configuration` is not `NULL`. **]**
 
 ## AzureFunctions_Create
 ```C

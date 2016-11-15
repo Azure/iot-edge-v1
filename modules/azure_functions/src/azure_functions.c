@@ -141,19 +141,15 @@ static MODULE_HANDLE AzureFunctions_Create(BROKER_HANDLE broker, const void* con
 }
 
 /*
-* @brief    Create an Azure Functions module from a JSON configuration file.
+* @brief    Create an Azure Functions configuration from a JSON configuration file.
 */
-static MODULE_HANDLE AzureFunctions_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void * AzureFunctions_ParseConfigurationFromJson(const char* configuration)
 {
-    MODULE_HANDLE result;
-    if (
-        (broker == NULL) ||
-        (configuration == NULL)
-        )
+    AZURE_FUNCTIONS_CONFIG* result;
+    if (configuration == NULL)
     {
-        /* Codes_SRS_AZUREFUNCTIONS_05_002: [ If broker is NULL then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
         /* Codes_SRS_AZUREFUNCTIONS_05_003: [ If configuration is NULL then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
-        LogError("NULL parameter detected broker=%p configuration=%p", broker, configuration);
+        LogError("NULL parameter detected");
         result = NULL;
     }
     else
@@ -222,26 +218,27 @@ static MODULE_HANDLE AzureFunctions_CreateFromJson(BROKER_HANDLE broker, const c
                             }
                             else
                             {
-                                /* Codes_SRS_AZUREFUNCTIONS_05_011: [ Azure_Functions_CreateFromJson shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
-                                /* Codes_SRS_AZUREFUNCTIONS_05_012: [ When the lower layer Azure Functions module create succeeds, Azure_Functions_CreateFromJson shall succeed and return a non-NULL value. ] */
-                                result = AzureFunctions_Create(broker, &config);
+                                /* Codes_SRS_AZUREFUNCTIONS_17_001: [ AzureFunctions_ParseConfigurationFromJson shall allocate an AZURE_FUNCTIONS_CONFIG structure. ]*/
+								result = malloc(sizeof(AZURE_FUNCTIONS_CONFIG));
+								if (result == NULL)
+								{
+                                    /*Codes_SRS_AZUREFUNCTIONS_17_003: [ AzureFunctions_ParseConfigurationFromJson shall return NULL on failure. ]*/
+									LogError("could not allocate AZURE_FUNCTIONS_CONFIG");
+								}
+								else
+								{
+                                    /*Codes_SRS_AZUREFUNCTIONS_17_002: [ AzureFunctions_ParseConfigurationFromJson shall fill the structure with the constructed strings and return it upon success. ]*/
+									*result = config;
+								}
                             }
                         }
-
-                        if (result == NULL)
-                        {
-                            /* Codes_SRS_AZUREFUNCTIONS_05_013: [ If the lower layer Azure Functions module create fails, Azure_Functions_CreateFromJson shall fail and return NULL. ] */
-                            /*return result "as is" - that is - NULL*/
-                            LogError("unable to create Azure Functions module");
-                        }
-                        else
-                        {
-                            /*return result "as is" - that is - not NULL*/
-                        }
-                        /* Codes_SRS_AZUREFUNCTIONS_05_014: [ Azure_Functions_CreateFromJson shall release all data it allocated. ] */
-                        STRING_delete(config.hostAddress);
-                        STRING_delete(config.relativePath);
-                        STRING_delete(config.securityKey);
+						if (result == NULL)
+						{
+                            /* Codes_SRS_AZUREFUNCTIONS_05_014: [ Azure_Functions_CreateFromJson shall release all data it allocated. ] */
+							STRING_delete(config.hostAddress);
+							STRING_delete(config.relativePath);
+							STRING_delete(config.securityKey);
+						}
                     }
                 }
             }
@@ -253,6 +250,20 @@ static MODULE_HANDLE AzureFunctions_CreateFromJson(BROKER_HANDLE broker, const c
     return result;
 }
 
+static void AzureFunctions_FreeConfiguration(void * configuration)
+{
+    /*Codes_SRS_AZUREFUNCTIONS_17_004: [ AzureFunctions_FreeConfiguration shall do nothing if configuration is NULL. ]*/
+    if (configuration != NULL)
+    {
+        /*Codes_SRS_AZUREFUNCTIONS_17_005: [ AzureFunctions_FreeConfiguration shall release all allocated resources if configuration is not NULL. ]*/
+		AZURE_FUNCTIONS_CONFIG * azure_config = (AZURE_FUNCTIONS_CONFIG*)configuration;
+        STRING_delete(azure_config->hostAddress);
+        STRING_delete(azure_config->relativePath);
+        STRING_delete(azure_config->securityKey);
+        free(configuration);        
+    }
+
+}
 /*
 * @brief    Destroy an identity map module.
 */
@@ -432,7 +443,8 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
 static const MODULE_API_1 AzureFunctions_APIS_all =
 {
     {MODULE_API_VERSION_1},
-    AzureFunctions_CreateFromJson,
+    AzureFunctions_ParseConfigurationFromJson,
+    AzureFunctions_FreeConfiguration,
     AzureFunctions_Create,
     AzureFunctions_Destroy,
     AzureFunctions_Receive,
