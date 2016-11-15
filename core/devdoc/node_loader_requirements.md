@@ -68,7 +68,21 @@ Loads the Node.js binding module into memory.
 
 **SRS_NODE_MODULE_LOADER_13_004: [** `NodeModuleLoader_Load` shall load the binding module library into memory by calling `DynamicLibrary_LoadLibrary`. **]**
 
+**SRS_NODE_MODULE_LOADER_13_032: [** `NodeModuleLoader_Load` shall use the the binding module path given in `loader->configuration->binding_path` if `loader->configuration` is not `NULL`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_033: [** `NodeModuleLoader_Load` shall call `DynamicLibrary_FindSymbol` on the binding module handle with the symbol name `Module_GetApi` to acquire the module's API table. **]**
+
 **SRS_NODE_MODULE_LOADER_13_005: [** `NodeModuleLoader_Load` shall return a non-`NULL` pointer of type `MODULE_LIBRARY_HANDLE` when successful. **]**
+
+**SRS_NODE_MODULE_LOADER_13_034: [** `NodeModuleLoader_Load` shall return `NULL` if `MODULE_API` returned by the binding module is `NULL`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_035: [** `NodeModuleLoader_Load` shall return `NULL` if `MODULE_API::version` is greater than `Module_ApiGatewayVersion`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_036: [** `NodeModuleLoader_Load` shall return `NULL` if the `Module_Create` function in `MODULE_API` is `NULL`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_037: [** `NodeModuleLoader_Load` shall return `NULL` if the `Module_Receive` function in `MODULE_API` is `NULL`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_038: [** `NodeModuleLoader_Load` shall return `NULL` if the `Module_Destroy` function in `MODULE_API` is `NULL`. **]**
 
 NodeModuleLoader_GetModuleApi
 -----------------------------
@@ -194,3 +208,7 @@ const MODULE_LOADER* NodeLoader_Get(void)
 ```
 
 **SRS_NODE_MODULE_LOADER_13_029: [** `NodeLoader_Get` shall return a non-`NULL` pointer to a `MODULE_LOADER` struct. **]**
+
+**SRS_NODE_MODULE_LOADER_13_030: [** `MODULE_LOADER::type` shall be `NODEJS`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_031: [** `MODULE_LOADER::name` shall be the string 'node'. **]**

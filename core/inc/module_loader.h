@@ -219,7 +219,6 @@ MOCKABLE_FUNCTION(, bool, ModuleLoader_IsDefaultLoader, const char*, name);
  *           "type": "dotnet",
  *           "name": "dotnet",
  *           "configuration": {
- *               "gateway.assembly.path": "./bin/gateway.dll",
  *               "binding.path": "./bin/libdotnet_binding.so"
  *           }
  *       }

@@ -20,7 +20,7 @@ extern "C"
 #if WIN32
 #define DOTNET_BINDING_MODULE_NAME    "dotnet.dll"
 #else
-#define DOTNET_BINDING_MODULE_NAME    "libdotnet.so"
+#error Cannot build a .NET language binding module for your platform yet.
 #endif
 
 MOCKABLE_FUNCTION(, const MODULE_LOADER*, DotnetLoader_Get);

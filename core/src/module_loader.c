@@ -104,7 +104,7 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
                     /*Codes_SRS_MODULE_LOADER_13_005: [ ModuleLoader_Initialize shall add the default support module loaders to g_module.module_loaders. ]*/
                     if (add_module_loader(supported_loaders[i]) != MODULE_LOADER_SUCCESS)
                     {
-                        LogError("Could not add loader");
+                        LogError("Could not add loader - %s", supported_loaders[i]->name);
                         break;
                     }
                 }
