@@ -23,6 +23,14 @@ extern "C"
 #error Cannot build a .NET language binding module for your platform yet.
 #endif
 
+/** @brief Structure to load a dotnet module */
+typedef struct DOTNET_LOADER_ENTRYPOINT_TAG
+{
+    STRING_HANDLE dotnetModulePath;
+
+    STRING_HANDLE dotnetModuleEntryClass;
+} DOTNET_LOADER_ENTRYPOINT;
+
 MOCKABLE_FUNCTION(, const MODULE_LOADER*, DotnetLoader_Get);
 
 #ifdef __cplusplus
