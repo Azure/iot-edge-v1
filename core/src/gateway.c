@@ -154,7 +154,7 @@ void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEW
 GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
 {
     GATEWAY_HANDLE result;
-    /*Codes_SRS_GATEWAY_17_016: [ This function shall initialize the deafult module loaders. ] */
+    /*Codes_SRS_GATEWAY_17_016: [ This function shall initialize the default module loaders. ] */
     if (ModuleLoader_Initialize() != MODULE_LOADER_SUCCESS)
     {
         LogError("Gateway_Create() - ModuleLoader_Initialize failed");
@@ -165,7 +165,7 @@ GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
         result = gateway_create_internal(properties, false);
 		if (result == NULL)
 		{
-            /* Codes_SRS_GATEWAY_17_017: [ THis function shall destroy the default module loaders upon any failure. ]*/
+            /* Codes_SRS_GATEWAY_17_017: [ This function shall destroy the default module loaders upon any failure. ]*/
 			ModuleLoader_Destroy();
 		}
     }

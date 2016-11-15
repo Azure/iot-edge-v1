@@ -85,15 +85,19 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 
 **SRS_GATEWAY_JSON_17_006: [** Upon failure this function shall destroy the module loader list. **]**
 
-**SRS_GATEWAY_JSON_17_007: [** The function shall parse the "loaders" JSON array for new and modified module loading functionality. **]**
+**SRS_GATEWAY_JSON_17_007: [** The function shall parse the "loaders" JSON array and initialize new module loaders or update the existing default loaders. **]**
 
 **SRS_GATEWAY_JSON_17_008: [** The function shall parse the "modules" JSON array for each module entry. **]**
 
-**SRS_GATEWAY_JSON_17_009: [** The function shall use each module's loader to determine how to parse the entrypoint for that module. **]**
+**SRS_GATEWAY_JSON_17_013: [** The function shall parse each modules object for "loader.name" and "loader.entrypoint". **]**
+
+**SRS_GATEWAY_JSON_17_014: [** The function shall find the correct loader by "loader.name". **]**
 
 **SRS_GATEWAY_JSON_17_010: [** If the module's loader is not found by name, the the function shall fail and return NULL. **]**
 
-**SRS_GATEWAY_JSON_17_011: [** The function shall use the loader API to construct module input from module's "args" and "loader.entrypoint".  **]**
+**SRS_GATEWAY_JSON_17_009: [** For each module, the function shall call the loader's `ParseEntrypointFromJson` function to parse the entrypoint JSON. **]**
+
+**SRS_GATEWAY_JSON_17_011: [** The function shall the loader's `BuildModuleConfiguration` to construct module input from module's "args" and "loader.entrypoint".  **]**
 
 **SRS_GATEWAY_JSON_14_005: [** The function shall set the value of `const void* module_configuration` in the `GATEWAY_PROPERTIES` instance to a char\* representing the serialized *args* value for the particular module. **]**
 

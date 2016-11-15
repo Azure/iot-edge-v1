@@ -518,7 +518,7 @@ TEST_FUNCTION_CLEANUP(TestMethodCleanup)
 /*Tests_SRS_GATEWAY_14_003: [This function shall create a new BROKER_HANDLE for the gateway representing this gateway's message broker. ]*/
 /*Tests_SRS_GATEWAY_14_033: [ The function shall create a vector to store each MODULE_DATA. ]*/
 /*Tests_SRS_GATEWAY_04_001: [ The function shall create a vector to store each LINK_DATA ] */
-/*Tests_SRS_GATEWAY_17_016: [ This function shall initialize the deafult module loaders. ]*/
+/*Tests_SRS_GATEWAY_17_016: [ This function shall initialize the default module loaders. ]*/
 /*Tests_SRS_GATEWAY_17_015: [ The function shall use the module's specified loader and the module's entrypoint to get each module's MODULE_LIBRARY_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_17_018: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/
 /*Tests_SRS_GATEWAY_17_020: [ The function shall clean up any constructed resources. ]*/
@@ -552,7 +552,7 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Success)
 }
 
 /*Tests_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
-/*Tests_SRS_GATEWAY_17_017: [ THis function shall destroy the default module loaders upon any failure. ]*/
+/*Tests_SRS_GATEWAY_17_017: [ This function shall destroy the default module loaders upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_returns_null_on_bad_module_api_entry)
 {
     //Arrange

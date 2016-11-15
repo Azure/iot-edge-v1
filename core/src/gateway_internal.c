@@ -417,7 +417,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                     // request the loader to transform the module configuration to what the module expects
                     /*Codes_SRS_GATEWAY_17_018: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/
                     /*Codes_SRS_GATEWAY_17_021: [ The function shall construct module configuration from module's entrypoint and module's module_configuration. ]*/
-                    /*Codes_SRS_GATEWAY_JSON_17_011: [ The function shall use the loader API to construct module input from module's "args" and "loader.entrypoint". ]*/
+                    /*Codes_SRS_GATEWAY_JSON_17_011: [ The function shall the loader's BuildModuleConfiguration to construct module input from module's "args" and "loader.entrypoint". ]*/
                     transformed_module_configuration = module_entry->module_loader_info.loader->api->BuildModuleConfiguration(
                         module_entry->module_loader_info.loader,
                         module_entry->module_loader_info.entrypoint,

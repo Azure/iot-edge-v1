@@ -154,6 +154,7 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
     PARSE_JSON_RESULT result;
 
     // get loader name
+    /*Codes_SRS_GATEWAY_JSON_17_013: [ The function shall parse each modules object for "loader.name" and "loader.entrypoint". ]*/
     const char* loader_name = json_object_get_string(loader_json, LOADER_NAME_KEY);
     if (loader_name == NULL || strlen(loader_name) == 0)
     {
@@ -164,9 +165,11 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
     else
     {
         // locate the loader
+        /*Codes_SRS_GATEWAY_JSON_17_014: [ The function shall find the correct loader by "loader.name". ]*/
         const MODULE_LOADER* loader = ModuleLoader_FindByName(loader_name);
         if (loader == NULL)
         {
+            /*Codes_SRS_GATEWAY_JSON_17_010: [ If the module's loader is not found by name, the the function shall fail and return NULL. ]*/
             LogError("Loader JSON has a non-existent loader 'name' specified - %s.", loader_name);
             result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
         }
@@ -203,7 +206,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
     if (json_document != NULL)
     {
         // initialize the module loader configuration
-        /*Codes_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array for new and modified module loading functionality. ]*/
+        /*Codes_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array and initialize new module loaders or update the existing default loaders. ]*/
         JSON_Value *loaders = json_object_get_value(json_document, LOADERS_KEY);
         if (loaders != NULL && ModuleLoader_InitializeFromJson(loaders) == MODULE_LOADER_SUCCESS)
         {
@@ -222,7 +225,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                     {
                         module = json_array_get_object(modules_array, module_index);
 
-                        /*Codes_SRS_GATEWAY_JSON_17_009: [ The function shall use each module's loader to determine how to parse the entrypoint for that module. ]*/
+                        /*Codes_SRS_GATEWAY_JSON_17_009: [ For each module, the function shall call the loader's ParseEntrypointFromJson function to parse the entrypoint JSON. ]*/
                         JSON_Object* loader_args = json_object_get_object(module, LOADER_KEY);
                         GATEWAY_MODULE_LOADER_INFO loader_info;
                         if (parse_loader(loader_args, &loader_info) != PARSE_JSON_SUCCESS)

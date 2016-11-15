@@ -525,7 +525,7 @@ TEST_FUNCTION(Gateway_CreateFromJson_Returns_NULL_If_File_Not_Exist)
     mocks.AssertActualAndExpectedCalls();
 }
 
-/*Tests_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array for new and modified module loading functionality. ]*/
+/*Tests_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array and initialize new module loaders or update the existing default loaders. ]*/
 TEST_FUNCTION(Gateway_CreateFromJson_Returns_NULL_If_ML_init_fromjson_fails)
 {
 	//Arrange
@@ -771,8 +771,10 @@ TEST_FUNCTION(Gateway_CreateFromJson_Returns_NULL_on_gateway_create_internal_fai
 /*Tests_SRS_GATEWAY_JSON_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
 /*Tests_SRS_GATEWAY_JSON_17_001: [Upon successful creation, this function shall start the gateway.]*/
 /*Tests_SRS_GATEWAY_JSON_17_008: [ The function shall parse the "modules" JSON array for each module entry. ]*/
-/*Tests_SRS_GATEWAY_JSON_17_009: [ The function shall use each module's loader to determine how to parse the entrypoint for that module. ]*/
-/*Tests_SRS_GATEWAY_JSON_17_011: [ The function shall use the loader API to construct module input from module's "args" and "loader.entrypoint". ]*/
+/*Tests_SRS_GATEWAY_JSON_17_009: [ For each module, the function shall call the loader's ParseEntrypointFromJson function to parse the entrypoint JSON. ]*/
+/*Tests_SRS_GATEWAY_JSON_17_011: [ The function shall the loader's BuildModuleConfiguration to construct module input from module's "args" and "loader.entrypoint". ]*/
+/*Tests_SRS_GATEWAY_JSON_17_013: [ The function shall parse each modules object for "loader.name" and "loader.entrypoint". ]*/
+/*Tests_SRS_GATEWAY_JSON_17_014: [ The function shall find the correct loader by "loader.name". ]*/
 TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
 {
     //Arrange

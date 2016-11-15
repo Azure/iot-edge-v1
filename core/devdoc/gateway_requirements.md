@@ -111,9 +111,9 @@ Gateway_Create creates a new gateway using information from the `GATEWAY_PROPERT
 
 **SRS_GATEWAY_14_002: [** This function shall return `NULL` upon any failure. **]**
 
-**SRS_GATEWAY_17_016: [** This function shall initialize the deafult module loaders. **]**
+**SRS_GATEWAY_17_016: [** This function shall initialize the default module loaders. **]**
 
-**SRS_GATEWAY_17_017: [** THis function shall destroy the default module loaders upon any failure. **]**
+**SRS_GATEWAY_17_017: [** This function shall destroy the default module loaders upon any failure. **]**
 
 **SRS_GATEWAY_14_003: [** This function shall create a new `BROKER_HANDLE` for the gateway representing this gateway's message broker. **]**
 
