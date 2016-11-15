@@ -207,8 +207,9 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
     {
         // initialize the module loader configuration
         /*Codes_SRS_GATEWAY_JSON_17_007: [ The function shall parse the "loaders" JSON array and initialize new module loaders or update the existing default loaders. ]*/
-        JSON_Value *loaders = json_object_get_value(json_document, LOADERS_KEY);
-        if (loaders != NULL && ModuleLoader_InitializeFromJson(loaders) == MODULE_LOADER_SUCCESS)
+		// "loaders" is not required in gateway JSON
+		JSON_Value *loaders = json_object_get_value(json_document, LOADERS_KEY);
+        if (loaders == NULL || ModuleLoader_InitializeFromJson(loaders) == MODULE_LOADER_SUCCESS)
         {
             JSON_Array *modules_array = json_object_get_array(json_document, MODULES_KEY);
             JSON_Array *links_array = json_object_get_array(json_document, LINKS_KEY);
@@ -221,6 +222,8 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                     /*Codes_SRS_GATEWAY_JSON_17_008: [ The function shall parse the "modules" JSON array for each module entry. ]*/
                     JSON_Object *module;
                     size_t module_count = json_array_get_count(modules_array);
+					result = PARSE_JSON_SUCCESS;
+
                     for (size_t module_index = 0; module_index < module_count; ++module_index)
                     {
                         module = json_array_get_object(modules_array, module_index);
