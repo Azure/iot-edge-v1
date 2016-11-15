@@ -12,21 +12,31 @@ Third party C JSON library: https://github.com/kgabis/parson
 
 ```json
 {
+    "loaders" :
+    [
+        {
+            "type" : "<loader type>",
+            "name" : "<loader name>",
+            "configuration" : ...
+        }
+    ]
     "modules" :
     [ 
         {
-            "module name" : "one",
-            "loading args" : 
+            "name" : "one",
+            "loader" : 
             {
-                "module path" : "module1.dll"
+                "name" : "<loader name>",
+                "entrypoint" : ...
             },
             "args" : ...
         },
         {
-            "module name" : "two",
-            "loading args" : 
+            "name" : "two",
+            "loader" : 
             {
-            "module path" : "module2.dll"
+                "name" : "<loader name>",
+                "entrypoint" : ...
             },
             "args" : ...
         }
@@ -69,11 +79,23 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 
 **SRS_GATEWAY_JSON_14_004: [** The function shall traverse the `JSON_Value` object to initialize a `GATEWAY_PROPERTIES` instance. **]**
 
+**SRS_GATEWAY_JSON_17_005: [** The function shall initialize the default module loader list. **]**
+
+**SRS_GATEWAY_JSON_17_012: [** This function shall return NULL if the module list is not initialized. **]**
+
+**SRS_GATEWAY_JSON_17_006: [** Upon failure this function shall destroy the module loader list. **]**
+
+**SRS_GATEWAY_JSON_17_007: [** The function shall parse the "loaders" JSON array for new and modified module loading functionality. **]**
+
+**SRS_GATEWAY_JSON_17_008: [** The function shall parse the "modules" JSON array for each module entry. **]**
+
+**SRS_GATEWAY_JSON_17_009: [** The function shall use each module's loader to determine how to parse the entrypoint for that module. **]**
+
+**SRS_GATEWAY_JSON_17_010: [** If the module's loader is not found by name, the the function shall fail and return NULL. **]**
+
+**SRS_GATEWAY_JSON_17_011: [** The function shall use the loader API to construct module input from module's "args" and "loader.entrypoint".  **]**
+
 **SRS_GATEWAY_JSON_14_005: [** The function shall set the value of `const void* module_configuration` in the `GATEWAY_PROPERTIES` instance to a char\* representing the serialized *args* value for the particular module. **]**
-
-**SRS_GATEWAY_JSON_17_005: [** The function shall parse the "loading args" for "module path" and fill a `DYNAMIC_LOADER_CONFIG` structure with the module path information. **]**
-
-**SRS_GATEWAY_JSON_17_003: [** The function shall set the value of `const void * loader_configuration` in the `GATEWAY_PROPERTIES` instance to a pointer of the module's `DYNAMIC_LOADER_CONFIG` structure. **]**
 
 **SRS_GATEWAY_JSON_14_006: [** The function shall return NULL if the `JSON_Value` contains incomplete information. **]**
 

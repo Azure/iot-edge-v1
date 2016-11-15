@@ -51,9 +51,12 @@ typedef struct GATEWAY_LINK_ENTRY_TAG
 /** @brief      Struct representing a particular gateway. */
 typedef struct GATEWAY_HANDLE_DATA_TAG* GATEWAY_HANDLE;
 
+/** @brief      Struct representing module loading information. */
 typedef struct GATEWAY_MODULE_LOADER_INFO_TAG
 {
+    /** @brief  Details about the module loader being used. */
     const MODULE_LOADER* loader;
+    /** @brief  Configuration specific to loading a specfic module */
     void* entrypoint;
 } GATEWAY_MODULE_LOADER_INFO;
 
