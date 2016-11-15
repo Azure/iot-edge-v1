@@ -24,7 +24,7 @@ The argument to this module is a JSON object with the following structure:
 
 ##Exposed API
 ```c
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 ## Module_GetApi

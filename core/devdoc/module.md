@@ -46,14 +46,14 @@ typedef struct MODULE_API_1_TAG
     pfModule_Start Module_Start;
 } MODULE_API_1;
 
-typedef const MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_version);
+typedef const MODULE_API* (*pfModule_GetApi)(MODULE_API_VERSION gateway_api_version);
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 ## Module_GetApi
 ```c
-typedef MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_version);
+typedef MODULE_API* (*pfModule_GetApi)(MODULE_API_VERSION gateway_api_version);
 ```
 
 This function is to be implemented by the module creator. It will return a 

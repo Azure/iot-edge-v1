@@ -230,10 +230,10 @@ void NodeJS_Destroy(MODULE_HANDLE module);
 
 **SRS_NODEJS_13_025: [** `NodeJS_Destroy` shall free all resources. **]**
 
-Module_GetAPIs
+Module_GetApi
 --------------
 ```c
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 **SRS_NODEJS_26_001: [** `Module_GetApi` shall return the `MODULES_API` structure with required module's APIs functions. **]**

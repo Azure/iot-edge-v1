@@ -280,9 +280,9 @@ static const MODULE_API_1 BLE_C2D_APIS_all =
 
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE_C2D)(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(BLE_MODULE_C2D)(MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 #endif
 {
     /*Codes_SRS_BLE_CTOD_26_001: [ Module_GetApi shall return a pointer to the MODULE_API structure. ]*/

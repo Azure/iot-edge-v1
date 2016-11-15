@@ -78,11 +78,11 @@ typedef struct IDENTITY_MAP_CONFIG_TAG
     const char* deviceKey;
 } IDENTITY_MAP_CONFIG;
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 
 ```
 
-## Module_GetAPIs
+## Module_GetApi
 
 This is the primary public interface for the module.  It returns a pointer to 
 the `MODULE_API` structure containing the implementation functions for this module.  

@@ -98,9 +98,9 @@ void BLE_C2D_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message_handle)
 
 **SRS_BLE_CTOD_13_024: [** `BLE_C2D_Receive` shall do nothing if an underlying API call fails. **]**
 
-## Module_GetAPIs
+## Module_GetApi
 ```c
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 **SRS_BLE_CTOD_26_001: [** `Module_GetApi` shall return a pointer to the `MODULE_API` structure. **]**

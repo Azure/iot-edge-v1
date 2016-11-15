@@ -151,9 +151,9 @@ void IotHub_Destroy(MODULE_HANDLE moduleHandle);
 **SRS_IOTHUBMODULE_02_023: [** If `moduleHandle` is `NULL` then `IotHub_Destroy` shall return. **]**
 **SRS_IOTHUBMODULE_02_024: [** Otherwise `IotHub_Destroy` shall free all used resources. **]**
 
-###Module_GetAPIs
+### Module_GetApi
 ```C
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 ```
 
 **SRS_IOTHUBMODULE_26_001: [** `Module_GetApi` shall return a pointer to a `MODULE_API` structure with the required function pointers. **]**

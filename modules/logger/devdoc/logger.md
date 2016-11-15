@@ -151,9 +151,9 @@ void Logger_Destroy(MODULE_HANDLE moduleHandle);
 **SRS_LOGGER_02_015: [**Otherwise Logger_Destroy shall unuse all used resources.**]**
 
 
-###Module_GetAPIs
+### Module_GetApi
 ```c
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 **SRS_LOGGER_26_001: [** `Module_GetApi` shall return a pointer to a  `MODULE_API` structure with the required function pointers. **]**

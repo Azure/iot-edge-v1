@@ -493,9 +493,9 @@ static const MODULE_API_1 Logger_APIS_all =
 
 
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(LOGGER_MODULE)(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(LOGGER_MODULE)(MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 #endif
 {
     /*Codes_SRS_LOGGER_26_001: [ Module_GetApi shall return a pointer to a MODULE_API structure with the required function pointers. */

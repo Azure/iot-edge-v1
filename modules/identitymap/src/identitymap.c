@@ -795,9 +795,9 @@ static const MODULE_API_1 IdentityMap_APIS_all =
 
 /*Codes_SRS_IDMAP_26_001: [ `Module_GetApi` shall return a pointer to `MODULE_API` structure. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IDENTITYMAP_MODULE)(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IDENTITYMAP_MODULE)(MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 #endif
 {
     (void)gateway_api_version;

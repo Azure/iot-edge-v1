@@ -27,7 +27,7 @@ typedef struct AZURE_FUNCTIONS_CONFIG_TAG
     STRING_HANDLE securityKey;
 } AZURE_FUNCTIONS_CONFIG;
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 
 ```
 

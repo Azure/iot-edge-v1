@@ -168,7 +168,7 @@ static const MODULE_API_1 Module_GetApi_Impl =
 
 };
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 {
     (void)gateway_api_version;
     return (const MODULE_API*)&Module_GetApi_Impl;
