@@ -37,6 +37,6 @@ ENV COMMIT_ID develop
 ENTRYPOINT rm -rf /gateway && \
            git clone ${GATEWAY_REPO} /gateway && \
            git -C /gateway checkout ${COMMIT_ID} && \
-           git -C /gateway submodule update --init --recursive && \
+           git -C /gateway submodule update --init && \
            /gateway/tools/build.sh -rv --enable-java-binding --enable-nodejs-binding --skip-e2e-tests && \
            bash

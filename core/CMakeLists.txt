@@ -1,7 +1,11 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
+if(POLICY CMP0054)
+    cmake_policy(SET CMP0054 OLD)
+endif()
+cmake_policy(SET CMP0022 NEW)
 
 add_subdirectory(deps)
 
@@ -65,6 +69,7 @@ set(gateway_c_sources
     ${dynamic_library_c_file}
 )
 
+
 set(gateway_h_sources
     ./inc/message.h
     ./inc/broker.h
@@ -73,6 +78,7 @@ set(gateway_h_sources
     ./inc/experimental/event_system.h
     ./inc/gateway.h
     ./inc/module_loader.h
+    ./inc/dynamic_library.h
     ./src/gateway_internal.h
 )
 
@@ -138,48 +144,29 @@ add_library(gateway
     ${gateway_h_sources}
 )
 
-add_library(gateway_install
-    ${gateway_c_sources}
-    ${gateway_h_sources}
-)
-
-set_target_properties(gateway_install PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
-
 if(WIN32)
-    target_link_libraries(gateway_install "aziotsharedutil.lib" "nanomsg.lib" parson ${dynamic_loader_library})
-    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
+    target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
 else()
-    target_link_libraries(gateway_install "libaziotsharedutil.a" "libnanomsg.a" parson ${dynamic_loader_library})
-    target_link_libraries(gateway aziotsharedutil nanomsg parson ${dynamic_loader_library})
-
-    nn_check_lib (anl getaddrinfo_a NN_HAVE_GETADDRINFO_A)
-    nn_check_lib (rt clock_gettime  NN_HAVE_CLOCK_GETTIME)
-    nn_check_lib (rt sem_wait NN_HAVE_SEMAPHORE_RT)
-    nn_check_lib (pthread sem_wait  NN_HAVE_SEMAPHORE_PTHREAD)
-    nn_check_lib (nsl gethostbyname NN_HAVE_LIBNSL)
-    nn_check_lib (socket socket NN_HAVE_LIBSOCKET)
-
-    target_link_libraries(gateway_install ${NN_REQUIRED_LIBRARIES})
-    target_link_libraries(gateway_install m)
+    target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
 
     target_link_libraries(gateway ${NN_REQUIRED_LIBRARIES})
     target_link_libraries(gateway m)
 endif()
 
 if(WIN32)
-    target_link_libraries(gateway_install rpcrt4.lib)
     target_link_libraries(gateway rpcrt4.lib)
 else()
     find_package(PkgConfig REQUIRED)
     pkg_search_module(UIDLINUX REQUIRED uuid)
 
-    target_link_libraries(gateway_install uuid)
     target_link_libraries(gateway uuid)
 endif()
 
-set_target_properties(gateway PROPERTIES FOLDER "Gateway")
-
-add_subdirectory(tests)
+#set_target_properties(gateway PROPERTIES FOLDER "Gateway")
+#this adds the tests to the build process
+if(NOT ${skip_unittests})
+    add_subdirectory(tests)
+endif()
 
 #############################################################
 ########################INSTALL STUFF########################
@@ -205,12 +192,12 @@ endif()
 
 # Set the include dirs for the gatewayTargets includes destination
 if(WIN32)
-    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/azureiot)
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${SHARED_UTIL_INC_FOLDER})
 else()
-    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX} ${AIG_HEADER_INSTALL_PREFIX}/../azureiot)
+    set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX})
 endif()
 
-install(TARGETS gateway_install EXPORT gatewayTargets
+install(TARGETS gateway EXPORT gatewayTargets
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
     RUNTIME DESTINATION ${LIB_INSTALL_DIR}/../bin
@@ -236,6 +223,7 @@ install(EXPORT gatewayTargets
         "${PROJECT_NAME}Targets.cmake"
     DESTINATION
         ${package_location}
+    EXPORT_LINK_INTERFACE_LIBRARIES
 )
 install(
     FILES

@@ -17,6 +17,20 @@ extern "C"
 
 typedef struct EVENTSYSTEM_DATA* EVENTSYSTEM_HANDLE;
 
+/** @brief      Struct representing current information about a single module */
+typedef struct GATEWAY_MODULE_INFO_TAG
+{
+    /** @brief  The name of the module */
+    const char* module_name;
+
+    /** @brief  A vector of pointers to @c GATEWAY_MODULE_INFO that this module
+     *          will receive data from (link sources, this one being the sink). 
+     * 
+     *  If the handle == NULL this module receives data from all other modules. 
+     */
+    VECTOR_HANDLE module_sources;
+} GATEWAY_MODULE_INFO;
+
 /** @brief      Enum representing different gateway events that have support
  *              for callbacks.
  */

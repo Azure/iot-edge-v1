@@ -1,11 +1,13 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 project(azure_iot_gateway_sdk)
 
 set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
+
+include(GNUInstallDirs)
 
 if(WIN32)
     set(VERSION_PREFIX "${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
@@ -13,13 +15,22 @@ else()
     set(VERSION_PREFIX "${PROJECT_NAME}-${GATEWAY_VERSION}" CACHE PATH "Version Prefix")
 endif()
 
-message(STATUS "Version prefix is ${VERSION_PREFIX}")
-
 if(WIN32)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}-${VERSION_PREFIX}/" CACHE INTERNAL "CMake install prefix")
+    if(NOT DEFINED CMAKE_INSTALL_PREFIX_SET)
+      set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}-${VERSION_PREFIX}/" CACHE INTERNAL "CMake install prefix")
+      set(CMAKE_INSTALL_PREFIX_SET TRUE CACHE INTERNAL "")
+    endif()
 endif()
 
 message(STATUS "CMake Install Prefix is ${CMAKE_INSTALL_PREFIX}")
+
+set(${dependency_install_prefix} ${dependency_install_prefix} CACHE INTERNAL "")
+
+if(DEFINED ${dependency_install_prefix})
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${dependency_install_prefix})
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${dependency_install_prefix}/lib)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 #the following variables are project-wide and can be used with cmake-gui
 option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
@@ -31,8 +42,12 @@ option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
 option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
+option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
+option(use_http "set use_http to ON if http is to be used, set to OFF to not use http" ON)
+option(use_mqtt "set use_mqtt to ON if mqtt is to be used, set to OFF to not use mqtt" ON)
 
 SET(use_condition ON CACHE BOOL "Build C shared utility with condition code" FORCE)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #making a nice global variable to know if we are on linux or not.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -82,23 +97,29 @@ if(WIN32)
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /guard:cf")
 endif()
 
-if(${LINUX})
+if(LINUX)
   set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
 endif()
 
 function(add_module_to_solution undecoratedModuleName)
   set_target_properties(${undecoratedModuleName}
-    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
   set_target_properties(${undecoratedModuleName}_static
-    PROPERTIES FOLDER "Gateway/Modules/${undecoratedModuleName}")
+    PROPERTIES FOLDER "Modules/${undecoratedModuleName}")
 endfunction()
 
 function(add_binding_to_solution bindingLanguage)
-    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Gateway/Bindings")
+    set_target_properties(${bindingLanguage} PROPERTIES FOLDER "Bindings")
 endfunction()
     
 function(add_sample_to_solution sampleName)
-  set_target_properties(${sampleName} PROPERTIES FOLDER "Gateway/Samples")
+  set_target_properties(${sampleName} PROPERTIES FOLDER "Samples")
+  if(DEFINED ${dependency_install_prefix})
+    set_target_properties(${sampleName} PROPERTIES
+      BUILD_WITH_INSTALL_RPATH TRUE
+    )
+  endif()
 endfunction()
 
 
@@ -130,11 +151,11 @@ endmacro(compileAsC11)
 enable_testing()
 compileAsC99()
 
-#this add the deps folder that will add C shared utility and IotHubClient
-add_subdirectory(./deps)
+#this adds all test dependencies
+include(dependencies-test.cmake)
 
-#this makes available from now on the includes of azure-c-shared-utility
-include_directories(${SHARED_UTIL_INC_FOLDER})
+#this adds all dependencies
+include(dependencies.cmake)
 
 function(linkSharedUtil whatIsBuilding)
   target_link_libraries(${whatIsBuilding} aziotsharedutil)
@@ -142,27 +163,6 @@ endfunction(linkSharedUtil)
 
 #this adds parson
 include_directories(./deps/parson)
-
-#this adds nanomsg
-option(NN_ENABLE_DOC "" OFF )
-if (WIN32)
-  option(NN_STATIC_LIB "" OFF )
-else()
-  option(NN_STATIC_LIB "" ON )
-  # This should be set with the NN_STATIC_LIB options
-  add_definitions (-DNN_STATIC_LIB)
-endif()
-
-option(NN_TESTS "" OFF )
-option(NN_ENABLE_NANOCAT "" OFF)
-set(nanomsg_target_dll ${CMAKE_CURRENT_BINARY_DIR}/deps/nanomsg/$(Configuration)/nanomsg.dll CACHE INTERNAL "The location of the nanomsg.dll (windows)" FORCE)
-add_subdirectory(./deps/nanomsg)
-include_directories(./deps/nanomsg/src)
-
-set(NANOMSG_TARGETS dist )
-foreach(nanomsgTarget IN LISTS NANOMSG_TARGETS)
-  set_target_properties(${nanomsgTarget} PROPERTIES FOLDER "nanomsg Targets")
-endforeach(nanomsgTarget)
 
 function(link_broker whatIsBuilding)
 

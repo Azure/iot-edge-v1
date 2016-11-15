@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 set(logger_sources
     ./src/logger.c
@@ -36,8 +36,9 @@ linkSharedUtil(logger_static)
 
 add_module_to_solution(logger)
 
-add_subdirectory(tests)
-
+if(NOT ${skip_unittests})
+	add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS logger LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 

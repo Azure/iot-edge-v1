@@ -4,6 +4,8 @@
 #ifndef DYNAMIC_LIBRARY_H
 #define DYNAMIC_LIBRARY_H
 
+#include "azure_c_shared_utility/macro_utils.h"
+#include "azure_c_shared_utility/umock_c_prod.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -11,9 +13,9 @@ extern "C"
 #endif
 typedef void*  DYNAMIC_LIBRARY_HANDLE;
 
-extern DYNAMIC_LIBRARY_HANDLE DynamicLibrary_LoadLibrary(const char* dynamicLibraryFileName);
-extern void  DynamicLibrary_UnloadLibrary(DYNAMIC_LIBRARY_HANDLE libraryHandle);
-extern void* DynamicLibrary_FindSymbol(DYNAMIC_LIBRARY_HANDLE libraryHandle, const char* symbolName);
+MOCKABLE_FUNCTION(, DYNAMIC_LIBRARY_HANDLE, DynamicLibrary_LoadLibrary, const char*, dynamicLibraryFileName);
+MOCKABLE_FUNCTION(, void, DynamicLibrary_UnloadLibrary, DYNAMIC_LIBRARY_HANDLE, libraryHandle);
+MOCKABLE_FUNCTION(, void*, DynamicLibrary_FindSymbol, DYNAMIC_LIBRARY_HANDLE, libraryHandle, const char*, symbolName);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 set(azure_functions_sources
     ./src/azure_functions.c
@@ -32,4 +32,6 @@ if(install_executables)
     install(TARGETS azure_functions LIBRARY DESTINATION lib) 
 endif()
 
-add_subdirectory(tests)
+if(NOT ${skip_unittests})
+	add_subdirectory(tests)
+endif()

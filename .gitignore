@@ -216,3 +216,6 @@ browse.VC.db
 
 # api reference docstates
 api_reference/
+
+# install prefix
+install-deps/

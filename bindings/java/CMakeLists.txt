@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 # Check if the environment variable JAVA_HOME exists
 if(
@@ -88,7 +88,9 @@ linkSharedUtil(java_module_host_static)
 
 add_binding_to_solution(java_module_host)
 
-add_subdirectory(tests)
+if(NOT ${skip_unittests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS java_module_host LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")

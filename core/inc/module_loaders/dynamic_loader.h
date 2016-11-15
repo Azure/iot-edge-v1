@@ -13,6 +13,7 @@
 #define DYNAMIC_LOADER_H
 
 #include "azure_c_shared_utility/strings.h"
+#include "azure_c_shared_utility/umock_c_prod.h"
 
 #include "module.h"
 #include "module_loader.h"
@@ -24,14 +25,6 @@ extern "C"
 
 #define DYNAMIC_LOADER_NAME "native"
 
-#if WIN32
-#define NATIVE_BINDING_MODULE_NAME    "native_binding.dll"
-#elif __linux__
-#define NATIVE_BINDING_MODULE_NAME    "libnative_binding.so"
-#else
-#error Cannot build a default binding module name for your platform.
-#endif
-
 /** @brief Structure to load a dynamically linked module */
 typedef struct DYNAMIC_LOADER_ENTRYPOINT_TAG
 {
@@ -40,7 +33,7 @@ typedef struct DYNAMIC_LOADER_ENTRYPOINT_TAG
 } DYNAMIC_LOADER_ENTRYPOINT;
 
 /** @brief      The API for the dynamically linked module loader. */
-extern const MODULE_LOADER* DynamicLoader_Get(void);
+MOCKABLE_FUNCTION(, const MODULE_LOADER*, DynamicLoader_Get);
 
 #ifdef __cplusplus
 }

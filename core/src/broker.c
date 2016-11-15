@@ -20,8 +20,8 @@
 #include "azure_c_shared_utility/singlylinkedlist.h"
 #include "azure_c_shared_utility/uniqueid.h"
 
-#include "nn.h"
-#include "pubsub.h"
+#include "nanomsg/nn.h"
+#include "nanomsg/pubsub.h"
 
 #include "message.h"
 #include "module.h"

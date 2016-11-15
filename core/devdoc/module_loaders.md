@@ -49,7 +49,7 @@ When initializing a gateway from a JSON configuration file via the
 `Gateway_CreateFromJson` function, the loader configuration can be specified via
 the top level `loaders` array. For example:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 {
   "loaders": [
     {
@@ -90,7 +90,7 @@ referenced using the following loader names:
     modules.
 
 -   `java`: This implements loading of modules implemented using the Java
-    programming language jand compiled to JAR files.
+    programming language and compiled to JAR files.
 
 -   `node`: This implements loading of modules implemented using Node.js.
 
@@ -101,7 +101,7 @@ It is legal to completely omit specifying the `loaders` array in which case the
 default loaders specified above will be made available using default options.
 Here’s an example of a module configuration that makes use of the Java loader:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 {
   "modules": [
     {
@@ -125,7 +125,7 @@ How module loaders work
 A module loader is defined using a struct called `MODULE_LOADER` that looks like
 this:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 /**
  * The Module Loader.
  */
@@ -141,7 +141,7 @@ typedef struct MODULE_LOADER_TAG
 `MODULE_LOADER_API` is a struct containing function pointers that has been
 defined like so:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 typedef struct MODULE_LOADER_API_TAG
 {
     pfModuleLoader_Load Load;
@@ -171,7 +171,7 @@ responsible for returning a pointer to a `MODULE_LOADER` instance. The *native*
 loader that implements dynamic module loading for instance might provide a
 function that looks like this:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 extern const MODULE_LOADER *DynamicLoader_Get(void);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -181,7 +181,7 @@ with. As discussed before, the gateway SDK, depending on build options used will
 ship with a set of pre-defined loaders. Here’s an example how this
 initialization code might look like:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 MODULE_LOADER* module_loaders[] = {
     DynamicLoader_Get()
 

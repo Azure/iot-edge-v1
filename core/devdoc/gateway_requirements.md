@@ -15,7 +15,7 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
     VECTOR_HANDLE modules;
 
     /** @brief The message broker used by this gateway */
-    BROKER_HANDLE broker;    
+    BROKER_HANDLE broker;
 
     /** @brief Vector of LINK_DATA links that the Gateway must track */
     VECTOR_HANDLE links;
@@ -238,7 +238,7 @@ Gateway_AddModule adds a module to the gateway's message broker using the provid
 ```
 extern void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 ```
-When a module is added to the Gateway after it has been started, `Gateway_StartModule` informs a module when the broker is ready for the module to send and receive messages (i.e. after `Gateway_AddModule` and all `Gateway_AddLink` have been called).  This informational to the module, and the module is not required to implement a Module_Start function. 
+When a module is added to the Gateway after it has been started, `Gateway_StartModule` informs a module when the broker is ready for the module to send and receive messages (i.e. after `Gateway_AddModule` and all `Gateway_AddLink` have been called).  This informational to the module, and the module is not required to implement a Module_Start function.
 
 **SRS_GATEWAY_17_006: [** If `gw` is `NULL`, this function shall do nothing. **]**
 
@@ -351,7 +351,7 @@ extern void Gateway_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entr
 ```
 Gateway_RemoveLink will remove the specified `link` from the message broker.
 
-**SRS_GATEWAY_04_005: [** If `gw` or `entryLink` is `NULL` the function shall return. **]**  
+**SRS_GATEWAY_04_005: [** If `gw` or `entryLink` is `NULL` the function shall return. **]**
 
 **SRS_GATEWAY_04_006: [** The function shall locate the `LINK_DATA` object in `GATEWAY_HANDLE_DATA`'s `links` containing `link` and return if it cannot be found. **]**
 

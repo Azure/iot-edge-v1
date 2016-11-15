@@ -6,6 +6,6 @@ build_root=$(cd "$(dirname "$0")/.." && pwd)
 cd $build_root
 
 # -- C --
-./tools/build.sh --enable-nodejs-binding --enable-java-binding "$@" #-x 
+./tools/build.sh --enable-nodejs-binding --enable-java-binding --install-dependencies-in-tree "$@" #-x 
 [ $? -eq 0 ] || exit $?
  

@@ -6,6 +6,6 @@ build_root=$(cd "$(dirname "$0")/.." && pwd)
 cd $build_root
 
 # -- C --
-./tools/windriver_linux_c.sh "$@" 
+./tools/windriver_linux_c.sh --install-dependencies-in-tree "$@" 
 [ $? -eq 0 ] || exit $?
  

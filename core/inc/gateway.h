@@ -51,12 +51,18 @@ typedef struct GATEWAY_LINK_ENTRY_TAG
 /** @brief      Struct representing a particular gateway. */
 typedef struct GATEWAY_HANDLE_DATA_TAG* GATEWAY_HANDLE;
 
-/** @brief      Struct representing module loading information. */
+/** @brief      Struct representing the loader and entrypoint
+ *              to be used for a specific module.
+ */
 typedef struct GATEWAY_MODULE_LOADER_INFO_TAG
 {
-    /** @brief  Details about the module loader being used. */
+    /** @brief  Pointer to the module loader to be used for
+     *          loading this module.
+     */
     const MODULE_LOADER* loader;
-    /** @brief  Configuration specific to loading a specfic module */
+
+    /** @brief  Pointer to the entrypoint for this module.
+     */
     void* entrypoint;
 } GATEWAY_MODULE_LOADER_INFO;
 
@@ -87,20 +93,6 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
     VECTOR_HANDLE gateway_links;
 } GATEWAY_PROPERTIES;
 
-/** @brief      Struct representing current information about a single module */
-typedef struct GATEWAY_MODULE_INFO_TAG
-{
-    /** @brief  The name of the module */
-    const char* module_name;
-
-    /** @brief  A vector of pointers to @c GATEWAY_MODULE_INFO that this module
-     *          will receive data from (link sources, this one being the sink).
-     *
-     *  If the handle == NULL this module receives data from all other modules.
-     */
-    VECTOR_HANDLE module_sources;
-} GATEWAY_MODULE_INFO;
-
 /** @brief      Creates a gateway using a JSON configuration file as input
  *              which describes each module. Each module described in the
  *              configuration must support Module_CreateFromJson.
@@ -114,27 +106,36 @@ typedef struct GATEWAY_MODULE_INFO_TAG
  *                  "modules" :
  *                  [
  *                      {
- *                          "module name" : "one",
- *                          "loading args" :
- *                          {
- *                              "module path" : "module1.dll"
- *                          },
- *                          "args" : ...
- *                      },
- *                      {
- *                          "module name" : "two",
- *                          "loading args" :
- *                          {
- *                              "module path" : "module2.dll"
- *                          },
- *                          "args" : ...
- *                      }
+                            "name": "sensor",
+                            "loader": {
+                                "name": "dotnet",
+                                "entrypoint": {
+                                    "class.name": "Microsoft.Azure.Gateway.SensorModule",
+                                    "assembly.path": "./bin/Microsoft.Azure.Gateway.Modules.dll"
+                                }
+                            },
+                            "args" : {
+                                "power.level": 5
+                            }
+                        },
+                        {
+                            "name": "logger",
+                            "loader": {
+                                "name": "native",
+                                "entrypoint": {
+                                    "module.path": "./bin/liblogger.so"
+                                }
+                            },
+                            "args": {
+                                "filename": "/var/logs/gateway-log.json"
+                            }
+                        }
  *                  ],
  *                  "links":
  *                  [
  *                      {
- *                          "source": "one",
- *                          "sink": "two"
+ *                          "source": "sensor",
+ *                          "sink": "logger"
  *                      }
  *                  ]
  *              }

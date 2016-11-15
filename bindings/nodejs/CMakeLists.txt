@@ -1,7 +1,7 @@
 #Copyright (c) Microsoft. All rights reserved.
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 # Check if the environment variables NODE_INCLUDE and NODE_LIB exist
 if(
@@ -130,8 +130,11 @@ add_pic_flag(nodejs_binding_static)
 target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
 
 add_binding_to_solution(nodejs_binding)
+add_binding_to_solution(nodejs_binding_static)
 
-add_subdirectory(tests)
+if(NOT ${skip_unittests})
+    add_subdirectory(tests)
+endif()
 
 if(install_modules)
     install(TARGETS nodejs_binding LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules")
