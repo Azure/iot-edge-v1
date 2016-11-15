@@ -11,6 +11,7 @@ add_subdirectory(gateway_createfromjson_ut)
 add_subdirectory(gwmessage_ut)
 add_subdirectory(dynamic_loader_ut)
 add_subdirectory(module_loader_ut)
+add_subdirectory(node_loader_ut)
 
 if(${run_e2e_tests})
     add_subdirectory(gateway_e2e)
