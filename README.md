@@ -19,9 +19,10 @@ The following modules are available in this repository:
 
 ## Featured Modules
 Other people are creating modules for the gateway SDK too! See the **More information** link for a module to find out how to get it, who supports it, etc.
->| Name   | More information                            | Targets gateway SDK version |
->|--------|---------------------------------------------|-----------------------------|
->| Modbus | https://github.com/Azure/iot-gateway-modbus | 2016-10-06                  |
+>| Name          | More information                            | Targets gateway SDK version |
+>|---------------|---------------------------------------------|-----------------------------|
+>| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2016-11-02                  |
+>| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-02                  |
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for more info.
 
