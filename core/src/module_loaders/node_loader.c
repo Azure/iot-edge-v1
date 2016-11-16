@@ -78,7 +78,7 @@ static MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, 
                 }
                 else
                 {
-                    //Codes_SRS_NODE_MODULE_LOADER_13_033: [ NodeModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the module's API table. ]
+                    //Codes_SRS_NODE_MODULE_LOADER_13_033: [ NodeModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
                     pfModule_GetApi pfnGetAPI = (pfModule_GetApi)DynamicLibrary_FindSymbol(result->binding_module, MODULE_GETAPI_NAME);
                     if (pfnGetAPI == NULL)
                     {
@@ -93,7 +93,7 @@ static MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, 
                         //Codes_SRS_NODE_MODULE_LOADER_13_005 : [NodeModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]
                         result->api = pfnGetAPI(Module_ApiGatewayVersion);
 
-                        //Codes_SRS_NODE_MODULE_LOADER_13_034: [ NodeModuleLoader_Load shall return NULL if MODULE_API returned by the binding module is NULL. ]
+                        //Codes_SRS_NODE_MODULE_LOADER_13_034: [ NodeModuleLoader_Load shall return NULL if the MODULE_API pointer returned by the binding module is NULL. ]
                         //Codes_SRS_NODE_MODULE_LOADER_13_035: [ NodeModuleLoader_Load shall return NULL if MODULE_API::version is greater than Module_ApiGatewayVersion. ]
                         //Codes_SRS_NODE_MODULE_LOADER_13_036: [ NodeModuleLoader_Load shall return NULL if the Module_Create function in MODULE_API is NULL. ]
                         //Codes_SRS_NODE_MODULE_LOADER_13_037: [ NodeModuleLoader_Load shall return NULL if the Module_Receive function in MODULE_API is NULL. ]
@@ -210,7 +210,7 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
                 if (mainPath == NULL)
                 {
                     LogError("json_object_get_string for 'main.path' returned NULL");
-                    //Codes_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
+                    //Codes_SRS_NODE_MODULE_LOADER_13_039: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if main.path does not exist. ]
                     config = NULL;
                 }
                 else
