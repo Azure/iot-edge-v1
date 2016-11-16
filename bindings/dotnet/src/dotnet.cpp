@@ -411,52 +411,7 @@ static MODULE_HANDLE DotNet_Create(BROKER_HANDLE broker, const void* configurati
 
 static void* DotNet_ParseConfigurationFromJson(const char* configuration)
 {
-    void* result;
-    /* Codes_SRS_DOTNET_05_002: [ If configuration is NULL then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
-    if (
-        (configuration == NULL)
-        )
-    {
-        LogError("NULL parameter detected configuration=%p", configuration);
-        result = NULL;
-    }
-    else
-    {
-        JSON_Value* json = json_parse_string((const char*)configuration);
-        if (json == NULL)
-        {
-            /* Codes_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
-            LogError("unable to json_parse_string");
-            result = NULL;
-        }
-        else
-        {
-            JSON_Object* root = json_value_get_object(json);
-            if (root == NULL)
-            {
-                /* Codes_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
-                LogError("unable to json_value_get_object");
-                result = NULL;
-            }
-            else
-            {
-                const char* dotnet_module_args_string = json_object_get_string(root, "dotnet_module_args");
-                if (dotnet_module_args_string == NULL)
-                {
-                    /* Codes_SRS_DOTNET_05_006: [ If the JSON object does not contain a value named "dotnet_module_args" then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
-                    LogError("json_object_get_string failed for property 'dotnet_module_args'");
-                    result = NULL;
-                }
-                else
-                {
-                    /* Codes_SRS_DOTNET_05_008: [ If DotNet_ParseConfigurationFromJson succeeds then is shall return a non-NULL value with the value of configuration as void*. ] */
-                    result = (void*)dotnet_module_args_string;
-                }
-            }
-        }
-    }
-
-    return result;
+    return (void*)configuration;
 }
 
 bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGatewayAssembly, variant_t* vtAzureIoTGatewayMessageObject)
@@ -553,10 +508,7 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 
 void DotNet_FreeConfiguration(void* configuration)
 {
-    if (configuration != NULL)
-    {
-        free(configuration);
-    }
+    //Nothing to be freed here.
 }
 
 static void DotNet_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)

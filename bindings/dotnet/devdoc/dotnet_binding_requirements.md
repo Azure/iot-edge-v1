@@ -36,43 +36,7 @@ DotNet_ParseConfigurationFromJson
 ```c
 static void* DotNet_ParseConfigurationFromJson(const char* configuration);
 ```
-Creates a new .NET module host instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_CreateFromJson`.
-The json object should conform to the following structure: 
-```json
-{
-    "dotnet_module_args": "module configuration"
-}
-``` 
-Example:
-The following Gateway config file describes a module called "csharp_hello_world" which uses the .NET binding. It instructs the binding to load a .NET module from `/path/to/csharp_module.dll`
-and call the entry class `mycsharpmodule.classname` passing as configuration the serialized string `"module configuration"`.
-```json
-{
-    "modules": [
-        {
-            "name": "csharp_hello_world",
-            "loader": {
-                "name": "dotnet",
-                "entrypoint": {
-                   "dotnet_module_path": "/path/to/csharp_module.dll",
-                   "dotnet_module_entry_class": "mycsharpmodule.classname"
-                }
-            },
-            "args": {
-                "dotnet_module_args": "module configuration"
-            }
-        }
-    ]
-}
-```
-
-**SRS_DOTNET_05_002: [** If `configuration` is NULL then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_003: [** If configuration is not a JSON object, then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_006: [** If the JSON object does not contain a value named "dotnet_module_args" then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_008: [** If `DotNet_ParseConfigurationFromJson` succeeds then is shall return a non-NULL value with the value of `configuration` `as void*`. **]**
+This is the configuration of the Client Module. The String is going to be passed as is for .NET Client Module.
 
 
 DotNet_Create
@@ -212,3 +176,10 @@ bool Module_DotNetHost_PublishMessage(BROKER_HANDLE , MODULE_HANDLE sourceModule
 **SRS_DOTNET_04_027: [** If `Broker_Publish` fails `Module_DotNetHost_PublishMessage` shall fail.  **]**
 
 **SRS_DOTNET_04_028: [** If `Broker_Publish` succeeds `Module_DotNetHost_PublishMessage` shall succeed. **]**
+
+DotNet_FreeConfiguration
+------------------------
+```c
+void DotNet_FreeConfiguration(void* configuration)
+```
+There is no need to free configuration, since we don't allocate anything.
