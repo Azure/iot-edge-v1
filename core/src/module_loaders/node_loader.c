@@ -31,9 +31,11 @@ static DYNAMIC_LIBRARY_HANDLE NodeModuleLoader_LoadBindingModule(const MODULE_LO
     const char* binding_path = NODE_BINDING_MODULE_NAME;
     if (loader->configuration != NULL && loader->configuration->binding_path != NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_032: [ NodeModuleLoader_Load shall use the the binding module path given in loader->configuration->binding_path if loader->configuration is not NULL. ]
         binding_path = STRING_c_str(loader->configuration->binding_path);
     }
 
+    //Codes_SRS_NODE_MODULE_LOADER_13_004 : [NodeModuleLoader_Load shall load the binding module library into memory by calling DynamicLibrary_LoadLibrary.]
     return DynamicLibrary_LoadLibrary(binding_path);
 }
 
@@ -44,48 +46,58 @@ static MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, 
     // loader cannot be null
     if (loader == NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_001 : [NodeModuleLoader_Load shall return NULL if loader is NULL.]
         result = NULL;
-        LogError(
-            "NodeModuleLoader_Load() - invalid inputs - loader = %p",
-            loader
-        );
+        LogError("invalid inputs - loader = %p", loader);
     }
     else
     {
         if (loader->type != NODEJS)
         {
+            //Codes_SRS_NODE_MODULE_LOADER_13_002 : [NodeModuleLoader_Load shall return NULL if loader->type is not NODEJS.]
             result = NULL;
-            LogError("NodeModuleLoader_Load() - loader->type is not NODEJS");
+            LogError("loader->type is not NODEJS");
         }
         else
         {
             result = (NODE_MODULE_HANDLE_DATA*)malloc(sizeof(NODE_MODULE_HANDLE_DATA));
             if (result == NULL)
             {
-                LogError("NodeModuleLoader_Load() - malloc returned NULL");
+                //Codes_SRS_NODE_MODULE_LOADER_13_003 : [NodeModuleLoader_Load shall return NULL if an underlying platform call fails.]
+                LogError("malloc returned NULL");
             }
             else
             {
                 result->binding_module = NodeModuleLoader_LoadBindingModule(loader);
                 if (result->binding_module == NULL)
                 {
-                    LogError("NodeModuleLoader_Load() - NodeModuleLoader_LoadBindingModule returned NULL");
+                    LogError("NodeModuleLoader_LoadBindingModule returned NULL");
+                    //Codes_SRS_NODE_MODULE_LOADER_13_003 : [NodeModuleLoader_Load shall return NULL if an underlying platform call fails.]
                     free(result);
                     result = NULL;
                 }
                 else
                 {
+                    //Codes_SRS_NODE_MODULE_LOADER_13_033: [ NodeModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the module's API table. ]
                     pfModule_GetApi pfnGetAPI = (pfModule_GetApi)DynamicLibrary_FindSymbol(result->binding_module, MODULE_GETAPI_NAME);
                     if (pfnGetAPI == NULL)
                     {
                         DynamicLibrary_UnloadLibrary(result->binding_module);
                         free(result);
+                        //Codes_SRS_NODE_MODULE_LOADER_13_003 : [NodeModuleLoader_Load shall return NULL if an underlying platform call fails.]
                         result = NULL;
-                        LogError("NodeModuleLoader_Load() - DynamicLibrary_FindSymbol() returned NULL");
+                        LogError("DynamicLibrary_FindSymbol() returned NULL");
                     }
                     else
                     {
+                        //Codes_SRS_NODE_MODULE_LOADER_13_005 : [NodeModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]
                         result->api = pfnGetAPI(Module_ApiGatewayVersion);
+
+                        //Codes_SRS_NODE_MODULE_LOADER_13_034: [ NodeModuleLoader_Load shall return NULL if MODULE_API returned by the binding module is NULL. ]
+                        //Codes_SRS_NODE_MODULE_LOADER_13_035: [ NodeModuleLoader_Load shall return NULL if MODULE_API::version is greater than Module_ApiGatewayVersion. ]
+                        //Codes_SRS_NODE_MODULE_LOADER_13_036: [ NodeModuleLoader_Load shall return NULL if the Module_Create function in MODULE_API is NULL. ]
+                        //Codes_SRS_NODE_MODULE_LOADER_13_037: [ NodeModuleLoader_Load shall return NULL if the Module_Receive function in MODULE_API is NULL. ]
+                        //Codes_SRS_NODE_MODULE_LOADER_13_038: [ NodeModuleLoader_Load shall return NULL if the Module_Destroy function in MODULE_API is NULL. ]
 
                         /* if any of the required functions is NULL then we have a misbehaving module */
                         if (result->api == NULL ||
@@ -94,10 +106,24 @@ static MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, 
                             MODULE_DESTROY(result->api) == NULL ||
                             MODULE_RECEIVE(result->api) == NULL)
                         {
+                            LogError(
+                                "pfnGetapi() returned an invalid MODULE_API instance. "
+                                "result->api = %p, "
+                                "result->api->version = %d, "
+                                "MODULE_CREATE(result->api) = %p, "
+                                "MODULE_DESTROY(result->api) = %p, "
+                                "MODULE_RECEIVE(result->api) = %p, ",
+                                result->api,
+                                result->api != NULL ? result->api->version : 0x0,
+                                result->api != NULL ? MODULE_CREATE(result->api) : NULL,
+                                result->api != NULL ? MODULE_DESTROY(result->api) : NULL,
+                                result->api != NULL ? MODULE_RECEIVE(result->api) : NULL
+                            );
+
                             DynamicLibrary_UnloadLibrary(result->binding_module);
                             free(result);
+                            //Codes_SRS_NODE_MODULE_LOADER_13_003 : [NodeModuleLoader_Load shall return NULL if an underlying platform call fails.]
                             result = NULL;
-                            LogError("NodeModuleLoader_Load() - pfnGetapi() returned NULL");
                         }
                     }
                 }
@@ -114,12 +140,14 @@ static const MODULE_API* NodeModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE mod
 
     if (moduleLibraryHandle == NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_006 : [NodeModuleLoader_GetModuleApi shall return NULL if moduleLibraryHandle is NULL.]
         result = NULL;
-        LogError("NodeModuleLoader_GetModuleApi() - moduleLibraryHandle is NULL");
+        LogError("moduleLibraryHandle is NULL");
     }
     else
     {
         NODE_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
+        //Codes_SRS_NODE_MODULE_LOADER_13_007 : [NodeModuleLoader_GetModuleApi shall return a non - NULL MODULE_API pointer when successful.]
         result = loader_data->api;
     }
 
@@ -131,12 +159,16 @@ static void NodeModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
     if (moduleLibraryHandle != NULL)
     {
         NODE_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
+        //Codes_SRS_NODE_MODULE_LOADER_13_009: [ NodeModuleLoader_Unload shall unload the binding module from memory by calling DynamicLibrary_UnloadLibrary. ]
         DynamicLibrary_UnloadLibrary(loader_data->binding_module);
+
+        //Codes_SRS_NODE_MODULE_LOADER_13_010: [ NodeModuleLoader_Unload shall free resources allocated when loading the binding module. ]
         free(loader_data);
     }
     else
     {
-        LogError("NodeModuleLoader_Unload() - moduleLibraryHandle is NULL");
+        //Codes_SRS_NODE_MODULE_LOADER_13_008: [ NodeModuleLoader_Unload shall do nothing if moduleLibraryHandle is NULL. ]
+        LogError("moduleLibraryHandle is NULL");
     }
 }
 
@@ -149,7 +181,8 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
     NODE_LOADER_ENTRYPOINT* config;
     if (json == NULL)
     {
-        LogError("NodeModuleLoader_ParseEntrypointFromJson() - json is NULL");
+        LogError("json is NULL");
+        //Codes_SRS_NODE_MODULE_LOADER_13_011: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if json is NULL. ]
         config = NULL;
     }
     else
@@ -157,7 +190,8 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
         // "json" must be an "object" type
         if (json_value_get_type(json) != JSONObject)
         {
-            LogError("NodeModuleLoader_ParseEntrypointFromJson() - 'json' is not an object value");
+            LogError("'json' is not an object value");
+            //Codes_SRS_NODE_MODULE_LOADER_13_012: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if the root json entity is not an object. ]
             config = NULL;
         }
         else
@@ -165,15 +199,18 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
             JSON_Object* entrypoint = json_value_get_object(json);
             if (entrypoint == NULL)
             {
-                LogError("NodeModuleLoader_ParseEntrypointFromJson() - json_value_get_object failed");
+                LogError("json_value_get_object failed");
+                //Codes_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
                 config = NULL;
             }
             else
             {
+                //Codes_SRS_NODE_MODULE_LOADER_13_014: [ NodeModuleLoader_ParseEntrypointFromJson shall retrieve the path to the main JS file by reading the value of the attribute main.path. ]
                 const char* mainPath = json_object_get_string(entrypoint, "main.path");
                 if (mainPath == NULL)
                 {
-                    LogError("NodeModuleLoader_ParseEntrypointFromJson() - json_object_get_string for 'main.path' returned NULL");
+                    LogError("json_object_get_string for 'main.path' returned NULL");
+                    //Codes_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
                     config = NULL;
                 }
                 else
@@ -184,8 +221,9 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
                         config->mainPath = STRING_construct(mainPath);
                         if (config->mainPath == NULL)
                         {
-                            LogError("NodeModuleLoader_ParseEntrypointFromJson() - STRING_construct failed");
+                            LogError("STRING_construct failed");
                             free(config);
+                            //Codes_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
                             config = NULL;
                         }
                         else
@@ -197,13 +235,15 @@ static void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
                     }
                     else
                     {
-                        LogError("NodeModuleLoader_ParseEntrypointFromJson() - malloc failed");
+                        //Codes_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
+                        LogError("malloc failed");
                     }
                 }
             }
         }
     }
 
+    //Codes_SRS_NODE_MODULE_LOADER_13_015: [ NodeModuleLoader_ParseEntrypointFromJson shall return a non-NULL pointer to the parsed representation of the entrypoint when successful. ]
     return (void*)config;
 }
 
@@ -212,12 +252,14 @@ static void NodeModuleLoader_FreeEntrypoint(void* entrypoint)
     if (entrypoint != NULL)
     {
         NODE_LOADER_ENTRYPOINT* ep = (NODE_LOADER_ENTRYPOINT*)entrypoint;
+        //Codes_SRS_NODE_MODULE_LOADER_13_017: [NodeModuleLoader_FreeEntrypoint shall free resources allocated during NodeModuleLoader_ParseEntrypointFromJson.]
         STRING_delete(ep->mainPath);
         free(ep);
     }
     else
     {
-        LogError("NodeModuleLoader_FreeEntrypoint - entrypoint is NULL");
+        //Codes_SRS_NODE_MODULE_LOADER_13_016: [ NodeModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL. ]
+        LogError("entrypoint is NULL");
     }
 }
 
@@ -226,10 +268,12 @@ static MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFrom
     MODULE_LOADER_BASE_CONFIGURATION* result = (MODULE_LOADER_BASE_CONFIGURATION*)malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION));
     if (result != NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_019: [ NodeModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
         if (ModuleLoader_ParseBaseConfigurationFromJson(result, json) != MODULE_LOADER_SUCCESS)
         {
-            LogError("NodeModuleLoader_ParseConfigurationFromJson() - ModuleLoader_ParseBaseConfigurationFromJson failed");
+            LogError("ModuleLoader_ParseBaseConfigurationFromJson failed");
             free(result);
+            //Codes_SRS_NODE_MODULE_LOADER_13_018: [ NodeModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
             result = NULL;
         }
         else
@@ -241,7 +285,8 @@ static MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFrom
     }
     else
     {
-        LogError("NodeModuleLoader_ParseConfigurationFromJson() - malloc failed");
+        //Codes_SRS_NODE_MODULE_LOADER_13_018: [ NodeModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
+        LogError("malloc failed");
     }
 
     return result;
@@ -251,12 +296,16 @@ static void NodeModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION*
 {
     if (configuration != NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_021: [ NodeModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationFromJson. ]
         ModuleLoader_FreeBaseConfiguration(configuration);
+
+        //Codes_SRS_NODE_MODULE_LOADER_13_022: [ NodeModuleLoader_FreeConfiguration shall free resources allocated by NodeModuleLoader_ParseConfigurationFromJson. ]
         free(configuration);
     }
     else
     {
-        LogError("NodeModuleLoader_FreeConfiguration() - configuration is NULL");
+        //Codes_SRS_NODE_MODULE_LOADER_13_020: [ NodeModuleLoader_FreeConfiguration shall do nothing if configuration is NULL. ]
+        LogError("configuration is NULL");
     }
 }
 
@@ -269,7 +318,8 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
     NODEJS_MODULE_CONFIG* result;
     if (entrypoint == NULL)
     {
-        LogError("NodeModuleLoader_BuildModuleConfiguration() - entrypoint is NULL.");
+        LogError("entrypoint is NULL.");
+        //Codes_SRS_NODE_MODULE_LOADER_13_023: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint is NULL. ]
         result = NULL;
     }
     else
@@ -277,7 +327,8 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
         NODE_LOADER_ENTRYPOINT* node_entrypoint = (NODE_LOADER_ENTRYPOINT*)entrypoint;
         if (node_entrypoint->mainPath == NULL)
         {
-            LogError("NodeModuleLoader_BuildModuleConfiguration() - entrypoint mainPath is NULL.");
+            LogError("entrypoint mainPath is NULL.");
+            //Codes_SRS_NODE_MODULE_LOADER_13_024: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->mainPath is NULL. ]
             result = NULL;
         }
         else
@@ -285,15 +336,17 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
             result = (NODEJS_MODULE_CONFIG*)malloc(sizeof(NODEJS_MODULE_CONFIG));
             if (result == NULL)
             {
-                LogError("NodeModuleLoader_BuildModuleConfiguration() - malloc failed.");
+                //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
+                LogError("malloc failed.");
             }
             else
             {
                 result->main_path = STRING_clone(node_entrypoint->mainPath);
                 if (result->main_path == NULL)
                 {
-                    LogError("NodeModuleLoader_BuildModuleConfiguration() - STRING_clone for mainPath failed.");
+                    LogError("STRING_clone for mainPath failed.");
                     free(result);
+                    //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                     result = NULL;
                 }
                 else
@@ -305,9 +358,10 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
 
                     if (module_configuration != NULL && result->configuration_json == NULL)
                     {
-                        LogError("NodeModuleLoader_BuildModuleConfiguration() - STRING_clone for module configuration failed.");
+                        LogError("STRING_clone for module configuration failed.");
                         STRING_delete(result->main_path);
                         free(result);
+                        //Codes_SRS_NODE_MODULE_LOADER_13_025: [ NodeModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                         result = NULL;
                     }
                     else
@@ -321,6 +375,7 @@ static void* NodeModuleLoader_BuildModuleConfiguration(
         }
     }
 
+    //Codes_SRS_NODE_MODULE_LOADER_13_026: [NodeModuleLoader_BuildModuleConfiguration shall build a NODEJS_MODULE_CONFIG object by copying information from entrypoint and module_configuration and return a non - NULL pointer.]
     return result;
 }
 
@@ -328,18 +383,20 @@ static void NodeModuleLoader_FreeModuleConfiguration(const void* module_configur
 {
     if (module_configuration == NULL)
     {
+        //Codes_SRS_NODE_MODULE_LOADER_13_027: [ NodeModuleLoader_FreeModuleConfiguration shall do nothing if module_configuration is NULL. ]
         LogError("module_configuration is NULL");
     }
     else
     {
         NODEJS_MODULE_CONFIG* config = (NODEJS_MODULE_CONFIG*)module_configuration;
+        //Codes_SRS_NODE_MODULE_LOADER_13_028: [ NodeModuleLoader_FreeModuleConfiguration shall free the NODEJS_MODULE_CONFIG object. ]
         STRING_delete(config->main_path);
         STRING_delete(config->configuration_json);
         free(config);
     }
 }
 
-MODULE_LOADER_API Node_Module_Loader_API =
+static MODULE_LOADER_API Node_Module_Loader_API =
 {
     .Load = NodeModuleLoader_Load,
     .Unload = NodeModuleLoader_Unload,
@@ -355,15 +412,21 @@ MODULE_LOADER_API Node_Module_Loader_API =
     .FreeModuleConfiguration = NodeModuleLoader_FreeModuleConfiguration
 };
 
-MODULE_LOADER Node_Module_Loader =
+static MODULE_LOADER Node_Module_Loader =
 {
+    //Codes_SRS_NODE_MODULE_LOADER_13_030 : [MODULE_LOADER::type shall be NODEJS.]
     NODEJS,                 // the loader type
+
+    //Codes_SRS_NODE_MODULE_LOADER_13_031 : [MODULE_LOADER::name shall be the string 'node'.]
     NODE_LOADER_NAME,       // the name of this loader
+
     NULL,                   // default loader configuration is NULL unless user overrides
+
     &Node_Module_Loader_API // the module loader function pointer table
 };
 
 const MODULE_LOADER* NodeLoader_Get(void)
 {
+    //Codes_SRS_NODE_MODULE_LOADER_13_029: [NodeLoader_Get shall return a non - NULL pointer to a MODULE_LOADER struct.]
     return &Node_Module_Loader;
 }

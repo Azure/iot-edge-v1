@@ -20,7 +20,7 @@ extern "C"
 #if WIN32
 #define DOTNET_BINDING_MODULE_NAME    "dotnet.dll"
 #else
-#error Cannot build a .NET language binding module for your platform yet.
+#define DOTNET_BINDING_MODULE_NAME    "libdotnet.so"
 #endif
 
 /** @brief Structure to load a dotnet module */
