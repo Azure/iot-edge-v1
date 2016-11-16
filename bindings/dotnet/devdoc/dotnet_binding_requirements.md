@@ -31,17 +31,15 @@ typedef struct DOTNET_HOST_HANDLE_DATA_TAG
 ```
 
 
-DotNet_CreateFromJson
----------------------
+DotNet_ParseConfigurationFromJson
+---------------------------------
 ```c
-MODULE_HANDLE DotNet_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+static void* DotNet_ParseConfigurationFromJson(const char* configuration);
 ```
 Creates a new .NET module host instance. `configuration` is a pointer to a const char* that contains a json object as supplied by `Gateway_CreateFromJson`.
 The json object should conform to the following structure: 
 ```json
 {
-    "dotnet_module_path": "/path/to/dotnet_module.dll",
-    "dotnet_module_entry_class": "mydotnetmodule.classname",
     "dotnet_module_args": "module configuration"
 }
 ``` 
@@ -52,35 +50,29 @@ and call the entry class `mycsharpmodule.classname` passing as configuration the
 {
     "modules": [
         {
-            "module name": "csharp_hello_world",
-            "module path": "/path/to/dotnet.dll",
+            "name": "csharp_hello_world",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                   "dotnet_module_path": "/path/to/csharp_module.dll",
+                   "dotnet_module_entry_class": "mycsharpmodule.classname"
+                }
+            },
             "args": {
-                "dotnet_module_path": "/path/to/csharp_module.dll",
-                "dotnet_module_entry_class": "mycsharpmodule.classname",
                 "dotnet_module_args": "module configuration"
             }
         }
     ]
-}```
+}
+```
 
+**SRS_DOTNET_05_002: [** If `configuration` is NULL then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_DOTNET_05_001: [** If `broker` is NULL then `DotNet_CreateFromJson` shall fail and return NULL. **]**
+**SRS_DOTNET_05_003: [** If configuration is not a JSON object, then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_DOTNET_05_002: [** If `configuration` is NULL then `DotNet_CreateFromJson` shall fail and return NULL. **]**
+**SRS_DOTNET_05_006: [** If the JSON object does not contain a value named "dotnet_module_args" then `DotNet_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_DOTNET_05_003: [** If configuration is not a JSON object, then `DotNet_CreateFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_004: [** If the JSON object does not contain a value named "dotnet_module_path" then `DotNet_CreateFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_005: [** If the JSON object does not contain a value named "dotnet_module_entry_class" then `DotNet_CreateFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_006: [** If the JSON object does not contain a value named "dotnet_module_args" then `DotNet_CreateFromJson` shall fail and return NULL. **]**
-
-**SRS_DOTNET_05_007: [** `DotNet_CreateFromJson` shall pass `broker` and `const char* configuration` ( with `DOTNET_HOST_CONFIG`) to `DotNet_Create`. **]**
-
-**SRS_DOTNET_05_008: [** If `DotNet_Create` succeeds then `DotNet_CreateFromJson` shall succeed and return a non-NULL value. **]**
-
-**SRS_DOTNET_05_009: [** If `DotNet_Create` fails then `DotNet_CreateFromJson` shall fail and return NULL. **]**
+**SRS_DOTNET_05_008: [** If `DotNet_ParseConfigurationFromJson` succeeds then is shall return a non-NULL value with the value of `configuration` `as void*`. **]**
 
 
 DotNet_Create

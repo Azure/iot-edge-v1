@@ -1803,27 +1803,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         }
     }
     
-    /* Tests_SRS_DOTNET_05_001: [ If broker is NULL then DotNet_CreateFromJson shall fail and return NULL. ]  */
-    TEST_FUNCTION(DotNet_CreateFromJson_returns_NULL_when_broker_is_NULL)
-    {
-        ///arrange
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
-
-        mocks.ResetAllCalls();
-
-        ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)(NULL, (const char*)0x42);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
-    /* Tests_SRS_DOTNET_05_002: [If configuration is NULL then DotNet_CreateFromJson shall fail and return NULL.] */
-    TEST_FUNCTION(DotNet_CreateFromJson_returns_NULL_when_configuration_is_NULL)
+    /* Tests_SRS_DOTNET_05_002: [ If configuration is NULL then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_ParseConfigurationFromJson_returns_NULL_when_configuration_is_NULL)
     {
         ///arrange
         CDOTNETMocks mocks;
@@ -1833,7 +1814,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.ResetAllCalls();
 
         ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, NULL);
+        auto result = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(NULL);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1842,8 +1823,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_json_parse_string_fails)
+    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_ParseConfigurationFromJson_Create_returns_NULL_when_json_parse_string_fails)
     {
         ///arrange
         CDOTNETMocks mocks;
@@ -1857,7 +1838,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
             .SetFailReturn((JSON_Value*)NULL);
 
         ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+        auto result = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)((const char*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1866,8 +1847,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_CreateFromJson shall fail and return NULL. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_json_value_get_object_fails)
+    /* Tests_SRS_DOTNET_05_003: [ If configuration is not a JSON object, then DotNet_ParseConfigurationFromJson shall fail and return NULL. ] */
+    TEST_FUNCTION(DotNet_ParseConfigurationFromJson_Create_returns_NULL_when_json_value_get_object_fails)
     {
         ///arrange
         CDOTNETMocks mocks;
@@ -1884,7 +1865,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
             .SetFailReturn((JSON_Object*)NULL);
 
         ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+        auto result = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)((const char*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1893,8 +1874,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_05_004: [ If the JSON object does not contain a value named "dotnet_module_path" then DotNet_CreateFromJson shall fail and return NULL. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_path)
+    /* Tests_SRS_DOTNET_05_006: [ If the JSON object does not contain a value named "dotnet_module_args" then DotNet_ParseConfigurationFromJson shall fail and return NULL. ]*/
+    TEST_FUNCTION(DotNet_ParseConfigurationFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_args)
     {
         ///arrange
         CDOTNETMocks mocks;
@@ -1907,75 +1888,6 @@ BEGIN_TEST_SUITE(dotnet_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
-            .IgnoreArgument(1)
-            .SetFailReturn((const char*)NULL);
-
-        ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
-    /* Tests_SRS_DOTNET_05_005: [ If the JSON object does not contain a value named "dotnet_module_entry_class" then DotNet_CreateFromJson shall fail and return NULL. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_entry_class)
-    {
-        ///arrange
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-
-        mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
-            .IgnoreArgument(1)
-            .SetFailReturn((const char*)NULL);
-
-        ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
-    /* Tests_SRS_DOTNET_05_006: [ If the JSON object does not contain a value named "dotnet_module_args" then DotNet_CreateFromJson shall fail and return NULL. ]*/
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_when_configuration_string_do_not_contain_dotnet_module_args)
-    {
-        ///arrange
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-
-        mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
@@ -1983,7 +1895,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
             .SetFailReturn((const char*)NULL);
 
         ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+        auto result = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)((const char*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
@@ -1992,49 +1904,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_05_007: [ DotNet_CreateFromJson shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNet_Create. ]*/
-    /* Tests_SRS_DOTNET_05_009: [ If DotNet_Create fails then DotNet_CreateFromJson shall fail and return NULL. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_Create_returns_NULL_Module_Create_fails)
-    {
-        ///arrange
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-
-        mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
-            .IgnoreArgument(3)
-            .SetReturn(E_FAIL);
-
-        ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
-    }
-
-    /* Tests_SRS_DOTNET_05_007: [ DotNet_CreateFromJson shall pass broker and const void* configuration ( with DOTNET_HOST_CONFIG) to DotNet_Create. ]*/
-    /* Tests_SRS_DOTNET_05_008: [ If DotNet_Create succeeds then DotNet_CreateFromJson shall succeed and return a non-NULL value. ] */
-    TEST_FUNCTION(DotNet_CreateFromJson_succeeds)
+    /* Codes_SRS_DOTNET_05_008: [ If DotNet_ParseConfigurationFromJson succeeds then is shall return a non-NULL value with the value of configuration as void*. ] */
+    TEST_FUNCTION(DotNet_ParseConfigurationFromJson_succeeds)
     {
         ///arrange
         CNiceCallComparer<CDOTNETMocks> mocks;
@@ -2049,27 +1920,17 @@ BEGIN_TEST_SUITE(dotnet_ut)
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_path"))
-            .IgnoreArgument(1);
-
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_entry_class"))
-            .IgnoreArgument(1);
-
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "dotnet_module_args"))
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, CLRCreateInstance(CLSID_CLRMetaHost_UUID, CLR_METAHOST_UUID, IGNORED_PTR_ARG))
-            .IgnoreArgument(3);
-
         ///act
-        auto result = MODULE_CREATE_FROM_JSON(theAPIS)((BROKER_HANDLE)0x42, (const char*)FAKE_CONFIG);
+        auto result = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)((const char*)FAKE_CONFIG);
 
         ///assert
         mocks.AssertActualAndExpectedCalls();
         ASSERT_IS_NOT_NULL(result);
 
         ///cleanup
-        MODULE_DESTROY(theAPIS)(result);
     }
 
     /* Tests_SRS_DOTNET_04_001: [ DotNet_Create shall return NULL if broker is NULL. ] */
@@ -3474,6 +3335,127 @@ BEGIN_TEST_SUITE(dotnet_ut)
         MODULE_DESTROY(theAPIS)((MODULE_HANDLE)result);
     }
 
+    /*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+    /*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ]*/
+    TEST_FUNCTION(DotNet_Start_succeeds)
+    {
+        ///arrage
+        CDOTNETMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
+        
+        DOTNET_HOST_CONFIG dotNetConfig;
+        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+        dotNetConfig.dotnet_module_args = "module configuration";
+        bstr_t bstrStartClientMethodName(L"Start");
+        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+        variant_t emptyVariant(0);
+
+        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
+
+        mocks.ResetAllCalls();
+        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+            .IgnoreArgument(3);
+        STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(4)
+            .IgnoreArgument(5)
+            .IgnoreArgument(6);
+
+        ///act
+        MODULE_START(theAPIS)((MODULE_HANDLE)result);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ] */
+    TEST_FUNCTION(DotNet_Start_Invoke_fails_log_error)
+    {
+        ///arrage
+        CDOTNETMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
+        
+        DOTNET_HOST_CONFIG dotNetConfig;
+        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+        dotNetConfig.dotnet_module_args = "module configuration";
+        bstr_t bstrStartClientMethodName(L"Start");
+        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+        variant_t emptyVariant(0);
+
+        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
+
+        mocks.ResetAllCalls();
+        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+            .IgnoreArgument(3);
+        STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(4)
+            .IgnoreArgument(5)
+            .IgnoreArgument(6)
+            .SetFailReturn((HRESULT)E_POINTER);
+
+        ///act
+        MODULE_START(theAPIS)((MODULE_HANDLE)result);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
+    TEST_FUNCTION(DotNet_Start_GetInterface_fails_log_error)
+    {
+        ///arrage
+        CDOTNETMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
+        
+        DOTNET_HOST_CONFIG dotNetConfig;
+        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
+        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
+        dotNetConfig.dotnet_module_args = "module configuration";
+        bstr_t bstrStartClientMethodName(L"Start");
+        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
+        variant_t emptyVariant(0);
+
+        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
+
+        mocks.ResetAllCalls();
+        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
+            .IgnoreArgument(3)
+            .SetFailReturn((HRESULT)E_POINTER);
+
+        ///act
+        MODULE_START(theAPIS)((MODULE_HANDLE)result);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+
+    /*Tests_SRS_DOTNET_17_001: [ DotNet_Start shall do nothing if module is NULL. ] */
+    TEST_FUNCTION(DotNet_Start_does_nothing_with_NULL)
+    {
+        ///arrage
+        CDOTNETMocks mocks;
+        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
+        
+
+
+        ///act
+        MODULE_START(theAPIS)(NULL);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+    }
+    
+
+
     /* Tests_SRS_DOTNET_04_015: [ DotNet_Receive shall do nothing if module is NULL. ] */
     TEST_FUNCTION(DotNet_Receive_does_nothing_when_modulehandle_is_Null)
     {
@@ -3790,125 +3772,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
-    /*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ]*/
-    TEST_FUNCTION(DotNet_Start_succeeds)
-    {
-        ///arrage
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-        DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrStartClientMethodName(L"Start");
-        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
-        variant_t emptyVariant(0);
-
-        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
-
-        mocks.ResetAllCalls();
-        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
-            .IgnoreArgument(3);
-        STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(4)
-            .IgnoreArgument(5)
-            .IgnoreArgument(6);
-
-        ///act
-        MODULE_START(theAPIS)((MODULE_HANDLE)result);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-    }
-
-    /*Tests_SRS_DOTNET_17_003: [ If the "IGatewayModuleStart" type interface exists, DotNet_Start shall call theStart C# method. ] */
-    TEST_FUNCTION(DotNet_Start_Invoke_fails_log_error)
-    {
-        ///arrage
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-        DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrStartClientMethodName(L"Start");
-        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
-        variant_t emptyVariant(0);
-
-        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
-
-        mocks.ResetAllCalls();
-        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
-            .IgnoreArgument(3);
-        STRICT_EXPECTED_CALL(mocks, InvokeMember_3(bstrStartClientMethodName, static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod), NULL, emptyVariant, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(4)
-            .IgnoreArgument(5)
-            .IgnoreArgument(6)
-            .SetFailReturn((HRESULT)E_POINTER);
-
-        ///act
-        MODULE_START(theAPIS)((MODULE_HANDLE)result);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-    }
-
-    /*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
-    TEST_FUNCTION(DotNet_Start_GetInterface_fails_log_error)
-    {
-        ///arrage
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-        DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrStartClientMethodName(L"Start");
-        bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
-        variant_t emptyVariant(0);
-
-        auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
-
-        mocks.ResetAllCalls();
-        STRICT_EXPECTED_CALL(mocks, GetInterface_Type(bstrStartClientIFName, VARIANT_TRUE, IGNORED_PTR_ARG))
-            .IgnoreArgument(3)
-            .SetFailReturn((HRESULT)E_POINTER);
-
-        ///act
-        MODULE_START(theAPIS)((MODULE_HANDLE)result);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-    }
-
-    /*Tests_SRS_DOTNET_17_001: [ DotNet_Start shall do nothing if module is NULL. ] */
-    TEST_FUNCTION(DotNet_Start_does_nothing_with_NULL)
-    {
-        ///arrage
-        CDOTNETMocks mocks;
-        const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
-        
-
-
-        ///act
-        MODULE_START(theAPIS)(NULL);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-    }
-    
+   
     /* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
     TEST_FUNCTION(DotNet_Receive__does_nothing_when_Create_Instance_3_for_Message_Constructor_fails)
     {
