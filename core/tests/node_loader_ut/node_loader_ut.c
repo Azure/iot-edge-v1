@@ -1049,7 +1049,6 @@ TEST_FUNCTION(NodeModuleLoader_FreeModuleConfiguration_frees_resources)
     NODE_LOADER_ENTRYPOINT entrypoint = { (STRING_HANDLE)STRING_construct("foo") };
     STRING_HANDLE module_config = STRING_construct("boo");
 
-    //setup_NodeModuleLoader_BuildModuleConfiguration_expectations(entrypoint.mainPath, module_config);
     void* config = NodeModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, module_config);
 
     umock_c_reset_all_calls();
