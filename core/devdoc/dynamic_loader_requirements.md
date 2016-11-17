@@ -153,7 +153,7 @@ DynamicModuleLoader_FreeModuleConfiguration
 void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuration);
 ```
 
-Since the dynamic loader does not have any loader specific configuration there is nothing to free here.
+Since the dynamic loader does not do any configuration translation, there is nothing to free.
 
 **SRS_DYNAMIC_MODULE_LOADER_13_053: [** `DynamicModuleLoader_FreeModuleConfiguration` shall do nothing. **]**
 

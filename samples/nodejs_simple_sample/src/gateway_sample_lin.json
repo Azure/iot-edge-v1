@@ -1,50 +1,60 @@
 {
-  "modules": [
-    {
-      "module name": "node_printer",
-      "loading args": {
-        "module path": "<<path to nodejs_binding.dll|.so>>"
-      },
-      "args": {
-        "main_path": "<<path to printer.js>>",
-        "args": null
-      }
-    },
-    {
-      "module name": "node_sensor",
-      "loading args": {
-        "module path": "<<path to nodejs_binding.dll|.so>>"
-      },
-      "args": {
-        "main_path": "<<path to sensor.js>>",
-        "args": null
-      }
-    },
-    {
-      "module name": "iothub_writer",
-      "loading args": {
-        "module path": "<<path to nodejs_binding.dll>>"
-      },
-      "args": {
-        "main_path": "<<path to iothub_writer.js>>",
-        "args": {
-          "connection_string": "<<IoT Hub Device Connection String>>"
+    "modules": [
+        {
+            "name": "node_printer",
+            "loader": {
+                "name": "node",
+                "main.path": "<<path to printer.js>>"
+            },
+            "args": null
+        },
+        {
+            "name": "node_sensor",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "<<path to sensor.js>>"
+                }
+            },
+            "args": null
+        },
+        {
+            "name": "iothub_writer",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "<<path to iothub_writer.js>>"
+                }
+            },
+            "args": {
+                "connection_string": "<<IoT Hub Device Connection String>>"
+            }
+        },
+        {
+            "name": "Logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "<<path to logger.dll>>"
+                }
+            },
+            "args": {
+                "filename": "<<path to log file>>"
+            }
         }
-      }
-    },
-    {
-      "module name": "Logger",
-      "loading args": {
-        "module path": "<<path to logger.dll>>"
-      },
-      "args": {
-        "filename": "<<path to log file>>"
-      }
-    }
-  ],
-  "links" : [
-    { "source" : "*", "sink" : "Logger" },
-    { "source" : "node_sensor", "sink" : "iothub_writer" },
-    { "source" : "node_sensor", "sink" : "node_printer" }
-  ]
+    ],
+    "links": [
+        {
+            "source": "*",
+            "sink": "Logger"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "iothub_writer"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "node_printer"
+        }
+    ]
 }

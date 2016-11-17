@@ -84,8 +84,6 @@ MOCKABLE_FUNCTION(, JSON_Array*, json_value_get_array, const JSON_Value *, value
 MOCKABLE_FUNCTION(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index);
 MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, value);
 
-static const size_t LOADERS_COUNT = 4;
-
 //=============================================================================
 //Globals
 //=============================================================================

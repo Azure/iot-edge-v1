@@ -3,24 +3,23 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-compileAsC99()
+compileAsC11()
 
-set(testSuiteName dynamic_loader_ut)
+set(theseTestsName dynamic_loader_ut)
 
-set(${testSuiteName}_cpp_files
-    ${testSuiteName}.cpp
+set(${theseTestsName}_test_files
+${theseTestsName}.c
 )
 
-set(${testSuiteName}_c_files
+set(${theseTestsName}_c_files
     ../../src/module_loaders/dynamic_loader.c
+    ./real_strings.c
 )
 
-set(${testSuiteName}_h_files
-    ../../inc/module_loader.h
-    ../../inc/dynamic_library.h
-    ../../inc/module_loaders/dynamic_loader.h
+set(${theseTestsName}_h_files
+    ./real_strings.h
 )
 
 include_directories(${GW_INC})
 
-build_test_artifacts(${testSuiteName} ON)
+build_c_test_artifacts(${theseTestsName} ON "tests/UnitTests")
