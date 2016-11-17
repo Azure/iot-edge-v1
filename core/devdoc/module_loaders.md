@@ -55,14 +55,18 @@ the top level `loaders` array. For example:
     {
       "type": "java",
       "name": "java",
-      "jvm.options": {
-        ... jvm options here ...
+      "configuration": {
+          "jvm.options": {
+            ... jvm options here ...
+          }
       }
     },
     {
       "type": "node",
       "name": "node_loader",
-      "binding.path": "/path/to/nodejs_binding.so"
+      "configuration": {
+          "binding.path": "/path/to/nodejs_binding.so"
+      }
     }
   ],
 

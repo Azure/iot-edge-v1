@@ -408,11 +408,11 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///arrange
 
         ///act
-        auto result = NODEJS_ParseConfigurationFromJson("boo");
+        auto result = NODEJS_ParseConfigurationFromJson("{}");
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
-        ASSERT_IS_TRUE(strcmp(STRING_c_str((STRING_HANDLE)result), "boo") == 0);
+        ASSERT_IS_TRUE(strcmp(STRING_c_str((STRING_HANDLE)result), "{}") == 0);
 
         ///cleanup
         NODEJS_FreeConfiguration(result);
@@ -421,7 +421,7 @@ BEGIN_TEST_SUITE(nodejs_int)
     TEST_FUNCTION(NODEJS_FreeConfiguration_frees_resources)
     {
         ///arrange
-        auto result = NODEJS_ParseConfigurationFromJson("boo");
+        auto result = NODEJS_ParseConfigurationFromJson("{}");
 
         // This test is only useful when we run things under a leak
         // detector.
@@ -533,7 +533,6 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///cleanup
         NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
-        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)

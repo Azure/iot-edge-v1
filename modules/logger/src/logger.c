@@ -76,7 +76,7 @@ static int LogStartStop_Print(char* destination, size_t destinationSize, bool ap
             const char* format = appendStart ?
                 (isAbsoluteStart?"{\"time\":\"%c\",\"content\":\"Log started\"}]" : ",{\"time\":\"%c\",\"content\":\"Log started\"}]"):
                 ",{\"time\":\"%c\",\"content\":\"Log stopped\"}]";
-            if (strftime(destination, destinationSize, format, t) == 0) 
+            if (strftime(destination, destinationSize, format, t) == 0)
             {
                 LogError("unable to strftime");
                 result = __LINE__;
@@ -122,7 +122,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
     /*Codes_SRS_LOGGER_02_002: [If configuration is NULL then Logger_Create shall fail and return NULL.]*/
     if (
         (broker == NULL) ||
-        (configuration == NULL) 
+        (configuration == NULL)
         )
     {
         LogError("invalid arg broker=%p configuration=%p", broker, configuration);
@@ -159,7 +159,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                 {
                     /*Codes_SRS_LOGGER_02_006: [Logger_Create shall open the file configuration the filename selectee.loggerConfigFile.name in update (reading and writing) mode and assign the result of fopen to fout field. ]*/
                     result->fout = fopen(config->selectee.loggerConfigFile.name, "r+b"); /*open binary file for update (reading and writing)*/
-                    if (result->fout == NULL) 
+                    if (result->fout == NULL)
                     {
                         /*if the file does not exist [or other error, indistinguishable here] try to create it*/
                         /*Codes_SRS_LOGGER_02_020: [If the file selectee.loggerConfigFile.name does not exist, it shall be created.]*/
@@ -183,7 +183,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                             LogError("unable to fseek to end of file");
                             if (fclose(result->fout) != 0)
                             {
-                                LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
+                                LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
                             }
                             free(result);
                             result = NULL;
@@ -199,7 +199,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                 LogError("unable to ftell (errno=%d)", errno);
                                 if (fclose(result->fout) != 0)
                                 {
-                                    LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
+                                    LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
                                 }
                                 free(result);
                                 result = NULL;
@@ -216,7 +216,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                         LogError("unable to write to output file");
                                         if (fclose(result->fout) != 0)
                                         {
-                                            LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
+                                            LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
                                         }
                                         free(result);
                                         result = NULL;
@@ -229,7 +229,7 @@ static MODULE_HANDLE Logger_Create(BROKER_HANDLE broker, const void* configurati
                                             LogError("append_logStartStop failed");
                                             if (fclose(result->fout) != 0)
                                             {
-                                                LogError("unable to close file %s", STRING_c_str(config->selectee.loggerConfigFile.name));
+                                                LogError("unable to close file %s", config->selectee.loggerConfigFile.name);
                                             }
                                             free(result);
                                             result = NULL;
@@ -263,7 +263,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
     LOGGER_CONFIG* result;
     /*Codes_SRS_LOGGER_05_003: [ If configuration is NULL then Logger_CreateFromJson shall fail and return NULL. ]*/
     if(configuration == NULL)
-    { 
+    {
         LogError("NULL parameter detected configuration=%p", configuration);
         result = NULL;
     }
@@ -297,7 +297,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                 else
                 {
                     /*fileNameValue is believed at this moment to be a string that might point to a filename on the system*/
-                    
+
                     /*Codes_SRS_LOGGER_17_001: [ Logger_ParseConfigurationFromJson shall allocate a new LOGGER_CONFIG structure. ]*/
                     result = (LOGGER_CONFIG*)malloc(sizeof(LOGGER_CONFIG));
                     if (result == NULL)
@@ -311,7 +311,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
                         /*Codes_SRS_LOGGER_17_007: [ Logger_ParseConfigurationFromJson shall set the selector in LOGGER_CONFIG to LOGGING_TO_FILE. ]*/
                         result->selector = LOGGING_TO_FILE;
                         char * logfileName;
-						int copy_result = mallocAndStrcpy_s(&logfileName, fileNameValue);
+                        int copy_result = mallocAndStrcpy_s(&logfileName, fileNameValue);
                         if (copy_result != 0)
                         {
                             /*Codes_SRS_LOGGER_17_003: [ If any system call fails, Logger_ParseConfigurationFromJson shall fail and return NULL. ]*/
@@ -333,7 +333,7 @@ static void* Logger_ParseConfigurationFromJson(const char* configuration)
             json_value_free(json);
         }
     }
-    
+
     return result;
 }
 
