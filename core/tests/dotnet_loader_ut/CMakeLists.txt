@@ -14,6 +14,7 @@ ${theseTestsName}.c
 set(${theseTestsName}_c_files
     ../../src/module_loaders/dotnet_loader.c
     ./real_strings.c
+    ./real_crt_abstractions.c
 )
 
 set(${theseTestsName}_h_files

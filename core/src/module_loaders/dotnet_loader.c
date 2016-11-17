@@ -16,6 +16,7 @@
 #include "module_loaders/dotnet_loader.h"
 #include "dotnet.h"
 #include "dynamic_library.h"
+#include "azure_c_shared_utility/crt_abstractions.h"
 
 typedef struct DOTNET_MODULE_HANDLE_DATA_TAG
 {
@@ -148,7 +149,7 @@ static const MODULE_API* DotnetModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE m
     else
     {
         //Codes_SRS_DOTNET_MODULE_LOADER_04_007: [ DotnetModuleLoader_GetModuleApi shall return a non-NULL MODULE_API pointer when successful. ]
-        DOTNET_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
+        DOTNET_MODULE_HANDLE_DATA* loader_data = (DOTNET_MODULE_HANDLE_DATA*)moduleLibraryHandle;
         result = loader_data->api;
     }
 
@@ -378,35 +379,37 @@ void* DotnetModuleLoader_BuildModuleConfiguration(
             }
             else
             {
-                result->dotnet_module_entry_class = STRING_c_str(dotnet_entrypoint->dotnetModuleEntryClass);
-                if (result->dotnet_module_entry_class == NULL)
+                if (mallocAndStrcpy_s(&((char*)result->dotnet_module_entry_class), (char*)STRING_c_str(dotnet_entrypoint->dotnetModuleEntryClass)) != 0)
                 {
                     //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                    LogError("STRING_clone for dotnet_module_entry_class failed.");
+                    LogError("Failed to malloc and Copy dotnetModuleEntryClass String.");
                     free(result);
                     result = NULL;
                 }
                 else
                 {
-                    result->dotnet_module_path = STRING_c_str(dotnet_entrypoint->dotnetModulePath);
-                    if (result->dotnet_module_path == NULL)
+                    if (mallocAndStrcpy_s(&((char*)result->dotnet_module_path), (char*)STRING_c_str(dotnet_entrypoint->dotnetModulePath)) != 0)
                     {
                         //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                        LogError("STRING_clone for dotnet_module_path failed.");
+                        LogError("Failed to malloc and Copy dotnet_module_path failed.");
+                        free((char*)result->dotnet_module_entry_class);
                         free(result);
                         result = NULL;
                     }
                     else
                     {
-
-                        result->dotnet_module_args = (module_configuration == NULL) ? NULL : module_configuration;
-
-                        if (module_configuration != NULL && result->dotnet_module_args == NULL)
+                        if (module_configuration != NULL && mallocAndStrcpy_s(&((char*)result->dotnet_module_args), (char*)module_configuration) != 0)
                         {
                             //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                            LogError("STRING_clone for module configuration failed.");
+                            LogError("Malloc and Copy for module_configuration failed.");
+                            free((char*)result->dotnet_module_path);
+                            free((char*)result->dotnet_module_entry_class);
                             free(result);
                             result = NULL;
+                        }
+                        else if(module_configuration == NULL)
+                        {
+                            result->dotnet_module_args = NULL;
                         }
                         else
                         {
@@ -428,7 +431,11 @@ void DotnetModuleLoader_FreeModuleConfiguration(const void* module_configuration
 {
     if (module_configuration != NULL)
     {
+        DOTNET_HOST_CONFIG* configuration = (DOTNET_HOST_CONFIG*)module_configuration;
         //Codes_SRS_DOTNET_MODULE_LOADER_04_028: [ DotnetModuleLoader_FreeModuleConfiguration shall free the DOTNET_HOST_CONFIG object. ]
+        free((char*)configuration->dotnet_module_args);
+        free((char*)configuration->dotnet_module_entry_class);
+        free((char*)configuration->dotnet_module_path);
         free((void*)module_configuration);
     }
     else
@@ -465,6 +472,6 @@ MODULE_LOADER Dotnet_Module_Loader =
 
 const MODULE_LOADER* DotnetLoader_Get(void)
 {
-    //Codes_//Tests_SRS_DOTNET_MODULE_LOADER_04_029: [ DotnetLoader_Get shall return a non-NULL pointer to a MODULE_LOADER struct. ]
+    //Codes_SRS_DOTNET_MODULE_LOADER_04_029: [ DotnetLoader_Get shall return a non-NULL pointer to a MODULE_LOADER struct. ]
     return &Dotnet_Module_Loader;
 }

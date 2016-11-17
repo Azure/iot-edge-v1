@@ -44,14 +44,39 @@ void my_gballoc_free(void* ptr)
 
 #include "real_strings.h"
 
+
 #define ENABLE_MOCKS
 
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/gballoc.h"
 
+
 #include "parson.h"
 #include "dynamic_library.h"
 #include "module_loader.h"
+
+
+//=============================================================================
+//HOOKS
+//=============================================================================
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    //String mocks
+    STRING_HANDLE real_STRING_construct(const char* psz);
+    void real_STRING_delete(STRING_HANDLE handle);
+    const char* real_STRING_c_str(STRING_HANDLE handle);
+    STRING_HANDLE real_STRING_clone(STRING_HANDLE handle);
+    int real_STRING_concat(STRING_HANDLE handle, const char* s2);
+
+    //mallocAndStrcpy_s
+    int real_mallocAndStrcpy_s(char** destination, const char* source);
+#ifdef __cplusplus
+}
+#endif
+
 
 #undef ENABLE_MOCKS
 
@@ -83,8 +108,6 @@ MOCKABLE_FUNCTION(, const char*, json_array_get_string, const JSON_Array*, arr, 
 MOCKABLE_FUNCTION(, JSON_Array*, json_value_get_array, const JSON_Value *, value);
 MOCKABLE_FUNCTION(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index);
 MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, value);
-
-static const size_t LOADERS_COUNT = 4;
 
 //=============================================================================
 //Globals
@@ -159,6 +182,7 @@ MOCK_FUNCTION_WITH_CODE(, JSON_Value_Type, json_value_get_type, const JSON_Value
     }
 MOCK_FUNCTION_END(val)
 
+
 #undef ENABLE_MOCKS
 
 TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
@@ -192,13 +216,19 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 
     // malloc/free hooks
     REGISTER_GLOBAL_MOCK_HOOK(gballoc_malloc, my_gballoc_malloc);
+    REGISTER_GLOBAL_MOCK_FAIL_RETURN(gballoc_malloc, NULL);
     REGISTER_GLOBAL_MOCK_HOOK(gballoc_free, my_gballoc_free);
 
     // Strings hooks
     REGISTER_GLOBAL_MOCK_HOOK(STRING_construct, real_STRING_construct);
     REGISTER_GLOBAL_MOCK_HOOK(STRING_clone, real_STRING_clone);
     REGISTER_GLOBAL_MOCK_HOOK(STRING_delete, real_STRING_delete);
+    REGISTER_GLOBAL_MOCK_HOOK(STRING_c_str, real_STRING_c_str);
+    REGISTER_GLOBAL_MOCK_FAIL_RETURN(mallocAndStrcpy_s, -1);
     REGISTER_GLOBAL_MOCK_FAIL_RETURN(STRING_clone, NULL);
+
+    //mallocAndStrcpy_s Hook
+    REGISTER_GLOBAL_MOCK_HOOK(mallocAndStrcpy_s, real_mallocAndStrcpy_s);
 
     const MODULE_LOADER* loader = DotnetLoader_Get();
     DotnetModuleLoader_Load = loader->api->Load;
@@ -294,7 +324,7 @@ TEST_FUNCTION(DotnetModuleLoader_Load_returns_NULL_when_entrypoint_dotnetModuleE
     // arrange
     MODULE_LOADER loader =
     {
-        NATIVE,
+        DOTNET,
         NULL, 
         NULL, 
         NULL
@@ -319,7 +349,7 @@ TEST_FUNCTION(DotnetModuleLoader_Load_returns_NULL_when_entrypoint_dotnetModuleP
     // arrange
     MODULE_LOADER loader =
     {
-        NATIVE,
+        DOTNET,
         NULL,
         NULL,
         NULL
@@ -1201,52 +1231,58 @@ TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_returns_NULL_when_dotn
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-
-
-static void setup_DotnetModuleLoader_BuildModuleConfiguration_expectations(STRING_HANDLE entrypoint_dotnetModulePath, STRING_HANDLE entrypoint_dotnetModuleEntryClass, STRING_HANDLE module_config)
-{
-    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint_dotnetModulePath));
-    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint_dotnetModuleEntryClass));
-    STRICT_EXPECTED_CALL(STRING_c_str(module_config));
-}
-
 //Tests_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
 //Tests_SRS_DOTNET_MODULE_LOADER_04_037: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->dotnetModuleEntryClass is NULL. ]
 TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_returns_NULL_when_things_fail)
 {
     // arrange
-    DOTNET_LOADER_ENTRYPOINT entrypoint = { STRING_construct("foo"), STRING_construct("soo") };
-    STRING_HANDLE module_config = STRING_construct("boo");
+    DOTNET_LOADER_ENTRYPOINT entrypoint = { STRING_construct("foo"), STRING_construct("foo2") };
+    char* module_config = "boo";
     umock_c_reset_all_calls();
 
     int result = 0;
     result = umock_c_negative_tests_init();
     ASSERT_ARE_EQUAL(int, 0, result);
 
-    setup_DotnetModuleLoader_BuildModuleConfiguration_expectations(entrypoint.dotnetModulePath, entrypoint.dotnetModuleEntryClass, module_config);
+    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModuleEntryClass))
+        .SetReturn("foo2");
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "foo2"))
+        .IgnoreArgument_destination();
+    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModulePath))
+        .SetReturn("foo");
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "foo"))
+        .IgnoreArgument_destination();
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "boo"))
+        .IgnoreArgument_destination();
 
     umock_c_negative_tests_snapshot();
 
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); i++)
     {
-        // arrange
-        umock_c_negative_tests_reset();
-        umock_c_negative_tests_fail_call(i);
+        if (
+            (i != 1) /*STRING_c_str*/ &&
+            (i != 3) /*STRING_c_str*/
+            )
+        {
 
-        // act
-        void* result = DotnetModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, module_config);
+            // arrange
+            umock_c_negative_tests_reset();
+            umock_c_negative_tests_fail_call(i);
 
-        // assert
-        ASSERT_IS_NULL(result);
+            // act
+            void* result = DotnetModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, module_config);
+
+            // assert
+            ASSERT_IS_NULL(result);
+        }
     }
 
     // cleanup
     umock_c_negative_tests_deinit();
     STRING_delete(entrypoint.dotnetModulePath);
     STRING_delete(entrypoint.dotnetModuleEntryClass);
-    STRING_delete(module_config);
 }
 
 //Tests_SRS_DOTNET_MODULE_LOADER_04_026: [ DotnetModuleLoader_BuildModuleConfiguration shall build a DOTNET_HOST_CONFIG object by copying information from entrypoint and module_configuration and return a non-NULL pointer. ]
@@ -1254,16 +1290,23 @@ TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_succeeds)
 {
     // arrange
     DOTNET_LOADER_ENTRYPOINT entrypoint = { (STRING_HANDLE)STRING_construct("foo"), (STRING_HANDLE)STRING_construct("foo2") };
-    STRING_HANDLE module_config = STRING_construct("boo");
+    char* module_config = "boo";
     umock_c_reset_all_calls();
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModuleEntryClass))
         .SetReturn("foo2");
-
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "foo2"))
+        .IgnoreArgument_destination();
     STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModulePath))
         .SetReturn("foo");
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "foo"))
+        .IgnoreArgument_destination();
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, "boo"))
+        .IgnoreArgument_destination();
+
+
 
 
     ///act
@@ -1274,7 +1317,6 @@ TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_succeeds)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    STRING_delete(module_config);
     STRING_delete(entrypoint.dotnetModulePath);
     STRING_delete(entrypoint.dotnetModuleEntryClass);
     DotnetModuleLoader_FreeModuleConfiguration(result);
@@ -1304,7 +1346,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeModuleConfiguration_frees_resources)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModuleEntryClass))
         .SetReturn("foo2");
-
+    
     STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetModulePath))
         .SetReturn("foo");
 
@@ -1314,6 +1356,12 @@ TEST_FUNCTION(DotnetModuleLoader_FreeModuleConfiguration_frees_resources)
 
     umock_c_reset_all_calls();
 
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 

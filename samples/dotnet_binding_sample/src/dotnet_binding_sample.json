@@ -10,7 +10,7 @@
                 "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
             }
         },
-        "args" : { "dotnet_module_args": "module configuration" }
+        "args" : "module configuration"
       },
       {
         "name": "dotnet_printer_module",
@@ -21,7 +21,7 @@
               "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
             }
         },
-        "args" : { "dotnet_module_args": "module configuration" }
+        "args" : "module configuration"
       }
     ],
     "links": [
