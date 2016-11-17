@@ -161,18 +161,18 @@ MOCK_FUNCTION_END()
 // Module loader mocks
 static MODULE_LOADER_API Fake_Module_Loader_API =
 {
-    .Load = FakeModuleLoader_Load,
-    .Unload = FakeModuleLoader_Unload,
-    .GetApi = FakeModuleLoader_GetModuleApi,
+    FakeModuleLoader_Load,
+    FakeModuleLoader_Unload,
+    FakeModuleLoader_GetModuleApi,
 
-    .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-    .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+    FakeModuleLoader_ParseEntrypointFromJson,
+    FakeModuleLoader_FreeEntrypoint,
 
-    .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-    .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+    FakeModuleLoader_ParseConfigurationFromJson,
+    FakeModuleLoader_FreeConfiguration,
 
-    .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-    .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+    FakeModuleLoader_BuildModuleConfiguration,
+    FakeModuleLoader_FreeModuleConfiguration
 };
 
 static MODULE_LOADER Dynamic_Module_Loader =
@@ -182,8 +182,16 @@ static MODULE_LOADER Dynamic_Module_Loader =
     NULL,
     &Fake_Module_Loader_API
 };
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 MOCK_FUNCTION_WITH_CODE(, const MODULE_LOADER*, DynamicLoader_Get)
 MOCK_FUNCTION_END(&Dynamic_Module_Loader)
+#ifdef __cplusplus
+}
+#endif
 
 static MODULE_LOADER Node_Module_Loader =
 {
@@ -192,8 +200,16 @@ static MODULE_LOADER Node_Module_Loader =
     NULL,
     &Fake_Module_Loader_API
 };
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 MOCK_FUNCTION_WITH_CODE(, const MODULE_LOADER*, NodeLoader_Get)
 MOCK_FUNCTION_END(&Node_Module_Loader)
+#ifdef __cplusplus
+}
+#endif
 
 static MODULE_LOADER Java_Module_Loader =
 {
@@ -202,8 +218,16 @@ static MODULE_LOADER Java_Module_Loader =
     NULL,
     &Fake_Module_Loader_API
 };
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 MOCK_FUNCTION_WITH_CODE(, const MODULE_LOADER*, JavaLoader_Get)
 MOCK_FUNCTION_END(&Java_Module_Loader)
+#ifdef __cplusplus
+}
+#endif
 
 static MODULE_LOADER Dotnet_Module_Loader =
 {
@@ -212,8 +236,16 @@ static MODULE_LOADER Dotnet_Module_Loader =
     NULL,
     &Fake_Module_Loader_API
 };
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 MOCK_FUNCTION_WITH_CODE(, const MODULE_LOADER*, DotnetLoader_Get)
 MOCK_FUNCTION_END(&Dotnet_Module_Loader)
+#ifdef __cplusplus
+}
+#endif
 
 //parson mocks
 MOCK_FUNCTION_WITH_CODE(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
@@ -492,130 +524,130 @@ TEST_FUNCTION(ModuleLoader_Add_returns_MODULE_LOADER_ERROR_when_loader_is_invali
     MODULE_LOADER_API loader_api_inputs[] =
     {
         {
-            .Load = NULL,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            NULL,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = NULL,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            NULL,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = NULL,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            NULL,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = NULL,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            NULL,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = NULL,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            NULL,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = NULL,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            NULL,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = NULL,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            NULL,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            FakeModuleLoader_BuildModuleConfiguration,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = NULL,
-            .FreeModuleConfiguration = FakeModuleLoader_FreeModuleConfiguration
+            NULL,
+            FakeModuleLoader_FreeModuleConfiguration
         },
         {
-            .Load = FakeModuleLoader_Load,
-            .Unload = FakeModuleLoader_Unload,
-            .GetApi = FakeModuleLoader_GetModuleApi,
+            FakeModuleLoader_Load,
+            FakeModuleLoader_Unload,
+            FakeModuleLoader_GetModuleApi,
 
-            .ParseEntrypointFromJson = FakeModuleLoader_ParseEntrypointFromJson,
-            .FreeEntrypoint = FakeModuleLoader_FreeEntrypoint,
+            FakeModuleLoader_ParseEntrypointFromJson,
+            FakeModuleLoader_FreeEntrypoint,
 
-            .ParseConfigurationFromJson = FakeModuleLoader_ParseConfigurationFromJson,
-            .FreeConfiguration = FakeModuleLoader_FreeConfiguration,
+            FakeModuleLoader_ParseConfigurationFromJson,
+            FakeModuleLoader_FreeConfiguration,
 
-            .BuildModuleConfiguration = FakeModuleLoader_BuildModuleConfiguration,
-            .FreeModuleConfiguration = NULL
+            FakeModuleLoader_BuildModuleConfiguration,
+            NULL
         }
     };
     MODULE_LOADER inputs[] =
@@ -1028,7 +1060,7 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources_with_non_default_loaders)
     ASSERT_IS_NOT_NULL(non_default_loader);
     memcpy(non_default_loader, &Dynamic_Module_Loader, sizeof(MODULE_LOADER));
 
-    char* loader_name = my_gballoc_malloc(strlen("non_default_loader") + 1);
+    char* loader_name = (char*)my_gballoc_malloc(strlen("non_default_loader") + 1);
     ASSERT_IS_NOT_NULL(loader_name);
     strcpy(loader_name, "non_default_loader");
     non_default_loader->name = loader_name;
