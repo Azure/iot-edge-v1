@@ -77,6 +77,7 @@ set(gateway_h_sources
     ./inc/module_access.h
     ./inc/experimental/event_system.h
     ./inc/gateway.h
+    ./inc/gateway_version.h
     ./inc/module_loader.h
     ./inc/dynamic_library.h
     ./src/gateway_internal.h

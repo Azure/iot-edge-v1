@@ -421,7 +421,12 @@ static VECTOR_HANDLE VECTOR_copy(VECTOR_HANDLE vector)
 static int VECTOR_compare(VECTOR_HANDLE vector1, VECTOR_HANDLE vector2)
 {
     int result = 0;
-    if (vector1 == NULL)
+
+    if (VECTOR_size(vector1) == 0 && VECTOR_size(vector2) == 0)
+    {
+        result = 0;
+    }
+    else if (vector1 == NULL)
     {
         result = __LINE__;
     }

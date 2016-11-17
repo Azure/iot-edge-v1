@@ -31,17 +31,17 @@ const MODULE_LOADER* NodeLoader_Get(void);
 
 MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, const void* entrypoint);
 
-const MODULE_API* NodeModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+const MODULE_API* NodeModuleLoader_GetModuleApi(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 
-void NodeModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+void NodeModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 
-void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json);
+void* NodeModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loader, const JSON_Value* json);
 
-void NodeModuleLoader_FreeEntrypoint(void* entrypoint);
+void NodeModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* entrypoint);
 
-MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFromJson(const JSON_Value* json);
+MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json);
 
-void NodeModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration);
+void NodeModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration);
 
 void* NodeModuleLoader_BuildModuleConfiguration(
     const MODULE_LOADER* loader,
@@ -49,7 +49,7 @@ void* NodeModuleLoader_BuildModuleConfiguration(
     const void* module_configuration
 );
 
-void NodeModuleLoader_FreeModuleConfiguration(const void* module_configuration);
+void NodeModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration);
 ```
 
 NodeModuleLoader_Load
@@ -87,7 +87,7 @@ Loads the Node.js binding module into memory.
 NodeModuleLoader_GetModuleApi
 -----------------------------
 ```C
-const MODULE_API* NodeModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+const MODULE_API* NodeModuleLoader_GetModuleApi(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
 Returns the `MODULE_API` struct for the binding module.
@@ -99,7 +99,7 @@ Returns the `MODULE_API` struct for the binding module.
 NodeModuleLoader_Unload
 -----------------------
 ```C
-void NodeModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
+void NodeModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 ```
 
 Unloads the binding module from memory.
@@ -113,7 +113,7 @@ Unloads the binding module from memory.
 NodeModuleLoader_ParseEntrypointFromJson
 ----------------------------------------
 ```C
-void* NodeModuleLoader_ParseEntrypointFromJson(const JSON_Value* json);
+void* NodeModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loader, const JSON_Value* json);
 ```
 
 Parses entrypoint JSON as it applies to a Node.js module and returns a pointer
@@ -134,7 +134,7 @@ to the parsed data.
 NodeModuleLoader_FreeEntrypoint
 -------------------------------
 ```C
-void NodeModuleLoader_FreeEntrypoint(void* entrypoint)
+void NodeModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* entrypoint)
 ```
 
 Frees entrypoint data allocated by `NodeModuleLoader_ParseEntrypointFromJson`.
@@ -146,7 +146,7 @@ Frees entrypoint data allocated by `NodeModuleLoader_ParseEntrypointFromJson`.
 NodeModuleLoader_ParseConfigurationFromJson
 -------------------------------------------
 ```C
-MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFromJson(const JSON_Value* json);
+MODULE_LOADER_BASE_CONFIGURATION* NodeModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json);
 ```
 
 Parses loader configuration JSON and returns a pointer to the parsed data.
@@ -160,7 +160,7 @@ Parses the module loader configuration from the given JSON and returns a `MODULE
 NodeModuleLoader_FreeConfiguration
 ----------------------------------
 ```C
-void NodeModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration);
+void NodeModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration);
 ```
 
 Frees loader configuration data as allocated by `NodeModuleLoader_ParseConfigurationFromJson`.
@@ -194,7 +194,7 @@ Builds a `NODEJS_MODULE_CONFIG` object by merging information from `entrypoint` 
 NodeModuleLoader_FreeModuleConfiguration
 ----------------------------------------
 ```C
-void NodeModuleLoader_FreeModuleConfiguration(const void* module_configuration);
+void NodeModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration);
 ```
 
 Frees the `NODEJS_MODULE_CONFIG` object allocated by `NodeModuleLoader_BuildModuleConfiguration`.

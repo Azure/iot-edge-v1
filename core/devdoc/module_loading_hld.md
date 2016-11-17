@@ -93,11 +93,11 @@ needs to implement all the functions in the `MODULE_LOADER_API` structure:
 typedef struct MODULE_LOADER_API
 {
     /** @brief Load function, loads module for gateway, returns a valid handle on success */    
-    MODULE_LIBRARY_HANDLE (*Load)(void* config);
+    MODULE_LIBRARY_HANDLE (*Load)(const MODULE_LOADER* loader, void* config);
     /** @brief Unload function, unloads the library from the gateway */    
-    void (*Unload)(MODULE_LIBRARY_HANDLE handle);
+    void (*Unload)(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE handle);
     /** @brief GetApi function, gets the MODULE_API for the loaded module */  
-    const MODULE_API * (*GetApi)(MODULE_LIBRARY_HANDLE handle)
+    const MODULE_API * (*GetApi)(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE handle)
 } MODULE_LOADER_API;
 ```
 

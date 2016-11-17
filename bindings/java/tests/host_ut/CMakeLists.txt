@@ -14,6 +14,7 @@ set(${theseTestsName}_c_files
     ../../src/java_module_host.c
     ../real_vector.c
     ../real_string.c
+    ../real_crt_abstractions.c
 )
 
 set(${theseTestsName}_h_files

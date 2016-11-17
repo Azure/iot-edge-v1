@@ -126,24 +126,24 @@ LOCK_RESULT my_Lock_Deinit(LOCK_HANDLE handle)
 MOCK_FUNCTION_WITH_CODE(, MODULE_LIBRARY_HANDLE, FakeModuleLoader_Load, const MODULE_LOADER*, loader, const void*, entrypoint)
 MOCK_FUNCTION_END((MODULE_LIBRARY_HANDLE)my_gballoc_malloc(1))
 
-MOCK_FUNCTION_WITH_CODE(, const MODULE_API*, FakeModuleLoader_GetModuleApi, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
+MOCK_FUNCTION_WITH_CODE(, const MODULE_API*, FakeModuleLoader_GetModuleApi, const MODULE_LOADER*, loader, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
 MOCK_FUNCTION_END((const MODULE_API*)0x42)
 
-MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_Unload, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
+MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_Unload, const MODULE_LOADER*, loader, MODULE_LIBRARY_HANDLE, moduleLibraryHandle)
 my_gballoc_free(moduleLibraryHandle);
 MOCK_FUNCTION_END()
 
-MOCK_FUNCTION_WITH_CODE(, void*, FakeModuleLoader_ParseEntrypointFromJson, const JSON_Value*, json)
+MOCK_FUNCTION_WITH_CODE(, void*, FakeModuleLoader_ParseEntrypointFromJson, const MODULE_LOADER*, loader, const JSON_Value*, json)
 MOCK_FUNCTION_END(my_gballoc_malloc(1))
 
-MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeEntrypoint, void*, entrypoint)
+MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeEntrypoint, const MODULE_LOADER*, loader, void*, entrypoint)
 my_gballoc_free(entrypoint);
 MOCK_FUNCTION_END()
 
-MOCK_FUNCTION_WITH_CODE(, MODULE_LOADER_BASE_CONFIGURATION*, FakeModuleLoader_ParseConfigurationFromJson, const JSON_Value*, json)
+MOCK_FUNCTION_WITH_CODE(, MODULE_LOADER_BASE_CONFIGURATION*, FakeModuleLoader_ParseConfigurationFromJson, const MODULE_LOADER*, loader, const JSON_Value*, json)
 MOCK_FUNCTION_END((MODULE_LOADER_BASE_CONFIGURATION*)my_gballoc_malloc(1))
 
-MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeConfiguration, MODULE_LOADER_BASE_CONFIGURATION*, configuration)
+MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeConfiguration, const MODULE_LOADER*, loader, MODULE_LOADER_BASE_CONFIGURATION*, configuration)
 my_gballoc_free(configuration);
 MOCK_FUNCTION_END()
 
@@ -154,7 +154,7 @@ MOCK_FUNCTION_WITH_CODE(, void*, FakeModuleLoader_BuildModuleConfiguration,
 )
 MOCK_FUNCTION_END(my_gballoc_malloc(1))
 
-MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeModuleConfiguration, const void*, module_configuration)
+MOCK_FUNCTION_WITH_CODE(, void, FakeModuleLoader_FreeModuleConfiguration, const MODULE_LOADER*, loader, const void*, module_configuration)
 my_gballoc_free((void*)module_configuration);
 MOCK_FUNCTION_END()
 
@@ -1032,8 +1032,9 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources)
     {
         STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, i))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
     }
     STRICT_EXPECTED_CALL(VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1081,8 +1082,9 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources_with_non_default_loaders)
     {
         STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, i))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         // for the last module loader we will have some additional calls
         if (i == LOADERS_COUNT)
@@ -1618,7 +1620,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_d
 // Tests_SRS_MODULE_LOADER_13_064: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_ERROR if an underlying platform call fails. ]
 TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_malloc_fails)
 {
-    MODULE_LOADER_BASE_CONFIGURATION * captured_loader = NULL;
+    MODULE_LOADER_BASE_CONFIGURATION* captured_loader = NULL;
 
     // arrange
     MODULE_LOADER_RESULT init_result = ModuleLoader_Initialize();
@@ -1656,7 +1658,8 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_m
     STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42))
+    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
+        .IgnoreArgument(1)
         .CaptureReturn(&captured_loader);
     malloc_will_fail = true;
     malloc_fail_count = 3;
@@ -1670,7 +1673,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_m
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    FakeModuleLoader_FreeConfiguration(captured_loader);
+    FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, captured_loader);
     ModuleLoader_Destroy();
 }
 
@@ -1713,14 +1716,16 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_m
     STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER)));
     malloc_will_fail = true;
     malloc_fail_count = 4;
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
@@ -1775,15 +1780,17 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_M
     STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER)));
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .SetReturn(LOCK_ERROR);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
@@ -1840,7 +1847,8 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_custom_loader)
     STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER)));
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
@@ -1904,7 +1912,8 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_default_loader)
     STRICT_EXPECTED_CALL(json_object_get_value(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(FakeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))

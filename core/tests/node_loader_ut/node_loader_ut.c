@@ -500,7 +500,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    NodeModuleLoader_Unload(result);
+    NodeModuleLoader_Unload(&loader, result);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_005: [NodeModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]
@@ -553,14 +553,14 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds_with_custom_binding_path)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    NodeModuleLoader_Unload(result);
+    NodeModuleLoader_Unload(&loader, result);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_006 : [NodeModuleLoader_GetModuleApi shall return NULL if moduleLibraryHandle is NULL.]
 TEST_FUNCTION(NodeModuleLoader_GetModuleApi_returns_NULL_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    const MODULE_API* result = NodeModuleLoader_GetModuleApi(NULL);
+    const MODULE_API* result = NodeModuleLoader_GetModuleApi(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -605,21 +605,21 @@ TEST_FUNCTION(NodeModuleLoader_GetModuleApi_succeeds)
     umock_c_reset_all_calls();
 
     // act
-    const MODULE_API* result = NodeModuleLoader_GetModuleApi(module);
+    const MODULE_API* result = NodeModuleLoader_GetModuleApi(&loader, module);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    NodeModuleLoader_Unload(module);
+    NodeModuleLoader_Unload(&loader, module);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_008: [ NodeModuleLoader_Unload shall do nothing if moduleLibraryHandle is NULL. ]
 TEST_FUNCTION(NodeModuleLoader_Unload_does_nothing_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    NodeModuleLoader_Unload(NULL);
+    NodeModuleLoader_Unload(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -669,7 +669,7 @@ TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
         .IgnoreArgument(1);
 
     // act
-    NodeModuleLoader_Unload(module);
+    NodeModuleLoader_Unload(&loader, module);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -679,7 +679,7 @@ TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
 TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_is_NULL)
 {
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson(NULL);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -694,7 +694,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_is
         .SetReturn(JSONArray);
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -711,7 +711,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_va
         .SetReturn(NULL);
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -731,7 +731,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_ob
         .SetReturn(NULL);
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -753,7 +753,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_malloc_
         .SetReturn(NULL);
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -778,7 +778,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRING_
         .IgnoreArgument(1);
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -800,21 +800,21 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_succeeds)
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 
     // act
-    void* result = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    NodeModuleLoader_FreeEntrypoint(result);
+    NodeModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, result);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_016: [ NodeModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL. ]
 TEST_FUNCTION(NodeModuleLoader_FreeEntrypoint_does_nothing_when_entrypoint_is_NULL)
 {
     // act
-    NodeModuleLoader_FreeEntrypoint(NULL);
+    NodeModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -833,7 +833,7 @@ TEST_FUNCTION(NodeModuleLoader_FreeEntrypoint_frees_resources)
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(NODE_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 
-    void* entrypoint = NodeModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* entrypoint = NodeModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
     ASSERT_IS_NOT_NULL(entrypoint);
 
     umock_c_reset_all_calls();
@@ -844,7 +844,7 @@ TEST_FUNCTION(NodeModuleLoader_FreeEntrypoint_frees_resources)
         .IgnoreArgument(1);
 
     // act
-    NodeModuleLoader_FreeEntrypoint(entrypoint);
+    NodeModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, entrypoint);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -858,7 +858,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseConfigurationFromJson_returns_NULL_when_mall
         .SetReturn(NULL);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -878,7 +878,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseConfigurationFromJson_returns_NULL_when_Modu
         .IgnoreArgument(1);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -895,21 +895,21 @@ TEST_FUNCTION(NodeModuleLoader_ParseConfigurationFromJson_succeeds)
         .SetReturn(MODULE_LOADER_SUCCESS);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = NodeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    NodeModuleLoader_FreeConfiguration(result);
+    NodeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, result);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_020: [ NodeModuleLoader_FreeConfiguration shall do nothing if configuration is NULL. ]
 TEST_FUNCTION(NodeModuleLoader_FreeConfiguration_does_nothing_when_configuration_is_NULL)
 {
     // act
-    NodeModuleLoader_FreeConfiguration(NULL);
+    NodeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -925,15 +925,15 @@ TEST_FUNCTION(NodeModuleLoader_FreeConfiguration_frees_resources)
         .IgnoreArgument(1)
         .SetReturn(MODULE_LOADER_SUCCESS);
 
-    MODULE_LOADER_BASE_CONFIGURATION* config = NodeModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* config = NodeModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     umock_c_reset_all_calls();
 
-    STRICT_EXPECTED_CALL(ModuleLoader_FreeBaseConfiguration(config));
+    STRICT_EXPECTED_CALL(ModuleLoader_FreeBaseConfiguration((MODULE_LOADER_BASE_CONFIGURATION*)config));
     STRICT_EXPECTED_CALL(gballoc_free(config));
 
     // act
-    NodeModuleLoader_FreeConfiguration(config);
+    NodeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, config);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1027,14 +1027,14 @@ TEST_FUNCTION(NodeModuleLoader_BuildModuleConfiguration_succeeds)
     // cleanup
     STRING_delete(module_config);
     STRING_delete(entrypoint.mainPath);
-    NodeModuleLoader_FreeModuleConfiguration(result);
+    NodeModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, result);
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_027: [ NodeModuleLoader_FreeModuleConfiguration shall do nothing if module_configuration is NULL. ]
 TEST_FUNCTION(NodeModuleLoader_FreeModuleConfiguration_does_nothing_when_module_configuration_is_NULL)
 {
     // act
-    NodeModuleLoader_FreeModuleConfiguration(NULL);
+    NodeModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1059,7 +1059,7 @@ TEST_FUNCTION(NodeModuleLoader_FreeModuleConfiguration_frees_resources)
         .IgnoreArgument(1);
 
     // act
-    NodeModuleLoader_FreeModuleConfiguration(config);
+    NodeModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, config);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());

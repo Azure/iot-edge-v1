@@ -311,8 +311,6 @@ TEST_FUNCTION(JavaModuleHostManager_Create_multiple_success)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
 
 
     //Act

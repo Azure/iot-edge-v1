@@ -42,17 +42,17 @@ typedef struct MODULE_LOADER_BASE_CONFIGURATION_TAG
 } MODULE_LOADER_BASE_CONFIGURATION;
 
 typedef MODULE_LIBRARY_HANDLE(*pfModuleLoader_Load)(const struct MODULE_LOADER_TAG* loader, const void* entrypoint);
-typedef void(*pfModuleLoader_Unload)(MODULE_LIBRARY_HANDLE handle);
-typedef const MODULE_API*(*pfModuleLoader_GetApi)(MODULE_LIBRARY_HANDLE handle);
+typedef void(*pfModuleLoader_Unload)(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle);
+typedef const MODULE_API*(*pfModuleLoader_GetApi)(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle);
 
-typedef void*(*pfModuleLoader_ParseEntrypointFromJson)(const JSON_Value* json);
-typedef void(*pfModuleLoader_FreeEntrypoint)(void* entrypoint);
+typedef void*(*pfModuleLoader_ParseEntrypointFromJson)(const struct MODULE_LOADER_TAG* loader, const JSON_Value* json);
+typedef void(*pfModuleLoader_FreeEntrypoint)(const struct MODULE_LOADER_TAG* loader, void* entrypoint);
 
-typedef MODULE_LOADER_BASE_CONFIGURATION*(*pfModuleLoader_ParseConfigurationFromJson)(const JSON_Value* json);
-typedef void(*pfModuleLoader_FreeConfiguration)(MODULE_LOADER_BASE_CONFIGURATION* configuration);
+typedef MODULE_LOADER_BASE_CONFIGURATION*(*pfModuleLoader_ParseConfigurationFromJson)(const struct MODULE_LOADER_TAG* loader, const JSON_Value* json);
+typedef void(*pfModuleLoader_FreeConfiguration)(const struct MODULE_LOADER_TAG* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration);
 
 typedef void*(*pfModuleLoader_BuildModuleConfiguration)(const struct MODULE_LOADER_TAG* loader, const void* entrypoint, const void* module_configuration);
-typedef void(*pfModuleLoader_FreeModuleConfiguration)(const void* module_configuration);
+typedef void(*pfModuleLoader_FreeModuleConfiguration)(const struct MODULE_LOADER_TAG* loader, const void* module_configuration);
 
 /** @brief  Function table for loading modules into a gateway */
 typedef struct MODULE_LOADER_API_TAG

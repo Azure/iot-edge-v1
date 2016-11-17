@@ -366,7 +366,10 @@ void ModuleLoader_Destroy(void)
             // loaders.
 
             /*Codes_SRS_MODULE_LOADER_13_046: [ ModuleLoader_Destroy shall invoke FreeConfiguration on every module loader's configuration field. ]*/
-            loader->api->FreeConfiguration(loader->configuration);
+            if (loader->configuration != NULL)
+            {
+                loader->api->FreeConfiguration(loader, loader->configuration);
+            }
 
             // if this is not a default loader then free resources allocated in
             // add_loader_from_json
@@ -628,7 +631,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                         if (configuration != NULL)
                         {
                             /*Codes_SRS_MODULE_LOADER_13_069: [ ModuleLoader_InitializeFromJson shall invoke ParseConfigurationFromJson to parse the loader entry's configuration JSON. ]*/
-                            loader_configuration = default_loader->api->ParseConfigurationFromJson(configuration);
+                            loader_configuration = default_loader->api->ParseConfigurationFromJson(default_loader, configuration);
                         }
                         else
                         {
@@ -656,7 +659,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                                     LogError("malloc failed for loader name string for loader %zu", index);
                                     if (loader_configuration != NULL)
                                     {
-                                        default_loader->api->FreeConfiguration(loader_configuration);
+                                        default_loader->api->FreeConfiguration(default_loader, loader_configuration);
                                     }
                                     free(new_loader);
 
@@ -680,7 +683,7 @@ static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_
                                         LogError("ModuleLoader_Add failed");
                                         if (loader_configuration != NULL)
                                         {
-                                            default_loader->api->FreeConfiguration(loader_configuration);
+                                            default_loader->api->FreeConfiguration(default_loader, loader_configuration);
                                         }
                                         free((void *)new_loader->name);
                                         free(new_loader);

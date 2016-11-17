@@ -136,7 +136,7 @@ static void destroy_properties_internal(GATEWAY_PROPERTIES* properties)
         for (size_t element_index = 0; element_index < vector_size; ++element_index)
         {
             GATEWAY_MODULES_ENTRY* element = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, element_index);
-            element->module_loader_info.loader->api->FreeEntrypoint(element->module_loader_info.entrypoint);
+            element->module_loader_info.loader->api->FreeEntrypoint(element->module_loader_info.loader, element->module_loader_info.entrypoint);
             json_free_serialized_string((char*)(element->module_configuration));
         }
 
@@ -180,7 +180,7 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
         // get entrypoint
         JSON_Value* entrypoint_json = json_object_get_value(loader_json, LOADER_ENTRYPOINT_KEY);
         loader_info->entrypoint = entrypoint_json == NULL ? NULL :
-                loader->api->ParseEntrypointFromJson(entrypoint_json);
+                    loader->api->ParseEntrypointFromJson(loader, entrypoint_json);
 
         // if entrypoint_json is not NULL then loader_info->entrypoint must not be NULL
         if (entrypoint_json != NULL && loader_info->entrypoint == NULL)
@@ -258,7 +258,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                                 }
                                 else
                                 {
-                                    loader_info.loader->api->FreeEntrypoint(loader_info.entrypoint);
+                                    loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
                                     json_free_serialized_string(args_str);
                                     result = PARSE_JSON_VECTOR_FAILURE;
                                     LogError("Failed to push data into properties vector.");
@@ -268,7 +268,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                             /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
                             else
                             {
-                                loader_info.loader->api->FreeEntrypoint(loader_info.entrypoint);
+                                loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
                                 result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
                                 LogError("\"module name\" or \"module path\" in input JSON configuration is missing or misconfigured.");
                                 break;

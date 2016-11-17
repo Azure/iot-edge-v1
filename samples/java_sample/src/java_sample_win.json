@@ -1,63 +1,58 @@
 {
+  "loaders": [
+      {
+          "type": "java",
+          "name": "java",
+          "configuration":{
+              "jvm.options":{
+                  "library.path": "..\\..\\bindings\\java\\Debug"
+              }
+          }
+          
+      }
+  ],
   "modules": [
-    {
-      "module name": "java_printer",
-      "loading args": {
-        "module path": "..\\..\\bindings\\java\\Debug\\java_module_host.dll"
+      {
+          "name": "java_printer",
+          "loader":{
+              "name": "java",
+              "entrypoint": {
+                  "class.name": "Printer",
+                  "class.path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.3-with-deps.jar"
+              }
+          },
+          "args": null
       },
-        "args": {
-          "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.3-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.3-with-deps.jar",
-          "library_path": "..\\..\\bindings\\java\\Debug",
-          "class_name": "Printer",
-          "args": null,
-          "jvm_options": {
-            "version": 8,
-            "debug": false,
-            "debug_port": 8118,
-            "verbose": false,
-            "additional_options": [
-              "-Djava.version=1.8"
-            ]
-          }
-        }
+      {
+          "name": "java_sensor",
+          "loader":{
+              "name": "java",
+              "entrypoint": {
+                  "class.name": "Sensor",
+                  "class.path": "..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.3-with-deps.jar"
+              }
+          },
+          "args": null
       },
-    {
-      "module name": "java_sensor",
-      "loading args": {
-        "module path": "..\\..\\bindings\\java\\Debug\\java_module_host.dll"
-      },
-        "args": {
-          "class_path": "..\\..\\..\\samples\\java_sample\\java_modules\\Printer\\target\\sample-printer-module-0.0.3-with-deps.jar;..\\..\\..\\samples\\java_sample\\java_modules\\Sensor\\target\\sample-sensor-module-0.0.3-with-deps.jar",
-          "library_path": "..\\..\\bindings\\java\\Debug",
-          "class_name": "Sensor",
-          "args": null,
-          "jvm_options": {
-            "version": 8,
-            "debug": false,
-            "debug_port": 8118,
-            "verbose": false,
-            "additional_options": [
-              "-Djava.version=1.8"
-            ]
-          }
-        }
-      },
-    {
-      "module name": "logger",
-      "loading args": {
-        "module path": "..\\..\\modules\\logger\\Debug\\logger.dll"
-      },
-        "args": { "filename": "log.txt" }
-      },
-
-      "links": [
-        {
+      {
+          "name": "logger",
+          "loader": {
+              "name": "native",
+              "entrypoint": {
+                  "module.path": "..\\..\\modules\\logger\\Debug\\logger.dll"
+              }
+          },
+          "args": { "filename": "log.txt" }
+      }
+  ],
+  "links": [
+      {
           "source": "*",
           "sink": "logger"
-        },
-        {
+      },
+      {
           "source": "java_sensor",
           "sink": "java_printer"
-        }
-      ]
-    }
+      }
+  ]
+}

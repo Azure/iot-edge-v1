@@ -119,8 +119,10 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const MODULE_LOADER* loade
     return result;
 }
 
-static const MODULE_API* DynamicModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
+static const MODULE_API* DynamicModuleLoader_GetModuleApi(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
+    (void)loader;
+
     const MODULE_API* result;
 
     if (moduleLibraryHandle == NULL)
@@ -139,8 +141,10 @@ static const MODULE_API* DynamicModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE 
     return result;
 }
 
-static void DynamicModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
+static void DynamicModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
+    (void)loader;
+
     if (moduleLibraryHandle != NULL)
     {
         DYNAMIC_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
@@ -158,8 +162,9 @@ static void DynamicModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle
     }
 }
 
-static void* DynamicModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
+static void* DynamicModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
     // The input is a JSON object that looks like this:
     //  "entrypoint": {
     //      "module.path": "path/to/module"
@@ -238,8 +243,10 @@ static void* DynamicModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
     return (void*)config;
 }
 
-static void DynamicModuleLoader_FreeEntrypoint(void* entrypoint)
+static void DynamicModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* entrypoint)
 {
+    (void)loader;
+
     if (entrypoint != NULL)
     {
         //Codes_SRS_DYNAMIC_MODULE_LOADER_13_048: [ DynamicModuleLoader_FreeEntrypoint shall free resources allocated during DynamicModuleLoader_ParseEntrypointFromJson. ]
@@ -254,8 +261,10 @@ static void DynamicModuleLoader_FreeEntrypoint(void* entrypoint)
     }
 }
 
-static MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationFromJson(const JSON_Value* json)
+static MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
+
     /**
      * The dynamic loader does not have any configuration so we always return NULL.
      */
@@ -263,8 +272,10 @@ static MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationF
     return NULL;
 }
 
-static void DynamicModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration)
+static void DynamicModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
 {
+    (void)loader;
+
     /**
      * Nothing to free.
      */
@@ -277,6 +288,8 @@ static void* DynamicModuleLoader_BuildModuleConfiguration(
     const void* module_configuration
 )
 {
+    (void)loader;
+
    /**
     * The native dynamic loader does not need to do any special configuration translation.
     * We simply return the module_configuration as is.
@@ -285,8 +298,10 @@ static void* DynamicModuleLoader_BuildModuleConfiguration(
     return (void *)module_configuration;
 }
 
-static void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuration)
+static void DynamicModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration)
 {
+    (void)loader;
+
     /**
      * Nothing to free.
      */

@@ -186,7 +186,7 @@ GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
         for (m = 0; m < module_count; m++)
         {
             MODULE_DATA** module_data = VECTOR_element(gateway_handle->modules, m);
-            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_library_handle));
+            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_loader, (*module_data)->module_library_handle));
             if (pfStart != NULL)
             {
                 /*Codes_SRS_GATEWAY_17_010: [ This function shall call Module_Start for every module which defines the start function. ]*/
@@ -248,7 +248,7 @@ extern void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module)
         MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_data_find, module);
         if (module_data != NULL)
         {
-            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_library_handle));
+            pfModule_Start pfStart = MODULE_START((*module_data)->module_loader->api->GetApi((*module_data)->module_loader, (*module_data)->module_library_handle));
             if (pfStart != NULL)
             {
                 /*Codes_SRS_GATEWAY_17_008: [ When module is found, if the Module_Start function is defined for this module, the Module_Start function shall be called. ]*/
