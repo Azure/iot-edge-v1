@@ -163,11 +163,11 @@ GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
     else
     {
         result = gateway_create_internal(properties, false);
-		if (result == NULL)
-		{
+        if (result == NULL)
+        {
             /* Codes_SRS_GATEWAY_17_017: [ This function shall destroy the default module loaders upon any failure. ]*/
-			ModuleLoader_Destroy();
-		}
+            ModuleLoader_Destroy();
+        }
     }
 
     return result;

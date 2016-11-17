@@ -21,10 +21,10 @@ Third party C JSON library: https://github.com/kgabis/parson
         }
     ]
     "modules" :
-    [ 
+    [
         {
             "name" : "one",
-            "loader" : 
+            "loader" :
             {
                 "name" : "<loader name>",
                 "entrypoint" : ...
@@ -33,7 +33,7 @@ Third party C JSON library: https://github.com/kgabis/parson
         },
         {
             "name" : "two",
-            "loader" : 
+            "loader" :
             {
                 "name" : "<loader name>",
                 "entrypoint" : ...
@@ -91,6 +91,8 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 
 **SRS_GATEWAY_JSON_17_013: [** The function shall parse each modules object for "loader.name" and "loader.entrypoint". **]**
 
+**SRS_GATEWAY_JSON_13_001: [** If `loader.name` is not found in the JSON then the gateway assumes that the loader name is `native`. **]**
+
 **SRS_GATEWAY_JSON_17_014: [** The function shall find the correct loader by "loader.name". **]**
 
 **SRS_GATEWAY_JSON_17_010: [** If the module's loader is not found by name, the the function shall fail and return NULL. **]**
@@ -109,7 +111,7 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 
 **SRS_GATEWAY_JSON_14_007: [** The function shall use the `GATEWAY_PROPERTIES` instance to create and return a `GATEWAY_HANDLE` using the lower level API. **]**
 
-**SRS_GATEWAY_JSON_17_004: [** The function shall set the module loader to the default dynamically linked library module loader. **]** 
+**SRS_GATEWAY_JSON_17_004: [** The function shall set the module loader to the default dynamically linked library module loader. **]**
 
 **SRS_GATEWAY_JSON_17_001: [** Upon successful creation, this function shall start the gateway. **]**
 
