@@ -13,7 +13,7 @@ This document describes how to prepare your development environment to use the *
 ### Windows
 Open a Developer Command Prompt for VS and: 
 
-- cd <<your azure repo>>\tools
+- cd <\<your azure repo>>\tools
 - Run build_nodejs.cmd ==> build_nodejs.cmd downloads and builds Node JS from source as runtime linked modules.
 - Set 2 environment variables : `NODE_INCLUDE=<your azure-iot-gateway_root>\build_nodejs\dist\inc` and `NODE_LIB=<your aziore-iot-gateway_root>\%build-root%\build_nodejs\dist\lib`. These envioronment variables are a path to node.dll library and header files used by our Node JS binding. 
 - run build.cmd --enable-nodejs-binding
@@ -22,7 +22,7 @@ Open a Developer Command Prompt for VS and:
 ### Linux
 Open a terminal window and run the following commands:
 
-- cd <<your azure gateway repo>>\tools
+- cd <\<your azure gateway repo>>\tools
 - build_nodejs.sh ==> build_nodejs.sh downloads and builds Node JS from source as runtime linked modules.
 - Copy and paste the export message that shows up on screen so you have the NODE_INCLUDE and NODE_LIB environment variables set.
 - build.sh --enable-nodejs-binding
@@ -32,9 +32,9 @@ Open a terminal window and run the following commands:
 ### Windows
 In order to run a gateway with a Node.js module do the following:
 
-- Edit file under <<your azure gateway repo>>\samples\nodejs_simple_sample\src\gateway_sample.json
+- Edit file under <\<your azure gateway repo>>\samples\nodejs_simple_sample\src\gateway_sample.json
 - Copy the configuration values from the sample given below.
-- On folder <<your azure gateway repo>>\build\samples\nodejs_simple_sample\Debug run the following command: 
+- On folder <\<your azure gateway repo>>\build\samples\nodejs_simple_sample\Debug run the following command: 
 - nodejs_simple_sample ..\..\..\..\samples\nodejs_simple_sample\src\gateway_sample.json
 
 ```
