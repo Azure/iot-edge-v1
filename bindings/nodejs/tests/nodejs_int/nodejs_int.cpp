@@ -24,6 +24,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/agenttime.h"
 #include "azure_c_shared_utility/map.h"
+#include "azure_c_shared_utility/strings.h"
 #include "module.h"
 #include "module_access.h"
 #include "message.h"
@@ -38,11 +39,12 @@
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-static pfModule_CreateFromJson NODEJS_CreateFromJson = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Create         NODEJS_Create = NULL;  /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Destroy        NODEJS_Destroy = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Receive        NODEJS_Receive = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
-static pfModule_Start          NODEJS_Start = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
+static pfModule_ParseConfigurationFromJson NODEJS_ParseConfigurationFromJson = NULL;
+static pfModule_FreeConfiguration          NODEJS_FreeConfiguration = NULL;
+static pfModule_Create                     NODEJS_Create = NULL;
+static pfModule_Destroy                    NODEJS_Destroy = NULL;
+static pfModule_Receive                    NODEJS_Receive = NULL;
+static pfModule_Start                      NODEJS_Start = NULL;
 
 using namespace nodejs_module;
 
@@ -122,10 +124,13 @@ MockModule g_mock_module;
 MODULE_HANDLE g_mock_module_handle = nullptr;
 BROKER_HANDLE g_broker = nullptr;
 
-static MODULE_HANDLE MockModule_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+static void* MockModule_ParseConfigurationFromJson(const char* configuration)
 {
-    // We don't use Module_CreateFromJson in these tests, so it doesn't need to do anything...
     return NULL;
+}
+
+static void MockModule_FreeConfiguration(void* configuration)
+{
 }
 
 static MODULE_HANDLE MockModule_Create(BROKER_HANDLE broker, const void* configuration)
@@ -144,11 +149,12 @@ static void MockModule_Destroy(MODULE_HANDLE moduleHandle)
     g_mock_module.destroy(moduleHandle);
 }
 
-MODULE_API_1 g_fake_module_apis = 
+MODULE_API_1 g_fake_module_apis =
 {
     {MODULE_API_VERSION_1},
 
-    MockModule_CreateFromJson,
+    MockModule_ParseConfigurationFromJson,
+    MockModule_FreeConfiguration,
     MockModule_Create,
     MockModule_Destroy,
     MockModule_Receive,
@@ -322,7 +328,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         ASSERT_IS_NOT_NULL(g_testByTest);
 
         const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
-        NODEJS_CreateFromJson = MODULE_CREATE_FROM_JSON(apis);
+        NODEJS_ParseConfigurationFromJson = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis);
+        NODEJS_FreeConfiguration = MODULE_FREE_CONFIGURATION(apis);
         NODEJS_Create = MODULE_CREATE(apis);
         NODEJS_Destroy = MODULE_DESTROY(apis);
         NODEJS_Receive = MODULE_RECEIVE(apis);
@@ -331,7 +338,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         g_broker = Broker_Create();
 
         g_mock_module_handle = MockModule_Create(g_broker, nullptr);
-        
+
         g_module.module_handle = g_mock_module_handle;
         g_module.module_apis = reinterpret_cast< const MODULE_API *>(&g_fake_module_apis);
         Broker_AddModule(g_broker, &g_module);
@@ -388,112 +395,41 @@ BEGIN_TEST_SUITE(nodejs_int)
         const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
         ///assert
-        ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_PARSE_CONFIGURATION_FROM_JSON(apis) != NULL);
+        ASSERT_IS_TRUE(MODULE_FREE_CONFIGURATION(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_START(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
         ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
     }
 
-    /*Tests_SRS_NODEJS_05_001: [ NODEJS_CreateFromJson shall return NULL if broker is NULL. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_with_NULL_broker_fails)
+    TEST_FUNCTION(NODEJS_ParseConfigurationFromJson_returns_configuration)
     {
         ///arrange
 
         ///act
-        auto result = NODEJS_CreateFromJson(NULL, "someConfig");
-
-        ///assert
-        ASSERT_IS_NULL(result);
-    }
-
-    /*Tests_SRS_NODEJS_05_002: [ NODEJS_CreateFromJson shall return NULL if configuration is NULL. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_with_NULL_configuration_fails)
-    {
-        ///arrange
-
-        ///act
-        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, NULL);
-
-        ///assert
-        ASSERT_IS_NULL(result);
-    }
-
-    /*Tests_SRS_NODEJS_05_012: [ NODEJS_CreateFromJson shall parse configuration as a JSON string. ]*/
-    /*Tests_SRS_NODEJS_05_013: [ NODEJS_CreateFromJson shall extract the value of the main_path property from the configuration JSON. ]*/
-    /*Tests_SRS_NODEJS_05_006: [ NODEJS_CreateFromJson shall extract the value of the args property from the configuration JSON. ]*/
-    /*Tests_SRS_NODEJS_05_005: [ NODEJS_CreateFromJson shall populate a NODEJS_MODULE_CONFIG object with the values of the main_path and args properties and invoke NODEJS_Create passing the broker handle and the config object. ]*/
-    /*Tests_SRS_NODEJS_05_007: [ If NODEJS_Create succeeds then a valid MODULE_HANDLE shall be returned. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_happy_path_succeeds)
-    {
-        ///arrange
-        TempFile js_file;
-        js_file.Write(NOOP_JS_MODULE);
-        std::string main_path = js_file.ReplaceAll(js_file.js_file_path, "\\\\", "\\\\\\\\");
-
-        std::string valid_json = std::string("") +
-            "{"                                                  \
-            "   \"main_path\": \"" + main_path.c_str() + "\","   \
-            "   \"args\": \"module configuration\""              \
-            "}";
-
-        ///act
-        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, valid_json.c_str());
+        auto result = NODEJS_ParseConfigurationFromJson("boo");
 
         ///assert
         ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() == NodeModuleState::initialized;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::initialized);
-        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+        ASSERT_IS_TRUE(strcmp(STRING_c_str((STRING_HANDLE)result), "boo") == 0);
 
         ///cleanup
-        NODEJS_Destroy(result);
+        NODEJS_FreeConfiguration(result);
     }
 
-    /*Tests_SRS_NODEJS_05_004: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not contain a string property called main_path. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_json_is_missing_main_path)
+    TEST_FUNCTION(NODEJS_FreeConfiguration_frees_resources)
     {
         ///arrange
-        const char* missing_main_path = "{ \"args\": \"module configuration\" }";
+        auto result = NODEJS_ParseConfigurationFromJson("boo");
+
+        // This test is only useful when we run things under a leak
+        // detector.
 
         ///act
-        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, missing_main_path);
+        NODEJS_FreeConfiguration(result);
 
         ///assert
-        ASSERT_IS_NULL(result);
-    }
-
-    /*Tests_SRS_NODEJS_05_014: [ NODEJS_CreateFromJson shall return NULL if the configuration JSON does not start with an object at the root. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_json_is_not_an_object)
-    {
-        ///arrange
-        const char* not_an_object = "[ \"one\", \"two\" ]"; // array instead of object
-
-        ///act
-        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, not_an_object);
-
-        ///assert
-        ASSERT_IS_NULL(result);
-    }
-
-    /*Tests_SRS_NODEJS_05_003: [ NODEJS_CreateFromJson shall return NULL if configuration is not a valid JSON string. ]*/
-    TEST_FUNCTION(NODEJS_CreateFromJson_fails_when_configuration_is_not_valid_json)
-    {
-        ///arrange
-        const char* invalid_json = "{ \"name\": \"value\""; // missing closing curly brace
-
-        ///act
-        auto result = NODEJS_CreateFromJson((BROKER_HANDLE)0x42, invalid_json);
-
-        ///assert
-        ASSERT_IS_NULL(result);
-
-        ///cleanup
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_NULL_broker_handle)
@@ -534,8 +470,8 @@ BEGIN_TEST_SUITE(nodejs_int)
     {
         ///arrange
         NODEJS_MODULE_CONFIG config = {
-            "/path/to/mod.js",
-            "not_json"
+            STRING_construct("/path/to/mod.js"),
+            STRING_construct("not_json")
         };
 
         ///act
@@ -543,14 +479,18 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///assert
         ASSERT_IS_NULL(result);
+
+        //cleanup
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_NULL_for_invalid_main_file_path)
     {
         ///arrange
         NODEJS_MODULE_CONFIG config = {
-            "/path/to/mod.js",
-            "{}"
+            STRING_construct("/path/to/mod.js"),
+            STRING_construct("{}")
         };
 
         ///act
@@ -558,6 +498,10 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///assert
         ASSERT_IS_NULL(result);
+
+        //cleanup
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_NULL_config_json)
@@ -568,7 +512,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(NOOP_JS_MODULE);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
+            STRING_construct(js_file.js_file_path.c_str()),
             NULL
         };
 
@@ -588,9 +532,9 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
-
-
 
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_valid_main_file_path)
     {
@@ -600,8 +544,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(NOOP_JS_MODULE);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -620,6 +564,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(NODEJS_Create_returns_handle_for_adding_same_nodejs_module_twice)
@@ -630,8 +576,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(NOOP_JS_MODULE);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -647,7 +593,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         NODEJS_MODULE_HANDLE_DATA* handle_data1 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result1);
         NODEJS_MODULE_HANDLE_DATA* handle_data2 = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result2);
         wait_for_predicate(15, [handle_data1, handle_data2]() {
-            return handle_data1->GetModuleState() == NodeModuleState::initialized && 
+            return handle_data1->GetModuleState() == NodeModuleState::initialized &&
                    handle_data2->GetModuleState() == NodeModuleState::initialized;
         });
         ASSERT_IS_TRUE(handle_data1->GetModuleState() == NodeModuleState::initialized);
@@ -658,6 +604,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///cleanup
         NODEJS_Destroy(result1);
         NODEJS_Destroy(result2);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_publishes_message)
@@ -696,8 +644,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(PUBLISH_JS_MODULE);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -729,6 +677,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///cleanup
         Broker_RemoveModule(g_broker, &module);
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_create_throws)
@@ -750,8 +700,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_CREATE_THROWS);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -770,6 +720,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_create_returns_nothing)
@@ -790,8 +742,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_CREATE_RETURNS_NOTHING);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -810,6 +762,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_create_does_not_return_bool)
@@ -831,8 +785,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_CREATE_RETURNS_NOTHING);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -851,6 +805,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_create_returns_false)
@@ -872,8 +828,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_CREATE_RETURNS_NOTHING);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -892,6 +848,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_module_interface_invalid_fails)
@@ -913,8 +871,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_INTERFACE_INVALID);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         ///act
@@ -932,6 +890,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_invalid_publish_fails)
@@ -962,8 +922,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_INVALID_PUBLISH);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -990,6 +950,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_invalid_publish_fails2)
@@ -1026,8 +988,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_INVALID_PUBLISH);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1054,6 +1016,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_invalid_publish_fails3)
@@ -1087,8 +1051,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_INVALID_PUBLISH);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1115,6 +1079,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_receive_is_called)
@@ -1159,8 +1125,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_RECEIVE_IS_CALLED);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1206,6 +1172,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///cleanup
         Broker_RemoveModule(g_broker, &module);
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(nodejs_destroy_is_called)
@@ -1232,8 +1200,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_DESTROY_IS_CALLED);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1263,6 +1231,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
 
         ///cleanup
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(call_Start_before_nodejs_init_completes)
@@ -1287,8 +1257,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_START_IS_CALLED);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1320,6 +1290,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
     TEST_FUNCTION(call_Start_after_nodejs_init_completes)
@@ -1344,8 +1316,8 @@ BEGIN_TEST_SUITE(nodejs_int)
         js_file.Write(MODULE_START_IS_CALLED);
 
         NODEJS_MODULE_CONFIG config = {
-            js_file.js_file_path.c_str(),
-            "{}"
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
         };
 
         // setup a function to be called from the JS test code
@@ -1377,6 +1349,8 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         ///cleanup
         NODEJS_Destroy(result);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
     }
 
 END_TEST_SUITE(nodejs_int)

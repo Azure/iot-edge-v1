@@ -132,6 +132,9 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
 
 static void* NODEJS_ParseConfigurationFromJson(const char* configuration)
 {
+    //Codes_SRS_NODEJS_13_041: [ This function shall allocate memory for the configuration parameter and copy it. ]
+    //Codes_SRS_NODEJS_13_042: [ This function shall return NULL if any underlying platform call fails. ]
+    //Codes_SRS_NODEJS_13_043: [ This function shall return a non-NULL pointer when successful. ]
     return (void*)STRING_construct(configuration);
 }
 
@@ -139,10 +142,12 @@ static void NODEJS_FreeConfiguration(void* configuration)
 {
     if (configuration == NULL)
     {
+        //Codes_SRS_NODEJS_13_044: [ This function shall do nothing if configuration is NULL. ]
         LogError("configuration is NULL");
     }
     else
     {
+        //Codes_SRS_NODEJS_13_045: [ This function shall free the configuration. ]
         STRING_delete((STRING_HANDLE)configuration);
     }
 }
@@ -1305,7 +1310,7 @@ static const MODULE_API_1 NODEJS_APIS_all =
     NODEJS_FreeConfiguration,
     NODEJS_Create,
     NODEJS_Destroy,
-    NODEJS_Receive, 
+    NODEJS_Receive,
     NODEJS_Start
 };
 

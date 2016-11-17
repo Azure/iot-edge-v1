@@ -32,50 +32,24 @@ struct NODEJS_MODULE_HANDLE_DATA
 NODEJS_CreateFromJson
 ---------------------
 ```c
-MODULE_HANDLE NODEJS_CreateFromJson(BROKER_HANDLE broker, const char* configuration);
+void* NODEJS_ParseConfigurationFromJson(const char* configuration);
 ```
 
-Creates a new Node.js module host instance. `configuration` is a pointer to a
-`const char*` that contains a JSON string as supplied by `Gateway_CreateFromJson`.
-The JSON should conform to the following structure:
+**SRS_NODEJS_13_041: [** This function shall allocate memory for the `configuration` parameter and copy it. **]**
 
-```json
-{
-    "modules": [
-        {
-            "module name": "node_bot",
-            "module path": "/path/to/json_module.so|.dll",
-            "args": {
-                "main_path": "/path/to/main.js",
-                "args": "module configuration"
-            }
-        }
-    ]
-}
+**SRS_NODEJS_13_042: [** This function shall return `NULL` if any underlying platform call fails. **]**
+
+**SRS_NODEJS_13_043: [** This function shall return a non-`NULL` pointer when successful. **]**
+
+NODEJS_FreeConfiguration
+------------------------
+```C
+void NODEJS_FreeConfiguration(void* configuration)
 ```
 
-**SRS_NODEJS_05_001: [** `NODEJS_CreateFromJson` shall return `NULL` if `broker` is `NULL`. **]**
+**SRS_NODEJS_13_044: [** This function shall do nothing if `configuration` is `NULL`. **]**
 
-**SRS_NODEJS_05_002: [** `NODEJS_CreateFromJson` shall return `NULL` if `configuration` is `NULL`. **]**
-
-**SRS_NODEJS_05_012: [** `NODEJS_CreateFromJson` shall parse `configuration` as a JSON string. **]**
-
-**SRS_NODEJS_05_003: [** `NODEJS_CreateFromJson` shall return `NULL` if `configuration` is not a valid JSON string. **]**
-
-**SRS_NODEJS_05_014: [** `NODEJS_CreateFromJson` shall return `NULL` if the `configuration` JSON does not start with an object at the root. **]**
-
-**SRS_NODEJS_05_013: [** `NODEJS_CreateFromJson` shall extract the value of the `main_path` property from the configuration JSON. **]**
-
-**SRS_NODEJS_05_004: [** `NODEJS_CreateFromJson` shall return `NULL` if the `configuration` JSON does not contain a string property called `main_path`. **]**
-
-**SRS_NODEJS_05_006: [** `NODEJS_CreateFromJson` shall extract the value of the `args` property from the configuration JSON. **]**
-
-**SRS_NODEJS_05_005: [** `NODEJS_CreateFromJson` shall populate a `NODEJS_MODULE_CONFIG` object with the values of the `main_path` and `args` properties and invoke `NODEJS_Create` passing the `broker` handle and the config object. **]**
-
-**SRS_NODEJS_05_007: [** If `NODEJS_Create` succeeds then a valid `MODULE_HANDLE` shall be returned. **]**
-
-**SRS_NODEJS_05_008: [** If `NODEJS_Create` fail then the value `NULL` shall be returned. **]**
-
+**SRS_NODEJS_13_045: [** This function shall free the `configuration`. **]**
 
 NODEJS_Create
 -------------
@@ -153,7 +127,7 @@ interface Broker {
 }
 ```
  **]**
- 
+
  **SRS_NODEJS_13_018: [** The `GatewayModule.create` method shall be invoked passing the `Broker` instance and a parsed instance of the configuration JSON string. **]**
 
 NODEJS_Receive
