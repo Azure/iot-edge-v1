@@ -46,11 +46,11 @@ Loads the .NET binding module into memory.
 
 **SRS_DOTNET_MODULE_LOADER_04_030: [** `DotnetModuleLoader_Load` shall return `NULL` if `entrypoint` is `NULL`. **]**
 
+**SRS_DOTNET_MODULE_LOADER_04_002: [** `DotnetModuleLoader_Load` shall return `NULL` if `loader->type` is not `DOTNET`. **]**
+
 **SRS_DOTNET_MODULE_LOADER_04_031: [** `DotnetModuleLoader_Load` shall return `NULL` if `entrypoint->dotnetModuleEntryClass` is `NULL`. **]**
 
 **SRS_DOTNET_MODULE_LOADER_04_032: [** `DotnetModuleLoader_Load` shall return `NULL` if `entrypoint->dotnetModulePath` is `NULL`. **]**
-
-**SRS_DOTNET_MODULE_LOADER_04_002: [** `DotnetModuleLoader_Load` shall return `NULL` if `loader->type` is not `DOTNET`. **]**
 
 **SRS_DOTNET_MODULE_LOADER_04_003: [** `DotnetModuleLoader_Load` shall return `NULL` if an underlying platform call fails. **]**
 
@@ -187,3 +187,8 @@ const MODULE_LOADER* DotnetLoader_Get(void)
 ```
 
 **SRS_DOTNET_MODULE_LOADER_04_029: [** `DotnetLoader_Get` shall return a non-`NULL` pointer to a `MODULE_LOADER` struct. **]**
+
+**SRS_DOTNET_MODULE_LOADER_04_038: [** MODULE_LOADER::type shall be DOTNET. **]**
+
+**SRS_DOTNET_MODULE_LOADER_04_039: [** MODULE_LOADER::name shall be the string 'dotnet'. **]**
+
