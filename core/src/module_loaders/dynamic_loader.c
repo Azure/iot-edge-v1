@@ -139,20 +139,21 @@ static const MODULE_API* DynamicModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE 
     return result;
 }
 
-
-/*Codes_SRS_MODULE_LOADER_17_009: [DynamicModuleLoader_Unload shall do nothing if the moduleLibraryHandle is NULL.]*/
-/*Codes_SRS_MODULE_LOADER_17_010: [DynamicModuleLoader_Unload shall attempt to unload the library.]*/
-/*Codes_SRS_MODULE_LOADER_17_011: [DynamicModuleLoader_Unload shall deallocate memory for the structure MODULE_LIBRARY_HANDLE.]*/
 static void DynamicModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
     if (moduleLibraryHandle != NULL)
     {
         DYNAMIC_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
+
+        /*Codes_SRS_MODULE_LOADER_17_010: [DynamicModuleLoader_Unload shall attempt to unload the library.]*/
         DynamicLibrary_UnloadLibrary(loader_data->library);
+
+        /*Codes_SRS_MODULE_LOADER_17_011: [DynamicModuleLoader_Unload shall deallocate memory for the structure MODULE_LIBRARY_HANDLE.]*/
         free(loader_data);
     }
     else
     {
+        /*Codes_SRS_MODULE_LOADER_17_009: [DynamicModuleLoader_Unload shall do nothing if the moduleLibraryHandle is NULL.]*/
         LogError("moduleLibraryHandle is NULL");
     }
 }
@@ -280,6 +281,7 @@ static void* DynamicModuleLoader_BuildModuleConfiguration(
     * The native dynamic loader does not need to do any special configuration translation.
     * We simply return the module_configuration as is.
     */
+    //Codes_SRS_DYNAMIC_MODULE_LOADER_13_052: [DynamicModuleLoader_BuildModuleConfiguration shall return module_configuration. ]
     return (void *)module_configuration;
 }
 
@@ -320,6 +322,6 @@ const MODULE_LOADER* DynamicLoader_Get(void)
 {
     //Codes_SRS_DYNAMIC_MODULE_LOADER_13_054: [DynamicModuleLoader_Get shall return a non - NULL pointer to a MODULE_LOADER struct.]
     //Codes_SRS_DYNAMIC_MODULE_LOADER_13_055 : [MODULE_LOADER::type shall be NATIVE.]
-    //Codes_SRS_DYNAMIC_MODULE_LOADER_13_056 : [MODULE_LOADER::name shall be the string ‘native’.]
+    //Codes_SRS_DYNAMIC_MODULE_LOADER_13_056 : [MODULE_LOADER::name shall be the string native.]
     return &Dynamic_Module_Loader;
 }
