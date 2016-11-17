@@ -1340,7 +1340,7 @@ TEST_FUNCTION(DotnetLoader_Get_succeeds)
 
     // assert
     ASSERT_IS_NOT_NULL(loader);
-    ASSERT_ARE_EQUAL(MODULE_LOADER_TYPE, loader->type, DOTNET);
+    ASSERT_ARE_EQUAL(MODULE_LOADER_TYPE, DOTNET, DOTNET);
     ASSERT_IS_TRUE(strcmp(loader->name, "dotnet") == 0);
 }
 

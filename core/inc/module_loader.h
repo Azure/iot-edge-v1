@@ -95,14 +95,16 @@ typedef struct MODULE_LOADER_API_TAG
 /**
  * @brief Module loader type.
  */
-typedef enum MODULE_LOADER_TYPE_TAG
-{
-    UNKNOWN,
-    NATIVE,
-    JAVA,
-    DOTNET,
-    NODEJS
-} MODULE_LOADER_TYPE;
+
+#define MODULE_LOADER_TYPE_VALUES \
+    UNKNOWN, \
+    NATIVE, \
+    JAVA, \
+    DOTNET, \
+    NODEJS \
+
+DEFINE_ENUM(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
+
 
 /**
  * The Module Loader.
