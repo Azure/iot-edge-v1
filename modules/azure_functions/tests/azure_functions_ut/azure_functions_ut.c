@@ -129,25 +129,14 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Module_GetApi_returns_non_NULL)
     const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
 
     //assert
-    ASSERT_IS_TRUE(MODULE_CREATE_FROM_JSON(apis) != NULL);
+	ASSERT_IS_TRUE(MODULE_PARSE_CONFIGURATION_FROM_JSON(apis) != NULL);
+	ASSERT_IS_TRUE(MODULE_FREE_CONFIGURATION(apis) != NULL);
     ASSERT_IS_TRUE(MODULE_CREATE(apis) != NULL);
     ASSERT_IS_TRUE(MODULE_DESTROY(apis) != NULL);
     ASSERT_IS_TRUE(MODULE_RECEIVE(apis) != NULL);
     ASSERT_IS_TRUE(MODULE_START(apis) == NULL);
 }
 
-/* Tests_SRS_AZUREFUNCTIONS_05_002: [ If broker is NULL then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
-TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_broker_is_NULL)
-{
-    // arrange
-    const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
-
-    // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)(NULL, (const char*)0x42);
-
-    //assert
-    ASSERT_IS_NULL(result);
-}
 
 /* Tests_SRS_AZUREFUNCTIONS_05_003: [ If configuration is NULL then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
 TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_NULL)
@@ -157,7 +146,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_N
 
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, NULL);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)(NULL);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -176,7 +165,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_configuration_is_n
         .SetReturn((JSON_Value*)NULL);
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -198,7 +187,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_failedToRetrieveJs
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -224,7 +213,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_hostAddress_not_pr
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -254,7 +243,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_helativePath_not_p
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -303,7 +292,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -357,16 +346,16 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_STRING_construct__
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/* Tests_SRS_AZUREFUNCTIONS_05_011: [ Azure_Functions_CreateFromJson shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
-/* Tests_SRS_AZUREFUNCTIONS_05_013: [ If the lower layer Azure Functions module create fails, Azure_Functions_CreateFromJson shall fail and return NULL. ] */
-TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
+/*Tests_SRS_AZUREFUNCTIONS_17_001: [ AzureFunctions_ParseConfigurationFromJson shall allocate an AZURE_FUNCTIONS_CONFIG structure. ]*/
+/*Tests_SRS_AZUREFUNCTIONS_17_003: [ AzureFunctions_ParseConfigurationFromJson shall return NULL on failure. ]*/
+TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_alloc_fails)
 {
     // arrange
     const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
@@ -400,15 +389,10 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
         .IgnoreAllArguments()
         .SetReturn((STRING_HANDLE)0x42);
 
-    // These calls are inside AzureFunctions_Create()
-    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) // sizeof(AZURE_FUNCTIONS_DATA)
-        .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)))
         .SetReturn(NULL);
 
     // cleanup after forced failure
-    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
-        .IgnoreAllArguments();
 
     STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
         .IgnoreAllArguments();
@@ -422,7 +406,7 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
 
     //assert
     ASSERT_IS_NULL(result);
@@ -431,8 +415,8 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_returns_NULL_when_ModuleCreate_fail)
 
 /* Tests_SRS_AZUREFUNCTIONS_05_019: [ If the array object contains a value named "key" then Azure_Functions_CreateFromJson shall create a securityKey based on input key ] */
 /* Tests_SRS_AZUREFUNCTIONS_05_014: [ Azure_Functions_CreateFromJson shall release all data it allocated. ] */
-/* Tests_SRS_AZUREFUNCTIONS_05_012: [ When the lower layer Azure Functions module create succeeds, Azure_Functions_CreateFromJson shall succeed and return a non-NULL value. ] */
-/* Tests_SRS_AZUREFUNCTIONS_05_011: [ Azure_Functions_CreateFromJson shall invoke Azure Functions module's create, passing in the message broker handle and the Azure_Functions_CONFIG. ] */
+/*Tests_SRS_AZUREFUNCTIONS_17_001: [ AzureFunctions_ParseConfigurationFromJson shall allocate an AZURE_FUNCTIONS_CONFIG structure. ]*/
+/*Tests_SRS_AZUREFUNCTIONS_17_002: [ AzureFunctions_ParseConfigurationFromJson shall fill the structure with the constructed strings and return it upon success. ]*/
 /* Tests_SRS_AZUREFUNCTIONS_05_009: [ Azure_Functions_CreateFromJson shall call STRING_construct to create relativePath based on input host address. ] */
 /* Tests_SRS_AZUREFUNCTIONS_05_008: [ Azure_Functions_CreateFromJson shall call STRING_construct to create hostAddress based on input host address. ] */
 /* Tests_SRS_AZUREFUNCTIONS_05_007: [ If the array object does not contain a value named "relativePath" then Azure_Functions_CreateFromJson shall fail and return NULL. ] */
@@ -474,36 +458,92 @@ TEST_FUNCTION(AZUREFUNCTIONS_CreateFromJson_happy_path)
         .IgnoreAllArguments()
         .SetReturn((STRING_HANDLE)0x42);
 
-    // These calls are inside AzureFunctions_Create()
-    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) // sizeof(AZURE_FUNCTIONS_DATA)
-        .IgnoreAllArguments();
-
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
-
-    STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)0x42))
-        .SetReturn((STRING_HANDLE)0x42);
-
-    STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)0x42))
-        .SetReturn((STRING_HANDLE)0x42);
-
-    STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)0x42))
-        .SetReturn((STRING_HANDLE)0x42);
-
-    STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
-
-    STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
-
-    STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
 
     STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
 
     // act
-    MODULE_HANDLE result = MODULE_CREATE_FROM_JSON(apis)((BROKER_HANDLE)0x42, (const char*)0x42);
+    void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
     //assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
     //cleanup
-    MODULE_DESTROY(apis)(result);
+	MODULE_FREE_CONFIGURATION(apis)(result);
+
+}
+
+/*Tests_SRS_AZUREFUNCTIONS_17_004: [ AzureFunctions_FreeConfiguration shall do nothing if configuration is NULL. ]*/
+TEST_FUNCTION(AZURE_FUNCTIONS_FreeConfiguration_null_does_nothing)
+{
+	const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
+	umock_c_reset_all_calls();
+
+	MODULE_FREE_CONFIGURATION(apis)(NULL);
+
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
+/*Tests_SRS_AZUREFUNCTIONS_17_005: [ AzureFunctions_FreeConfiguration shall release all allocated resources if configuration is not NULL. ]*/
+TEST_FUNCTION(AZURE_FUNCTIONS_FreeConfiguration_frees_config)
+{
+	const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
+	STRICT_EXPECTED_CALL(json_parse_string((const char*)0x42))
+		.SetReturn((JSON_Value*)0x42);
+
+	STRICT_EXPECTED_CALL(json_value_get_object((JSON_Value*)0x42))
+		.SetReturn((JSON_Object*)0x42);
+
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "hostname"))
+		.IgnoreArgument(2)
+		.SetReturn("HostName42");
+
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "relativePath"))
+		.IgnoreArgument(2)
+		.SetReturn("relativePath42");
+
+	STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x42, "key"))
+		.IgnoreArgument(2)
+		.SetReturn("codeKey42");
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_construct((const char *)IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
+
+	STRICT_EXPECTED_CALL(json_value_free((JSON_Value*)0x42));
+
+	// act
+	void* result = MODULE_PARSE_CONFIGURATION_FROM_JSON(apis)((const char*)0x42);
+
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	MODULE_FREE_CONFIGURATION(apis)(result);
+
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
 }
 
 /* Tests_SRS_AZUREFUNCTIONS_04_001: [ Upon success, this function shall return a valid pointer to a MODULE_HANDLE. ] */

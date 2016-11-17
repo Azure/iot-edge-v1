@@ -1,78 +1,170 @@
-# module_loader Requirements
+Dynamic Module Loader Requirements
+==================================
 
+Overview
+--------
 
- 
-## Overview
-module_loader allows a user to dynamically load modules into a gateway.  The module in this case is represented by a file name of a shared library (a DLL or SO file, depending on operating system).  The library name given is expected to implement a gateway module, so it is expected to export the API as defined in module.h.
+The dynamic module loader implements loading of gateway modules that are distributed as DLLs or SOs.
+
 ## References
-module.h – defines `MODULE_API`, `MODULE_GETAPI_NAME`, and `Module_GetApi` function declaration.
-
-dynamic_library.h - used for operating system specific loading of dynamically linked libraries.
-
-Third party C JSON library: https://github.com/kgabis/parson
+[Module loader design](./module_loaders.md)
 
 ## Exposed API
 ```C
 
-typedef struct DYNAMIC_LOADER_CONFIG_TAG
+#define DYNAMIC_LOADER_NAME "native"
+
+typedef struct DYNAMIC_LOADER_ENTRYPOINT_TAG
 {
-    const char * moduleLibraryFileName;
-} DYNAMIC_LOADER_CONFIG;
+    STRING_HANDLE moduleLibraryFileName;
+} DYNAMIC_LOADER_ENTRYPOINT;
 
-extern const MODULE_LOADER_API * DynamicLoader_GetApi(void);
+const MODULE_LOADER* DynamicLoader_Get(void);
 ```
 
-### DynamicLoader_GetApi
-
-This returns the function table for the dynamically linked library module loader.
-
-**SRS_MODULE_LOADER_17_020: [** `DynamicLoader_GetApi` shall return a non-`NULL` pointer to a MODULER_LOADER structure. **]**
-
-**SRS_MODULE_LOADER_17_015: [** `DynamicLoader_GetApi` shall set all the fields of the MODULE_LOADER_API structure. **]**
-
-### ModuleLoader_Load
+DynamicModuleLoader_Load
+------------------------
 ```C
-MODULE_LIBRARY_HANDLE ModuleLoader_Load(const void* loader_configuration);
+MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const MODULE_LOADER* loader, const void* entrypoint)
 ```
 
-`ModuleLoader_Load` expects `loader_configuration` to be a pointer to a `DYNAMIC_LOADER_CONFIG` structure.
+Loads the module passed in via `entrypoint` into memory. `entrypoint` is a `DYNAMIC_LOADER_ENTRYPOINT` instance.
 
-**SRS_MODULE_LOADER_17_001: [**`ModuleLoader_Load` shall validate the `DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`, if it is `NULL`, it shall return NULL.**]** 
+**SRS_DYNAMIC_MODULE_LOADER_13_001: [** `DynamicModuleLoader_Load` shall return `NULL` if `loader` is `NULL`. **]**
 
-**SRS_MODULE_LOADER_17_002: [**`ModuleLoader_Load` shall load the library as a file, the filename given by`DYNAMIC_LOADER_CONFIG::moduleLibraryFileName`.**]**
-**SRS_MODULE_LOADER_17_012: [**If load library is not successful, the load shall fail, and it shall return `NULL`.**]** 
+**SRS_DYNAMIC_MODULE_LOADER_13_041: [** `DynamicModuleLoader_Load` shall return `NULL` if `entrypoint` is `NULL`. **]**
 
-**SRS_MODULE_LOADER_17_003: [**`ModuleLoader_Load` shall locate the function defined by `MODULE_GETAPI_NAME` in the open library.**]**
-**SRS_MODULE_LOADER_17_013: [**If locating the function is not successful, the load shall fail, and it shall return `NULL`.**]**
+**SRS_DYNAMIC_MODULE_LOADER_13_002: [** `DynamicModuleLoader_Load` shall return `NULL` if `loader->type` is not `NATIVE`. **]**
 
-**SRS_MODULE_LOADER_17_004: [**`ModuleLoader_Load` shall call the function defined by `MODULE_GETAPI_NAME` in the open library.**]**   
-**SRS_MODULE_LOADER_17_015: [** `ModuleLoader_Load` shall compare the module's `api_version` with the current gateway, and if the `api_version` is greater than the current version, it shall fail and it shall return `NULL`. **]**   
-**SRS_MODULE_LOADER_26_001: [** If the get API call doesn't set required functions, the load shall fail and it shall return `NULL`. **]**
+**SRS_DYNAMIC_MODULE_LOADER_13_003: [** `DynamicModuleLoader_Load` shall return `NULL` if an underlying platform call fails. **]**
 
-**SRS_MODULE_LOADER_17_005: [**`ModuleLoader_Load` shall allocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
-**SRS_MODULE_LOADER_17_014: [**If memory allocation is not successful, the load shall fail, and it shall return `NULL`. **]**
- 
-**SRS_MODULE_LOADER_17_006: [**`ModuleLoader_Load` shall return a non-NULL handle to a `MODULE_LIBRARY_DATA_TAG` upon success.**]**
- 
-The contents of the structure `MODULE_LIBRARY_DATA_TAG` will be operating system specific.  The structure is expected to have at least one element: an opaque handle to the loaded library.  The structure may also to keep a reference to the `MODULE_API` provided by the library to improve performance.
+**SRS_DYNAMIC_MODULE_LOADER_13_039: [** `DynamicModuleLoader_Load` shall return `NULL` if `entrypoint->moduleLibraryFileName` is `NULL`. **]**
 
-### ModuleLoader_GetModuleApi
+**SRS_DYNAMIC_MODULE_LOADER_13_004: [** `DynamicModuleLoader_Load` shall load the module into memory by calling `DynamicLibrary_LoadLibrary`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_033: [** `DynamicModuleLoader_Load` shall call `DynamicLibrary_FindSymbol` on the module handle with the symbol name `Module_GetApi` to acquire the function that returns the module's API table. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_040: [** `DynamicModuleLoader_Load` shall call the module's `Module_GetAPI` callback to acquire the module API table. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_034: [** `DynamicModuleLoader_Load` shall return `NULL` if the `MODULE_API` pointer returned by the module is `NULL`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_035: [** `DynamicModuleLoader_Load` shall return `NULL` if `MODULE_API::version` is greater than `Module_ApiGatewayVersion`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_036: [** `DynamicModuleLoader_Load` shall return `NULL` if the `Module_Create` function in `MODULE_API` is `NULL`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_037: [** `DynamicModuleLoader_Load` shall return `NULL` if the `Module_Receive` function in `MODULE_API` is `NULL`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_038: [** `DynamicModuleLoader_Load` shall return `NULL` if the `Module_Destroy` function in `MODULE_API` is `NULL`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_005: [** `DynamicModuleLoader_Load` shall return a non-`NULL` pointer of type `MODULE_LIBRARY_HANDLE` when successful. **]**
+
+DynamicModuleLoader_GetModuleApi
+--------------------------------
 ```C
-extern const MODULE_API* `ModuleLoader_GetModuleApi`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+extern const MODULE_API* `DynamicModuleLoader_GetModuleApi`(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
-**SRS_MODULE_LOADER_17_007: [**`ModuleLoader_GetModuleApi` shall return `NULL` if the moduleLibraryHandle is `NULL`.**]**
- 
-**SRS_MODULE_LOADER_17_008: [**`ModuleLoader_GetModuleApi` shall return a valid pointer to `MODULE_API` on success.**]** 
+**SRS_MODULE_LOADER_17_007: [**`DynamicModuleLoader_GetModuleApi` shall return `NULL` if the moduleLibraryHandle is `NULL`.**]**
 
-### ModuleLoader_Unload
+**SRS_MODULE_LOADER_17_008: [**`DynamicModuleLoader_GetModuleApi` shall return a valid pointer to `MODULE_API` on success.**]**
+
+DynamicModuleLoader_Unload
+--------------------------
 ```C
-void ModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
+void DynamicModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle);
 ```
 
-**SRS_MODULE_LOADER_17_009: [**`ModuleLoader_Unload` shall do nothing if the moduleLibraryHandle is `NULL`.**]**
- 
-**SRS_MODULE_LOADER_17_010: [**`ModuleLoader_Unload` shall unload the library.**]**
- 
-**SRS_MODULE_LOADER_17_011: [**`ModuleLoader_Unload` shall deallocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
+**SRS_MODULE_LOADER_17_009: [**`DynamicModuleLoader_Unload` shall do nothing if the moduleLibraryHandle is `NULL`.**]**
 
+**SRS_MODULE_LOADER_17_010: [**`DynamicModuleLoader_Unload` shall unload the library.**]**
+
+**SRS_MODULE_LOADER_17_011: [**`DynamicModuleLoader_Unload` shall deallocate memory for the structure `MODULE_LIBRARY_HANDLE`.**]**
+
+DynamicModuleLoader_ParseEntrypointFromJson
+-------------------------------------------
+```C
+void* DynamicModuleLoader_ParseEntrypointFromJson(const JSON_Value* json);
+```
+
+Parses entrypoint JSON as it applies to a native module and returns a pointer
+to the parsed data.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_042: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall return `NULL` if `json` is `NULL`.  **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_043: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall return `NULL` if the root json entity is not an object.  **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_044: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall return `NULL` if an underlying platform call fails.  **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_045: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall retrieve the path to the module library file by reading the value of the attribute `module.path`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_047: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall return `NULL` if `module.path` does not exist. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_046: [** `DynamicModuleLoader_ParseEntrypointFromJson` shall return a non-`NULL` pointer to the parsed representation of the entrypoint when successful.  **]**
+
+DynamicModuleLoader_FreeEntrypoint
+----------------------------------
+```C
+void DynamicModuleLoader_FreeEntrypoint(void* entrypoint)
+```
+
+Frees entrypoint data allocated by `DynamicModuleLoader_ParseEntrypointFromJson`.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_049: [** `DynamicModuleLoader_FreeEntrypoint` shall do nothing if `entrypoint` is `NULL`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_048: [** `DynamicModuleLoader_FreeEntrypoint` shall free resources allocated during `DynamicModuleLoader_ParseEntrypointFromJson`. **]**
+
+DynamicModuleLoader_ParseConfigurationFromJson
+----------------------------------------------
+```C
+MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationFromJson(const JSON_Value* json);
+```
+
+The dynamic loader does not have any configuration. So this method always returns NULL.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_050: [** `DynamicModuleLoader_ParseConfigurationFromJson` shall return `NULL`. **]**
+
+DynamicModuleLoader_FreeConfiguration
+-------------------------------------
+```C
+void DynamicModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration);
+```
+
+The dynamic loader does not have any configuration. So there is nothing to free here.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_051: [** `DynamicModuleLoader_FreeConfiguration` shall do nothing. **]**
+
+DynamicModuleLoader_BuildModuleConfiguration
+--------------------------------------------
+```C
+void* DynamicModuleLoader_BuildModuleConfiguration(
+    const MODULE_LOADER* loader,
+    const void* entrypoint,
+    const void* module_configuration
+);
+```
+
+The native dynamic loader does not need to do any special configuration translation. So this function simply returns `module_configuration`.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_052: [** `DynamicModuleLoader_BuildModuleConfiguration` shall return `module_configuration`. **]**
+
+DynamicModuleLoader_FreeModuleConfiguration
+-------------------------------------------
+```C
+void DynamicModuleLoader_FreeModuleConfiguration(const void* module_configuration);
+```
+
+Since the dynamic loader does not have any loader specific configuration there is nothing to free here.
+
+**SRS_DYNAMIC_MODULE_LOADER_13_053: [** `DynamicModuleLoader_FreeModuleConfiguration` shall do nothing. **]**
+
+DynamicModuleLoader_Get
+-----------------------
+```C
+const MODULE_LOADER* DynamicModuleLoader_Get(void);
+```
+
+**SRS_DYNAMIC_MODULE_LOADER_13_054: [** `DynamicModuleLoader_Get` shall return a non-`NULL` pointer to a `MODULE_LOADER` struct. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_055: [** `MODULE_LOADER::type` shall be `NATIVE`. **]**
+
+**SRS_DYNAMIC_MODULE_LOADER_13_056: [** `MODULE_LOADER::name` shall be the string 'native'. **]**

@@ -309,7 +309,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_things_fail)
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_003: [NodeModuleLoader_Load shall return NULL if an underlying platform call fails.]
-//Tests_SRS_NODE_MODULE_LOADER_13_034: [ NodeModuleLoader_Load shall return NULL if MODULE_API returned by the binding module is NULL. ]
+//Tests_SRS_NODE_MODULE_LOADER_13_034: [NodeModuleLoader_Load shall return NULL if the MODULE_API pointer returned by the binding module is NULL.]
 TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_NULL)
 {
     // arrange
@@ -326,7 +326,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_NULL)
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn(NULL);
     STRICT_EXPECTED_CALL(DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG))
@@ -364,7 +364,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with_un
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn(&api);
     STRICT_EXPECTED_CALL(DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG))
@@ -398,34 +398,34 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with_in
             {
                 MODULE_API_VERSION_1
             },
-            .Module_ParseConfigurationFromJson = NULL,
-            .Module_FreeConfiguration = NULL,
-            .Module_Create = NULL,
-            .Module_Destroy = (pfModule_Destroy)0x42,
-            .Module_Receive = (pfModule_Receive)0x42,
-            .Module_Start = NULL
+            NULL,
+            NULL,
+            NULL,
+            (pfModule_Destroy)0x42,
+            (pfModule_Receive)0x42,
+            NULL
         },
         {
             {
                 MODULE_API_VERSION_1
             },
-            .Module_ParseConfigurationFromJson = NULL,
-            .Module_FreeConfiguration = NULL,
-            .Module_Create = (pfModule_Create)0x42,
-            .Module_Destroy = NULL,
-            .Module_Receive = (pfModule_Receive)0x42,
-            .Module_Start = NULL
+            NULL,
+            NULL,
+            (pfModule_Create)0x42,
+            NULL,
+            (pfModule_Receive)0x42,
+            NULL
         },
         {
             {
                 MODULE_API_VERSION_1
             },
-            .Module_ParseConfigurationFromJson = NULL,
-            .Module_FreeConfiguration = NULL,
-            .Module_Create = (pfModule_Create)0x42,
-            .Module_Destroy = (pfModule_Destroy)0x42,
-            .Module_Receive = NULL,
-            .Module_Start = NULL
+            NULL,
+            NULL,
+            (pfModule_Create)0x42,
+            (pfModule_Destroy)0x42,
+            NULL,
+            NULL
         }
     };
 
@@ -438,7 +438,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with_in
         STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
             .IgnoreArgument(1)
             .SetReturn((void*)Fake_GetAPI);
-        STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+        STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
             .IgnoreArgument(1)
             .SetReturn((MODULE_API*)&(api_inputs[i]));
         STRICT_EXPECTED_CALL(DynamicLibrary_UnloadLibrary(IGNORED_PTR_ARG))
@@ -461,7 +461,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with_in
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_005: [NodeModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]
-//Tests_SRS_NODE_MODULE_LOADER_13_033: [ NodeModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the module's API table. ]
+//Tests_SRS_NODE_MODULE_LOADER_13_033: [NodeModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table.]
 TEST_FUNCTION(NodeModuleLoader_Load_succeeds)
 {
     // arrange
@@ -475,12 +475,12 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds)
         {
             MODULE_API_VERSION_1
         },
-        .Module_ParseConfigurationFromJson = NULL,
-        .Module_FreeConfiguration = NULL,
-        .Module_Create = (pfModule_Create)0x42,
-        .Module_Destroy = (pfModule_Destroy)0x42,
-        .Module_Receive = (pfModule_Receive)0x42,
-        .Module_Start = NULL
+        NULL,
+        NULL,
+        (pfModule_Create)0x42,
+        (pfModule_Destroy)0x42,
+        (pfModule_Receive)0x42,
+        NULL
     };
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
@@ -490,7 +490,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds)
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn((MODULE_API*)&api);
 
@@ -526,12 +526,12 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds_with_custom_binding_path)
         {
             MODULE_API_VERSION_1
         },
-        .Module_ParseConfigurationFromJson = NULL,
-        .Module_FreeConfiguration = NULL,
-        .Module_Create = (pfModule_Create)0x42,
-        .Module_Destroy = (pfModule_Destroy)0x42,
-        .Module_Receive = (pfModule_Receive)0x42,
-        .Module_Start = NULL
+        NULL,
+        NULL,
+        (pfModule_Create)0x42,
+        (pfModule_Destroy)0x42,
+        (pfModule_Receive)0x42,
+        NULL
     };
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
@@ -543,7 +543,7 @@ TEST_FUNCTION(NodeModuleLoader_Load_succeeds_with_custom_binding_path)
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn((MODULE_API*)&api);
 
@@ -582,12 +582,12 @@ TEST_FUNCTION(NodeModuleLoader_GetModuleApi_succeeds)
         {
             MODULE_API_VERSION_1
         },
-        .Module_ParseConfigurationFromJson = NULL,
-        .Module_FreeConfiguration = NULL,
-        .Module_Create = (pfModule_Create)0x42,
-        .Module_Destroy = (pfModule_Destroy)0x42,
-        .Module_Receive = (pfModule_Receive)0x42,
-        .Module_Start = NULL
+        NULL,
+        NULL,
+        (pfModule_Create)0x42,
+        (pfModule_Destroy)0x42,
+        (pfModule_Receive)0x42,
+        NULL
     };
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
@@ -597,7 +597,7 @@ TEST_FUNCTION(NodeModuleLoader_GetModuleApi_succeeds)
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn((MODULE_API*)&api);
 
@@ -642,12 +642,12 @@ TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
         {
             MODULE_API_VERSION_1
         },
-        .Module_ParseConfigurationFromJson = NULL,
-        .Module_FreeConfiguration = NULL,
-        .Module_Create = (pfModule_Create)0x42,
-        .Module_Destroy = (pfModule_Destroy)0x42,
-        .Module_Receive = (pfModule_Receive)0x42,
-        .Module_Start = NULL
+        NULL,
+        NULL,
+        (pfModule_Create)0x42,
+        (pfModule_Destroy)0x42,
+        (pfModule_Receive)0x42,
+        NULL
     };
 
     STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
@@ -657,7 +657,7 @@ TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
     STRICT_EXPECTED_CALL(DynamicLibrary_FindSymbol(IGNORED_PTR_ARG, MODULE_GETAPI_NAME))
         .IgnoreArgument(1)
         .SetReturn((void*)Fake_GetAPI);
-    STRICT_EXPECTED_CALL(Fake_GetAPI(IGNORED_NUM_ARG))
+    STRICT_EXPECTED_CALL(Fake_GetAPI((MODULE_API_VERSION)IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn((MODULE_API*)&api);
 
@@ -721,7 +721,7 @@ TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_va
 }
 
 //Tests_SRS_NODE_MODULE_LOADER_13_014: [ NodeModuleLoader_ParseEntrypointFromJson shall retrieve the path to the main JS file by reading the value of the attribute main.path. ]
-//Tests_SRS_NODE_MODULE_LOADER_13_013: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
+//Tests_SRS_NODE_MODULE_LOADER_13_039: [ NodeModuleLoader_ParseEntrypointFromJson shall return NULL if main.path does not exist. ]
 TEST_FUNCTION(NodeModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_object_get_string_returns_NULL)
 {
     // arrange

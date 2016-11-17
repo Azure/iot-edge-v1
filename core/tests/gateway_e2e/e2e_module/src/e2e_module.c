@@ -155,6 +155,7 @@ static const MODULE_API_1 E2EModule_APIS_all =
     {MODULE_API_VERSION_1},
 
     NULL,
+	NULL,
     E2EModule_Create,
     E2EModule_Destroy,
     E2EModule_Receive,

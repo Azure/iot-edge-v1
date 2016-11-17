@@ -70,11 +70,11 @@ Loads the Node.js binding module into memory.
 
 **SRS_NODE_MODULE_LOADER_13_032: [** `NodeModuleLoader_Load` shall use the the binding module path given in `loader->configuration->binding_path` if `loader->configuration` is not `NULL`. **]**
 
-**SRS_NODE_MODULE_LOADER_13_033: [** `NodeModuleLoader_Load` shall call `DynamicLibrary_FindSymbol` on the binding module handle with the symbol name `Module_GetApi` to acquire the module's API table. **]**
+**SRS_NODE_MODULE_LOADER_13_033: [** `NodeModuleLoader_Load` shall call `DynamicLibrary_FindSymbol` on the binding module handle with the symbol name `Module_GetApi` to acquire the function that returns the module's API table. **]**
 
 **SRS_NODE_MODULE_LOADER_13_005: [** `NodeModuleLoader_Load` shall return a non-`NULL` pointer of type `MODULE_LIBRARY_HANDLE` when successful. **]**
 
-**SRS_NODE_MODULE_LOADER_13_034: [** `NodeModuleLoader_Load` shall return `NULL` if `MODULE_API` returned by the binding module is `NULL`. **]**
+**SRS_NODE_MODULE_LOADER_13_034: [** `NodeModuleLoader_Load` shall return `NULL` if the `MODULE_API` pointer returned by the binding module is `NULL`. **]**
 
 **SRS_NODE_MODULE_LOADER_13_035: [** `NodeModuleLoader_Load` shall return `NULL` if `MODULE_API::version` is greater than `Module_ApiGatewayVersion`. **]**
 
@@ -126,6 +126,8 @@ to the parsed data.
 **SRS_NODE_MODULE_LOADER_13_013: [** `NodeModuleLoader_ParseEntrypointFromJson` shall return `NULL` if an underlying platform call fails. **]**
 
 **SRS_NODE_MODULE_LOADER_13_014: [** `NodeModuleLoader_ParseEntrypointFromJson` shall retrieve the path to the main JS file by reading the value of the attribute `main.path`. **]**
+
+**SRS_NODE_MODULE_LOADER_13_039: [** `NodeModuleLoader_ParseEntrypointFromJson` shall return `NULL` if `main.path` does not exist. **]**
 
 **SRS_NODE_MODULE_LOADER_13_015: [** `NodeModuleLoader_ParseEntrypointFromJson` shall return a non-`NULL` pointer to the parsed representation of the entrypoint when successful. **]**
 
