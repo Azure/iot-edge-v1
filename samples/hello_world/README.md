@@ -125,22 +125,25 @@ Linux
 ```json
 {
     "modules" :
-    [ 
+    [
         {
-            "module name" : "logger",
-            "loading args": {
-                "module path" : "./build/modules/logger/liblogger.so"
-            },
-            "args" : 
-            {
-                "filename":"log.txt"
+          "name" : "logger",
+          "loader": {
+            "name": "native",
+            "entrypoint": {
+              "module.path": "./modules/logger/liblogger.so"
             }
+          },
+          "args" : {"filename":"log.txt"}
         },
         {
-            "module name" : "hello_world",
-            "loading args": {
-                "module path" : "./build/modules/hello_world/libhello_world.so"
-            },
+            "name" : "hello_world",
+          "loader": {
+            "name": "native",
+            "entrypoint": {
+              "module.path": "./modules/hello_world/libhello_world.so"
+            }
+          },
             "args" : null
         }
     ],
@@ -169,33 +172,34 @@ Windows
 
 ```json
 {
-    "modules" :
-    [ 
-        {
-            "module name" : "logger",
-            "loading args": {
-                "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-            },
-            "args" : 
-            {
-                "filename":"log.txt"
-            }
-        },
-        {
-            "module name" : "hello_world",
-            "loading args": {
-                "module path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
-            },
-            "args" : null
+  "modules": [
+    {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
         }
-    ],
-    "links": 
-    [
-        {
-            "source": "hello_world",
-            "sink": "logger"
+      },
+      "args": { "filename": "log.txt" }
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
         }
-    ]
+      },
+      "args": null
+      }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "logger"
+    }
+  ]
 }
 ```
 

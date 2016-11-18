@@ -109,14 +109,17 @@ IDs and data (for write instructions).
 
 ```json
 {
-    "module name": "logger",
-    "loading args": {
-      "module path": "build/modules/logger/liblogger.so"
-    },
-    "args":
-    {
-        "filename":"gw_logger.log"
+  "name": "Logger",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path" : "build/modules/logger/liblogger.so"
     }
+  },
+  "args":
+  {
+    "filename": "<</path/to/log-file.log>>"
+  }
 }
 ```
 
@@ -124,9 +127,12 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "SensorTag",
-  "loading args": {
-    "module path": "build/modules/ble/libble.so"
+  "name": "SensorTag",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/ble/libble.so"
+    }
   },
   "args": {
     "controller_index": 0,
@@ -180,14 +186,17 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "IoTHub",
-  "loading args": {
-    "module path": "build/modules/iothub/libiothub.so"
+  "name": "IoTHub",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/iothub/libiothub.so"
+    }
   },
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
     "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
-    "Transport": "AMQP"
+    "Transport" : "amqp"
   }
 }
 ```
@@ -196,13 +205,16 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "mapping",
-  "loading args": {
-    "module path": "build/modules/identitymap/libidentity_map.so"
+  "name": "mapping",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/identitymap/libidentity_map.so"
+    }
   },
   "args": [
     {
-      "macAddress": "<<AA:BB:CC:DD:EE:FF>>",
+      "macAddress": "AA:BB:CC:DD:EE:FF",
       "deviceId": "<<Azure IoT Hub Device ID>>",
       "deviceKey": "<<Azure IoT Hub Device Key>>"
     }
@@ -214,11 +226,14 @@ IDs and data (for write instructions).
 
 ```json
 {
-    "module name": "BLE Printer",
-    "loading args": {
-      "module path": "build/samples/ble_gateway/ble_printer/libble_printer.so"
-    },
-    "args": null
+  "name": "BLE Printer",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/samples/ble_gateway/ble_printer/libble_printer.so"
+    }
+  },
+  "args": null
 }
 ```
 
@@ -226,11 +241,14 @@ IDs and data (for write instructions).
 
 ```json
 {
-    "module name": "BLEC2D",
-    "loading args": {
-      "module path": "build/modules/ble/libble_c2d.so"
-    },
-    "args": null
+  "name": "BLEC2D",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/ble/libble_c2d.so"
+    }
+  },
+  "args": null
 }
 ```
 

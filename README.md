@@ -34,8 +34,7 @@ more info.
 
 ## Operating system compatibility
 The SDK is designed to be used with a broad range of operating system platforms. The version 
-of the Azure IoT Gateway SDK has been tested by means of development on the following operating 
-systems:
+of the Azure IoT Gateway SDK has been tested on the following operating systems:
 
 - Ubuntu 14.04
 - Ubuntu 15.10
@@ -56,13 +55,13 @@ for building and running the samples:
 
 General documentation
 
-- [Dev box setup](doc/devbox_setup.md) contains instructions for configure your machine to 
+- [Dev box setup](doc/devbox_setup.md) contains instructions for configuring your machine to 
 build the Azure IoT Gateway SDK.
 
 API documentation can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html).
 
 ### /samples
-This folder contains all of the samples for the Azure IoT Gateway SDK. Samples are seperated 
+This folder contains all of the samples for the Azure IoT Gateway SDK. Samples are separated 
 in their own folders. Step by step instructions for building and running each sample can be found 
 in the README.md file in the root of each sample's folder.
 
@@ -83,8 +82,9 @@ solution. Details on the implementation of each module can be found in each modu
 
 ### /core
 This folder contains all of the core infrastructure necessary to create a gateway solution. 
-In general, developers only need to use components in the core folder, not modify them. API 
-documentation for core infrastructure can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html). Details on the implementation of core components can be found in the [core/devdoc](core/devdoc).
+In general, developers only need to *use* components in the core folder, not modify them. API 
+documentation for core infrastructure can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html). 
+Details on the implementation of core components can be found in [core/devdoc](core/devdoc).
 
 ### /build
 This is the default folder that cmake will place the output from our build scripts. The developer 

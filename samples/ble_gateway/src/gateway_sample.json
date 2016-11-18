@@ -1,9 +1,12 @@
 {
   "modules": [
     {
-      "module name": "IoTHub",
-      "loading args": {
-        "module path": "<</path/to/libiothub.so>>"
+      "name": "IoTHub",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/iothub/libiothub.so"
+        }
       },
       "args": {
         "IoTHubName": "<<Azure IoT Hub Name>>",
@@ -12,16 +15,22 @@
       }
     },
     {
-      "module name": "BLE Printer",
-      "loading args": {
-        "module path": "<</path/to/libble_printer.so>>"
+      "name": "BLE Printer",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/samples/ble_gateway/ble_printer/libble_printer.so"
+        }
       },
       "args": null
     },
     {
-      "module name": "mapping",
-      "loading args": {
-        "module path": "<</path/to/libidentity_map.so>>"
+      "name": "mapping",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/identitymap/libidentity_map.so"
+        }
       },
       "args": [
         {
@@ -32,16 +41,22 @@
       ]
     },
     {
-      "module name": "BLEC2D",
-      "loading args": {
-        "module path": "<</path/to/libble_c2d.so>>"
+      "name": "BLEC2D",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/ble/libble_c2d.so"
+        }
       },
       "args": null
     },
     {
-      "module name": "SensorTag",
-      "loading args": {
-        "module path": "<</path/to/libble.so>>"
+      "name": "SensorTag",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/ble/libble.so"
+        }
       },
       "args": {
         "controller_index": 0,
@@ -90,9 +105,12 @@
       }
     },
     {
-      "module name": "Logger",
-      "loading args": {
-        "module path" : "<</path/to/liblogger.so>>"
+      "name": "Logger",
+      "loader": {
+        "name" : "native",
+        "entrypoint" : {
+          "module.path" : "build/modules/logger/liblogger.so"
+        }
       },
       "args":
       {

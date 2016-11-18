@@ -4,7 +4,7 @@
 Overview
 --------
 
-This sample showcase how one might build modules for IoT Gateway in .NET.
+This sample showcases how one might build modules for IoT Gateway in .NET.
 
 The sample contains:
 
@@ -76,38 +76,42 @@ Json Configuration
 ------------------
 ```json
 {
-    "modules" :
-    [
+    "modules": [
         {
-            "module name" : "logger",
-            "loading args" : {
-                "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-            }
-            "args" : {"filename":"C:\\Temp\\Log.txt"} 
+            "name": "logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+                }
+            },
+            "args": { "filename": "C:\\Temp\\Log.txt" }
         },
         {
-          "module name": "dotnet_sensor_module",
-          "loading args" : {
-              "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
-          }
-          "args": {
-            "dotnet_module_path": "SensorModule",
-            "dotnet_module_entry_class": "SensorModule.DotNetSensorModule",
-            "dotnet_module_args": "module configuration"
-          }
+            "name": "dotnet_sensor_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "SensorModule",
+                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
+                }
+            },
+            "args": "module configuration"
         },
         {
-            "module name" : "dotnet_printer_module",
-            "loading args" : {
-                "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
-            }
-            "args" : {
-                "dotnet_module_path": "PrinterModule",
-                "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule",
-                "dotnet_module_args": "module configuration"
-            }
+            "name": "dotnet_printer_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "PrinterModule",
+                    "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
+                }
+            },
+            "args": "module configuration"
         }
-
+    ],
+    "links": [
+      {"source": "dotnet_sensor_module", "sink": "dotnet_printer_module" }
     ]
 }
 ```

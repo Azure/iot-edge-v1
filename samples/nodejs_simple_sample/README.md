@@ -39,41 +39,75 @@ In order to run a gateway with a Node.js module do the following:
 
 ```
 {
-  "modules": [
-    {
-      "module name": "node_printer",
-      "loading args" : {
-        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
-      }
-      "args": {
-        "main_path": "../../../../samples/nodejs_simple_sample/nodejs_modules/printer.js",
-        "args": null
-      }
-    },
-    {
-      "module name": "node_sensor",
-      "loading args" : {
-        "module path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
-      }
-      "args": {
-        "main_path": "../../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js",
-        "args": null
-      }
-    },
-    {
-      "module name": "Logger",
-      "loading args" : {
-        "module path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-      }
-      "args": {
-        "filename": "Log.txt"
-      }
-    }
-  ],
-  "links" : [
-    { "source" : "*", "sink" : "Logger" }, 
-    { "source" : "node_sensor", "sink" : "node_printer" }
-  ]
+    "loaders": [
+        {
+            "type": "node",
+            "name": "node",
+            "configuration": {
+                "binding.path": "..\\..\\..\\bindings\\nodejs\\Debug\\nodejs_binding.dll"
+            }
+        }
+    ],
+    "modules": [
+        {
+            "name": "node_printer",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
+                }
+            },
+            "args": null
+        },
+        {
+            "name": "node_sensor",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js"
+                }
+            },
+            "args": null
+        },
+        {
+            "name": "iothub_writer",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
+                }
+            },
+            "args": {
+                "connection_string": "<<IoT Hub Device Connection String>>"
+            }
+        },
+        {
+            "name": "Logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+                }
+            },
+            "args": {
+                "filename": "log.txt"
+            }
+        }
+    ],
+    "links": [
+        {
+            "source": "*",
+            "sink": "Logger"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "iothub_writer"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "node_printer"
+        }
+    ]
 }
 ```
 
@@ -89,40 +123,63 @@ On a terminal windows follow these steps:
 Here is a sample of the gateway_sample.json file filled:
 ```
 {
-  "modules": [
-    {
-      "module name": "node_printer",
-      "loading args" : {
-        "module path": "../../bindings/nodejs/libnodejs_binding.so"
-      }
-      "args": {
-        "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js",
-        "args": null
-      }
-    },
-    {
-      "module name": "node_sensor",
-      "loading args" : {
-        "module path": "../../bindings/nodejs/libnodejs_binding.so"
-      }
-      "args": {
-        "main_path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js",
-        "args": null
-      }
-    },
-    {
-      "module name": "Logger",
-      "loading args" : {
-        "module path": "../../modules/logger/liblogger.so"
-      }
-      "args": {
-        "filename": "log.txt"
-      }
-    }
-  ],
-  "links" : [
-    { "source" : "*", "sink" : "Logger" },
-    { "source" : "node_sensor", "sink" : "node_printer" }
-  ]
+    "modules": [
+        {
+            "name": "node_printer",
+            "loader": {
+                "name": "node",
+                "main.path": "./samples/nodejs_simple_sample/nodejs_modules/printer.js"
+            },
+            "args": null
+        },
+        {
+            "name": "node_sensor",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "./samples/nodejs_simple_sample/nodejs_modules/sensor.js"
+                }
+            },
+            "args": null
+        },
+        {
+            "name": "iothub_writer",
+            "loader": {
+                "name": "node",
+                "entrypoint": {
+                    "main.path": "./samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
+                }
+            },
+            "args": {
+                "connection_string": "<<IoT Hub Device Connection String>>"
+            }
+        },
+        {
+            "name": "Logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "../../modules/logger/liblogger.so"
+                }
+            },
+            "args": {
+                "filename": "<<path to log file>>"
+            }
+        }
+    ],
+    "links": [
+        {
+            "source": "*",
+            "sink": "Logger"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "iothub_writer"
+        },
+        {
+            "source": "node_sensor",
+            "sink": "node_printer"
+        }
+    ]
 }
 ```
