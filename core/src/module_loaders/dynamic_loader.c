@@ -293,7 +293,6 @@ static void DynamicModuleLoader_FreeModuleConfiguration(const void* module_confi
     //Codes_SRS_DYNAMIC_MODULE_LOADER_13_053: [ `DynamicModuleLoader_FreeModuleConfiguration` shall do nothing. ]
 }
 
-/* Codes_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ]*/
 static MODULE_LOADER_API Dynamic_Module_Loader_API =
 {
     .Load = DynamicModuleLoader_Load,

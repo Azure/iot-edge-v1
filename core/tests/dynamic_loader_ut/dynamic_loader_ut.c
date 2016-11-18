@@ -292,6 +292,8 @@ TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_moduleLibraryFileName_i
     ASSERT_IS_NULL(result);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_004: [DynamicModuleLoader_Load shall load the module into memory by calling DynamicLibrary_LoadLibrary. ]
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_003: [ DynamicModuleLoader_Load shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_things_fail)
 {
@@ -342,6 +344,8 @@ TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_things_fail)
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_004: [DynamicModuleLoader_Load shall load the module into memory by calling DynamicLibrary_LoadLibrary. ]
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_040: [ DynamicModuleLoader_Load shall call the module's Module_GetAPI callback to acquire the module API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_034: [ DynamicModuleLoader_Load shall return NULL if the MODULE_API pointer returned by the module is NULL. ]
 TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_GetAPI_returns_NULL)
@@ -382,6 +386,8 @@ TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_GetAPI_returns_NULL)
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_004: [DynamicModuleLoader_Load shall load the module into memory by calling DynamicLibrary_LoadLibrary. ]
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_035: [ DynamicModuleLoader_Load shall return NULL if MODULE_API::version is greater than Module_ApiGatewayVersion. ]
 TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with_unsupported_version)
 {
@@ -425,6 +431,7 @@ TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_036: [ DynamicModuleLoader_Load shall return NULL if the Module_Create function in MODULE_API is NULL. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_037: [ DynamicModuleLoader_Load shall return NULL if the Module_Receive function in MODULE_API is NULL. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_038: [ DynamicModuleLoader_Load shall return NULL if the Module_Destroy function in MODULE_API is NULL. ]
@@ -510,6 +517,8 @@ TEST_FUNCTION(DynamicModuleLoader_Load_returns_NULL_when_GetAPI_returns_API_with
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_004: [DynamicModuleLoader_Load shall load the module into memory by calling DynamicLibrary_LoadLibrary. ]
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_040: [ DynamicModuleLoader_Load shall call the module's Module_GetAPI callback to acquire the module API table. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_005: [ DynamicModuleLoader_Load shall return a non-NULL pointer of type MODULE_LIBRARY_HANDLE when successful. ]
 TEST_FUNCTION(DynamicModuleLoader_Load_succeeds)
@@ -569,6 +578,8 @@ TEST_FUNCTION(DynamicModuleLoader_GetModuleApi_returns_NULL_when_moduleLibraryHa
     ASSERT_IS_NULL(result);
 }
 
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_004: [DynamicModuleLoader_Load shall load the module into memory by calling DynamicLibrary_LoadLibrary. ]
+//Tests_SRS_DYNAMIC_MODULE_LOADER_13_033: [DynamicModuleLoader_Load shall call DynamicLibrary_FindSymbol on the module handle with the symbol name Module_GetApi to acquire the function that returns the module's API table. ]
 /*Tests_SRS_MODULE_LOADER_17_008: [DynamicModuleLoader_GetModuleApi shall return a valid pointer to MODULE_API on success.]*/
 TEST_FUNCTION(DynamicModuleLoader_GetModuleApi_succeeds)
 {
@@ -905,7 +916,6 @@ TEST_FUNCTION(DynamicModuleLoader_FreeModuleConfiguration_does_nothing)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_MODULE_LOADER_17_015: [ DynamicLoader_GetApi shall set all the fields of the MODULE_LOADER_API structure. ]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_054: [DynamicModuleLoader_Get shall return a non - NULL pointer to a MODULE_LOADER struct.]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_055 : [MODULE_LOADER::type shall be NATIVE.]
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_056 : [MODULE_LOADER::name shall be the string native.]

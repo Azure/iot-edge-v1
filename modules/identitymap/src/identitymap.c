@@ -448,6 +448,7 @@ static void * IdentityMap_ParseConfigurationFromJson(const char* configuration)
                 result = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
                 if (result == NULL)
                 {
+                    //Codes_SRS_IDMAP_17_061: [ If allocation fails, IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]
                     /*Codes_SRS_IDMAP_05_019: [ If creating the vector fails, then IdentityMap_ParseConfigurationFromJson shall fail and return NULL. ]*/
                     LogError("Failed to create the input vector");
                     result = NULL;
@@ -482,7 +483,7 @@ static void * IdentityMap_ParseConfigurationFromJson(const char* configuration)
                     else
                     {
                         /*Codes_SRS_IDMAP_17_062: [ IdentityMap_ParseConfigurationFromJson shall return the pointer to the configuration vector on success. ]*/
-                    }   
+                    }
                 }
             }
 			json_value_free(json);
@@ -532,7 +533,7 @@ static void IdentityMap_Destroy(MODULE_HANDLE moduleHandle)
 
 static void publish_with_new_properties(MAP_HANDLE newProperties, MESSAGE_HANDLE messageHandle, IDENTITY_MAP_DATA * idModule)
 {
-    /*Codes_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.] */ 
+    /*Codes_SRS_IDMAP_17_034: [IdentityMap_Receive shall clone message content.] */
     CONSTBUFFER_HANDLE content = Message_GetContentHandle(messageHandle);
     if (content == NULL)
     {
@@ -690,7 +691,7 @@ static void IdentityMap_RepublishC2D(
 /* returns true if the message should continue to be processed, sets direction */
 static bool determine_message_direction(const char * source, bool * isC2DMessage)
 {
-    bool result; 
+    bool result;
     if (source != NULL)
     {
         if (strcmp(source, GW_IOTHUB_MODULE) == 0)

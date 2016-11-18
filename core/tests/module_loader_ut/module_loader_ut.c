@@ -1862,6 +1862,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_custom_loader)
 
 // Tests_SRS_MODULE_LOADER_13_069: [ ModuleLoader_InitializeFromJson shall invoke ParseConfigurationFromJson to parse the loader entry's configuration JSON. ]
 // Tests_SRS_MODULE_LOADER_13_072: [ ModuleLoader_InitializeFromJson shall update the configuration on the default loader if the entry is for a default loader by calling ModuleLoader_UpdateConfiguration. ]
+// Tests_SRS_MODULE_LOADER_13_073: [ ModuleLoader_InitializeFromJson shall return MODULE_LOADER_SUCCESS if the the JSON has been processed successfully. ]
 TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_default_loader)
 {
     // arrange
