@@ -32,27 +32,28 @@ The JSON configuration for .NET Module will be similar to the configuration for 
 {
     "modules": [
         {
-            "module name": "csharp_hello_world",
-            "module path": "/path/to/dotnet.dll",
-            "args": {
-                "dotnet_module_path": "/path/to/csharp_module.dll",
-                "dotnet_module_entry_class": "mycsharpmodule.classname",
-                "dotnet_module_args": "module configuration"
-            }
+            "name": "csharp_hello_world",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "/path/to/csharp_module.dll",
+                    "dotnet_module_entry_class": "mycsharpmodule.classname"
+                }
+            },
+            "args": "module configuration"            
         }
     ]
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. `module name` is the name of the module created (.NET Module) that will be stored by the gateway and used internally;
+1. `loader->name` is the name of the module created (.NET Module) that will be stored by the gateway and used internally;
 
-2. `module path` is the path where the dotnet.dll (native module) is located and will be used to interface between gateway and .NET Module;
+2. `loader` is the configuration specifically for the .NET Loader. 
 
-3. `args` is the configuration specifically for the .NET Module. 
-
-    3.1 `dotnet_module_path`: place where the .NET module is located;
-    3.2 `dotnet_module_entry_class`: class that implements `IGatewayModule`; 
-    3.3 `dotnet_module_args`: The value of this property is used to supply configuration information specific to a given .NET module. The value is passed as a byte[] to .NET module and it shall be converted as a UTF-8 String;  
+    2.1 `loader->dotnet_module_path`: place where the .NET module is located;
+    2.2 `loader->dotnet_module_entry_class`: class that implements `IGatewayModule`; 
+    
+3. `args`  The value of this property is used to supply configuration information specific to a given .NET module. The value is passed as a byte[] to .NET module and it shall be converted as a UTF-8 String;  
 
 ##Native methods description
 ### Module\_Create

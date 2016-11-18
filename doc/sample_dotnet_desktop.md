@@ -77,38 +77,42 @@ Json Configuration
 ------------------
 ```json
 {
-    "modules" :
-    [
+    "modules": [
         {
-            "module name" : "logger",
-            "loading args" : {
-                "module path" : "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-            }
-            "args" : {"filename":"C:\\Temp\\Log.txt"} 
+            "name": "logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+                }
+            },
+            "args": { "filename": "C:\\Temp\\Log.txt" }
         },
         {
-          "module name": "dotnet_sensor_module",
-          "loading args" : {
-              "module path": "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
-          }
-          "args": {
-            "dotnet_module_path": "SensorModule",
-            "dotnet_module_entry_class": "SensorModule.DotNetSensorModule",
-            "dotnet_module_args": "module configuration"
-          }
+            "name": "dotnet_sensor_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "SensorModule",
+                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
+                }
+            },
+            "args": "module configuration"
         },
         {
-            "module name" : "dotnet_printer_module",
-            "loading args" : {
-                "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll"
-            }
-            "args" : {
-                "dotnet_module_path": "PrinterModule",
-                "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule",
-                "dotnet_module_args": "module configuration"
-            }
+            "name": "dotnet_printer_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "PrinterModule",
+                    "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
+                }
+            },
+            "args": "module configuration"
         }
-
+    ],
+    "links": [
+      {"source": "dotnet_sensor_module", "sink": "dotnet_printer_module" }
     ]
 }
 ```
@@ -161,17 +165,16 @@ Modules may also implement the `IGatewayModuleStart` interface.  The Start metho
     "modules" :
     [
         {
-            "module name" : "dotnet_printer_module", ==> Your new module name. 
-            "loading args" : {
-                "module path" : "..\\..\\..\\bindings\\dotnet\\Debug\\dotnet.dll" ==> This is the location where the dotnet.dll is located.
-            }
-            "args" : {
-                "dotnet_module_path": "PrinterModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
-                "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule", ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
-                "dotnet_module_args": "module configuration" ==> This is any configuration you want to use on your sample. It will be passed to you as a byte[] that should be converted to an UTF-8 Encoded String, you can add a JSON configuration in it.
-            }
+            "name" : "dotnet_printer_module", ==> Your new module name.
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "SensorModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
+                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule" ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
+                }
+            },
+            "args": "module configuration" ==> This is any configuration you want to use on your sample. It will be passed to you as a byte[] that should be converted to an UTF-8 Encoded String, you can add a JSON configuration in it.
         }
-
     ]
 }
 ```
