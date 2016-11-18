@@ -266,6 +266,12 @@ MODULE_LOADER_RESULT ModuleLoader_UpdateConfiguration(
             }
             else
             {
+                /*Codes_SRS_MODULE_LOADER_13_074: [If the existing configuration on the loader is not NULL ModuleLoader_UpdateConfiguration shall call FreeConfiguration on the configuration pointer.]*/
+                if (loader->configuration != NULL)
+                {
+                    loader->api->FreeConfiguration(loader->configuration);
+                }
+
                 /*Codes_SRS_MODULE_LOADER_13_033: [ ModuleLoader_UpdateConfiguration shall assign configuration to the module loader. ]*/
                 loader->configuration = configuration;
 

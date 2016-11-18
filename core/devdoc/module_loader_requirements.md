@@ -153,6 +153,8 @@ Replaces the module loader configuration for the given loader in a thread-safe m
 
 **SRS_MODULE_LOADER_13_032: [** `ModuleLoader_UpdateConfiguration` shall lock `g_module_loaders.lock` **]**
 
+**SRS_MODULE_LOADER_13_074: [** If the existing configuration on the loader is not `NULL` `ModuleLoader_UpdateConfiguration` shall call `FreeConfiguration` on the configuration pointer. **]**
+
 **SRS_MODULE_LOADER_13_033: [** `ModuleLoader_UpdateConfiguration` shall assign `configuration` to the module loader. **]**
 
 **SRS_MODULE_LOADER_13_034: [** `ModuleLoader_UpdateConfiguration` shall unlock `g_module_loaders.lock`. **]**

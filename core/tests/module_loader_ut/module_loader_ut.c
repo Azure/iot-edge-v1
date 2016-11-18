@@ -844,6 +844,7 @@ TEST_FUNCTION(ModuleLoader_UpdateConfiguration_returns_error_when_things_fail)
 // Tests_SRS_MODULE_LOADER_13_033: [ ModuleLoader_UpdateConfiguration shall assign configuration to the module loader. ]
 // Tests_SRS_MODULE_LOADER_13_034: [ ModuleLoader_UpdateConfiguration shall unlock g_module_loaders.lock. ]
 // Tests_SRS_MODULE_LOADER_13_035: [ ModuleLoader_UpdateConfiguration shall return MODULE_LOADER_SUCCESS if the loader has been updated successfully. ]
+// Tests_SRS_MODULE_LOADER_13_074: [ If the existing configuration on the loader is not NULL ModuleLoader_UpdateConfiguration shall call FreeConfiguration on the configuration pointer. ]
 TEST_FUNCTION(ModuleLoader_UpdateConfiguration_succeeds)
 {
     // arrange
@@ -851,12 +852,14 @@ TEST_FUNCTION(ModuleLoader_UpdateConfiguration_succeeds)
     ASSERT_ARE_EQUAL(MODULE_LOADER_RESULT, MODULE_LOADER_SUCCESS, result);
     umock_c_reset_all_calls();
 
+    MODULE_LOADER loader = Dynamic_Module_Loader;
+    loader.configuration = (MODULE_LOADER_BASE_CONFIGURATION*)my_gballoc_malloc(1);
+
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(loader.configuration));
     STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-
-    MODULE_LOADER loader = Dynamic_Module_Loader;
 
     // act
     result = ModuleLoader_UpdateConfiguration(&loader, (MODULE_LOADER_BASE_CONFIGURATION*)0x42);
