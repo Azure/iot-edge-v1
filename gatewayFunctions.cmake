@@ -4,7 +4,7 @@
 if(WIN32)
     set(cores /m)
 else()
-    set(cores -j)
+    set(cores -j ${build_cores})
 endif()
 
 #Additional arguments to the specific projects cmake command may be specified after specifying the cmakeRootDirectory

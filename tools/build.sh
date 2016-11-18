@@ -92,23 +92,6 @@ then
     [ $? -eq 0 ] || exit $?
 fi
 
-cmake_root="$build_root/build"
-rm -r -f "$cmake_root"
-git submodule foreach --recursive --quiet "rm -r -f build/"
-mkdir -p "$cmake_root"
-pushd "$cmake_root"
-cmake $toolchainfile \
-      $dependency_install_prefix \
-      -DcompileOption_C:STRING="$extracloptions" \
-      -DCMAKE_BUILD_TYPE=Debug \
-      -Dskip_unittests:BOOL=$skip_unittests \
-      -Drun_e2e_tests:BOOL=$run_e2e_tests \
-      -Denable_java_binding:BOOL=$enable_java_binding \
-      -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
-      -Denable_ble_module:BOOL=$enable_ble_module \
-      -Drun_valgrind:BOOL=$run_valgrind \
-      "$build_root"
-
 CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 
 # Make sure there is enough virtual memory on the device to handle more than one job.
@@ -131,6 +114,24 @@ if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
   CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
   CORES=$([ $CORES -le $CORES2 ] && echo $CORES || echo $CORES2)
 fi
+
+cmake_root="$build_root/build"
+rm -r -f "$cmake_root"
+git submodule foreach --recursive --quiet "rm -r -f build/"
+mkdir -p "$cmake_root"
+pushd "$cmake_root"
+cmake $toolchainfile \
+      $dependency_install_prefix \
+      -DcompileOption_C:STRING="$extracloptions" \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -Dskip_unittests:BOOL=$skip_unittests \
+      -Drun_e2e_tests:BOOL=$run_e2e_tests \
+      -Denable_java_binding:BOOL=$enable_java_binding \
+      -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
+      -Denable_ble_module:BOOL=$enable_ble_module \
+      -Drun_valgrind:BOOL=$run_valgrind \
+      -Dbuild_cores=$CORES \
+      "$build_root"
 
 make --jobs=$CORES
 
