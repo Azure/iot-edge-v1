@@ -19,23 +19,42 @@ extern "C"
 
 #define JAVA_LOADER_NAME            "java"
 
-#define DEFAULT_CLASS_PATH          "gateway-java-binding.jar"
 #define INSTALL_NAME "azure_iot_gateway_sdk"
+
+//=============================================================================
+//Set Platform Specific Env Vars
+//=============================================================================
+#ifdef _WIN64
+#define GET_PREFIX                  getenv("PROGRAMFILES")
+#else
+#ifdef WIN32
+#define GET_PREFIX                  getenv("PROGRAMFILES(X86)")
+#else
+#define GET_PREFIX                  "/usr/local/lib"
+#endif
+#endif
 
 #if WIN32
 #define JAVA_BINDING_MODULE_NAME    "java_module_host.dll"
-#define MODULES_INSTALL_LOCATION "\\lib\\modules"
+#define MODULES_INSTALL_LOCATION    "\\lib\\modules"
+#define BINDINGS_INSTALL_LOCATION   "\\lib\\bindings\\java\\classes"
 #define SEPARATOR                   ";"
 #define SLASH                       "\\"
+#define PREFIXES                    
+#ifdef UNDER_TEST
+#define ENV_VARS
+#else
 #define ENV_VARS ,\
     "PROGRAMFILES", \
     "PROGRAMFILES(X86)"
-
+#endif
 #else
 #define JAVA_BINDING_MODULE_NAME    "libjava_module_host.so"
 #define MODULES_INSTALL_LOCATION    "/modules"
+#define BINDINGS_INSTALL_LOCATION   "/bindings/java/classes"
 #define SEPARATOR                   ":"
 #define SLASH                       "/"
+#define PREFIXES                    , "/usr/local/lib"
 #define ENV_VARS                    
 #endif
 

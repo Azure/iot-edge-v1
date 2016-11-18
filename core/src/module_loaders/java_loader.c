@@ -19,6 +19,11 @@
 #include "module_loaders/java_loader.h"
 #include "java_module_host.h"
 
+#ifdef UNDER_TEST
+#undef ENV_VARS
+#define ENV_VARS
+#endif
+
 #define CONFIGURATION         ((JAVA_LOADER_CONFIGURATION*)(loader->configuration))
 
 typedef struct JAVA_MODULE_HANDLE_DATA_TAG
@@ -30,6 +35,7 @@ typedef struct JAVA_MODULE_HANDLE_DATA_TAG
 static JVM_OPTIONS* parse_jvm_config(JSON_Object*);
 static void free_jvm_config(JVM_OPTIONS*);
 static DYNAMIC_LIBRARY_HANDLE system_load_env(int, ...);
+static DYNAMIC_LIBRARY_HANDLE system_load_prefixes(int, ...);
 static int set_default_paths(JVM_OPTIONS*);
 static JAVA_LOADER_CONFIGURATION* create_default_config();
 
@@ -54,10 +60,11 @@ static DYNAMIC_LIBRARY_HANDLE JavaModuleLoader_LoadBindingModule(const MODULE_LO
         if (result == NULL)
         {
             //If the binding could not be loaded, check the system locations
-            result = system_load_env(COUNT_ARG(ENV_VARS) ENV_VARS);
+            result = system_load_env(COUNT_ARG(ENV_VARS)-1 ENV_VARS);
 
             if (result == NULL)
             {
+                result = system_load_prefixes(COUNT_ARG(PREFIXES)-1 PREFIXES);
                 LogError("The Java binding module could not be located.");
             }
         }
@@ -293,29 +300,49 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
                                             }
                                             else
                                             {
-                                                STRING_concat(cp, SEPARATOR);
-                                                STRING_concat_with_STRING(cp, entrypoint->classPath);
-                                                const char* str = STRING_c_str(cp);
-                                                if (str == NULL)
+                                                if (STRING_concat(cp, SEPARATOR) != 0)
                                                 {
                                                     STRING_delete(entrypoint->className);
                                                     STRING_delete(entrypoint->classPath);
                                                     free(entrypoint);
                                                     entrypoint = NULL;
-                                                    LogError("STRING_c_str failed");
+                                                    LogError("STRING_concat failed");
                                                 }
                                                 else
                                                 {
-                                                    //We must first free the class_path here so that the new class path with the appended module class_path can be assigned
-                                                    free((char*)(CONFIGURATION->options->class_path));
-                                                    if (mallocAndStrcpy_s((char**)(&(CONFIGURATION->options->class_path)), str) != 0)
+                                                    if (STRING_concat_with_STRING(cp, entrypoint->classPath) != 0)
                                                     {
-                                                        CONFIGURATION->options->class_path = NULL;
                                                         STRING_delete(entrypoint->className);
                                                         STRING_delete(entrypoint->classPath);
                                                         free(entrypoint);
                                                         entrypoint = NULL;
-                                                        LogError("Failed to allocate class.path");
+                                                        LogError("STRING_concat_with_STRING failed");
+                                                    }
+                                                    else
+                                                    {
+                                                        const char* str = STRING_c_str(cp);
+                                                        if (str == NULL)
+                                                        {
+                                                            STRING_delete(entrypoint->className);
+                                                            STRING_delete(entrypoint->classPath);
+                                                            free(entrypoint);
+                                                            entrypoint = NULL;
+                                                            LogError("STRING_c_str failed");
+                                                        }
+                                                        else
+                                                        {
+                                                            //We must first free the class_path here so that the new class path with the appended module class_path can be assigned
+                                                            free((char*)(CONFIGURATION->options->class_path));
+                                                            if (mallocAndStrcpy_s((char**)(&(CONFIGURATION->options->class_path)), str) != 0)
+                                                            {
+                                                                CONFIGURATION->options->class_path = NULL;
+                                                                STRING_delete(entrypoint->className);
+                                                                STRING_delete(entrypoint->classPath);
+                                                                free(entrypoint);
+                                                                entrypoint = NULL;
+                                                                LogError("Failed to allocate class.path");
+                                                            }
+                                                        }
                                                     }
                                                 }
                                                 STRING_delete(cp);
@@ -371,6 +398,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
         JSON_Object* object = json_value_get_object(json);
         if (object == NULL)
         {
+            config = NULL;
             LogError("could not retrieve json object.");
         }
         else
@@ -378,6 +406,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
             JSON_Object* options_object = json_object_get_object(object, JVM_OPTIONS_KEY);
             if (options_object == NULL)
             {
+                config = NULL;
                 LogError("could not retrieve json object %s", JVM_OPTIONS_KEY);
             }
             else
@@ -444,7 +473,7 @@ static void JavaModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODU
     if (configuration != NULL)
     {
         /*CODES_SRS_JAVA_MODULE_LOADER_14_041: [JavaModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationJson.]*/
-        ModuleLoader_FreeBaseConfiguration(&((JAVA_LOADER_CONFIGURATION*)configuration)->base);
+        ModuleLoader_FreeBaseConfiguration(configuration);
 
         /*CODES_SRS_JAVA_MODULE_LOADER_14_042: [JavaModuleLoader_FreeConfiguration shall free resources allocated by JavaModuleLoader_ParseConfigurationFromJson.]*/
         free_jvm_config(((JAVA_LOADER_CONFIGURATION*)configuration)->options);
@@ -496,7 +525,7 @@ static void* JavaModuleLoader_BuildModuleConfiguration(const MODULE_LOADER* load
                 }
                 else
                 {
-                    if (mallocAndStrcpy_s((char**)(&(result->configuration_json)), module_configuration) != 0)
+                    if (module_configuration != NULL && mallocAndStrcpy_s((char**)(&(result->configuration_json)), module_configuration) != 0)
                     {
                         free((char*)(result->class_name));
                         free(result);
@@ -633,6 +662,49 @@ static JAVA_LOADER_CONFIGURATION* create_default_config()
     return result;
 }
 
+const char* set_path(const char* install_location)
+{
+    const char* path;
+
+    path = GET_PREFIX;
+
+    if (path == NULL)
+    {
+        LogError("Failed to get the prefix.");
+    }
+    else
+    {
+        STRING_HANDLE str = STRING_construct(path);
+        if (str == NULL)
+        {
+            path = NULL;
+            LogError("STRING_construct failed.");
+        }
+        else
+        {
+            int sprintf_result = STRING_sprintf(str, "%s%s%s%s%s", SLASH, INSTALL_NAME, "-", VERSION, install_location);
+
+            if (sprintf_result != 0)
+            {
+                path = NULL;
+                LogError("STRING_sprintf failed");
+            }
+            else
+            {
+                if (mallocAndStrcpy_s((char**)(&path), STRING_c_str(str)) != 0)
+                {
+                    path = NULL;
+                    LogError("Failed to copy string.");
+                }
+            }
+
+            STRING_delete(str);
+        }
+    }
+
+    return path;
+}
+
 static int set_default_paths(JVM_OPTIONS* options)
 {
     int result = 0;
@@ -644,60 +716,39 @@ static int set_default_paths(JVM_OPTIONS* options)
     else
     {
         //Set classpath
-        result = mallocAndStrcpy_s((char**)(&options->class_path), DEFAULT_CLASS_PATH);
-        if (result == 0)
+        const char* class_path = set_path(BINDINGS_INSTALL_LOCATION);
+        if (class_path == NULL)
         {
-            //Set librarypath
-            const char* prefix;
-#ifdef WIN32
-            prefix = getenv("PROGRAMFILES(X86)");
-#else
-            prefix = "/usr/local/lib";
-#endif
-            if (prefix == NULL)
+            result = __LINE__;
+        }
+        else
+        {
+            result = mallocAndStrcpy_s((char**)(&options->class_path), class_path);
+            if (result != 0)
             {
-                free((char*)(options->class_path));
                 result = __LINE__;
             }
             else
             {
-                STRING_HANDLE str = STRING_construct(prefix);
-
-                if (str == NULL)
+                //Set librarypath
+                const char* library_path = set_path(MODULES_INSTALL_LOCATION);
+                if (library_path == NULL)
                 {
                     free((char*)(options->class_path));
                     result = __LINE__;
                 }
                 else
                 {
-                    int sprintf_result = STRING_sprintf(str, "%s%s%s%s%s", SLASH, INSTALL_NAME, "-", VERSION, MODULES_INSTALL_LOCATION);
-
-                    if (sprintf_result != 0)
+                    result = mallocAndStrcpy_s((char**)(&options->library_path), library_path);
+                    if (result != 0)
                     {
                         free((char*)(options->class_path));
                         result = __LINE__;
                     }
-                    else
-                    {
-                        const char* c_str = STRING_c_str(str);
-
-                        if (c_str == NULL)
-                        {
-                            free((char*)(options->class_path));
-                            result = __LINE__;
-                        }
-                        else
-                        {
-                            result = mallocAndStrcpy_s((char**)(&options->library_path), c_str);
-                            if (result != 0)
-                            {
-                                free((char*)(options->class_path));
-                            }
-                        }
-                    }
-                    STRING_delete(str);
+                    free((char*)library_path);
                 }
             }
+            free((char*)class_path);
         }
     }
 
@@ -754,6 +805,7 @@ static JVM_OPTIONS* parse_jvm_config(JSON_Object* object)
 
             if (status != 0)
             {
+                free((char*)(options->library_path));
                 free(options);
                 options = NULL;
                 LogError("Failed to allocate class.path");
@@ -771,7 +823,6 @@ static JVM_OPTIONS* parse_jvm_config(JSON_Object* object)
                 if (status != 0)
                 {
                     free((char*)(options->class_path));
-                    free((char*)(options->library_path));
                     free(options);
                     options = NULL;
                     LogError("Failed to allocate library.path");
@@ -866,6 +917,7 @@ static DYNAMIC_LIBRARY_HANDLE system_load_prefixes(int args_c, ...)
                     }
                     else
                     {
+                        LogInfo("Path is %s", STRING_c_str(path));
                         result = DynamicLibrary_LoadLibrary(STRING_c_str(path));
                     }
                     STRING_delete(path);

@@ -97,11 +97,11 @@ typedef struct MODULE_LOADER_API_TAG
  */
 
 #define MODULE_LOADER_TYPE_VALUES \
-    UNKNOWN, \
-    NATIVE, \
-    JAVA, \
-    DOTNET, \
-    NODEJS \
+    UNKNOWN,    \
+    NATIVE,     \
+    JAVA,       \
+    DOTNET,     \
+    NODEJS     
 
 DEFINE_ENUM(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 

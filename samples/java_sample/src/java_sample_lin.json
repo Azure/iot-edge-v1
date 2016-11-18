@@ -5,10 +5,8 @@
           "name": "java",
           "configuration":{
               "jvm.options":{
-                  "library.path": "../../bindings/java",
-                  "class.path": "../../../bindings/java/gateway-java-binding/target/classes"
-              },
-              "binding.path": "../../bindings/java/libjava_module_host.so"
+                  "library.path": "../../bindings/java"
+              }
           }
           
       }

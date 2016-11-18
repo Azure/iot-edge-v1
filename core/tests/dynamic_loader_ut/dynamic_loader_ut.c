@@ -564,7 +564,7 @@ TEST_FUNCTION(DynamicModuleLoader_Load_succeeds)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DynamicModuleLoader_Unload(result);
+    DynamicModuleLoader_Unload(&loader, result);
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
@@ -572,7 +572,7 @@ TEST_FUNCTION(DynamicModuleLoader_Load_succeeds)
 TEST_FUNCTION(DynamicModuleLoader_GetModuleApi_returns_NULL_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    const MODULE_API* result = DynamicModuleLoader_GetModuleApi(NULL);
+    const MODULE_API* result = DynamicModuleLoader_GetModuleApi(NULL, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -622,14 +622,14 @@ TEST_FUNCTION(DynamicModuleLoader_GetModuleApi_succeeds)
     umock_c_reset_all_calls();
 
     // act
-    const MODULE_API* result = DynamicModuleLoader_GetModuleApi(module);
+    const MODULE_API* result = DynamicModuleLoader_GetModuleApi(&loader, module);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DynamicModuleLoader_Unload(module);
+    DynamicModuleLoader_Unload(&loader, module);
     STRING_delete(entrypoint.moduleLibraryFileName);
 }
 
@@ -637,7 +637,7 @@ TEST_FUNCTION(DynamicModuleLoader_GetModuleApi_succeeds)
 TEST_FUNCTION(DynamicModuleLoader_Unload_does_nothing_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    DynamicModuleLoader_Unload(NULL);
+    DynamicModuleLoader_Unload(NULL, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -690,7 +690,7 @@ TEST_FUNCTION(DynamicModuleLoader_Unload_frees_things)
         .IgnoreArgument(1);
 
     // act
-    DynamicModuleLoader_Unload(module);
+    DynamicModuleLoader_Unload(&loader, module);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -703,7 +703,7 @@ TEST_FUNCTION(DynamicModuleLoader_Unload_frees_things)
 TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_is_NULL)
 {
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -718,7 +718,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json
         .SetReturn(JSONArray);
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -735,7 +735,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json
         .SetReturn(NULL);
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -755,7 +755,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json
         .SetReturn(NULL);
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -776,7 +776,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_mall
         .SetReturn(NULL);
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -800,7 +800,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRI
         .IgnoreArgument(1);
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -822,21 +822,21 @@ TEST_FUNCTION(DynamicModuleLoader_ParseEntrypointFromJson_succeeds)
     STRICT_EXPECTED_CALL(STRING_construct("foo.dll"));
 
     // act
-    void* result = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DynamicModuleLoader_FreeEntrypoint(result);
+    DynamicModuleLoader_FreeEntrypoint(NULL, result);
 }
 
 //Tests_SRS_DYNAMIC_MODULE_LOADER_13_049: [ DynamicModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL. ]
 TEST_FUNCTION(DynamicModuleLoader_FreeEntrypoint_does_nothing_when_entrypoint_is_NULL)
 {
     // act
-    DynamicModuleLoader_FreeEntrypoint(NULL);
+    DynamicModuleLoader_FreeEntrypoint(NULL, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -855,7 +855,7 @@ TEST_FUNCTION(DynamicModuleLoader_FreeEntrypoint_frees_resources)
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DYNAMIC_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.dll"));
 
-    void* entrypoint = DynamicModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* entrypoint = DynamicModuleLoader_ParseEntrypointFromJson(NULL, (const JSON_Value*)0x42);
     ASSERT_IS_NOT_NULL(entrypoint);
 
     umock_c_reset_all_calls();
@@ -866,7 +866,7 @@ TEST_FUNCTION(DynamicModuleLoader_FreeEntrypoint_frees_resources)
         .IgnoreArgument(1);
 
     // act
-    DynamicModuleLoader_FreeEntrypoint(entrypoint);
+    DynamicModuleLoader_FreeEntrypoint(NULL, entrypoint);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -878,7 +878,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseConfigurationFromJson_returns_NULL)
     // arrange
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = DynamicModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = DynamicModuleLoader_ParseConfigurationFromJson(NULL, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -889,7 +889,7 @@ TEST_FUNCTION(DynamicModuleLoader_ParseConfigurationFromJson_returns_NULL)
 TEST_FUNCTION(DynamicModuleLoader_FreeConfiguration_does_nothing)
 {
     // act
-    DynamicModuleLoader_FreeConfiguration(NULL);
+    DynamicModuleLoader_FreeConfiguration(NULL, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -910,7 +910,7 @@ TEST_FUNCTION(DynamicModuleLoader_BuildModuleConfiguration_returns_module_config
 TEST_FUNCTION(DynamicModuleLoader_FreeModuleConfiguration_does_nothing)
 {
     // act
-    DynamicModuleLoader_FreeModuleConfiguration(NULL);
+    DynamicModuleLoader_FreeModuleConfiguration(NULL, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());

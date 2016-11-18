@@ -6,6 +6,7 @@ project(azure_iot_gateway_sdk)
 
 set(GATEWAY_VERSION 0.0.2 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include(GNUInstallDirs)
 
