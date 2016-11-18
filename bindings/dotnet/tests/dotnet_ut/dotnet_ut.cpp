@@ -29,24 +29,6 @@ using namespace mscorlib;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-#define FAKE_CONFIG "" \
-"{" \
-"  \"modules\": [" \
-"    {" \
-"      \"module name\": \"csharp_hello_world\"," \
-"      \"module path\": \"/csharp_hello_world.dll\"," \
-"      \"args\": \"\"" \
-"    }," \
-"    {" \
-"      \"dotnet_module_path\": \"SensorTag\"," \
-"      \"dotnet_module_entry_class\": \"/dotnet.so\"," \
-"      \"dotnet_module_args\": {"\
-"       \"module configuration"\
-"      }" \
-"    }" \
-"  ]" \
-"}"
-
 #define GBALLOC_H
 
 extern "C" int gballoc_init(void);
@@ -1573,15 +1555,15 @@ public:
 
     MOCK_STATIC_METHOD_2(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name)
         const char* result2;
-    if (strcmp(name, "dotnet_module_path") == 0)
+    if (strcmp(name, "assembly.name") == 0)
     {
         result2 = "/path/to/csharp_module.dll";
     }
-    else if (strcmp(name, "dotnet_module_entry_class") == 0)
+    else if (strcmp(name, "entry.type") == 0)
     {
         result2 = "mycsharpmodule.classname";
     }
-    else if (strcmp(name, "dotnet_module_args") == 0)
+    else if (strcmp(name, "module_args") == 0)
     {
         result2 = "module configuration";
     }
@@ -1843,17 +1825,17 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
     
-    /* Tests_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
-    TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_path_is_Null)
+    /* Tests_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->assembly_name is NULL. ] */
+    TEST_FUNCTION(DotNet_Create_returns_NULL_when_assembly_name_is_Null)
     {
         ///arrange
         CDOTNETMocks mocks;
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = NULL;
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = NULL;
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -1867,17 +1849,17 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
-    TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_entry_class_is_Null)
+    /* Tests_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->entry_type is NULL. ] */
+    TEST_FUNCTION(DotNet_Create_returns_NULL_when_entry_type_is_Null)
     {
         ///arrange
         CDOTNETMocks mocks;
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = NULL;
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = NULL;
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -1891,17 +1873,17 @@ BEGIN_TEST_SUITE(dotnet_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
-    TEST_FUNCTION(DotNet_Create_returns_NULL_when_dotnet_module_args_is_Null)
+    /* Tests_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->module_args is NULL. ] */
+    TEST_FUNCTION(DotNet_Create_returns_NULL_when_module_args_is_Null)
     {
         ///arrange
         CDOTNETMocks mocks;
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = NULL;
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = NULL;
 
         mocks.ResetAllCalls();
 
@@ -1923,11 +1905,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -1955,9 +1937,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -1983,9 +1965,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2014,9 +1996,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2048,9 +2030,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         global_IsLoadable = false;
 
@@ -2083,9 +2065,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2122,9 +2104,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2163,9 +2145,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2207,9 +2189,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         mocks.ResetAllCalls();
 
@@ -2254,10 +2236,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
 
         mocks.ResetAllCalls();
 
@@ -2305,11 +2287,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
 
         mocks.ResetAllCalls();
 
@@ -2359,11 +2341,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
 
         mocks.ResetAllCalls();
@@ -2418,11 +2400,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2482,11 +2464,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2554,11 +2536,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2630,11 +2612,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2710,11 +2692,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2801,11 +2783,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2899,11 +2881,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -2994,11 +2976,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -3099,7 +3081,7 @@ BEGIN_TEST_SUITE(dotnet_ut)
     /* Tests_SRS_DOTNET_04_009: [ DotNet_Create shall create an instance of .NET client Module and save it on DOTNET_HOST_HANDLE_DATA. ] */
     /* Tests_SRS_DOTNET_04_010: [ DotNet_Create shall save Client module Type and Azure IoT Gateway Assembly on DOTNET_HOST_HANDLE_DATA. ] */
     /* Tests_SRS_DOTNET_04_013: [ A .NET Object conforming to the Broker interface defined shall be created: ] */
-    /* Tests_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
+    /* Tests_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->module_args. ] */
     TEST_FUNCTION(DotNet_Create_succeed)
     {
         ///arrange
@@ -3107,11 +3089,11 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
-        bstr_t bstrClientModuleAssemblyName(dotNetConfig.dotnet_module_path);
-        bstr_t bstrClientModuleClassName(dotNetConfig.dotnet_module_entry_class);
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
+        bstr_t bstrClientModuleAssemblyName(dotNetConfig.assembly_name);
+        bstr_t bstrClientModuleClassName(dotNetConfig.entry_type);
         bstr_t bstrAzureIoTGatewayAssemblyName(L"Microsoft.Azure.IoT.Gateway");
         bstr_t bstrAzureIoTGatewayBrokerClassName(L"Microsoft.Azure.IoT.Gateway.Broker");
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
@@ -3214,9 +3196,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
 
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrStartClientMethodName(L"Start");
         bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
         variant_t emptyVariant(0);
@@ -3249,9 +3231,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrStartClientMethodName(L"Start");
         bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
         variant_t emptyVariant(0);
@@ -3284,9 +3266,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);;
         
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrStartClientMethodName(L"Start");
         bstr_t bstrStartClientIFName(L"IGatewayModuleStart");
         variant_t emptyVariant(0);
@@ -3374,9 +3356,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3403,9 +3385,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3434,9 +3416,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3473,9 +3455,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3513,9 +3495,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3556,9 +3538,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3601,9 +3583,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3653,9 +3635,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3707,9 +3689,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3763,9 +3745,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
 
         auto  result = MODULE_CREATE(theAPIS)((BROKER_HANDLE)0x42, &dotNetConfig);
 
@@ -3825,9 +3807,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrReceiveClientMethodName(L"Receive");
         variant_t emptyVariant(0);
 
@@ -3894,9 +3876,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         
         bstr_t bstrAzureIoTGatewayMessageClassName(L"Microsoft.Azure.IoT.Gateway.Message");
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrReceiveClientMethodName(L"Receive");
         variant_t emptyVariant(0);
 
@@ -3980,9 +3962,9 @@ BEGIN_TEST_SUITE(dotnet_ut)
         CDOTNETMocks mocks;
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
         DOTNET_HOST_CONFIG dotNetConfig;
-        dotNetConfig.dotnet_module_path = "/path/to/csharp_module.dll";
-        dotNetConfig.dotnet_module_entry_class = "mycsharpmodule.classname";
-        dotNetConfig.dotnet_module_args = "module configuration";
+        dotNetConfig.assembly_name = "/path/to/csharp_module.dll";
+        dotNetConfig.entry_type = "mycsharpmodule.classname";
+        dotNetConfig.module_args = "module configuration";
         bstr_t bstrDestroyClientMethodName(L"Destroy");
         variant_t emptyVariant(0);
 

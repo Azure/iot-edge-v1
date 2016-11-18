@@ -888,7 +888,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
 }
 
 
-//Tests_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_path by reading the value of the attribute dotnet_module_path. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
 //Tests_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_object_get_string_returns_NULL)
 {
@@ -897,7 +897,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn(NULL);
 
     // act
@@ -916,7 +916,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_mallo
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)))
         .SetReturn(NULL);
@@ -929,7 +929,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_mallo
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_entry_class by reading the value of the attribute dotnet_module_entry_class. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
 //Tests_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_object_get_string_for_module_entry_class_fails)
 {
@@ -938,11 +938,11 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo"));
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_entry_class"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "entry.type"))
         .SetReturn(NULL);
 
     STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
@@ -963,14 +963,14 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
 
 
 //Tests_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
-TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRING_construct_for_dotnet_module_path_fails)
+TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRING_construct_for_assembly_name_fails)
 {
     // arrange
     STRICT_EXPECTED_CALL(json_value_get_type((const JSON_Value*)0x42))
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"))
@@ -987,7 +987,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRIN
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_entry_class by reading the value of the attribute dotnet_module_entry_class. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
 //Tests_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRING_construct_for_module_entry_class_fails)
 {
@@ -996,11 +996,11 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRIN
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_entry_class"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "entry.type"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"))
         .SetReturn(NULL);
@@ -1019,8 +1019,8 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRIN
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_entry_class by reading the value of the attribute dotnet_module_entry_class. ]
-//Tests_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_path by reading the value of the attribute dotnet_module_path. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
 //Tests_SRS_DOTNET_MODULE_LOADER_04_015: [ DotnetModuleLoader_ParseEntrypointFromJson shall return a non-NULL pointer to the parsed representation of the entrypoint when successful. ]
 TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_succeeds)
 {
@@ -1029,11 +1029,11 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_succeeds)
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_entry_class"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "entry.type"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 
@@ -1069,11 +1069,11 @@ TEST_FUNCTION(DotnetModuleLoader_FreeEntrypoint_frees_resources)
         .SetReturn(JSONObject);
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42))
         .SetReturn((JSON_Object*)0x43);
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_path"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "assembly.name"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_LOADER_ENTRYPOINT)));
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
-    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "dotnet_module_entry_class"))
+    STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x43, "entry.type"))
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 

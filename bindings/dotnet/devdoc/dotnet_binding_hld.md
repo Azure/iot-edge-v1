@@ -36,8 +36,8 @@ The JSON configuration for .NET Module will be similar to the configuration for 
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "/path/to/csharp_module.dll",
-                    "dotnet_module_entry_class": "mycsharpmodule.classname"
+                    "assembly.name": "mymoduleassembly",
+                    "entry.type": "mycsharpmodule.classname"
                 }
             },
             "args": "module configuration"            
@@ -50,8 +50,8 @@ The JSON configuration for .NET Module will be similar to the configuration for 
 
 2. `loader` is the configuration specifically for the .NET Loader. 
 
-    2.1 `loader->dotnet_module_path`: place where the .NET module is located;
-    2.2 `loader->dotnet_module_entry_class`: class that implements `IGatewayModule`; 
+    2.1 `loader->assembly_name`: place where the .NET module is located;
+    2.2 `loader->entry_type`: class that implements `IGatewayModule`; 
     
 3. `args`  The value of this property is used to supply configuration information specific to a given .NET module. The value is passed as a byte[] to .NET module and it shall be converted as a UTF-8 String;  
 
@@ -63,7 +63,7 @@ gateway process, it:
 
 -   Creates a CLR instance; 
 
--   Loads the .NET module from the path indicated on the configuration (dotnet_module_path) into Default App domain, by calling `ExecuteInDefaultAppDomain`, invokes default constructor at the class (dotnet_module_entry_class) and calls `Create` method, implemented by the `IGatewayModule` interface;
+-   Loads the .NET module from the path indicated on the configuration (assembly_name) into Default App domain, by calling `ExecuteInDefaultAppDomain`, invokes default constructor at the class (entry_type) and calls `Create` method, implemented by the `IGatewayModule` interface;
 
 ### Module\_Start
 

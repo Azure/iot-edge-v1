@@ -120,13 +120,13 @@ static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configu
     return result;
 }
 
-static void* HelloWorld_ParseConfigurationFromJson(char* configuration)
+static void* HelloWorld_ParseConfigurationFromJson(const char* configuration)
 {
 	(void)configuration;
     return NULL;
 }
 
-static void HelloWorld_FreeConfiguration(void * configuration)
+static void HelloWorld_FreeConfiguration(void* configuration)
 {
 	(void)configuration;
 }

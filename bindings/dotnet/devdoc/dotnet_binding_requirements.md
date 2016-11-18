@@ -16,9 +16,9 @@ Types
 ```c
 typedef struct DOTNET_HOST_CONFIG_TAG
 {
-    const char* dotnet_module_path;
-    const char* dotnet_module_entry_class;
-    const char* dotnet_module_args;
+    const char* assembly_name;
+    const char* entry_type;
+    const char* module_args;
 }DOTNET_HOST_CONFIG;
 
 typedef struct DOTNET_HOST_HANDLE_DATA_TAG
@@ -52,11 +52,11 @@ pointer to a `DOTNET_HOST_CONFIG` object.
 
 **SRS_DOTNET_04_002: [** `DotNet_Create` shall return `NULL` if `configuration` is `NULL`. **]**
 
-**SRS_DOTNET_04_003: [** `DotNet_Create` shall return `NULL` if `configuration->dotnet_module_path` is `NULL`. **]**
+**SRS_DOTNET_04_003: [** `DotNet_Create` shall return `NULL` if `configuration->assembly_name` is `NULL`. **]**
 
-**SRS_DOTNET_04_004: [** `DotNet_Create` shall return `NULL` if `configuration->dotnet_module_entry_class` is `NULL`. **]**
+**SRS_DOTNET_04_004: [** `DotNet_Create` shall return `NULL` if `configuration->entry_type` is `NULL`. **]**
 
-**SRS_DOTNET_04_005: [** `DotNet_Create` shall return `NULL` if `configuration->dotnet_module_args` is `NULL`. **]**
+**SRS_DOTNET_04_005: [** `DotNet_Create` shall return `NULL` if `configuration->module_args` is `NULL`. **]**
 
 **SRS_DOTNET_04_006: [** `DotNet_Create` shall return `NULL` if an underlying API call fails. **]**
 
@@ -88,7 +88,7 @@ pointer to a `DOTNET_HOST_CONFIG` object.
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SRS_DOTNET_04_014: [** `DotNet_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `Broker` object created and `configuration->dotnet_module_args`. **]**
+**SRS_DOTNET_04_014: [** `DotNet_Create` shall call `Create` C# method, implemented from IGatewayModule, passing the `Broker` object created and `configuration->module_args`. **]**
 
 DotNet_Start
 ------------

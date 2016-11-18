@@ -17,8 +17,8 @@
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "SensorModule",
-                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
+                    "assembly.name": "SensorModule",
+                    "entry.type": "SensorModule.DotNetSensorModule"
                 }
             },
             "args": "module configuration"
@@ -28,8 +28,8 @@
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "PrinterModule",
-                    "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
+                    "assembly.name": "PrinterModule",
+                    "entry.type": "PrinterModule.DotNetPrinterModule"
                 }
             },
             "args": "module configuration"

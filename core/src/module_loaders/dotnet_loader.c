@@ -180,8 +180,8 @@ static void* DotnetModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
 
     // The input is a JSON object that looks like this:
     // "entrypoint": {
-    //     "dotnet_module_path": "SensorModule",
-    //     "dotnet_module_entry_class" : "SensorModule.DotNetSensorModule"
+    //     "assembly.name": "SensorModule",
+    //     "entry.type" : "SensorModule.DotNetSensorModule"
     // }
     DOTNET_LOADER_ENTRYPOINT* config;
     if (json == NULL)
@@ -210,12 +210,12 @@ static void* DotnetModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
             }
             else
             {
-                //Codes_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_path by reading the value of the attribute dotnet_module_path. ]
-                const char* dotnetModulePath = json_object_get_string(entrypoint, "dotnet_module_path");
+                //Codes_SRS_DOTNET_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
+                const char* dotnetModulePath = json_object_get_string(entrypoint, "assembly.name");
                 if (dotnetModulePath == NULL)
                 {
                     //Codes_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
-                    LogError("json_object_get_string for 'dotnet_module_path' returned NULL");
+                    LogError("json_object_get_string for 'assembly.name' returned NULL");
                     config = NULL;
                 }
                 else
@@ -233,12 +233,12 @@ static void* DotnetModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
                         }
                         else
                         {
-                            //Codes_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the dotnet_module_entry_class by reading the value of the attribute dotnet_module_entry_class. ]
-                            const char* dotnetModuleEntryClass = json_object_get_string(entrypoint, "dotnet_module_entry_class");
+                            //Codes_SRS_DOTNET_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
+                            const char* dotnetModuleEntryClass = json_object_get_string(entrypoint, "entry.type");
                             if (dotnetModuleEntryClass == NULL)
                             {
                                 //Codes_SRS_DOTNET_MODULE_LOADER_04_013: [ DotnetModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
-                                LogError("json_object_get_string for 'dotnet_module_entry_class' returned NULL");
+                                LogError("json_object_get_string for 'entry.type' returned NULL");
                                 STRING_delete(config->dotnetModulePath);
                                 free(config);
                                 config = NULL;
@@ -379,7 +379,7 @@ void* DotnetModuleLoader_BuildModuleConfiguration(
             }
             else
             {
-                if (mallocAndStrcpy_s(&((char*)result->dotnet_module_entry_class), (char*)STRING_c_str(dotnet_entrypoint->dotnetModuleEntryClass)) != 0)
+                if (mallocAndStrcpy_s(&((char*)result->entry_type), (char*)STRING_c_str(dotnet_entrypoint->dotnetModuleEntryClass)) != 0)
                 {
                     //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                     LogError("Failed to malloc and Copy dotnetModuleEntryClass String.");
@@ -388,28 +388,28 @@ void* DotnetModuleLoader_BuildModuleConfiguration(
                 }
                 else
                 {
-                    if (mallocAndStrcpy_s(&((char*)result->dotnet_module_path), (char*)STRING_c_str(dotnet_entrypoint->dotnetModulePath)) != 0)
+                    if (mallocAndStrcpy_s(&((char*)result->assembly_name), (char*)STRING_c_str(dotnet_entrypoint->dotnetModulePath)) != 0)
                     {
                         //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                        LogError("Failed to malloc and Copy dotnet_module_path failed.");
-                        free((char*)result->dotnet_module_entry_class);
+                        LogError("Failed to malloc and Copy assembly_name failed.");
+                        free((char*)result->entry_type);
                         free(result);
                         result = NULL;
                     }
                     else
                     {
-                        if (module_configuration != NULL && mallocAndStrcpy_s(&((char*)result->dotnet_module_args), (char*)module_configuration) != 0)
+                        if (module_configuration != NULL && mallocAndStrcpy_s(&((char*)result->module_args), (char*)module_configuration) != 0)
                         {
                             //Codes_SRS_DOTNET_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                             LogError("Malloc and Copy for module_configuration failed.");
-                            free((char*)result->dotnet_module_path);
-                            free((char*)result->dotnet_module_entry_class);
+                            free((char*)result->assembly_name);
+                            free((char*)result->entry_type);
                             free(result);
                             result = NULL;
                         }
                         else if(module_configuration == NULL)
                         {
-                            result->dotnet_module_args = NULL;
+                            result->module_args = NULL;
                         }
                         else
                         {
@@ -433,9 +433,9 @@ void DotnetModuleLoader_FreeModuleConfiguration(const void* module_configuration
     {
         DOTNET_HOST_CONFIG* configuration = (DOTNET_HOST_CONFIG*)module_configuration;
         //Codes_SRS_DOTNET_MODULE_LOADER_04_028: [ DotnetModuleLoader_FreeModuleConfiguration shall free the DOTNET_HOST_CONFIG object. ]
-        free((char*)configuration->dotnet_module_args);
-        free((char*)configuration->dotnet_module_entry_class);
-        free((char*)configuration->dotnet_module_path);
+        free((char*)configuration->module_args);
+        free((char*)configuration->entry_type);
+        free((char*)configuration->assembly_name);
         free((void*)module_configuration);
     }
     else

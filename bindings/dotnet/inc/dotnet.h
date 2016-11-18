@@ -13,9 +13,9 @@ extern "C"
 
 typedef struct DOTNET_HOST_CONFIG_TAG
 {
-    const char* dotnet_module_path;
-    const char* dotnet_module_entry_class;
-    const char* dotnet_module_args;
+    const char* assembly_name;
+    const char* entry_type;
+    const char* module_args;
 }DOTNET_HOST_CONFIG;
 
 MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);

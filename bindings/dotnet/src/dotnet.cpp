@@ -187,7 +187,7 @@ bool createCLRInstancesGetInterfacesAndStarting(ICLRMetaHost** pMetaHost, ICLRRu
     return returnResult;
 }
 
-bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtAzureIoTGatewayBrokerObject, _Type* pClientModuleType, variant_t* vtClientModuleObject)
+bool invokeCreateMethodFromClient(const char* module_args, variant_t* vtAzureIoTGatewayBrokerObject, _Type* pClientModuleType, variant_t* vtClientModuleObject)
 {
     SAFEARRAY *psaClientModuleCreateArgs = NULL;
     bool returnResult = false;
@@ -201,13 +201,13 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
         V_VT(&configurationInByteArray) = VT_ARRAY | VT_UI1;
         void * pArrayData = NULL;
 
-        if (dotnet_module_args == NULL)
+        if (module_args == NULL)
         {
             LogError("Missing DotNetModule Configuration.");
         }
         else
         {
-            int32_t msg_size = strlen(dotnet_module_args);
+            int32_t msg_size = strlen(module_args);
             if (msg_size < 0)
             {
                 LogError("Error getting size of module configuration.");
@@ -227,7 +227,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
                 }
                 else
                 {
-                    memcpy(pArrayData, dotnet_module_args, msg_size);
+                    memcpy(pArrayData, module_args, msg_size);
                     LONG index = 0;
 
                     bstr_t bstrCreateClientMethodName(L"Create");
@@ -251,7 +251,7 @@ bool invokeCreateMethodFromClient(const char* dotnet_module_args, variant_t* vtA
                         {
                             LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
                         }
-                        /*Codes_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->dotnet_module_args. ] */
+                        /*Codes_SRS_DOTNET_04_014: [ DotNet_Create shall call Create C# method, implemented from IGatewayModule, passing the Broker object created and configuration->module_args. ] */
                         else if (FAILED(hrResult = pClientModuleType->InvokeMember_3(
                             bstrCreateClientMethodName,
                             static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public | BindingFlags_InvokeMethod),
@@ -303,29 +303,29 @@ static MODULE_HANDLE DotNet_Create(BROKER_HANDLE broker, const void* configurati
         else
         {
             DOTNET_HOST_CONFIG* dotNetConfig = (DOTNET_HOST_CONFIG*)configuration;
-            if (dotNetConfig->dotnet_module_path == NULL)
+            if (dotNetConfig->assembly_name == NULL)
             {
-                /* Codes_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->dotnet_module_path is NULL. ] */
-                LogError("invalid configuration. dotnet_module_path=%p", dotNetConfig->dotnet_module_path);
+                /* Codes_SRS_DOTNET_04_003: [ DotNet_Create shall return NULL if configuration->assembly_name is NULL. ] */
+                LogError("invalid configuration. assembly_name=%p", dotNetConfig->assembly_name);
             }
-            else if (dotNetConfig->dotnet_module_entry_class == NULL)
+            else if (dotNetConfig->entry_type == NULL)
             {
-                /* Codes_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->dotnet_module_entry_class is NULL. ] */
-                LogError("invalid configuration. dotnet_module_entry_class=%p", dotNetConfig->dotnet_module_entry_class);
+                /* Codes_SRS_DOTNET_04_004: [ DotNet_Create shall return NULL if configuration->entry_type is NULL. ] */
+                LogError("invalid configuration. entry_type=%p", dotNetConfig->entry_type);
             }
-            else if (dotNetConfig->dotnet_module_args == NULL)
+            else if (dotNetConfig->module_args == NULL)
             {
-                /* Codes_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->dotnet_module_args is NULL. ] */
-                LogError("invalid configuration. dotnet_module_args=%p", dotNetConfig->dotnet_module_args);
+                /* Codes_SRS_DOTNET_04_005: [ DotNet_Create shall return NULL if configuration->module_args is NULL. ] */
+                LogError("invalid configuration. module_args=%p", dotNetConfig->module_args);
             }
             else
             {
                 /* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
                 HRESULT hr;
-                bstr_t bstrClientModuleAssemblyName(dotNetConfig->dotnet_module_path);
+                bstr_t bstrClientModuleAssemblyName(dotNetConfig->assembly_name);
                 _AppDomainPtr spDefaultAppDomain;
                 _AssemblyPtr spClientModuleAssembly;
-                bstr_t bstrClientModuleClassName(dotNetConfig->dotnet_module_entry_class);
+                bstr_t bstrClientModuleClassName(dotNetConfig->entry_type);
                 bstr_t bstrAzureIoTGatewayAssemblyName(AZUREIOTGATEWAYASSEMBLYNAME);
                 variant_t vtAzureIoTGatewayBrokerObject;
                 try
@@ -390,7 +390,7 @@ static MODULE_HANDLE DotNet_Create(BROKER_HANDLE broker, const void* configurati
                         delete out;
                         out = NULL;
                     }
-                    else if (!invokeCreateMethodFromClient(dotNetConfig->dotnet_module_args, &vtAzureIoTGatewayBrokerObject, out->spClientModuleType, &out->vtClientModuleObject))
+                    else if (!invokeCreateMethodFromClient(dotNetConfig->module_args, &vtAzureIoTGatewayBrokerObject, out->spClientModuleType, &out->vtClientModuleObject))
                     {
                         /* Codes_SRS_DOTNET_04_006: [ DotNet_Create shall return NULL if an underlying API call fails. ] */
                         LogError("Failed to invoke Create Method");

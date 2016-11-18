@@ -103,9 +103,9 @@ to the parsed data.
 
 **SRS_DOTNET_MODULE_LOADER_04_013: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall return `NULL` if an underlying platform call fails. **]**
 
-**SRS_DOTNET_MODULE_LOADER_04_014: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall retrieve the `dotnet_module_path` by reading the value of the attribute `dotnet_module_path`. **]**
+**SRS_DOTNET_MODULE_LOADER_04_014: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall retrieve the `assembly_name` by reading the value of the attribute `assembly.name`. **]**
 
-**SRS_DOTNET_MODULE_LOADER_04_036: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall retrieve the `dotnet_module_entry_class` by reading the value of the attribute `dotnet_module_entry_class`. **]**
+**SRS_DOTNET_MODULE_LOADER_04_036: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall retrieve the `entry_type` by reading the value of the attribute `entry.type`. **]**
 
 **SRS_DOTNET_MODULE_LOADER_04_015: [** `DotnetModuleLoader_ParseEntrypointFromJson` shall return a non-`NULL` pointer to the parsed representation of the entrypoint when successful. **]**
 

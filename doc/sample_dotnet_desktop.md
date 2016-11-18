@@ -93,8 +93,8 @@ Json Configuration
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "SensorModule",
-                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
+                    "assembly.name": "SensorModule",
+                    "entry.type": "SensorModule.DotNetSensorModule"
                 }
             },
             "args": "module configuration"
@@ -104,8 +104,8 @@ Json Configuration
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "PrinterModule",
-                    "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
+                    "assembly.name": "PrinterModule",
+                    "entry.type": "PrinterModule.DotNetPrinterModule"
                 }
             },
             "args": "module configuration"
@@ -169,8 +169,8 @@ Modules may also implement the `IGatewayModuleStart` interface.  The Start metho
             "loader": {
                 "name": "dotnet",
                 "entrypoint": {
-                    "dotnet_module_path": "SensorModule", ==> This is the name of your module dll. On this sample it is PrinterModule.dll
-                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule" ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
+                    "assembly.name": "SensorModule", ==> This is the name of your module assembly (DLL).
+                    "entry.type": "SensorModule.DotNetSensorModule" ==> This is your fully-qualified type (Namespace.ClassName) that implements IGatewayModule.
                 }
             },
             "args": "module configuration" ==> This is any configuration you want to use on your sample. It will be passed to you as a byte[] that should be converted to an UTF-8 Encoded String, you can add a JSON configuration in it.
