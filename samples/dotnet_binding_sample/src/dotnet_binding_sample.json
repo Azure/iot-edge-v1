@@ -1,28 +1,37 @@
 {
-    "modules" :
-    [
-      {
-        "name": "dotnet_sensor_module",
-        "loader": {
-            "name": "dotnet",
-            "entrypoint": {
-                "dotnet_module_path": "SensorModule",
-                "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
-            }
+    "modules": [
+        {
+            "name": "logger",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+                }
+            },
+            "args": { "filename": "C:\\Temp\\Log.txt" }
         },
-        "args" : "module configuration"
-      },
-      {
-        "name": "dotnet_printer_module",
-        "loader": {
-            "name": "dotnet",
-            "entrypoint": {
-              "dotnet_module_path": "PrinterModule",
-              "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
-            }
+        {
+            "name": "dotnet_sensor_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "SensorModule",
+                    "dotnet_module_entry_class": "SensorModule.DotNetSensorModule"
+                }
+            },
+            "args": "module configuration"
         },
-        "args" : "module configuration"
-      }
+        {
+            "name": "dotnet_printer_module",
+            "loader": {
+                "name": "dotnet",
+                "entrypoint": {
+                    "dotnet_module_path": "PrinterModule",
+                    "dotnet_module_entry_class": "PrinterModule.DotNetPrinterModule"
+                }
+            },
+            "args": "module configuration"
+        }
     ],
     "links": [
       {"source": "dotnet_sensor_module", "sink": "dotnet_printer_module" }
