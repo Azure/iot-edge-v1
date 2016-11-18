@@ -1,82 +1,93 @@
 {
-    "modules" :
-    [
-      {
-        "name": "IotHub",
-        "loader": {
-          "name": "native",
-          "entrypoint": {
-            "module.path": "..\\..\\..\\modules\\iothub\\Debug\\iothub.dll"
-          }
-          },
-          "args": {
-            "IoTHubName": "<<insert here IoTHubName>>",
-            "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
-            "Transport": "HTTP"
-          }
-        },
-      {
-        "name": "mapping",
-        "loader": {
-          "name": "native",
-          "entrypoint": {
-            "module.path": "..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll"
-          }
-          },
-          "args": [
-            {
-              "macAddress": "01:01:01:01:01:01",
-              "deviceId": "<<insert here deviceId>>",
-              "deviceKey": "<<insert here deviceKey>>"
-            },
-            {
-              "macAddress": "02:02:02:02:02:02",
-              "deviceId": "<<insert here deviceId>>",
-              "deviceKey": "<<insert here deviceKey>>"
-            }
-          ]
-        },
-      {
-        "name": "BLE1",
-        "loader": {
-          "name": "native",
-          "entrypoint": {
-            "module.path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
-          }
-          },
-          "args": {
-            "macAddress": "01:01:01:01:01:01"
-          }
-        },
-      {
-        "name": "BLE2",
-        "loader": {
-          "name": "native",
-          "entrypoint": {
-            "module.path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
-          }
-          },
-          "args": {
-            "macAddress": "02:02:02:02:02:02"
-          }
-        },
-      {
-        "name": "Logger",
-        "loader": {
-          "name": "native",
-          "entrypoint": {
-            "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-          }
-        },
-        "args": {
-          "filename": "deviceCloudUploadGatewaylog.log"
+  "modules": [
+    {
+      "name": "IotHub",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\iothub\\Debug\\iothub.dll"
         }
+      },
+      "args": {
+        "IoTHubName": "<<insert here IoTHubName>>",
+        "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
+        "Transport": "HTTP"
       }
-    ],
-    "links" : [
-        { "source" : "*", "sink" : "Logger" },
-        { "source" : "BLE1", "sink" : "mapping" },
-        { "source" : "BLE2", "sink" : "mapping" },
-        { "source" : "mapping", "sink" : "IotHub" }
-    ]
+    },
+    {
+      "name": "mapping",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll"
+        }
+      },
+      "args": [
+        {
+          "macAddress": "01:01:01:01:01:01",
+          "deviceId": "<<insert here deviceId>>",
+          "deviceKey": "<<insert here deviceKey>>"
+        },
+        {
+          "macAddress": "02:02:02:02:02:02",
+          "deviceId": "<<insert here deviceId>>",
+          "deviceKey": "<<insert here deviceKey>>"
+        }
+      ]
+    },
+    {
+      "name": "BLE1",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
+        }
+      },
+      "args": {
+        "macAddress": "01:01:01:01:01:01"
+      }
+    },
+    {
+      "name": "BLE2",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\simulated_device\\Debug\\simulated_device.dll"
+        }
+      },
+      "args": {
+        "macAddress": "02:02:02:02:02:02"
+      }
+    },
+    {
+      "name": "Logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+        }
+      },
+      "args": {
+        "filename": "deviceCloudUploadGatewaylog.log"
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "*",
+      "sink": "Logger"
+    },
+    {
+      "source": "BLE1",
+      "sink": "mapping"
+    },
+    {
+      "source": "BLE2",
+      "sink": "mapping"
+    },
+    {
+      "source": "mapping",
+      "sink": "IotHub"
+    }
+  ]
 }

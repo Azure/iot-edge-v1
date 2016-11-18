@@ -1,82 +1,93 @@
 {
-    "modules" :
-    [ 
+  "modules": [
+    {
+      "name": "IotHub",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "libiothub.so"
+        }
+      },
+      "args": {
+        "IoTHubName": "<<insert here IoTHubName>>",
+        "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
+        "Transport": "HTTP"
+      }
+    },
+    {
+      "name": "mapping",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "libidentity_map.so"
+        }
+      },
+      "args": [
         {
-            "name" : "IotHub",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "libiothub.so"
-            }
-            },
-            "args": {
-              "IoTHubName": "<<insert here IoTHubName>>",
-              "IoTHubSuffix": "<<insert here IoTHubSuffix>>",
-              "Transport": "HTTP"
-            }
-          },
+          "macAddress": "01:01:01:01:01:01",
+          "deviceId": "<<insert here deviceId>>",
+          "deviceKey": "<<insert here deviceKey>>"
+        },
         {
-            "name" : "mapping",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "libidentity_map.so"
-            }
-            },
-            "args": [
-              {
-                "macAddress": "01:01:01:01:01:01",
-                "deviceId": "<<insert here deviceId>>",
-                "deviceKey": "<<insert here deviceKey>>"
-              },
-              {
-                "macAddress": "02:02:02:02:02:02",
-                "deviceId": "<<insert here deviceId>>",
-                "deviceKey": "<<insert here deviceKey>>"
-              }
-            ]
-          },
-        {
-            "name":"BLE1",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "libsimulated_device.so"
-            }
-            },
-            "args": {
-              "macAddress": "01:01:01:01:01:01"
-            }
-          },
-        {
-            "name":"BLE2",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "libsimulated_device.so"
-            }
-            },
-            "args": {
-              "macAddress": "02:02:02:02:02:02"
-            }
-          },
-        {
-            "name":"Logger",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "liblogger.so"
-            }
-            },
-            "args": {
-              "filename": "deviceCloudUploadGatewaylog.log"
-            }
-          }
-    ],
-    "links" : [
-        { "source" : "*", "sink" : "Logger" },
-        { "source" : "BLE1", "sink" : "mapping" },
-        { "source" : "BLE2", "sink" : "mapping" },
-        { "source" : "mapping", "sink" : "IotHub" }
-    ]
+          "macAddress": "02:02:02:02:02:02",
+          "deviceId": "<<insert here deviceId>>",
+          "deviceKey": "<<insert here deviceKey>>"
+        }
+      ]
+    },
+    {
+      "name": "BLE1",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "libsimulated_device.so"
+        }
+      },
+      "args": {
+        "macAddress": "01:01:01:01:01:01"
+      }
+    },
+    {
+      "name": "BLE2",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "libsimulated_device.so"
+        }
+      },
+      "args": {
+        "macAddress": "02:02:02:02:02:02"
+      }
+    },
+    {
+      "name": "Logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "liblogger.so"
+        }
+      },
+      "args": {
+        "filename": "deviceCloudUploadGatewaylog.log"
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "*",
+      "sink": "Logger"
+    },
+    {
+      "source": "BLE1",
+      "sink": "mapping"
+    },
+    {
+      "source": "BLE2",
+      "sink": "mapping"
+    },
+    {
+      "source": "mapping",
+      "sink": "IotHub"
+    }
+  ]
 }

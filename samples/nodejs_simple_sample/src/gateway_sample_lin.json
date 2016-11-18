@@ -4,7 +4,9 @@
             "name": "node_printer",
             "loader": {
                 "name": "node",
-                "main.path": "<<path to printer.js>>"
+                "entrypoint": {
+                    "main.path": "<<path to printer.js>>"
+                }
             },
             "args": null
         },

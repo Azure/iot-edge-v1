@@ -7,9 +7,9 @@
         "entrypoint": {
           "module.path": "./modules/hello_world/libhello_world.so"
         }
-        },
-        "args": null
       },
+      "args": null
+    },
     {
       "name": "azure_functions",
       "loader": {
@@ -17,13 +17,13 @@
         "entrypoint": {
           "module.path": "./modules/azure_functions/libazure_functions.so"
         }
-        },
-        "args": {
-          "hostname": "<YourHostNameHere from Functions Portal>",
-          "relativePath": "/api/<YourFunctionName>",
-          "key": "<your Api Key Here>"
-        }
+      },
+      "args": {
+        "hostname": "<YourHostNameHere from Functions Portal>",
+        "relativePath": "/api/<YourFunctionName>",
+        "key": "<your Api Key Here>"
       }
+    }
   ],
   "links": [
     {

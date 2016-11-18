@@ -3,22 +3,22 @@
     {
       "name": "IoTHub",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
+        "name": "native",
+        "entrypoint": {
           "module.path": "<</path/to/libiothub.so>>"
         }
       },
       "args": {
         "IoTHubName": "<<Azure IoT Hub Name>>",
         "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
-        "Transport" : "amqp"
+        "Transport": "amqp"
       }
     },
     {
       "name": "BLE Printer",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
+        "name": "native",
+        "entrypoint": {
           "module.path": "<</path/to/libble_printer.so>>"
         }
       },
@@ -27,8 +27,8 @@
     {
       "name": "mapping",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
+        "name": "native",
+        "entrypoint": {
           "module.path": "<</path/to/libidentity_map.so>>"
         }
       },
@@ -43,8 +43,8 @@
     {
       "name": "BLEC2D",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
+        "name": "native",
+        "entrypoint": {
           "module.path": "<</path/to/libble_c2d.so>>"
         }
       },
@@ -53,8 +53,8 @@
     {
       "name": "SensorTag",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
+        "name": "native",
+        "entrypoint": {
           "module.path": "<</path/to/libble.so>>"
         }
       },
@@ -107,24 +107,44 @@
     {
       "name": "Logger",
       "loader": {
-        "name" : "native",
-        "entrypoint" : {
-          "module.path" : "<</path/to/liblogger.so>>"
+        "name": "native",
+        "entrypoint": {
+          "module.path": "<</path/to/liblogger.so>>"
         }
       },
-      "args":
-      {
+      "args": {
         "filename": "<</path/to/log-file.log>>"
       }
     }
   ],
-  "links" : [
-    {"source" : "*", "sink" : "Logger" },
-    {"source" : "SensorTag", "sink" : "mapping" },
-    {"source" : "SensorTag", "sink" : "BLE Printer" },
-    {"source" : "mapping", "sink" : "IoTHub" },
-    {"source" : "IoTHub", "sink" : "mapping" },
-    {"source" : "mapping", "sink" : "BLEC2D" },
-    {"source" : "BLEC2D", "sink" : "SensorTag"}
+  "links": [
+    {
+      "source": "*",
+      "sink": "Logger"
+    },
+    {
+      "source": "SensorTag",
+      "sink": "mapping"
+    },
+    {
+      "source": "SensorTag",
+      "sink": "BLE Printer"
+    },
+    {
+      "source": "mapping",
+      "sink": "IoTHub"
+    },
+    {
+      "source": "IoTHub",
+      "sink": "mapping"
+    },
+    {
+      "source": "mapping",
+      "sink": "BLEC2D"
+    },
+    {
+      "source": "BLEC2D",
+      "sink": "SensorTag"
+    }
   ]
 }

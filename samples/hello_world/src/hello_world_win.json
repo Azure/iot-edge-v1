@@ -8,7 +8,9 @@
           "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
         }
       },
-      "args": { "filename": "log.txt" }
+      "args": {
+        "filename": "log.txt"
+      }
     },
     {
       "name": "hello_world",
@@ -19,7 +21,7 @@
         }
       },
       "args": null
-      }
+    }
   ],
   "links": [
     {

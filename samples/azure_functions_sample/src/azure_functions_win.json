@@ -17,13 +17,13 @@
         "entrypoint": {
           "module.path": "..\\..\\..\\modules\\azure_functions\\Debug\\azure_functions.dll"
         }
-        },
-        "args": {
-          "hostname": "<YourHostNameHere from Functions Portal>",
-          "relativePath": "api/<YourFunctionName>",
-          "key": "<your Api Key Here>"
-        }
+      },
+      "args": {
+        "hostname": "<YourHostNameHere from Functions Portal>",
+        "relativePath": "api/<YourFunctionName>",
+        "key": "<your Api Key Here>"
       }
+    }
   ],
   "links": [
     {
