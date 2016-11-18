@@ -597,7 +597,6 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
                     (strcmp(keys[i], "deviceKey") != 0)
                     )
                 {
-                   
                     if (Map_AddOrUpdate(iothubMessageProperties, keys[i], values[i]) != MAP_OK)
                     {
                         /*Codes_SRS_IOTHUBMODULE_02_019: [ If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. ]*/
@@ -667,7 +666,7 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                 {
                     IOTHUB_HANDLE_DATA* moduleHandleData = moduleHandle;
                     /*Codes_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
-                    
+
                     PERSONALITY* whereIsIt = PERSONALITY_find_or_create(moduleHandleData, deviceName, deviceKey);
                     if (whereIsIt == NULL)
                     {
@@ -705,7 +704,7 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
     /*Codes_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
 }
 
-static const MODULE_API_1 moduleInterface = 
+static const MODULE_API_1 moduleInterface =
 {
     {MODULE_API_VERSION_1},
 

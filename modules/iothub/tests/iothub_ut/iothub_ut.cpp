@@ -464,7 +464,7 @@ public:
     MOCK_STATIC_METHOD_2(, IOTHUB_MESSAGE_HANDLE, IoTHubMessage_CreateFromByteArray, const unsigned char*, byteArray, size_t, size)
         IOTHUB_MESSAGE_HANDLE result2;
         currentIoTHubMessage_CreateFromByteArray_call ++;
-    
+
         if (whenShallIoTHubMessage_CreateFromByteArray_fail == currentIoTHubMessage_CreateFromByteArray_call)
         {
             result2 = NULL;
@@ -473,7 +473,7 @@ public:
         {
             result2 = (IOTHUB_MESSAGE_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
         }
-        
+
     MOCK_METHOD_END(IOTHUB_MESSAGE_HANDLE, result2);
 
     MOCK_STATIC_METHOD_3(, IOTHUB_MESSAGE_RESULT, IoTHubMessage_GetByteArray, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle, const unsigned char**, buffer, size_t*, size)
@@ -644,7 +644,7 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        
+
         ///act
         const MODULE_API* MODULEAPIS = Module_GetApi(MODULE_API_VERSION_1);
 
@@ -717,7 +717,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IOTHUB_CONFIG)))
-            .SetReturn((void*)NULL);
+            .SetFailReturn((void*)NULL);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -757,7 +757,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1))
-            .SetReturn((void*)NULL);
+            .SetFailReturn((void*)NULL);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -794,7 +794,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             .SetReturn("HTTP");
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1))
-            .SetReturn((void*)NULL);
+            .SetFailReturn((void*)NULL);
 
         STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -1411,7 +1411,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, VECTOR_create(IGNORED_NUM_ARG))
             .IgnoreArgument(1)
-            .SetReturn((VECTOR_HANDLE)NULL);
+            .SetFailReturn((VECTOR_HANDLE)NULL);
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1433,7 +1433,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
             .IgnoreArgument(1)
-            .SetReturn((void*)NULL);
+            .SetFailReturn((void*)NULL);
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1510,7 +1510,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         mocks.ResetAllCalls();
 
         /*this is IoTHubName*/
-        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG)) 
+        STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         /*this is IoTHubSuffix*/
@@ -1521,7 +1521,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         /*none for this case*/
         STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
-        
+
         /*this is VECTOR<PERSONALITY>*/
         STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -1733,7 +1733,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             /* create a new PERSONALITY */
             STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
                 .IgnoreArgument(1);
-            
+
             /*making a copy of the deviceName*/
             STRICT_EXPECTED_CALL(mocks, STRING_construct("firstDevice"));
             /*making a copy of the deviceKey*/
@@ -1767,7 +1767,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         { /*scope for creating the IOTHUBMESSAGE from GWMESSAGE*/
-            
+
             /*gettng the GW message content*/
             STRICT_EXPECTED_CALL(mocks, Message_GetContent(MESSAGE_HANDLE_VALID_1));
 
@@ -1803,7 +1803,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "somethingExtra", "blue"))
                 .IgnoreArgument(1);
         }
-        
+
         /*finally, send the message*/
         STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL, NULL))
             .IgnoreArgument(1)
