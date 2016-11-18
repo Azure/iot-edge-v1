@@ -18,7 +18,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "experimental/event_system.h"
 #include "dotnet.h"
-#include "dynamic_loader.h"
+#include "module_loaders/dotnet_loader.h"
 #include "azure_c_shared_utility/vector.h"
 
 
@@ -30,9 +30,15 @@ static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 static bool messageRequestReceived = false;
 static bool messageReplyReceived = false;
 
-static MODULE_HANDLE E2EModule_CreateFromJson(BROKER_HANDLE broker, const char* configuration)
+
+static void* E2EModule_ParseConfigurationFromJson(const char* configuration)
 {
-    return (MODULE_HANDLE)0x4242;
+	return (void*)0x4242;
+}
+
+static void E2EModule_FreeConfiguration(void* configuration)
+{
+	return;
 }
 
 static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configuration)
@@ -70,7 +76,8 @@ static const MODULE_API_1 E2E_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-    E2EModule_CreateFromJson,
+	E2EModule_ParseConfigurationFromJson,
+	E2EModule_FreeConfiguration,
     E2EModule_Create,
     E2EModule_Destroy,
     E2EModule_Receive,
@@ -82,14 +89,16 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_a
     return reinterpret_cast<const MODULE_API *>(&E2E_APIS_all);
 }
 
-MODULE_LIBRARY_HANDLE E2E_Loader_Load(const void * config)
+MODULE_LIBRARY_HANDLE E2E_Loader_Load(const struct MODULE_LOADER_TAG* loader, const void * config)
 {
     return (MODULE_LIBRARY_HANDLE)&E2E_APIS_all;
 }
+
 void E2E_Loader_Unload(MODULE_LIBRARY_HANDLE handle)
 {
     return;
 }
+
 const MODULE_API* E2E_Loader_GetApi(MODULE_LIBRARY_HANDLE handle)
 {
     const MODULE_API* result;
@@ -103,12 +112,43 @@ const MODULE_API* E2E_Loader_GetApi(MODULE_LIBRARY_HANDLE handle)
     }
     return result;
 }
-const MODULE_LOADER_API E2E_Loader_api =
+
+void* E2E_Loader_BuildModuleConfiguration(const struct MODULE_LOADER_TAG* loader, const void* entrypoint, const void* module_configuration)
+{
+	return NULL;
+}
+
+void E2E_Loader_FreeModuleConfiguration(const void* module_configuration)
+{
+
+}
+
+// E2E static module loader does not need any JSON parsing.
+MODULE_LOADER_API E2E_Loader_api =
 {
     E2E_Loader_Load,
     E2E_Loader_Unload,
-    E2E_Loader_GetApi
+    E2E_Loader_GetApi,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	E2E_Loader_BuildModuleConfiguration,
+	E2E_Loader_FreeModuleConfiguration
 };
+
+static MODULE_LOADER E2E_Module_Loader =
+{
+	NATIVE,
+	"E2E",
+	NULL,
+	&E2E_Loader_api
+};
+
+const MODULE_LOADER* E2E_Loader_Get(void)
+{
+	return &E2E_Module_Loader;
+}
 
 BEGIN_TEST_SUITE(dotnet_e2e)
 
@@ -145,50 +185,70 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 {
     ///arrange
     GATEWAY_MODULES_ENTRY modulesEntryArray[3];
+	GATEWAY_MODULE_LOADER_INFO loaders[3];
 
     //Add Managed Module 1
-    const DOTNET_HOST_CONFIG senderConfig{
-        "E2ETestModule",
-        "E2ETestModule.DotNetE2ETestModule",
-        "Sender"
-    };
+	const char * senderModuleArgs = "Sender";
 
-    const DYNAMIC_LOADER_CONFIG loader_cfg =
-    {
-        "..\\..\\..\\Debug\\dotnet.dll"
-    };
+	DOTNET_LOADER_ENTRYPOINT senderEndpoint =
+	{
+		STRING_construct("E2ETestModule"),
+		STRING_construct("E2ETestModule.DotNetE2ETestModule")
+	};
 
     const char * nameModuleSender = "Sender";
 
+	loaders[0] = {
+		DotnetLoader_Get(),
+		&senderEndpoint
+	};
+
     modulesEntryArray[0] = {
         nameModuleSender,
-        &loader_cfg,
-        DynamicLoader_GetApi(),
-        &senderConfig
+		loaders[0],
+		senderModuleArgs
     };
 
     //Add Managed Module 2
+
+	const char * receiverModuleArgs = "Receiver";
+	DOTNET_LOADER_ENTRYPOINT receiverEndpoint =
+	{
+		STRING_construct("E2ETestModule"),
+		STRING_construct("E2ETestModule.DotNetE2ETestModule")
+	};
+
+	const char * nameModuleReceiver = "Receiver";
+
+	loaders[1] = {
+		DotnetLoader_Get(),
+		&receiverEndpoint
+	};
+
     const DOTNET_HOST_CONFIG receiverConfig{
         "E2ETestModule",
         "E2ETestModule.DotNetE2ETestModule",
         "Receiver"
     };
 
-    const char * nameModuleReceiver = "Receiver";
     modulesEntryArray[1] = {
-        nameModuleReceiver,
-        &loader_cfg,
-        DynamicLoader_GetApi(),
-        &receiverConfig
+		nameModuleReceiver,
+		loaders[1],
+		receiverModuleArgs
     };
 
     //Add test probe module
 
     const char * nameProbeModule = "probe test";
+
+	loaders[2] = {
+		E2E_Loader_Get(),
+		(void*)nameProbeModule
+	};
+
     modulesEntryArray[2] = {
         nameProbeModule,
-        NULL,
-        &E2E_Loader_api,
+		loaders[2],
         NULL
     };
 
@@ -237,6 +297,12 @@ TEST_FUNCTION(GW_dotnet_binding_e2e_Managed2Managed)
 
     ///cleanup
     Gateway_Destroy(e2eGatewayInstance);
+	STRING_delete(senderEndpoint.dotnetModuleEntryClass);
+	STRING_delete(senderEndpoint.dotnetModulePath);
+	STRING_delete(receiverEndpoint.dotnetModuleEntryClass);
+	STRING_delete(receiverEndpoint.dotnetModulePath);
+	VECTOR_destroy(properties.gateway_modules);
+	VECTOR_destroy(properties.gateway_links);
 
 }
 END_TEST_SUITE(dotnet_e2e)
