@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['base',['base',['../struct_m_o_d_u_l_e___a_p_i__1___t_a_g.html#a0831dc5f5bd9a0b05b3dd943c405f15d',1,'MODULE_API_1_TAG']]]
+  ['api',['api',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___t_a_g.html#a2730bf6428470edc88cc71e2ae7aa77e',1,'MODULE_LOADER_TAG']]]
 ];

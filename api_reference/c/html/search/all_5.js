@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['pfmodule_5fcreate',['pfModule_Create',['../module_8h.html#a3132568b0f846040e5a6315eb102bd11',1,'module.h']]],
-  ['pfmodule_5fcreatefromjson',['pfModule_CreateFromJson',['../module_8h.html#a9a547a561b815ad98383dcba91563492',1,'module.h']]],
-  ['pfmodule_5fdestroy',['pfModule_Destroy',['../module_8h.html#a36b33ce08187861d5e0b99feb4d55e62',1,'module.h']]],
-  ['pfmodule_5fgetapi',['pfModule_GetApi',['../module_8h.html#a34732f9cc2e76c9765d7cc81d1fef1e2',1,'module.h']]],
-  ['pfmodule_5freceive',['pfModule_Receive',['../module_8h.html#ad3a2b86fa831d95da8ce1f52fb0316ab',1,'module.h']]],
-  ['pfmodule_5fstart',['pfModule_Start',['../module_8h.html#a591b2f22e62e6c151217a95b86443289',1,'module.h']]]
+  ['freeconfiguration',['FreeConfiguration',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#a9bb8c923d62ba4d852bdd7f2cb52dee4',1,'MODULE_LOADER_API_TAG']]],
+  ['freeentrypoint',['FreeEntrypoint',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#a82aee00b3a2fa45e3a514abfd2511dda',1,'MODULE_LOADER_API_TAG']]],
+  ['freemoduleconfiguration',['FreeModuleConfiguration',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#a65548b7bfa4eb2165b38c45d80985cbf',1,'MODULE_LOADER_API_TAG']]]
 ];

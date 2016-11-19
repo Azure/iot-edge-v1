@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['load',['Load',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#af6022262a5bcd5f3ab9002bcf76287fa',1,'MODULE_LOADER_API_TAG']]],
-  ['loader_5fapi',['loader_api',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#ab1bb1ae8bf4e9b556fd2ec68b47d5683',1,'GATEWAY_MODULES_ENTRY_TAG']]],
-  ['loader_5fconfiguration',['loader_configuration',['../struct_g_a_t_e_w_a_y___m_o_d_u_l_e_s___e_n_t_r_y___t_a_g.html#a6a0f915c33aa5d3abe4051ea78101bf7',1,'GATEWAY_MODULES_ENTRY_TAG']]]
+  ['dynamic_5floader_2eh',['dynamic_loader.h',['../dynamic__loader_8h.html',1,'']]],
+  ['dynamic_5floader_5fentrypoint',['DYNAMIC_LOADER_ENTRYPOINT',['../dynamic__loader_8h.html#ab73f2392dd550d6a98ded58dd9fbc03e',1,'dynamic_loader.h']]],
+  ['dynamic_5floader_5fentrypoint_5ftag',['DYNAMIC_LOADER_ENTRYPOINT_TAG',['../struct_d_y_n_a_m_i_c___l_o_a_d_e_r___e_n_t_r_y_p_o_i_n_t___t_a_g.html',1,'']]]
 ];

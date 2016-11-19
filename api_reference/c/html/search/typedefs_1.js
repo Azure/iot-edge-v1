@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['dynamic_5floader_5fconfig',['DYNAMIC_LOADER_CONFIG',['../dynamic__loader_8h.html#afdaad12281e24829074525641fbde10d',1,'dynamic_loader.h']]]
+  ['dynamic_5floader_5fentrypoint',['DYNAMIC_LOADER_ENTRYPOINT',['../dynamic__loader_8h.html#ab73f2392dd550d6a98ded58dd9fbc03e',1,'dynamic_loader.h']]]
 ];
