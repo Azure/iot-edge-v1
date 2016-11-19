@@ -84,7 +84,7 @@ static const MODULE_API_1 E2E_APIS_all =
     NULL
 };
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const struct MODULE_LOADER_TAG* loader, const MODULE_API_VERSION gateway_api_version)
 {
     return reinterpret_cast<const MODULE_API *>(&E2E_APIS_all);
 }
@@ -94,12 +94,12 @@ MODULE_LIBRARY_HANDLE E2E_Loader_Load(const struct MODULE_LOADER_TAG* loader, co
     return (MODULE_LIBRARY_HANDLE)&E2E_APIS_all;
 }
 
-void E2E_Loader_Unload(MODULE_LIBRARY_HANDLE handle)
+void E2E_Loader_Unload(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle)
 {
     return;
 }
 
-const MODULE_API* E2E_Loader_GetApi(MODULE_LIBRARY_HANDLE handle)
+const MODULE_API* E2E_Loader_GetApi(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle)
 {
     const MODULE_API* result;
     if (handle != NULL)
@@ -118,7 +118,7 @@ void* E2E_Loader_BuildModuleConfiguration(const struct MODULE_LOADER_TAG* loader
 	return NULL;
 }
 
-void E2E_Loader_FreeModuleConfiguration(const void* module_configuration)
+void E2E_Loader_FreeModuleConfiguration(const struct MODULE_LOADER_TAG* loader, const void* module_configuration)
 {
 
 }

@@ -857,7 +857,8 @@ TEST_FUNCTION(ModuleLoader_UpdateConfiguration_succeeds)
 
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(loader.configuration));
+    STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, loader.configuration))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
@@ -1022,6 +1023,7 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources)
     // arrange
     MODULE_LOADER_RESULT init_result = ModuleLoader_Initialize();
     ASSERT_ARE_EQUAL(MODULE_LOADER_RESULT, MODULE_LOADER_SUCCESS, init_result);
+
     umock_c_reset_all_calls();
 
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1032,9 +1034,6 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources)
     {
         STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, i))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
     }
     STRICT_EXPECTED_CALL(VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -1063,6 +1062,7 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources_with_non_default_loaders)
     MODULE_LOADER *non_default_loader = (MODULE_LOADER *)my_gballoc_malloc(sizeof(MODULE_LOADER));
     ASSERT_IS_NOT_NULL(non_default_loader);
     memcpy(non_default_loader, &Dynamic_Module_Loader, sizeof(MODULE_LOADER));
+    non_default_loader->configuration = (MODULE_LOADER_BASE_CONFIGURATION*)my_gballoc_malloc(1);
 
     char* loader_name = (char*)my_gballoc_malloc(strlen("non_default_loader") + 1);
     ASSERT_IS_NOT_NULL(loader_name);
@@ -1082,13 +1082,11 @@ TEST_FUNCTION(ModuleLoader_Destroy_frees_resources_with_non_default_loaders)
     {
         STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, i))
             .IgnoreArgument(1);
-        STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         // for the last module loader we will have some additional calls
         if (i == LOADERS_COUNT)
         {
+            STRICT_EXPECTED_CALL(FakeModuleLoader_FreeConfiguration(non_default_loader, non_default_loader->configuration));
             STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
                 .IgnoreArgument(1);
             STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))

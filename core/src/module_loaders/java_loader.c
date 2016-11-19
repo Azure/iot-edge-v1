@@ -22,6 +22,8 @@
 #ifdef UNDER_TEST
 #undef ENV_VARS
 #define ENV_VARS
+#undef PREFIXES
+#define PREFIXES
 #endif
 
 #define CONFIGURATION         ((JAVA_LOADER_CONFIGURATION*)(loader->configuration))

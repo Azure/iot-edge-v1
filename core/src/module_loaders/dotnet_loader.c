@@ -136,8 +136,10 @@ static MODULE_LIBRARY_HANDLE DotnetModuleLoader_Load(const MODULE_LOADER* loader
     return result;
 }
 
-static const MODULE_API* DotnetModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
+static const MODULE_API* DotnetModuleLoader_GetModuleApi(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
+    (void)loader;
+
     const MODULE_API* result;
 
     if (moduleLibraryHandle == NULL)
@@ -158,8 +160,10 @@ static const MODULE_API* DotnetModuleLoader_GetModuleApi(MODULE_LIBRARY_HANDLE m
 
 
 
-static void DotnetModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
+static void DotnetModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
+    (void)loader;
+
     if (moduleLibraryHandle != NULL)
     {
         DOTNET_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
@@ -175,8 +179,10 @@ static void DotnetModuleLoader_Unload(MODULE_LIBRARY_HANDLE moduleLibraryHandle)
     }
 }
 
-static void* DotnetModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
+static void* DotnetModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
+
 
     // The input is a JSON object that looks like this:
     // "entrypoint": {
@@ -278,8 +284,10 @@ static void* DotnetModuleLoader_ParseEntrypointFromJson(const JSON_Value* json)
     return (void*)config;
 }
 
-static void DotnetModuleLoader_FreeEntrypoint(void* entrypoint)
+static void DotnetModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* entrypoint)
 {
+    (void)loader;
+
     if (entrypoint != NULL)
     {
         //Codes_SRS_DOTNET_MODULE_LOADER_04_017: [ DotnetModuleLoader_FreeEntrypoint shall free resources allocated during DotnetModuleLoader_ParseEntrypointFromJson. ]
@@ -296,8 +304,10 @@ static void DotnetModuleLoader_FreeEntrypoint(void* entrypoint)
     }
 }
 
-static MODULE_LOADER_BASE_CONFIGURATION* DotnetModuleLoader_ParseConfigurationFromJson(const JSON_Value* json)
+static MODULE_LOADER_BASE_CONFIGURATION* DotnetModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
+
     MODULE_LOADER_BASE_CONFIGURATION* result = (MODULE_LOADER_BASE_CONFIGURATION*)malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION));
     if (result != NULL)
     {
@@ -324,8 +334,10 @@ static MODULE_LOADER_BASE_CONFIGURATION* DotnetModuleLoader_ParseConfigurationFr
     return result;
 }
 
-static void DotnetModuleLoader_FreeConfiguration(MODULE_LOADER_BASE_CONFIGURATION* configuration)
+static void DotnetModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
 {
+    (void)loader;
+
     if (configuration != NULL)
     {
         //Codes_SRS_DOTNET_MODULE_LOADER_04_021: [ DotnetModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationFromJson. ]
@@ -427,8 +439,10 @@ void* DotnetModuleLoader_BuildModuleConfiguration(
     return result;
 }
 
-void DotnetModuleLoader_FreeModuleConfiguration(const void* module_configuration)
+void DotnetModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration)
 {
+    (void)loader;
+
     if (module_configuration != NULL)
     {
         DOTNET_HOST_CONFIG* configuration = (DOTNET_HOST_CONFIG*)module_configuration;

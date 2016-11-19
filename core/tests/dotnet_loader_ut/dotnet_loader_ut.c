@@ -471,7 +471,7 @@ TEST_FUNCTION(DotnetModuleLoader_Load_succeed)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DotnetModuleLoader_Unload(result);
+    DotnetModuleLoader_Unload(IGNORED_PTR_ARG, result);
 }
 
 
@@ -702,7 +702,7 @@ TEST_FUNCTION(DotnetModuleLoader_Load_succeeds_with_custom_binding_path)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DotnetModuleLoader_Unload(result);
+    DotnetModuleLoader_Unload(IGNORED_PTR_ARG, result);
 }
 
 
@@ -711,7 +711,7 @@ TEST_FUNCTION(DotnetModuleLoader_Load_succeeds_with_custom_binding_path)
 TEST_FUNCTION(DotnetModuleLoader_GetModuleApi_returns_NULL_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    const MODULE_API* result = DotnetModuleLoader_GetModuleApi(NULL);
+    const MODULE_API* result = DotnetModuleLoader_GetModuleApi(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -763,14 +763,14 @@ TEST_FUNCTION(DotnetModuleLoader_GetModuleApi_succeeds)
     umock_c_reset_all_calls();
 
     // act
-    const MODULE_API* result = DotnetModuleLoader_GetModuleApi(module);
+    const MODULE_API* result = DotnetModuleLoader_GetModuleApi(IGNORED_PTR_ARG, module);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DotnetModuleLoader_Unload(module);
+    DotnetModuleLoader_Unload(IGNORED_PTR_ARG, module);
 }
 
 
@@ -778,7 +778,7 @@ TEST_FUNCTION(DotnetModuleLoader_GetModuleApi_succeeds)
 TEST_FUNCTION(DotnetModuleLoader_Unload_does_nothing_when_moduleLibraryHandle_is_NULL)
 {
     // act
-    DotnetModuleLoader_Unload(NULL);
+    DotnetModuleLoader_Unload(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -836,7 +836,7 @@ TEST_FUNCTION(DotnetModuleLoader_Unload_frees_things)
         .IgnoreArgument(1);
 
     // act
-    DotnetModuleLoader_Unload(module);
+    DotnetModuleLoader_Unload(IGNORED_PTR_ARG, module);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -847,7 +847,7 @@ TEST_FUNCTION(DotnetModuleLoader_Unload_frees_things)
 TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_is_NULL)
 {
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson(NULL);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -862,7 +862,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
         .SetReturn(JSONArray);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -880,7 +880,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
         .SetReturn(NULL);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -901,7 +901,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
         .SetReturn(NULL);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -922,7 +922,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_mallo
         .SetReturn(NULL);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -953,7 +953,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_
 
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -980,7 +980,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRIN
         .IgnoreArgument(1);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -1012,7 +1012,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRIN
         .IgnoreArgument(1);
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -1038,14 +1038,14 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_succeeds)
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 
     // act
-    void* result = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* result = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DotnetModuleLoader_FreeEntrypoint(result);
+    DotnetModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, result);
 }
 
 
@@ -1054,7 +1054,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_succeeds)
 TEST_FUNCTION(DotnetModuleLoader_FreeEntrypoint_does_nothing_when_entrypoint_is_NULL)
 {
     // act
-    DotnetModuleLoader_FreeEntrypoint(NULL);
+    DotnetModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1077,7 +1077,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeEntrypoint_frees_resources)
         .SetReturn("foo.js");
     STRICT_EXPECTED_CALL(STRING_construct("foo.js"));
 
-    void* entrypoint = DotnetModuleLoader_ParseEntrypointFromJson((const JSON_Value*)0x42);
+    void* entrypoint = DotnetModuleLoader_ParseEntrypointFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
     ASSERT_IS_NOT_NULL(entrypoint);
 
     umock_c_reset_all_calls();
@@ -1090,7 +1090,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeEntrypoint_frees_resources)
         .IgnoreArgument(1);
 
     // act
-    DotnetModuleLoader_FreeEntrypoint(entrypoint);
+    DotnetModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, entrypoint);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1106,7 +1106,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseConfigurationFromJson_returns_NULL_when_ma
         .SetReturn(NULL);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -1127,7 +1127,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseConfigurationFromJson_returns_NULL_when_Mo
         .IgnoreArgument(1);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -1145,21 +1145,21 @@ TEST_FUNCTION(DotnetModuleLoader_ParseConfigurationFromJson_succeeds)
         .SetReturn(MODULE_LOADER_SUCCESS);
 
     // act
-    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
-    DotnetModuleLoader_FreeConfiguration(result);
+    DotnetModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, result);
 }
 
 //Tests_SRS_DOTNET_MODULE_LOADER_04_020: [ DotnetModuleLoader_FreeConfiguration shall do nothing if configuration is NULL. ]
 TEST_FUNCTION(DotnetModuleLoader_FreeConfiguration_does_nothing_when_configuration_is_NULL)
 {
     // act
-    DotnetModuleLoader_FreeConfiguration(NULL);
+    DotnetModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1175,7 +1175,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeConfiguration_frees_resources)
         .IgnoreArgument(1)
         .SetReturn(MODULE_LOADER_SUCCESS);
 
-    MODULE_LOADER_BASE_CONFIGURATION* config = DotnetModuleLoader_ParseConfigurationFromJson((const JSON_Value*)0x42);
+    MODULE_LOADER_BASE_CONFIGURATION* config = DotnetModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
 
     umock_c_reset_all_calls();
 
@@ -1183,7 +1183,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeConfiguration_frees_resources)
     STRICT_EXPECTED_CALL(gballoc_free(config));
 
     // act
-    DotnetModuleLoader_FreeConfiguration(config);
+    DotnetModuleLoader_FreeConfiguration(IGNORED_PTR_ARG, config);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1319,7 +1319,7 @@ TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_succeeds)
     // cleanup
     STRING_delete(entrypoint.dotnetModulePath);
     STRING_delete(entrypoint.dotnetModuleEntryClass);
-    DotnetModuleLoader_FreeModuleConfiguration(result);
+    DotnetModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, result);
 }
 
 
@@ -1327,7 +1327,7 @@ TEST_FUNCTION(DotnetModuleLoader_BuildModuleConfiguration_succeeds)
 TEST_FUNCTION(DotnetModuleLoader_FreeModuleConfiguration_does_nothing_when_module_configuration_is_NULL)
 {
     // act
-    DotnetModuleLoader_FreeModuleConfiguration(NULL);
+    DotnetModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, NULL);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -1366,7 +1366,7 @@ TEST_FUNCTION(DotnetModuleLoader_FreeModuleConfiguration_frees_resources)
         .IgnoreArgument(1);
 
     // act
-    DotnetModuleLoader_FreeModuleConfiguration(result);
+    DotnetModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, result);
 
     // assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());

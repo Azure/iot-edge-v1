@@ -836,13 +836,13 @@ TEST_FUNCTION(Gateway_CreateFromJson_Parses_Valid_JSON_Configuration_File)
 	   STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		   .IgnoreArgument(1)
            .IgnoreArgument(2);
-       STRICT_EXPECTED_CALL(mocks, json_free_serialized_string("[serialized string]"));
+       STRICT_EXPECTED_CALL(mocks, json_free_serialized_string((char*)"[serialized string]"));
        STRICT_EXPECTED_CALL(mocks, VECTOR_element(IGNORED_PTR_ARG, 1))
            .IgnoreArgument(1);
 	   STRICT_EXPECTED_CALL(mocks, DynamicModuleLoader_FreeEntrypoint(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		   .IgnoreArgument(1)
            .IgnoreArgument(2);
-       STRICT_EXPECTED_CALL(mocks, json_free_serialized_string("[serialized string]"));
+       STRICT_EXPECTED_CALL(mocks, json_free_serialized_string((char*)"[serialized string]"));
        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
            .IgnoreArgument(1);
        STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
