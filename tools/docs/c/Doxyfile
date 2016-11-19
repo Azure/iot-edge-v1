@@ -773,7 +773,7 @@ WARN_LOGFILE           =
 
 INPUT                  = mainpage.dox \
              ../../../core/inc/broker.h \
-             ../../../core/inc/dynamic_loader.h \
+             ../../../core/inc/module_loaders/dynamic_loader.h \
              ../../../core/inc/gateway.h \
              ../../../core/inc/message.h \
              ../../../core/inc/module.h \
@@ -848,6 +848,8 @@ EXCLUDE_PATTERNS       =
 # Other unused symbols are ignored as well.
 
 EXCLUDE_SYMBOLS        = *_VALUES \
+             DYNAMIC_LOADER_NAME \
+             pfModuleLoader* \
              BROKER_RESULTStrings \
              BROKER_RESULT_FromString \
              GATEWAY_ADD_LINK_RESULTStrings \
