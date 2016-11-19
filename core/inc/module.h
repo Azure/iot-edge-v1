@@ -178,7 +178,7 @@ extern "C"
      *
      *  @return NULL in failure, MODULE_API* pointer on success.
      */
-    typedef const MODULE_API* (*pfModule_GetApi)(const MODULE_API_VERSION gateway_api_version);
+    typedef const MODULE_API* (*pfModule_GetApi)(MODULE_API_VERSION gateway_api_version);
 
     /** @brief  Returns the module APIS name.*/
 #define MODULE_GETAPI_NAME ("Module_GetApi")
@@ -198,7 +198,7 @@ extern "C"
  *              convention" name. Using the exported function, the caller learns
  *              the functions for the particular module.
  */
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 
 #ifdef __cplusplus
 }

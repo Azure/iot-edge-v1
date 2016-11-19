@@ -147,10 +147,10 @@ void DotNet_Destroy(MODULE_HANDLE module);
 
 **SRS_DOTNET_04_020: [** `DotNet_Destroy` shall free all resources associated with the given module.. **]**
 
-Module_GetAPIs
+Module_GetApi
 --------------
 ```c
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 ```
 
 **SRS_DOTNET_26_001: [** `Module_GetApi` shall return out the provided `MODULES_API` structure with required module's APIs functions. **]**

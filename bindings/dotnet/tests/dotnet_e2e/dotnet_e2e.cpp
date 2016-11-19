@@ -84,7 +84,7 @@ static const MODULE_API_1 E2E_APIS_all =
     NULL
 };
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(const struct MODULE_LOADER_TAG* loader, const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(const struct MODULE_LOADER_TAG* loader, MODULE_API_VERSION gateway_api_version)
 {
     return reinterpret_cast<const MODULE_API *>(&E2E_APIS_all);
 }

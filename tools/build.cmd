@@ -13,6 +13,8 @@ set build-root=%current-path%\..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
+set local-install=%build-root%\install-deps
+
 rem ----------------------------------------------------------------------------
 rem -- parse script arguments
 rem ----------------------------------------------------------------------------
@@ -20,23 +22,25 @@ rem ----------------------------------------------------------------------------
 rem // default build options
 set build-config=Debug
 set build-platform=Win32
+set CMAKE_skip_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set CMAKE_enable_ble_module=ON
-set dependency_install_prefix=""
+set dependency_install_prefix="-Ddependency_install_prefix=%local-install%"
 
 :args-loop
 if "%1" equ "" goto args-done
 if "%1" equ "--config" goto arg-build-config
 if "%1" equ "--platform" goto arg-build-platform
+if "%1" equ "--skip-unittests" goto arg-skip-unittests
 if "%1" equ "--run-e2e-tests" goto arg-run-e2e-tests
 if "%1" equ "--enable-dotnet-binding" goto arg-enable-dotnet-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
-if "%1" equ "--install-dependencies-in-tree" goto arg-install-dependencies-in-tree
+if "%1" equ "--system-deps-path" goto arg-system-deps-path
 
 call :usage && exit /b 1
 
@@ -50,6 +54,10 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
+goto args-continue
+
+:arg-skip-unittests
+set CMAKE_skip_unittests=ON
 goto args-continue
 
 :arg-run-e2e-tests
@@ -74,8 +82,8 @@ goto args-continue
 set enable_nodejs_binding=ON
 goto args-continue
 
-:arg-install-dependencies-in-tree
-set dependency_install_prefix="-Ddependency_install_prefix=%build-root%\install-deps"
+:arg-system-deps-path
+set dependency_install_prefix=""
 goto args-continue
 
 :args-continue
@@ -89,49 +97,37 @@ rem -- build with CMAKE and run tests
 rem -----------------------------------------------------------------------------
 
 rem this is setting the cmake path in a quoted way
-set cmake-root="%build-root%"\build
+set "cmake-root=%build-root%\build"
 
-rem get the size of cmake path
-set cmake-root-no-quotes=%build-root%\build
-set size=0
-:loop
-if defined cmake-root-no-quotes (
-    rem chop down one character
-    set cmake-root-no-quotes=%cmake-root-no-quotes:~1%
-    rem add it to the size
-    set /A size += 1
-    rem go to begin
-    goto loop
-)
-
-rem echo %build-root%\build (%cmake-root%)is %size% characters long!
-if %size% GTR 49 (
-    @echo build.cmd cannot continue because the path %build-root%\build is too long!
-    @echo try placing the repo in a shorter path. the path size can be at most 49 characters
-    exit /b 1
-)
-
+echo Cleaning up build artifacts...
 rmdir /s/q %cmake-root%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+
+git submodule foreach --recursive --quiet "rm -rf build/"
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 mkdir %cmake-root%
-rem no error checking
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake %dependency_install_prefix% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
+        cmake %dependency_install_prefix% -Dskip_unittests:BOOL=%CMAKE_skip_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake %dependency_install_prefix% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
+        cmake %dependency_install_prefix% -Dskip_unittests:BOOL=%CMAKE_skip_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
+if "%CMAKE_skip_unittests%"=="ON" if "%CMAKE_run_e2e_tests%"=="OFF" goto skip-tests
+
 ctest -C "debug" -V
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+:skip-tests
 
 popd
 goto :eof
@@ -143,13 +139,19 @@ rem ----------------------------------------------------------------------------
 :usage
 echo build.cmd [options]
 echo options:
-echo  --config ^<value^>                [Debug] build configuration (e.g. Debug, Release)
-echo  --platform ^<value^>              [Win32] build platform (e.g. Win32, x64, ...)
-echo  --run-e2e-tests                   run end-to-end tests
-echo  --enable-dotnet-binding           build dotnet binding binaries
-echo  --enable-java-binding             enables building of Java binding; environment variable JAVA_HOME must be defined
-echo  --enable-nodejs-binding           enables building of Node.js binding; environment variables NODE_INCLUDE and NODE_LIB must be defined
-echo  --disable-ble-module              disable ble module from the build.
-echo  --install-dependencies-in-tree    tells cmake to install all dependencies within the repo 
+echo  --config value            Build configuration (e.g. [Debug], Release)
+echo  --platform value          Build platform (e.g. [Win32], x64, ...)
+echo  --skip-unittests          Do not build/run unit tests
+echo  --run-e2e-tests           Build/run end-to-end tests
+echo  --enable-dotnet-binding   Build the .NET binding
+echo  --enable-java-binding     Build the Java binding
+echo                            (JAVA_HOME must be defined in your environment)
+echo  --enable-nodejs-binding   Build Node.js binding
+echo                            (NODE_INCLUDE, NODE_LIB must be defined)
+echo  --disable-ble-module      Do not build the BLE module
+echo  --system-deps-path        Search for dependencies in a system-level location,
+echo                            e.g. "C:\Program Files (x86)", and install if not
+echo                            found. When this option is omitted the path is
+echo                            %local-install%.
 goto :eof
 

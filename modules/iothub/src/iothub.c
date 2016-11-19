@@ -718,9 +718,9 @@ static const MODULE_API_1 moduleInterface =
 
 /*Codes_SRS_IOTHUBMODULE_26_001: [ `Module_GetApi` shall return a pointer to a `MODULE_API` structure with the required function pointers. ]*/
 #ifdef BUILD_MODULE_TYPE_STATIC
-MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IOTHUB_MODULE)(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IOTHUB_MODULE)(MODULE_API_VERSION gateway_api_version)
 #else
-MODULE_EXPORT const MODULE_API* Module_GetApi(const MODULE_API_VERSION gateway_api_version)
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version)
 #endif
 {
     (void)gateway_api_version;

@@ -5,8 +5,7 @@
 
 toolchain_root="/opt/windriver/wrlinux/7.0-intel-baytrail-64"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
-
-dependency_install_prefix=
+local_install=$build_root/install-deps
 
 cd $build_root
 
@@ -14,8 +13,7 @@ usage ()
 {
     echo "windriver_linux_c.sh [options]"
     echo "options"
-    echo " --toolchain              set the toolchain directory location"
-    echo " --install-dependencies-in-tree       tells cmake to install all dependencies within the repo "
+    echo " --toolchain      Set the toolchain directory location"
     exit 1
 }
 
@@ -34,7 +32,6 @@ process_args ()
       else
           case "$arg" in
               "--toolchain" ) save_next_arg=1;;
-              "--install-dependencies-in-tree" ) dependency_install_prefix="-Ddependency_install_prefix=$build_root/install-deps";;
               * ) usage;;
           esac
       fi
@@ -47,7 +44,7 @@ process_args $*
 # -- How to build Wind River Linux for our project:
 # 1.    Acquire the Wind River Linux toolchain installer (licensed software)
 # 2.    Make sure the installer is executable and run it from the console to
-#        extract the toolchain (example): 
+#       extract the toolchain (example):
 # ./wrlinux-7.0.0.13-glibc-x86_64-intel_baytrail_64-wrlinux-image-idp-sdk.sh
 # 3.    By default, will install to a directory like:
 #           /opt/windriver/wrlinux/7.0-intel-baytrail-64
@@ -110,7 +107,7 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake $dependency_install_prefix -DCMAKE_BUILD_TYPE=Debug -Dskip_unittests:BOOL=ON -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cmake -Ddependency_install_prefix=$local_install -DCMAKE_BUILD_TYPE=Debug -Dskip_unittests:BOOL=ON -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)

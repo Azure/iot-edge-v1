@@ -4,9 +4,13 @@ Bluetooth Low Energy Telemetry Sample for Azure IoT Gateway SDK
 Overview
 --------
 
-This sample showcases how one might build an IoT Gateway that interacts with a 
-Bluetooth Low Energy (BLE) device using the Azure IoT Gateway SDK. The sample 
-contains the following modules:
+This sample showcases how one can build an IoT Gateway that interacts with a 
+Bluetooth Low Energy (BLE) device using the Azure IoT Gateway SDK. A more in
+depth [walkthrough](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-gateway-sdk-physical-device) 
+with concept explanations and code snippets can be found on 
+[docs.microsoft.com](https://docs.microsoft.com/en-us/azure/iot-hub/).
+
+The sample contains the following modules:
 
   1. A Bluetooth Low Energy (BLE) module that interfaces with the BLE device to
      read temperature data.
@@ -23,7 +27,7 @@ How does the data flow through the Gateway
 
 The telemetry upload data flow pipeline is best described via a block diagram:
 
-![](./media/ACOM/gateway_ble_upload_data_flow.png)
+![](../../doc/media/ACOM/gateway_ble_upload_data_flow.png)
 
 Here's the journey that a piece of telemetry data takes originating from a BLE
 device before finding its way to an Azure IoT Hub.
@@ -46,7 +50,7 @@ device before finding its way to an Azure IoT Hub.
 The cloud to device command data flow pipeline is described via a block diagram
 below:
 
-![](./media/ACOM/gateway_ble_command_data_flow.png)
+![](../../doc/media/ACOM/gateway_ble_command_data_flow.png)
 
   1. The IotHub module periodically polls Azure IoT Hub for new command
      messages that might be available.
@@ -63,17 +67,17 @@ Building the sample
 
 At this point, gateways containing BLE modules are only supported on Linux. The
 sample gets built when you build the SDK by running `tools/build.sh`.  The
-[devbox setup](devbox_setup.md) guide has information on how you can build the
+[devbox setup](../../doc/devbox_setup.md) guide has information on how you can build the
 SDK.
 
 Preparing your BLE device
 -------------------------
 
 This sample has been tested with the [Texas Instruments SensorTag](http://www.ti.com/ww/en/wireless_connectivity/sensortag2015/index.html)
-device on an Intel Edison board. Before running the sample you'll want to
+device on a Raspberry Pi 3. Before running the sample you'll want to
 prepare the device by following the instructions in the article that talks about
-[connecting a BLE device on the Intel Edison](./connecting_to_ble_device_on_intel_edison.md).
-Though the article talks about Intel Edison in particular it should be possible
+[connecting a BLE device on the Raspberry Pi 3](./connecting_to_ble_device_on_rpi3.md).
+Though the article talks about Raspberry Pi 3 in specific, it should be possible
 to adapt the instructions to any arbitrary device that supports BLE and
 runs Linux.
 
@@ -88,10 +92,11 @@ starting point for building your own configuration file. You should find the
 file at the path `samples/ble_gateway/src` relative to the root of the repo.
 
 In order to run the sample you'll run the `ble_gateway` binary passing the
-path to the configuration JSON file.
+path to the configuration JSON file. The following command assumes that you are
+running the the executable from the root of the repo.
 
 ```
-ble_gateway <<path to the configuration JSON>>
+./build/samples/ble_gateway/ble_gateway ./samples/ble_gateway/src/gateway_sample.json
 ```
 
 Template configuration JSONs are given below for all the modules that are a part
@@ -104,14 +109,17 @@ IDs and data (for write instructions).
 
 ```json
 {
-    "module name": "logger",
-    "loading args" : {
-      "module path": "<</path/to/liblogger.so>>"
-    },
-    "args":
-    {
-        "filename":"/path/to/log-file-name.log"
+  "name": "Logger",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path" : "build/modules/logger/liblogger.so"
     }
+  },
+  "args":
+  {
+    "filename": "<</path/to/log-file.log>>"
+  }
 }
 ```
 
@@ -119,9 +127,12 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "BLE Device",
-  "loading args" : {
-    "module path": "<</path/to/libble.so>>"
+  "name": "SensorTag",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/ble/libble.so"
+    }
   },
   "args": {
     "controller_index": 0,
@@ -175,13 +186,17 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "IoTHub",
-  "loading args" : {
-    "module path": "<</path/to/iothub/libiothub.so>>"
+  "name": "IoTHub",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/iothub/libiothub.so"
+    }
   },
   "args": {
     "IoTHubName": "<<Azure IoT Hub Name>>",
-    "IoTHubSuffix": "<<Azure IoT Hub Suffix>>"
+    "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
+    "Transport" : "amqp"
   }
 }
 ```
@@ -190,9 +205,12 @@ IDs and data (for write instructions).
 
 ```json
 {
-  "module name": "mapping",
-  "loading args" : {
-    "module path": "<</path/to/libidentity_map.so>>"
+  "name": "mapping",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/identitymap/libidentity_map.so"
+    }
   },
   "args": [
     {
@@ -208,11 +226,29 @@ IDs and data (for write instructions).
 
 ```json
 {
-    "module name": "BLE Printer",
-    "loading args" : {
-      "module path": "<</path/to/libble_printer.so"
-    },
-    "args": null
+  "name": "BLE Printer",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/samples/ble_gateway/ble_printer/libble_printer.so"
+    }
+  },
+  "args": null
+}
+```
+
+### BLEC2D module configuration
+
+```json
+{
+  "name": "BLEC2D",
+  "loader": {
+    "name" : "native",
+    "entrypoint" : {
+      "module.path": "build/modules/ble/libble_c2d.so"
+    }
+  },
+  "args": null
 }
 ```
 
@@ -223,12 +259,13 @@ The BLE module also supports sending of instructions from the Azure IoT Hub to
 the device. You should be able to use the
 [Azure IoT Hub Device Explorer](https://github.com/Azure/azure-iot-sdks/blob/master/tools/DeviceExplorer/doc/how_to_use_device_explorer.md) or the [IoT Hub Explorer](https://github.com/Azure/azure-iot-sdks/tree/master/tools/iothub-explorer)
 to craft and send JSON messages that are handled and passed on to the BLE device
-by the BLE module. For example, if you were using a Texas Instruments SensorTag
-device then you'd send the following sequence of JSON messages to the device
-via IoT Hub to cause the red LED on the SensorTag to light up:
+by the BLE module. If you are using the Texas Instruments SensorTag device then you 
+can turn on the red LED, green LED, or buzzer by sending commands from IoT Hub. To 
+do this, first send the following two JSON messages in order. Then you can send any 
+of the commands to turn on the lights or buzzer.
 
-  - Reset all LEDs and the buzzer (turn them off)
-
+1. Reset all LEDs and the buzzer (turn them off)
+  
     ```json
     {
       "type": "write_once",
@@ -237,7 +274,7 @@ via IoT Hub to cause the red LED on the SensorTag to light up:
     }
     ```
 
-  - Configure I/O as 'remote'
+2. Configure I/O as 'remote'
 
     ```json
     {
@@ -247,12 +284,30 @@ via IoT Hub to cause the red LED on the SensorTag to light up:
     }
     ```
 
-  - Turn on red LED
+   - Turn on red LED
 
     ```json
     {
       "type": "write_once",
       "characteristic_uuid": "F000AA65-0451-4000-B000-000000000000",
       "data": "AQ=="
+    }
+    ```
+
+    - Turn on green LED
+    ```json
+    {
+      "type": "write_once",
+      "characteristic_uuid": "F000AA65-0451-4000-B000-000000000000",
+      "data": "Ag=="
+    }
+    ```
+
+    - Turn on the buzzer
+    ```json
+    {
+      "type": "write_once",
+      "characteristic_uuid": "F000AA65-0451-4000-B000-000000000000",
+      "data": "BA=="
     }
     ```

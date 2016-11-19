@@ -3,9 +3,9 @@
     {
       "name": "IoTHub",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/libiothub.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/iothub/libiothub.so"
         }
       },
       "args": {
@@ -17,9 +17,9 @@
     {
       "name": "BLE Printer",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/libble_printer.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/samples/ble_gateway/ble_printer/libble_printer.so"
         }
       },
       "args": null
@@ -27,9 +27,9 @@
     {
       "name": "mapping",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/libidentity_map.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/identitymap/libidentity_map.so"
         }
       },
       "args": [
@@ -43,9 +43,9 @@
     {
       "name": "BLEC2D",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/libble_c2d.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/ble/libble_c2d.so"
         }
       },
       "args": null
@@ -53,9 +53,9 @@
     {
       "name": "SensorTag",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/libble.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path": "build/modules/ble/libble.so"
         }
       },
       "args": {
@@ -107,9 +107,9 @@
     {
       "name": "Logger",
       "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "<</path/to/liblogger.so>>"
+        "name" : "native",
+        "entrypoint" : {
+          "module.path" : "build/modules/logger/liblogger.so"
         }
       },
       "args": {
