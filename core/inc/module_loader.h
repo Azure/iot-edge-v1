@@ -38,6 +38,8 @@ struct MODULE_LOADER_TAG;
  */
 typedef struct MODULE_LOADER_BASE_CONFIGURATION_TAG
 {
+    /** @brief  The path to the native binding module. 
+     */
     STRING_HANDLE binding_path;
 } MODULE_LOADER_BASE_CONFIGURATION;
 
@@ -103,6 +105,9 @@ typedef struct MODULE_LOADER_API_TAG
     DOTNET,     \
     NODEJS     
 
+/**
+ * @brief Enumeration listing all supported module loaders
+ */
 DEFINE_ENUM(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 
 
@@ -130,6 +135,9 @@ typedef struct MODULE_LOADER_TAG
     MODULE_LOADER_SUCCESS, \
     MODULE_LOADER_ERROR
 
+/**
+ * @brief   Enumeration describing the result of module loader APIs
+ */
 DEFINE_ENUM(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
 
 /**
