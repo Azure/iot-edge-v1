@@ -4,6 +4,6 @@ This document provides everything one might need to use and understand the Java 
 
 ##Contents
 
-1. [**Dev box setup** - steps necessary to build modules in Java and run samples](../../doc/java_devbox_setup.md)
+1. [**Dev box setup** - steps necessary to build modules in Java and run samples](../../samples/java_sample/java_devbox_setup.md)
 2. [**High Level Design** - detailed description of the Java binding mechanism](devdoc/java_binding_hld.md)
-3. [**How-To Guide** - guide on how to write your own Java modules](../../samples/java_samples)
+3. [**How-To Guide** - guide on how to write your own Java modules](../../samples/java_sample)
