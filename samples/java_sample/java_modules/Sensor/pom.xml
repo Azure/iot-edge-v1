@@ -3,13 +3,13 @@
 
     <groupId>com.microsoft.azure.gateway</groupId>
     <artifactId>sample-sensor-module</artifactId>
-    <version>0.0.3</version>
+    <version>1.0.0</version>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure.gateway</groupId>
             <artifactId>gateway-java-binding</artifactId>
-            <version>0.0.3</version>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

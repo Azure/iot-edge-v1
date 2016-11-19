@@ -4,6 +4,6 @@
 #ifndef GATEWAY_VERSION_H
 #define GATEWAY_VERSION_H
 
-#define VERSION         "0.0.2"
+#define VERSION         "1.0.0"
 
 #endif //GATEWAY_VERSION_H

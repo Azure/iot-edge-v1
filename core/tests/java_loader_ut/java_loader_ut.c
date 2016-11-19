@@ -1643,15 +1643,15 @@ TEST_FUNCTION(JavaModuleLoader_ParseConfigurationFromJson_sets_missing_fields)
     ASSERT_IS_NOT_NULL(result);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 #ifdef _WIN64
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-0.0.2\\lib\\modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-0.0.2\\lib\\bindings\\java\\classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-1.0.0\\lib\\modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-1.0.0\\lib\\bindings\\java\\classes", options->class_path);
 #else
 #ifdef WIN32
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-0.0.2\\lib\\modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-0.0.2\\lib\\bindings\\java\\classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-1.0.0\\lib\\modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-1.0.0\\lib\\bindings\\java\\classes", options->class_path);
 #else
-    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-0.0.2/modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-0.0.2/bindings/java/classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-1.0.0/modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-1.0.0/bindings/java/classes", options->class_path);
 #endif
 #endif
     ASSERT_ARE_EQUAL(int, 0, options->version);
@@ -2256,15 +2256,15 @@ TEST_FUNCTION(JavaLoader_Get_success)
     ASSERT_IS_TRUE(loader->type == JAVA);
     ASSERT_ARE_EQUAL(char_ptr, "java", loader->name);
 #ifdef _WIN64
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-0.0.2\\lib\\modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-0.0.2\\lib\\bindings\\java\\classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-1.0.0\\lib\\modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files\\azure_iot_gateway_sdk-1.0.0\\lib\\bindings\\java\\classes", options->class_path);
 #else
 #ifdef WIN32
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-0.0.2\\lib\\modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-0.0.2\\lib\\bindings\\java\\classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-1.0.0\\lib\\modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "C:\\Program Files (x86)\\azure_iot_gateway_sdk-1.0.0\\lib\\bindings\\java\\classes", options->class_path);
 #else
-    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-0.0.2/modules", options->library_path);
-    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-0.0.2/bindings/java/classes", options->class_path);
+    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-1.0.0/modules", options->library_path);
+    ASSERT_ARE_EQUAL(char_ptr, "/usr/local/lib/azure_iot_gateway_sdk-1.0.0/bindings/java/classes", options->class_path);
 #endif
 #endif
     ASSERT_ARE_EQUAL(int, 0, options->version);
