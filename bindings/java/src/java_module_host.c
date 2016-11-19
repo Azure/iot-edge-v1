@@ -472,24 +472,24 @@ static void* JavaModuleHost_ParseConfigurationFromJson(const char* configuration
 {
     char* config_str; 
 
-    /*CODES_SRS_JAVA_MODULE_HOST_14_028: [This function shall allocate memory for the configuration parameter and copy it.]*/
+    /*Codes_SRS_JAVA_MODULE_HOST_14_028: [This function shall allocate memory for the configuration parameter and copy it.]*/
     if (mallocAndStrcpy_s(&config_str, configuration) != 0)
     {
-        /*CODES_SRS_JAVA_MODULE_HOST_14_055: [This function shall return NULL if any underlying platform call fails.]*/
+        /*Codes_SRS_JAVA_MODULE_HOST_14_055: [This function shall return NULL if any underlying platform call fails.]*/
         config_str = NULL;
     }
 
-    /*CODES_SRS_JAVA_MODULE_HOST_14_056: [This function shall return a non - NULL const char* configuration string when successful.]*/
+    /*Codes_SRS_JAVA_MODULE_HOST_14_056: [This function shall return a non - NULL const char* configuration string when successful.]*/
     return config_str;
 
 }
 
 static void JavaModuleHost_FreeConfiguration(void* configuration)
 {
-    /*CODES_SRS_JAVA_MODULE_HOST_14_057: [ This function shall do nothing if configuration is NULL. ]*/
+    /*Codes_SRS_JAVA_MODULE_HOST_14_057: [ This function shall do nothing if configuration is NULL. ]*/
     if (configuration != NULL)
     {
-        /*CODES_SRS_JAVA_MODULE_HOST_14_058: [ This function shall free the configuration. ]*/
+        /*Codes_SRS_JAVA_MODULE_HOST_14_058: [ This function shall free the configuration. ]*/
         free((char*)configuration);
     }
 }

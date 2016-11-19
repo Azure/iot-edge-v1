@@ -1050,7 +1050,7 @@ TEST_FUNCTION(DotnetModuleLoader_ParseEntrypointFromJson_succeeds)
 
 
 
-//Codes_SRS_DOTNET_MODULE_LOADER_04_016: [ DotnetModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL. ]
+//Tests_SRS_DOTNET_MODULE_LOADER_04_016: [ DotnetModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL. ]
 TEST_FUNCTION(DotnetModuleLoader_FreeEntrypoint_does_nothing_when_entrypoint_is_NULL)
 {
     // act

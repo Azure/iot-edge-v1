@@ -44,7 +44,7 @@ static JAVA_LOADER_CONFIGURATION* create_default_config();
 static DYNAMIC_LIBRARY_HANDLE JavaModuleLoader_LoadBindingModule(const MODULE_LOADER* loader)
 {
     DYNAMIC_LIBRARY_HANDLE result;
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_005: [JavaModuleLoader_Load shall use the binding module path given in loader->configuration->binding_path if loader->configuration is not NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_005: [JavaModuleLoader_Load shall use the binding module path given in loader->configuration->binding_path if loader->configuration is not NULL.]*/
     if (loader == NULL)
     {
         result = NULL;
@@ -80,7 +80,7 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
 {
     JAVA_MODULE_HANDLE_DATA* result;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_001: [JavaModuleLoader_Load shall return NULL if loader is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_001: [JavaModuleLoader_Load shall return NULL if loader is NULL.]*/
     if (loader == NULL)
     {
         result = NULL;
@@ -88,7 +88,7 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_002: [JavaModuleLoader_Load shall return NULL if loader->type is not JAVA.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_002: [JavaModuleLoader_Load shall return NULL if loader->type is not JAVA.]*/
         if (loader->type != JAVA)
         {
             result = NULL;
@@ -98,14 +98,14 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
         {
             result = (JAVA_MODULE_HANDLE_DATA*)malloc(sizeof(JAVA_MODULE_HANDLE_DATA));
 
-            /*CODES_SRS_JAVA_MODULE_LOADER_14_003: [JavaModuleLoader_Load shall return NULL if an underlying platform call fails.]*/
+            /*Codes_SRS_JAVA_MODULE_LOADER_14_003: [JavaModuleLoader_Load shall return NULL if an underlying platform call fails.]*/
             if (result == NULL)
             {
                 LogError("malloc returned NULL");
             }
             else
             {
-                /*CODES_SRS_JAVA_MODULE_LOADER_14_004: [JavaModuleLoader_Load shall load the binding module library into memory by calling DynamicLibrary_LoadLibrary.]*/
+                /*Codes_SRS_JAVA_MODULE_LOADER_14_004: [JavaModuleLoader_Load shall load the binding module library into memory by calling DynamicLibrary_LoadLibrary.]*/
                 result->binding_module = JavaModuleLoader_LoadBindingModule(loader);
                 if (result->binding_module == NULL)
                 {
@@ -115,7 +115,7 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
                 }
                 else
                 {
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_006: [JavaModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the module's API table. ]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_006: [JavaModuleLoader_Load shall call DynamicLibrary_FindSymbol on the binding module handle with the symbol name Module_GetApi to acquire the module's API table. ]*/
                     pfModule_GetApi pfnGetAPI = (pfModule_GetApi)DynamicLibrary_FindSymbol(result->binding_module, MODULE_GETAPI_NAME);
                     if (pfnGetAPI == NULL)
                     {
@@ -128,11 +128,11 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
                     {
                         result->api = pfnGetAPI(Module_ApiGatewayVersion);
 
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_008: [JavaModuleLoader_Load shall return NULL if MODULE_API returned by the binding module is NULL.]*/
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_009: [JavaModuleLoader_Load shall return NULL if MODULE_API::version is great than Module_ApiGatewayVersion.]*/
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_010: [JavaModuleLoader_Load shall return NULL if the Module_Create function in MODULE_API is NULL.]*/
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_011: [JavaModuleLoader_Load shall return NULL if the Module_Receive function in MODULE_API is NULL.]*/
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_012: [JavaModuleLoader_Load shall return NULL if the Module_Destroy function in MODULE_API is NULL.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_008: [JavaModuleLoader_Load shall return NULL if MODULE_API returned by the binding module is NULL.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_009: [JavaModuleLoader_Load shall return NULL if MODULE_API::version is great than Module_ApiGatewayVersion.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_010: [JavaModuleLoader_Load shall return NULL if the Module_Create function in MODULE_API is NULL.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_011: [JavaModuleLoader_Load shall return NULL if the Module_Receive function in MODULE_API is NULL.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_012: [JavaModuleLoader_Load shall return NULL if the Module_Destroy function in MODULE_API is NULL.]*/
                         if (result->api == NULL ||
                             result->api->version > Module_ApiGatewayVersion ||
                             MODULE_CREATE(result->api) == NULL ||
@@ -150,7 +150,7 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
         }
     }
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_007: [JavaModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_007: [JavaModuleLoader_Load shall return a non - NULL pointer of type MODULE_LIBRARY_HANDLE when successful.]*/
     return result;
 }
 
@@ -158,7 +158,7 @@ static const MODULE_API* JavaModuleLoader_GetModuleApi(const MODULE_LOADER* load
 {
     (void)loader;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_013: [JavaModuleLoader_GetModuleApi shall return NULL if moduleLibraryHandle is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_013: [JavaModuleLoader_GetModuleApi shall return NULL if moduleLibraryHandle is NULL.]*/
     const MODULE_API* result;
     if (moduleLibraryHandle == NULL)
     {
@@ -167,7 +167,7 @@ static const MODULE_API* JavaModuleLoader_GetModuleApi(const MODULE_LOADER* load
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_014: [JavaModuleLoader_GetModuleApi shall return a non - NULL MODULE_API pointer when successful.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_014: [JavaModuleLoader_GetModuleApi shall return a non - NULL MODULE_API pointer when successful.]*/
         JAVA_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
         result = loader_data->api;
     }
@@ -179,18 +179,18 @@ static void JavaModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_
 {
     (void)loader;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_015: [JavaModuleLoader_Unload shall do nothing if moduleLibraryHandle is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_015: [JavaModuleLoader_Unload shall do nothing if moduleLibraryHandle is NULL.]*/
     if (moduleLibraryHandle == NULL)
     {
         LogError("moduleLibraryHandle is NULL.");
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_016: [JavaModuleLoader_Unload shall unload the binding module from memory by calling DynamicLibrary_UnloadLibrary.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_016: [JavaModuleLoader_Unload shall unload the binding module from memory by calling DynamicLibrary_UnloadLibrary.]*/
         JAVA_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
         DynamicLibrary_UnloadLibrary(loader_data->binding_module);
 
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_017: [JavaModuleLoader_Unload shall free resources allocated when loading the binding module.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_017: [JavaModuleLoader_Unload shall free resources allocated when loading the binding module.]*/
         free(loader_data);
     }
 }
@@ -199,7 +199,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
 {
     JAVA_LOADER_ENTRYPOINT* entrypoint;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_043: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader is NULL. ]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_043: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader is NULL. ]*/
     if (loader == NULL)
     {
         entrypoint = NULL;
@@ -207,7 +207,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_018: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if json is NULL.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_018: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if json is NULL.]*/
         if (json == NULL)
         {
             entrypoint = NULL;
@@ -215,8 +215,8 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
         }
         else
         {
-            /*CODES_SRS_JAVA_MODULE_LOADER_14_059: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader->configuration.]*/
-            /*CODES_SRS_JAVA_MODULE_LOADER_14_060: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader->configuration->options is NULL.]*/
+            /*Codes_SRS_JAVA_MODULE_LOADER_14_059: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader->configuration.]*/
+            /*Codes_SRS_JAVA_MODULE_LOADER_14_060: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if loader->configuration->options is NULL.]*/
             if (CONFIGURATION == NULL || CONFIGURATION->options == NULL)
             {
                 entrypoint = NULL;
@@ -224,7 +224,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
             }
             else
             {
-                /*CODES_SRS_JAVA_MODULE_LOADER_14_019: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if the root json entity is not an object.]*/
+                /*Codes_SRS_JAVA_MODULE_LOADER_14_019: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if the root json entity is not an object.]*/
                 if (json_value_get_type(json) != JSONObject)
                 {
                     entrypoint = NULL;
@@ -240,31 +240,31 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
                     }
                     else
                     {
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_021: [JavaModuleLoader_ParseEntrypointFromJson shall retreive the fully qualified class name by reading the value of the attribute class.name.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_021: [JavaModuleLoader_ParseEntrypointFromJson shall retreive the fully qualified class name by reading the value of the attribute class.name.]*/
                         const char* className = json_object_get_string(entrypoint_json, ENTRYPOINT_CLASSNAME);
                         if (className == NULL)
                         {
-                            /*CODES_SRS_JAVA_MODULE_LOADER_14_058: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if either class.name or class.path is non-existent. ]*/
+                            /*Codes_SRS_JAVA_MODULE_LOADER_14_058: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if either class.name or class.path is non-existent. ]*/
                             entrypoint = NULL;
                             LogError("json_object_get_string for '%s' failed.", ENTRYPOINT_CLASSNAME);
                         }
                         else
                         {
-                            /*CODES_SRS_JAVA_MODULE_LOADER_14_022: [JavaModuleLoader_ParseEntrypointFromJson shall retreive the full class path containing the class definition for the module by reading the value of the attribute class.path.]*/
+                            /*Codes_SRS_JAVA_MODULE_LOADER_14_022: [JavaModuleLoader_ParseEntrypointFromJson shall retreive the full class path containing the class definition for the module by reading the value of the attribute class.path.]*/
                             const char* classPath = json_object_get_string(entrypoint_json, ENTRYPOINT_CLASSPATH);
                             if (classPath == NULL)
                             {
-                                /*CODES_SRS_JAVA_MODULE_LOADER_14_058: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if either class.name or class.path is non-existent. ]*/
+                                /*Codes_SRS_JAVA_MODULE_LOADER_14_058: [ JavaModuleLoader_ParseEntrypointFromJson shall return NULL if either class.name or class.path is non-existent. ]*/
                                 entrypoint = NULL;
                                 LogError("json_object_get_string for '%s' failed.", ENTRYPOINT_CLASSPATH);
                             }
                             else
                             {
-                                /*CODES_SRS_JAVA_MODULE_LOADER_14_023: [JavaModuleLoader_ParseEntrypointFromJson shall return a non - NULL pointer to the parsed representation of the entrypoint when successful.]*/
+                                /*Codes_SRS_JAVA_MODULE_LOADER_14_023: [JavaModuleLoader_ParseEntrypointFromJson shall return a non - NULL pointer to the parsed representation of the entrypoint when successful.]*/
                                 entrypoint = (JAVA_LOADER_ENTRYPOINT*)malloc(sizeof(JAVA_LOADER_ENTRYPOINT));
                                 if (entrypoint == NULL)
                                 {
-                                    /*CODES_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
+                                    /*Codes_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
                                     LogError("malloc failed.");
                                 }
                                 else
@@ -272,7 +272,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
                                     entrypoint->className = STRING_construct(className);
                                     if (entrypoint->className == NULL)
                                     {
-                                        /*CODES_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
+                                        /*Codes_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
                                         free(entrypoint);
                                         entrypoint = NULL;
                                         LogError("STRING_construct for %s failed.", className);
@@ -282,7 +282,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
                                         entrypoint->classPath = STRING_construct(classPath);
                                         if (entrypoint->classPath == NULL)
                                         {
-                                            /*CODES_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
+                                            /*Codes_SRS_JAVA_MODULE_LOADER_14_020: [JavaModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails.]*/
                                             STRING_delete(entrypoint->className);
                                             free(entrypoint);
                                             entrypoint = NULL;
@@ -290,7 +290,7 @@ static void* JavaModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loade
                                         }
                                         else
                                         {
-                                            /*CODES_SRS_JAVA_MODULE_LOADER_14_044: [ JavaModuleLoader_ParseEntrypointFromJson shall append the classpath to the loader's configuration JVM_OPTIONS class_path member.]*/
+                                            /*Codes_SRS_JAVA_MODULE_LOADER_14_044: [ JavaModuleLoader_ParseEntrypointFromJson shall append the classpath to the loader's configuration JVM_OPTIONS class_path member.]*/
                                             STRING_HANDLE cp = STRING_construct(CONFIGURATION->options->class_path);
                                             if (cp == NULL)
                                             {
@@ -367,14 +367,14 @@ static void JavaModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* e
 {
     (void)loader;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_024: [JavaModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_024: [JavaModuleLoader_FreeEntrypoint shall do nothing if entrypoint is NULL.]*/
     if (entrypoint == NULL)
     {
         LogError("entrypoint is NULL.");
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_025: [JavaModuleLoader_FreeEntrypoint shall free resources allocated during JavaModuleLoader_ParseEntrypointFromJson.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_025: [JavaModuleLoader_FreeEntrypoint shall free resources allocated during JavaModuleLoader_ParseEntrypointFromJson.]*/
         JAVA_LOADER_ENTRYPOINT* ep = (JAVA_LOADER_ENTRYPOINT*)entrypoint;
         STRING_delete(ep->className);
         STRING_delete(ep->classPath);
@@ -388,7 +388,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
 
     JAVA_LOADER_CONFIGURATION* config;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_026: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if json is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_026: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if json is NULL.]*/
     if (json == NULL)
     {
         LogError("json is NULL.");
@@ -396,7 +396,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_027: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if json is not a valid JSON object.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_027: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if json is not a valid JSON object.]*/
         JSON_Object* object = json_value_get_object(json);
         if (object == NULL)
         {
@@ -420,31 +420,31 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
                 }
                 else
                 {
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_029: [JavaModuleLoader_ParseConfigurationFromJson shall set any missing field to NULL, false, or 0.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_030: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options JSON object and initialize a new JAVA_LOADER_CONFIGURATION.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_031: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.library.path.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_032: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.version.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_033: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.debug.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_034: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.debug.port.]*/
-                    /*CODES_SRS_JAVA_MODULE_LOADER_14_035: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.additional.options object and create a new STRING_HANDLE for each.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_029: [JavaModuleLoader_ParseConfigurationFromJson shall set any missing field to NULL, false, or 0.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_030: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options JSON object and initialize a new JAVA_LOADER_CONFIGURATION.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_031: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.library.path.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_032: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.version.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_033: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.debug.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_034: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.debug.port.]*/
+                    /*Codes_SRS_JAVA_MODULE_LOADER_14_035: [JavaModuleLoader_ParseConfigurationFromJson shall parse the jvm.options.additional.options object and create a new STRING_HANDLE for each.]*/
                     JVM_OPTIONS* jvm_options = parse_jvm_config(options_object);
                     if (jvm_options == NULL)
                     {
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_036: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any present field cannot be parsed.]*/
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_036: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any present field cannot be parsed.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
                         free(config);
                         config = NULL;
                         LogError("could not create the JVM_OPTIONS structure.");
                     }
                     else
                     {
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_038: [JavaModuleLoader_ParseConfigurationFromJson shall set the options member of the JAVA_LOADER_CONFIGURATION to the parsed JVM_OPTIONS structure.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_038: [JavaModuleLoader_ParseConfigurationFromJson shall set the options member of the JAVA_LOADER_CONFIGURATION to the parsed JVM_OPTIONS structure.]*/
                         ((JAVA_LOADER_CONFIGURATION*)(config))->options = jvm_options;
 
-                        /*CODES_SRS_JAVA_MODULE_LOADER_14_039: [JavaModuleLoader_ParseConfigurationFromJson shall set the base member of the JAVA_LOADER_CONFIGURATION by calling to the base module loader.]*/
+                        /*Codes_SRS_JAVA_MODULE_LOADER_14_039: [JavaModuleLoader_ParseConfigurationFromJson shall set the base member of the JAVA_LOADER_CONFIGURATION by calling to the base module loader.]*/
                         if (ModuleLoader_ParseBaseConfigurationFromJson(&((JAVA_LOADER_CONFIGURATION*)(config))->base, json) != MODULE_LOADER_SUCCESS)
                         {
-                            /*CODES_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
+                            /*Codes_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
                             free_jvm_config(((JAVA_LOADER_CONFIGURATION*)(config))->options);
                             free(config);
                             config = NULL;
@@ -462,8 +462,8 @@ static MODULE_LOADER_BASE_CONFIGURATION* JavaModuleLoader_ParseConfigurationFrom
         }
     }
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_037: [JavaModuleLoader_ParseConfigurationFromJson shall return a non - NULL JAVA_LOADER_CONFIGURATION containing all user - specified values.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_028: [JavaModuleLoader_ParseConfigurationFromJson shall return NULL if any underlying platform call fails.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_037: [JavaModuleLoader_ParseConfigurationFromJson shall return a non - NULL JAVA_LOADER_CONFIGURATION containing all user - specified values.]*/
 
     return (MODULE_LOADER_BASE_CONFIGURATION*)config;
 }
@@ -474,16 +474,16 @@ static void JavaModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODU
 
     if (configuration != NULL)
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_041: [JavaModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationJson.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_041: [JavaModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationJson.]*/
         ModuleLoader_FreeBaseConfiguration(configuration);
 
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_042: [JavaModuleLoader_FreeConfiguration shall free resources allocated by JavaModuleLoader_ParseConfigurationFromJson.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_042: [JavaModuleLoader_FreeConfiguration shall free resources allocated by JavaModuleLoader_ParseConfigurationFromJson.]*/
         free_jvm_config(((JAVA_LOADER_CONFIGURATION*)configuration)->options);
         free(configuration);
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_040: [JavaModuleLoader_FreeConfiguration shall do nothing if configuration is NULL.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_040: [JavaModuleLoader_FreeConfiguration shall do nothing if configuration is NULL.]*/
         LogError("configuration is NULL");
     }
 }
@@ -492,8 +492,8 @@ static void* JavaModuleLoader_BuildModuleConfiguration(const MODULE_LOADER* load
 {
     JAVA_MODULE_HOST_CONFIG* result;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_045: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint is NULL.]*/
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_046: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->className is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_045: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint is NULL.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_046: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if entrypoint->className is NULL.]*/
     if (entrypoint == NULL || ((JAVA_LOADER_ENTRYPOINT*)entrypoint)->className == NULL)
     {
         result = NULL;
@@ -501,8 +501,8 @@ static void* JavaModuleLoader_BuildModuleConfiguration(const MODULE_LOADER* load
     }
     else
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_047: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if loader is NULL.]*/
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_048: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if loader->options is NULL.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_047: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if loader is NULL.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_048: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if loader->options is NULL.]*/
         if (loader == NULL || CONFIGURATION->options == NULL)
         {
             result = NULL;
@@ -510,11 +510,11 @@ static void* JavaModuleLoader_BuildModuleConfiguration(const MODULE_LOADER* load
         }
         else
         {
-            /*CODES_SRS_JAVA_MODULE_LOADER_14_050: [JavaModuleLoader_BuildModuleConfiguration shall build a JAVA_MODULE_HOST_CONFIG object by copying information from entrypoint, module_configuration, and loader->options and return a non - NULL pointer.]*/
+            /*Codes_SRS_JAVA_MODULE_LOADER_14_050: [JavaModuleLoader_BuildModuleConfiguration shall build a JAVA_MODULE_HOST_CONFIG object by copying information from entrypoint, module_configuration, and loader->options and return a non - NULL pointer.]*/
             result = (JAVA_MODULE_HOST_CONFIG*)malloc(sizeof(JAVA_MODULE_HOST_CONFIG));
             if (result == NULL)
             {
-                /*CODES_SRS_JAVA_MODULE_LOADER_14_049: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails.]*/
+                /*Codes_SRS_JAVA_MODULE_LOADER_14_049: [JavaModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails.]*/
                 LogError("malloc failed.");
             }
             else
@@ -552,13 +552,13 @@ static void JavaModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader
 
     if (module_configuration == NULL)
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_051: [JavaModuleLoader_FreeModuleConfiguration shall do nothing if module_configuration is NULL.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_051: [JavaModuleLoader_FreeModuleConfiguration shall do nothing if module_configuration is NULL.]*/
         LogError("module_configuration is NULL");
     }
     else
     {
         JAVA_MODULE_HOST_CONFIG* config = (JAVA_MODULE_HOST_CONFIG*)module_configuration;
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_052: [JavaModuleLoader_FreeModuleConfiguration shall free the JAVA_MODULE_HOST_CONFIG object.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_052: [JavaModuleLoader_FreeModuleConfiguration shall free the JAVA_MODULE_HOST_CONFIG object.]*/
         free((char*)(config->class_name));
         free((char*)(config->configuration_json));
         free(config);
@@ -583,10 +583,10 @@ MODULE_LOADER_API Java_Module_Loader_API =
 
 MODULE_LOADER Java_Module_Loader =
 {
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_054: [MODULE_LOADER::type shall by JAVA.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_054: [MODULE_LOADER::type shall by JAVA.]*/
     JAVA,                   //the loader type
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_055: [MODULE_LOADER::name shall be the string java.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_055: [MODULE_LOADER::name shall be the string java.]*/
     JAVA_LOADER_NAME,       // the name of this loader
 
     NULL,                   // default loader configuration is NULL unless user overrides
@@ -598,12 +598,12 @@ const MODULE_LOADER* JavaLoader_Get(void)
 {
     MODULE_LOADER* loader;
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_056: [JavaLoader_Get shall set the loader->configuration to a default JAVA_LOADER_CONFIGURATION by setting it to default values.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_056: [JavaLoader_Get shall set the loader->configuration to a default JAVA_LOADER_CONFIGURATION by setting it to default values.]*/
     MODULE_LOADER_BASE_CONFIGURATION* default_config = (MODULE_LOADER_BASE_CONFIGURATION*)create_default_config();
 
     if (default_config == NULL)
     {
-        /*CODES_SRS_JAVA_MODULE_LOADER_14_057: [JavaLoader_Get shall return NULL if any underlying call fails while attempting to set the default JAVA_LOADER_CONFIGURATION.]*/
+        /*Codes_SRS_JAVA_MODULE_LOADER_14_057: [JavaLoader_Get shall return NULL if any underlying call fails while attempting to set the default JAVA_LOADER_CONFIGURATION.]*/
         loader = NULL;
         LogError("Error creating default config.");
     }
@@ -613,7 +613,7 @@ const MODULE_LOADER* JavaLoader_Get(void)
         loader->configuration = default_config;
     }
 
-    /*CODES_SRS_JAVA_MODULE_LOADER_14_053: [JavaLoader_Get shall return a non - NULL pointer to a MODULE_LOADER struct.]*/
+    /*Codes_SRS_JAVA_MODULE_LOADER_14_053: [JavaLoader_Get shall return a non - NULL pointer to a MODULE_LOADER struct.]*/
     return loader;
 }
 
