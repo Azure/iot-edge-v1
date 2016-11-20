@@ -72,7 +72,21 @@ MOCKABLE_FUNCTION(, JSON_Array*, json_value_get_array, const JSON_Value *, value
 MOCKABLE_FUNCTION(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index);
 MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, value);
 
-static const size_t LOADERS_COUNT = 4;
+static const size_t g_enabled_loaders[] =
+{
+    1       // native loader
+#ifdef NODE_BINDING_ENABLED
+    , 1
+#endif
+#ifdef JAVA_BINDING_ENABLED
+    , 1
+#endif
+#ifdef DOTNET_BINDING_ENABLED
+    , 1
+#endif
+};
+
+static const size_t LOADERS_COUNT = sizeof(g_enabled_loaders) / sizeof(g_enabled_loaders[0]);
 
 //=============================================================================
 //Globals
@@ -480,9 +494,16 @@ TEST_FUNCTION(ModuleLoader_Initialize_succeeds)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(VECTOR_create(sizeof(MODULE_LOADER*)));
     STRICT_EXPECTED_CALL(DynamicLoader_Get());
+#ifdef NODE_BINDING_ENABLED
     STRICT_EXPECTED_CALL(NodeLoader_Get());
+#endif
+#ifdef JAVA_BINDING_ENABLED
     STRICT_EXPECTED_CALL(JavaLoader_Get());
+#endif
+#ifdef DOTNET_BINDING_ENABLED
     STRICT_EXPECTED_CALL(DotnetLoader_Get());
+#endif
+
 
     for (size_t i = 0; i < LOADERS_COUNT; i++)
     {
@@ -660,13 +681,13 @@ TEST_FUNCTION(ModuleLoader_Add_returns_MODULE_LOADER_ERROR_when_loader_is_invali
         },
         {                               // loader with UNKNOWN type
             UNKNOWN,
-            "node",
+            "native",
             NULL,
             &Fake_Module_Loader_API
         },
         {                               // loader with NULL API
-            NODEJS,
-            "node",
+            NATIVE,
+            "native",
             NULL,
             NULL
         }
@@ -688,8 +709,8 @@ TEST_FUNCTION(ModuleLoader_Add_returns_MODULE_LOADER_ERROR_when_loader_is_invali
     {
         MODULE_LOADER loader =
         {
-            NODEJS,
-            "node",
+            NATIVE,
+            "native",
             NULL,
             &(loader_api_inputs[i])
         };
@@ -879,7 +900,7 @@ TEST_FUNCTION(ModuleLoader_UpdateConfiguration_succeeds)
 TEST_FUNCTION(ModuleLoader_FindByName_returns_NULL_when_not_initialized)
 {
     // act
-    MODULE_LOADER* result = ModuleLoader_FindByName("node");
+    MODULE_LOADER* result = ModuleLoader_FindByName("native");
 
     // assert
     ASSERT_IS_NULL(result);
@@ -920,7 +941,7 @@ TEST_FUNCTION(ModuleLoader_FindByName_returns_NULL_when_things_fail)
         umock_c_negative_tests_fail_call(i);
 
         // act
-        MODULE_LOADER* result = ModuleLoader_FindByName("node");
+        MODULE_LOADER* result = ModuleLoader_FindByName("native");
 
         // assert
         ASSERT_IS_NULL(result);
@@ -942,10 +963,10 @@ TEST_FUNCTION(ModuleLoader_FindByName_returns_NULL_when_loader_cannot_be_found)
     const char* names[] =
     {
         "no_such_module_loader",    // non-existent loader
-        "Node"                      // loader name with different case
+        "Native"                    // loader name with different case
     };
 
-    for(size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
     {
         STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -957,7 +978,7 @@ TEST_FUNCTION(ModuleLoader_FindByName_returns_NULL_when_loader_cannot_be_found)
     }
 
     // act
-    for(size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
     {
         MODULE_LOADER* result = ModuleLoader_FindByName(names[i]);
 
@@ -983,7 +1004,7 @@ TEST_FUNCTION(ModuleLoader_FindByName_succeeds)
     ASSERT_ARE_EQUAL(MODULE_LOADER_RESULT, MODULE_LOADER_SUCCESS, init_result);
     umock_c_reset_all_calls();
 
-    const char* name = "node";
+    const char* name = "native";
 
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
@@ -998,8 +1019,8 @@ TEST_FUNCTION(ModuleLoader_FindByName_succeeds)
 
     // assert
     ASSERT_IS_NOT_NULL(result);
-    ASSERT_ARE_EQUAL(MODULE_LOADER_TYPE, result->type, NODEJS);
-    ASSERT_IS_TRUE(strcmp(result->name, "node") == 0);
+    ASSERT_ARE_EQUAL(MODULE_LOADER_TYPE, result->type, NATIVE);
+    ASSERT_IS_TRUE(strcmp(result->name, "native") == 0);
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
@@ -1241,7 +1262,19 @@ TEST_FUNCTION(ModuleLoader_GetDefaultLoaderForType_succeeds)
     ASSERT_ARE_EQUAL(MODULE_LOADER_RESULT, MODULE_LOADER_SUCCESS, init_result);
     umock_c_reset_all_calls();
 
-    MODULE_LOADER_TYPE inputs[] = { NATIVE, JAVA, DOTNET, NODEJS };
+    MODULE_LOADER_TYPE inputs[] =
+    {
+        NATIVE
+#ifdef JAVA_BINDING_ENABLED
+        , JAVA
+#endif
+#ifdef DOTNET_BINDING_ENABLED
+        , DOTNET
+#endif
+#ifdef NODE_BINDING_ENABLED
+        , NODEJS
+#endif
+    };
     for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++)
     {
         STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1499,7 +1532,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_a
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn(NULL);
 
@@ -1528,7 +1561,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_a
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("");
 
@@ -1591,7 +1624,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_d
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("boo");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1601,7 +1634,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_d
         .IgnoreArgument(2)
         .IgnoreArgument(3)
         .SetReturn(NULL);
-        STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
+    STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
     // act
@@ -1638,7 +1671,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_m
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("boo");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1696,7 +1729,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_m
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("boo");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1760,7 +1793,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_returns_MODULE_LOADER_ERROR_when_M
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("boo");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1827,7 +1860,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_custom_loader)
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
         .SetReturn("boo");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
@@ -1892,9 +1925,9 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_default_loader)
     STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x43))
         .SetReturn((JSON_Object*)0x44);
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "type"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(json_object_get_string((const JSON_Object*)0x44, "name"))
-        .SetReturn("node");
+        .SetReturn("native");
     STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
@@ -1926,7 +1959,7 @@ TEST_FUNCTION(ModuleLoader_InitializeFromJson_succeeds_with_default_loader)
 
     // cleanup
     ModuleLoader_Destroy();
-    Node_Module_Loader.configuration = NULL;
+    Dynamic_Module_Loader.configuration = NULL;
 }
 
 END_TEST_SUITE(ModuleLoader_UnitTests);
