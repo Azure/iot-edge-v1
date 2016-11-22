@@ -254,6 +254,10 @@ BEGIN_TEST_SUITE(gateway_e2e)
         ASSERT_IS_TRUE_WITH_MSG(sendData->wasFound, "Failure receiving data from eventhub");
         ///cleanup
 
+		for (int loader = 0; loader < 3; loader++)
+		{
+			STRING_delete(loader_info[loader].moduleLibraryFileName);
+		}
         EventData_Destroy(sendData);
     }
 END_TEST_SUITE(gateway_e2e)
