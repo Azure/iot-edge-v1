@@ -25,6 +25,7 @@
 #include "dotnet.h"
 
 #include <new>
+#include <memory>
 #include <metahost.h>
 #include <atlbase.h>
 #include <stdio.h>
@@ -419,8 +420,6 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
     SAFEARRAY *psaAzureIoTGatewayMessageConstructorArgs = NULL;
     bool returnResult = false;
     int32_t msg_size;
-    unsigned char*msgByteArray = NULL;
-
 
     try
     {
@@ -429,73 +428,70 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 
         if (msg_size > 0)
         {
-            msgByteArray = (unsigned char*)malloc(msg_size);
-            if (msgByteArray != NULL)
-            {
-                Message_ToByteArray(messageHandle, msgByteArray, msg_size);
-                rgsabound[0].cElements = msg_size;
-                rgsabound[0].lLbound = 0;
-            }
-        }
+			auto msgByteArray = std::make_unique<unsigned char[]>(msg_size);
+			if (msgByteArray)
+			{
+				Message_ToByteArray(messageHandle, msgByteArray.get(), msg_size);
+				rgsabound[0].cElements = msg_size;
+				rgsabound[0].lLbound = 0;
 
-        variant_t msgContentInByteArray;
-        V_VT(&msgContentInByteArray) = VT_ARRAY | VT_UI1;
+				variant_t msgContentInByteArray;
+				V_VT(&msgContentInByteArray) = VT_ARRAY | VT_UI1;
 
-        HRESULT hrResult;
-        void * pArrayData = NULL;
+				HRESULT hrResult;
+				void * pArrayData = NULL;
 
-        if (msgByteArray == NULL)
-        {
-            LogError("Error getting Message Byte Array.");
+				if ((V_ARRAY(&msgContentInByteArray) = SafeArrayCreate(VT_UI1, 1, rgsabound)) == NULL)
+				{
+					LogError("Error creating SafeArray.");
+				}
+				else if (FAILED(hrResult = SafeArrayAccessData(msgContentInByteArray.parray, &pArrayData)))
+				{
+					LogError("Error Acessing Safe Array Data. w/hr 0x%08lx\n", hrResult);
+				}
+				else
+				{
+					memcpy(pArrayData, msgByteArray.get(), msg_size);
+					LONG index = 0;
+					bstr_t bstrAzureIoTGatewayMessageClassName(AZUREIOTGATEWAY_MESSAGE_CLASSNAME);
+
+					if (FAILED(hrResult = SafeArrayUnaccessData(msgContentInByteArray.parray)))
+					{
+						LogError("Error on call for SafeArrayUnaccessData.w/hr 0x%08lx\n", hrResult);
+					}
+					else if ((psaAzureIoTGatewayMessageConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 1)) == NULL)
+					{
+						LogError("Error building SafeArray Vector for arguments.");
+					}
+					else if (FAILED(hrResult = SafeArrayPutElement(psaAzureIoTGatewayMessageConstructorArgs, &index, &msgContentInByteArray)))
+					{
+						LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
+					}
+					/* Codes_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
+					else if (FAILED(hrResult = spAzureIoTGatewayAssembly->CreateInstance_3
+					(
+						bstrAzureIoTGatewayMessageClassName,
+						true,
+						static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public),
+						NULL,
+						psaAzureIoTGatewayMessageConstructorArgs,
+						NULL, NULL,
+						vtAzureIoTGatewayMessageObject)))
+					{
+						LogError("Error creating message instance.w/hr 0x%08lx\n", hrResult);
+					}
+					else
+					{
+						returnResult = true;
+					}
+				}
+			}
 		}
-        else if ((V_ARRAY(&msgContentInByteArray) = SafeArrayCreate(VT_UI1, 1, rgsabound)) == NULL)
-        {
-            LogError("Error creating SafeArray.");
-			free(msgByteArray);
-		}
-        else if (FAILED(hrResult = SafeArrayAccessData(msgContentInByteArray.parray, &pArrayData)))
-        {
-            LogError("Error Acessing Safe Array Data. w/hr 0x%08lx\n", hrResult);
-			free(msgByteArray);
-		}
-        else
-        {
-            memcpy(pArrayData, msgByteArray, msg_size);
-			free(msgByteArray);
-            LONG index = 0;
-            bstr_t bstrAzureIoTGatewayMessageClassName(AZUREIOTGATEWAY_MESSAGE_CLASSNAME);
-
-            if (FAILED(hrResult = SafeArrayUnaccessData(msgContentInByteArray.parray)))
-            {
-                LogError("Error on call for SafeArrayUnaccessData.w/hr 0x%08lx\n", hrResult);
-            }
-            else if ((psaAzureIoTGatewayMessageConstructorArgs = SafeArrayCreateVector(VT_VARIANT, 0, 1)) == NULL)
-            {
-                LogError("Error building SafeArray Vector for arguments.");
-            }
-            else if (FAILED(hrResult = SafeArrayPutElement(psaAzureIoTGatewayMessageConstructorArgs, &index, &msgContentInByteArray)))
-            {
-                LogError("Error Adding Element to the Arguments Safe Array.w/hr 0x%08lx\n", hrResult);
-            }
-            /* Codes_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
-            else if (FAILED(hrResult = spAzureIoTGatewayAssembly->CreateInstance_3
-            (
-                bstrAzureIoTGatewayMessageClassName,
-                true,
-                static_cast<BindingFlags>(BindingFlags_Instance | BindingFlags_Public),
-                NULL,
-                psaAzureIoTGatewayMessageConstructorArgs,
-                NULL, NULL,
-                vtAzureIoTGatewayMessageObject)))
-            {
-                LogError("Error creating message instance.w/hr 0x%08lx\n", hrResult);
-            }
-            else
-            {
-                returnResult = true;
-            }    
-        }
     }
+	catch (const std::bad_alloc & msgErr)
+	{
+		LogError("Exception Thrown. Allocate message failed");
+	}
     catch (const _com_error& e)
     {
         LogError("Exception Thrown. Message: %s ", e.ErrorMessage());
