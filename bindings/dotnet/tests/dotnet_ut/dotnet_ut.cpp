@@ -1400,17 +1400,46 @@ class my_Type: public _Type
     };
 };
 
+static myICLRMetaHost* myCLRInstance;
+static myICLRRuntimeInfo* myCLRRunTimeInstance;
+static myICorRuntimeHost* myICorRuntimeHostInstance;
+static myIUnkonwnClass* myUnkonwnClassInstance;
+static myAppDomain* myAppDomainInstance;
+static myAssemblyClass* myAssemblyClassInstance;
+static my_Type* my_TypeInstance;
+
 TYPED_MOCK_CLASS(CDOTNETMocks, CGlobalMock)
 {
 public:
+
+	CDOTNETMocks()
+	{
+		myCLRInstance = new myICLRMetaHost();
+		myCLRRunTimeInstance = new myICLRRuntimeInfo();
+		myICorRuntimeHostInstance = new myICorRuntimeHost();
+		myUnkonwnClassInstance = new myIUnkonwnClass();
+		myAppDomainInstance = new myAppDomain();
+		myAssemblyClassInstance = new myAssemblyClass();
+		my_TypeInstance = new my_Type();
+	}
+
+	virtual ~CDOTNETMocks()
+	{
+		delete myCLRInstance;
+		delete myCLRRunTimeInstance;
+		delete myICorRuntimeHostInstance;
+		delete myUnkonwnClassInstance;
+		delete myAppDomainInstance;
+		delete myAssemblyClassInstance;
+		delete my_TypeInstance;
+	}
+
     // CLR/COM Mocks
     MOCK_STATIC_METHOD_3(, HRESULT, CLRCreateInstance, REFCLSID, clsid, REFIID, riid, LPVOID *, ppInterface)
-        myICLRMetaHost* myCLRInstance = new myICLRMetaHost();
         *ppInterface = myCLRInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_3(, HRESULT, GetRuntime, LPCWSTR, pwzVersion, REFIID, riid, LPVOID *, ppRuntime)
-        myICLRRuntimeInfo* myCLRRunTimeInstance = new myICLRRuntimeInfo();
         *ppRuntime = myCLRRunTimeInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
@@ -1419,7 +1448,6 @@ public:
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_3(, HRESULT, GetInterface, REFCLSID, rclsid, REFIID, riid, LPVOID *, ppUnk)
-        myICorRuntimeHost* myICorRuntimeHostInstance = new myICorRuntimeHost();
         *ppUnk = myICorRuntimeHostInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
@@ -1427,27 +1455,22 @@ public:
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_1(, HRESULT, GetDefaultDomain, IUnknown **, pAppDomain)
-        myIUnkonwnClass* myUnkonwnClassInstance = new myIUnkonwnClass();
         *pAppDomain = myUnkonwnClassInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_2(, HRESULT, QueryInterface, REFIID, riid, LPVOID *, ppUnk)
-        myAppDomain* myAppDomainInstance = new myAppDomain();
          *ppUnk = myAppDomainInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_2(, HRESULT, Load_2, BSTR, assemblyString, _Assembly * *, pRetVal)
-        myAssemblyClass* myAssemblyClassInstance = new myAssemblyClass();
         *pRetVal = myAssemblyClassInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_3(, HRESULT, GetInterface_Type, BSTR, typeName, VARIANT_BOOL, ignoreCase, _Type * *, pRetVal)
-        my_Type* my_TypeInstance = new my_Type();
         *pRetVal = my_TypeInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
     MOCK_STATIC_METHOD_2(, HRESULT, GetType_2, BSTR, name, _Type * *, pRetVal)
-        my_Type* my_TypeInstance = new my_Type();
         *pRetVal = my_TypeInstance;
     MOCK_METHOD_END(HRESULT, S_OK);
 
@@ -3256,6 +3279,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)((MODULE_HANDLE)result);
+
     }
 
     /*Tests_SRS_DOTNET_17_002: [ DotNet_Start shall attempt to get the "IGatewayModuleStart" type interface. ] */
@@ -3287,6 +3312,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)((MODULE_HANDLE)result);
+
     }
 
     /*Tests_SRS_DOTNET_17_001: [ DotNet_Start shall do nothing if module is NULL. ] */
@@ -3375,6 +3402,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     TEST_FUNCTION(DotNet_Receive__does_nothing_when_Message_alloc_fails)
@@ -3405,6 +3434,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
@@ -3426,6 +3457,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3443,6 +3476,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     
@@ -3465,6 +3500,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3483,6 +3520,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     
@@ -3505,6 +3544,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3527,6 +3568,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
@@ -3548,6 +3591,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3572,6 +3617,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_017: [ DotNet_Receive shall construct an instance of the Message interface as defined below: ] */
@@ -3593,6 +3640,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3623,6 +3672,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
    
@@ -3645,6 +3696,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3678,6 +3731,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
@@ -3699,6 +3754,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3734,6 +3791,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
@@ -3755,6 +3814,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3796,6 +3857,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
@@ -3819,6 +3882,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
@@ -3865,6 +3930,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_018: [ DotNet_Create shall call Receive C# method passing the Message object created with the content of message serialized into Message object. ] */
@@ -3887,8 +3954,10 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0));
-        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
-        STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
+		STRICT_EXPECTED_CALL(mocks, gballoc_malloc(11));
+		STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Message_ToByteArray((MESSAGE_HANDLE)0x42, IGNORED_PTR_ARG, 11))
             .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, myTest_SafeArrayCreate(VT_UI1, 1, IGNORED_PTR_ARG))
@@ -3933,6 +4002,8 @@ BEGIN_TEST_SUITE(dotnet_ut)
         mocks.AssertActualAndExpectedCalls();
 
         ///cleanup
+		MODULE_DESTROY(theAPIS)(result);
+
     }
 
     /* Tests_SRS_DOTNET_04_019: [ DotNet_Destroy shall do nothing if module is NULL. ] */

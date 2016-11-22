@@ -447,18 +447,21 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
         if (msgByteArray == NULL)
         {
             LogError("Error getting Message Byte Array.");
-        }
+		}
         else if ((V_ARRAY(&msgContentInByteArray) = SafeArrayCreate(VT_UI1, 1, rgsabound)) == NULL)
         {
             LogError("Error creating SafeArray.");
-        }
+			free(msgByteArray);
+		}
         else if (FAILED(hrResult = SafeArrayAccessData(msgContentInByteArray.parray, &pArrayData)))
         {
             LogError("Error Acessing Safe Array Data. w/hr 0x%08lx\n", hrResult);
-        }
+			free(msgByteArray);
+		}
         else
         {
             memcpy(pArrayData, msgByteArray, msg_size);
+			free(msgByteArray);
             LONG index = 0;
             bstr_t bstrAzureIoTGatewayMessageClassName(AZUREIOTGATEWAY_MESSAGE_CLASSNAME);
 
