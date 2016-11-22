@@ -14,11 +14,11 @@ The sample contains the following modules:
   
 How does the data flow through the Gateway
 ------------------------------------------
-Here's the journey that a piece of telemetry data takes originating from the hello_world module to Azure Functions.
+Here's the journey that a piece of data takes originating from the hello_world module to Azure Functions.
 
   1. The hello_world module will send a message every 5 seconds.
-  2. The Azure Functions Module will get content from any module that sends data to it, Encode is (Base64 Encode) and send to Azure Functions credentials. 
-  It will send this data to a HTTP Trigger Azure Function, using HTTP POST. This module will also print result from POST to the console.
+  2. The Azure Functions Module will get content from any module that sends data to it, Encode it (Base64 Encode) and send to an Azure Functions url. 
+  It will send this data to a HTTP Trigger Azure Function, using HTTP POST. This module will also print result from the POST request to the console.
 
 Building the sample
 -------------------
@@ -33,10 +33,10 @@ Setting up your Azure Functions
 1. Follow the guideline [Introduction to Azure Functions](https://azure.microsoft.com/en-us/blog/introducing-azure-functions/) to create a
 http trigger Function. 
 
-2. Under Develop tab, find Function Url (e.g: https://<yourFunctionsHost>.azurewebsites.net/api/<your FunctionNAme>?code=123456123456) and copy separetly the following 3 information: 
-* hostname: On the sample above would be: "<yourFunctionsHost>.azurewebsites.net"
-* relativePath: On the sample above would be: "api/<your FunctionNAme>"
-* key(optional): On the sample above would be "123456123456". (If you chose anonymous when you created your Azure HttpTrigger you would not have this)
+2. In your Azure Function's Develop tab, find the Function URL.  (For example, [https://<yourFunctionsHost>.azurewebsites.net/api/<your FunctionName>?code=123456123456) From this URL, you will need 3 pieces of data:
+* hostname: For the example above, this would be: "<yourFunctionsHost>.azurewebsites.net"
+* relativePath: For the example above, this would be: "api/<your FunctionName>"
+* key(optional): For the example above, this would be: "123456123456" (If you chose anonymous when you created your Azure HttpTrigger you would not have this)
 
 Running the sample
 ------------------
@@ -53,7 +53,7 @@ running the the executable from the root of the repo.
 ```
 azure_functions_sample (or azure_functions_sample.exe) <path to your json file>
 ```
-*If you are running on windows (Visual Studio) you can set the azure_functions_sample as a startup project and put the path to the Json file under Debug Property and hit Run.
+>Note: If you are running on windows (Visual Studio) you can set the azure_functions_sample as a startup project and put the path to the Json file under `Properties->Debugging->Command Arguments` and hit Run.
 
 The result will be: 
 Info: Request Sent to Function Succesfully. Response from Functions: "Hello myGatewayDevice"
