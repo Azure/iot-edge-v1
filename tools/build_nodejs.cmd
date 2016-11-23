@@ -21,11 +21,11 @@ mkdir %build-root%
 pushd %build-root%
 
 rem Clone Node.js
-git clone -b shared-622 https://github.com/avranju/node.git
+git clone -b shared-691 https://github.com/avranju/node.git
 pushd node
 
 rem Build Node.js
-call vcbuild.bat release nosign enable-shared %*
+call vcbuild.bat release nosign dll %*
 popd
 
 rem Create a 'dist' folder where the includes/libs live

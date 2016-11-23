@@ -13,9 +13,9 @@ mkdir -p $build_root
 
 # build Node.js
 pushd $build_root
-git clone -b shared-622 https://github.com/avranju/node.git
+git clone -b shared-691 https://github.com/avranju/node.git
 pushd node
-./configure --enable-shared 
+./configure --shared
 make -j $(nproc)
 popd
 
@@ -33,8 +33,13 @@ cp $build_root/node/deps/v8/include/libplatform/*.h $build_root/dist/inc/libplat
 
 # copy the library files
 mkdir -p $build_root/dist/lib
-cp $build_root/node/out/Release/lib.target/libnode.so $build_root/dist/lib
-cp $build_root/node/out/Release/*.a $build_root/dist/lib
+find $build_root | grep "\\.a$" | xargs -I {file} cp {file} $build_root/dist/lib
+
+# copy libnode.so.XX
+cp $build_root/node/out/Release/lib.target/libnode.so.* $build_root/dist/lib
+
+# make a symlink called libnode.so that points to this file
+ln -s $build_root/dist/lib/libnode.so.$(ls $build_root/dist/lib/libnode.so.* | cut -d . -f 3) $build_root/dist/lib/libnode.so
 
 # export environment variables for where the include/lib files can be found
 echo
@@ -43,7 +48,7 @@ echo
 echo "    $build_root/dist"
 echo
 echo Export the following variables so that the Azure IoT Gateway SDK build scripts can find these files.
-echo 
+echo
 echo "    export NODE_INCLUDE=\"$build_root/dist/inc\""
 echo "    export NODE_LIB=\"$build_root/dist/lib\""
 echo
