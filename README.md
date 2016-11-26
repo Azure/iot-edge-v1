@@ -27,7 +27,7 @@ a module to find out how to get it, who supports it, etc.
 >| Name          | More information                            | Targets gateway SDK version |
 >|---------------|---------------------------------------------|-----------------------------|
 >| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2016-11-02                  |
->| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-02                  |
+>| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-18                  |
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 
 more info.
