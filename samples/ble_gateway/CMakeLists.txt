@@ -34,6 +34,8 @@ add_dependencies(ble_gateway ble ble_printer identity_map logger iothub)
 
 linkSharedUtil(ble_gateway)
 install_broker(ble_gateway ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(ble_gateway ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
 
 add_sample_to_solution(ble_gateway)
 

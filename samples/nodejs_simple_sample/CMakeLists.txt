@@ -36,6 +36,7 @@ add_dependencies(nodejs_simple_sample nodejs_binding logger)
 linkSharedUtil(nodejs_simple_sample)
 install_broker(nodejs_simple_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 copy_node_dll(nodejs_simple_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(nodejs_simple_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 
 add_sample_to_solution(nodejs_simple_sample)

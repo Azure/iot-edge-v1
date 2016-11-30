@@ -69,7 +69,7 @@ linkSharedUtil(iothub_static)
 
 add_module_to_solution(iothub)
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
 	add_subdirectory(tests)
 endif()
 

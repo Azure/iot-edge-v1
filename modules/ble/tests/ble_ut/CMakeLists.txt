@@ -79,5 +79,7 @@ if(WIN32)
             rpcrt4
         )    
         install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+        copy_gateway_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
     endif()
 endif()

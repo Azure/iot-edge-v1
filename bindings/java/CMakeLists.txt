@@ -89,7 +89,7 @@ linkSharedUtil(java_module_host_static)
 add_binding_to_solution(java_module_host)
 add_binding_to_solution(java_module_host_static)
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
     add_subdirectory(tests)
 endif()
 

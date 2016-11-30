@@ -39,6 +39,8 @@ target_link_libraries(simulated_device_cloud_upload_sample gateway)
 linkSharedUtil(simulated_device_cloud_upload_sample)
 linkHttp(simulated_device_cloud_upload_sample)
 install_broker(simulated_device_cloud_upload_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(simulated_device_cloud_upload_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_iothub_client_dll(simulated_device_cloud_upload_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(simulated_device_cloud_upload_sample)
 

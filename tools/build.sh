@@ -8,7 +8,7 @@ build_clean=
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 local_install=$build_root/install-deps
 log_dir=$build_root
-skip_unittests=OFF
+run_unittests=OFF
 run_e2e_tests=OFF
 run_valgrind=0
 enable_java_binding=OFF
@@ -28,7 +28,7 @@ usage ()
     echo "   Example: -cl -O1 -cl ..."
     echo " -rv, --run-valgrind           Execute ctest with valgrind"
     echo " --toolchain-file <file>       Pass CMake a toolchain file for cross-compiling"
-    echo " --skip-unittests              Do not build/run unit tests"
+    echo " --run-unittests               Build/run unit tests"
     echo " --run-e2e-tests               Build/run end-to-end tests"
     echo " --enable-java-binding         Build the Java binding"
     echo "                               (JAVA_HOME must be defined in your environment)"
@@ -63,7 +63,7 @@ process_args ()
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;
               "-c" | "--clean" ) build_clean=1;;
-              "--skip-unittests" ) skip_unittests=ON;;
+              "--run-unittests" ) run_unittests=ON;;
               "--run-e2e-tests" ) run_e2e_tests=ON;;
               "-cl" | "--compileoption" ) save_next_arg=1;;
               "-rv" | "--run-valgrind" ) run_valgrind=1;;
@@ -124,7 +124,7 @@ cmake $toolchainfile \
       $dependency_install_prefix \
       -DcompileOption_C:STRING="$extracloptions" \
       -DCMAKE_BUILD_TYPE=Debug \
-      -Dskip_unittests:BOOL=$skip_unittests \
+      -Drun_unittests:BOOL=$run_unittests \
       -Drun_e2e_tests:BOOL=$run_e2e_tests \
       -Denable_java_binding:BOOL=$enable_java_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
@@ -135,7 +135,7 @@ cmake $toolchainfile \
 
 make --jobs=$CORES
 
-if [[ "$skip_unittests" == "OFF" || "$run_e2e_tests" == "ON" ]]
+if [[ "$run_unittests" == "ON" || "$run_e2e_tests" == "ON" ]]
 then
     if [[ $run_valgrind == 1 ]]
     then

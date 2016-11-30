@@ -9,6 +9,7 @@
 #define EVENT_SYSTEM_H
 
 #include "gateway.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -72,10 +73,10 @@ typedef void* GATEWAY_EVENT_CTX;
  */
 typedef void(*GATEWAY_CALLBACK)(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param);
 
-extern EVENTSYSTEM_HANDLE EventSystem_Init(void);
-extern void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
-extern void EventSystem_ReportEvent(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type);
-extern void EventSystem_Destroy(EVENTSYSTEM_HANDLE event_system);
+GATEWAY_EXPORT EVENTSYSTEM_HANDLE EventSystem_Init(void);
+GATEWAY_EXPORT void EventSystem_AddEventCallback(EVENTSYSTEM_HANDLE event_system, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
+GATEWAY_EXPORT void EventSystem_ReportEvent(EVENTSYSTEM_HANDLE event_system, GATEWAY_HANDLE gw, GATEWAY_EVENT event_type);
+GATEWAY_EXPORT void EventSystem_Destroy(EVENTSYSTEM_HANDLE event_system);
 
 /** @brief      Registers a function to be called on a callback thread when_all
  *              #GATEWAY_EVENT happens
@@ -89,7 +90,7 @@ extern void EventSystem_Destroy(EVENTSYSTEM_HANDLE event_system);
  *  @param      user_param  User defined parameter that will be later provided
  *                          to the called callback
  */
-extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
+GATEWAY_EXPORT void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_CALLBACK callback, void* user_param);
 
 /** @brief      Returns a snapshot copy of information about running modules.
  *
@@ -103,14 +104,14 @@ extern void Gateway_AddEventCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type
  *  @return     A #VECTOR_HANDLE of pointers to #GATEWAY_MODULE_INFO on success.
  *              NULL on failure.
  */
-extern VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
+GATEWAY_EXPORT VECTOR_HANDLE Gateway_GetModuleList(GATEWAY_HANDLE gw);
 
 /** @brief      Destroys the list returned by @c Gateway_GetModuleList
  *
  *  @param      module_list A vector handle as returned from
  *              @c Gateway_GetModuleList
  */
-extern void Gateway_DestroyModuleList(VECTOR_HANDLE module_list);
+GATEWAY_EXPORT void Gateway_DestroyModuleList(VECTOR_HANDLE module_list);
 
 #ifdef __cplusplus
 }

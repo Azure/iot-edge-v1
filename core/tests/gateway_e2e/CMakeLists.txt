@@ -26,7 +26,7 @@ set(${theseTestsName}_c_files
 )
 
 include_directories(../../../samples/protocol_encapsulation/inc ${IOTHUB_CLIENT_INC_FOLDER} e2e_module/inc/)
-include_directories(../../../deps/iot-sdk/c/testtools/iothub_test/inc)
+include_directories(../../../deps/iot-sdk-c/testtools/iothub_test/inc)
 include_directories(../../../deps/c-utility/inc/azure_c_shared_utility)
 include_directories(../../../modules/common)
 include_directories(../../../modules/iothub/inc)
@@ -36,12 +36,10 @@ include_directories(${IOTHUB_SERVICE_CLIENT_INC_FOLDER})
 include_directories(${GW_INC})
 
 build_test_artifacts(${theseTestsName} ON)
-if(DEFINED ${dependency_install_prefix})
-    set_target_properties(
-        ${theseTestsName}_exe PROPERTIES
-        BUILD_WITH_INSTALL_RPATH TRUE
-    )
-endif()
+set_target_properties(
+    ${theseTestsName}_exe PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+)
 
 if(WIN32)
     if(TARGET ${theseTestsName}_dll)
@@ -61,6 +59,9 @@ if(WIN32)
             iothub_client_http_transport
         )    
         install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+        copy_gateway_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+        copy_iothub_client_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
+        copy_iothub_service_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
     endif()
 else()
     if(TARGET ${theseTestsName}_exe)

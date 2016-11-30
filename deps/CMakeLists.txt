@@ -7,4 +7,4 @@ cmake_minimum_required(VERSION 2.8.11)
 set(run_valgrind OFF)
 
 add_subdirectory(./c-utility)
-add_subdirectory(./iot-sdk/c)
+add_subdirectory(./iot-sdk-c)

@@ -19,6 +19,8 @@ linkSharedUtil(events_sample)
 
 add_dependencies(events_sample hello_world)
 install_broker(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_iothub_client_dll(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 # add events_sample to non-standard "Experimental" VS project folder for now 
 #add_sample_to_solution(events_sample)

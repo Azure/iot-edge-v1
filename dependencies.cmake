@@ -10,7 +10,7 @@ include("gatewayFunctions.cmake")
 ###############################################################################
 ###################Find/Install/Build azure_c_shared_utility###################
 ###############################################################################
-findAndInstall(azure_c_shared_utility ${PROJECT_SOURCE_DIR}/deps/c-utility ${PROJECT_SOURCE_DIR}/deps/c-utility -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(azure_c_shared_utility ${PROJECT_SOURCE_DIR}/deps/c-utility ${PROJECT_SOURCE_DIR}/deps/c-utility -Duse_installed_dependencies=ON -Drun_unittests=${run_unittests} -Dbuild_as_dynamic=ON -G "${CMAKE_GENERATOR}")
 set(SHARED_UTIL_INC_FOLDER ${AZURE_C_SHARED_UTILITY_INCLUDE_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 set(SHARED_UTIL_LIB_FOLDER ${AZURE_C_SHARED_LIBRARY_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 set(SHARED_UTIL_LIB aziotsharedutil CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)

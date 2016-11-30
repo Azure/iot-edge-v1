@@ -15,6 +15,7 @@
 #include "azure_c_shared_utility/vector.h"
 #include "module.h"
 #include "module_loader.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -143,7 +144,7 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
  * @return      A non-NULL #GATEWAY_HANDLE that can be used to manage the
  *              gateway or @c NULL on failure.
  */
-extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
+GATEWAY_EXPORT GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 
 /** @brief      Creates a new gateway using the provided #GATEWAY_PROPERTIES.
  *
@@ -153,7 +154,7 @@ extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
  *  @return     A non-NULL #GATEWAY_HANDLE that can be used to manage the
  *              gateway or @c NULL on failure.
  */
-extern GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties);
+GATEWAY_EXPORT GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties);
 
 /** @brief      Tell the Gateway it's ready to start.
  *
@@ -161,13 +162,13 @@ extern GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties);
  *
  *  @return     A #GATEWAY_START_RESULT to report the result of the start
  */
-extern GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw);
+GATEWAY_EXPORT GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw);
 
 /** @brief      Destroys the gateway and disposes of all associated data.
  *
  *  @param      gw      #GATEWAY_HANDLE to be destroyed.
  */
-extern void Gateway_Destroy(GATEWAY_HANDLE gw);
+GATEWAY_EXPORT void Gateway_Destroy(GATEWAY_HANDLE gw);
 
 /** @brief      Creates a new module based on the GATEWAY_MODULES_ENTRY*.
  *
@@ -178,7 +179,7 @@ extern void Gateway_Destroy(GATEWAY_HANDLE gw);
  *  @return     A non-NULL #MODULE_HANDLE to the newly created and added
  *              Module, or @c NULL on failure.
  */
-extern MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry);
+GATEWAY_EXPORT MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_ENTRY* entry);
 
 /** @brief      Tells a module that the gateway is ready for it to start.
  *
@@ -186,7 +187,7 @@ extern MODULE_HANDLE Gateway_AddModule(GATEWAY_HANDLE gw, const GATEWAY_MODULES_
  *                      Module.
  *  @param      module  Pointer to a #MODULE_HANDLE that needs to be removed.
  */
-extern void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+GATEWAY_EXPORT void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 
 /** @brief      Removes the provided module from the gateway and all links that
@@ -196,7 +197,7 @@ extern void Gateway_StartModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
  *                      Module.
  *  @param      module  Pointer to a #MODULE_HANDLE that needs to be removed.
  */
-extern void Gateway_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
+GATEWAY_EXPORT void Gateway_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
 
 /** @brief      Removes module by its unique name
  *
@@ -207,7 +208,7 @@ extern void Gateway_RemoveModule(GATEWAY_HANDLE gw, MODULE_HANDLE module);
  *
  *  @return     0 on success and a non-zero value when an error occurs.
  */
-extern int Gateway_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
+GATEWAY_EXPORT int Gateway_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name);
 
 /** @brief      Adds a link to a gateway message broker.
  *
@@ -218,7 +219,7 @@ extern int Gateway_RemoveModuleByName(GATEWAY_HANDLE gw, const char *module_name
  *
  *  @return     A GATEWAY_ADD_LINK_RESULT with the operation result.
  */
-extern GATEWAY_ADD_LINK_RESULT Gateway_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
+GATEWAY_EXPORT GATEWAY_ADD_LINK_RESULT Gateway_AddLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
 /** @brief      Remove a link from a gateway message broker.
  *
@@ -227,7 +228,7 @@ extern GATEWAY_ADD_LINK_RESULT Gateway_AddLink(GATEWAY_HANDLE gw, const GATEWAY_
  *
  *  @param      entryLink   Pointer to a #GATEWAY_LINK_ENTRY to be removed.
  */
-extern void Gateway_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
+GATEWAY_EXPORT void Gateway_RemoveLink(GATEWAY_HANDLE gw, const GATEWAY_LINK_ENTRY* entryLink);
 
 #ifdef __cplusplus
 }
