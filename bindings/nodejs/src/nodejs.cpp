@@ -357,70 +357,62 @@ static bool copy_properties_from_message(
 )
 {
     bool result;
-    if (validate_object_prop(isolate, context, message, "properties") == true)
+    auto prop_key = v8::String::NewFromUtf8(isolate, "properties");
+    if (prop_key.IsEmpty() == true)
     {
-        auto prop_key = v8::String::NewFromUtf8(isolate, "properties");
-        if (prop_key.IsEmpty() == true)
-        {
-            LogError("Could not instantiate v8 string for constant 'properties'");
-            result = false;
-        }
-        else
-        {
-            // we know this is an object
-            auto props = message->Get(prop_key)->ToObject();
+        LogError("Could not instantiate v8 string for constant 'properties'");
+        result = false;
+    }
+    else
+    {
+        // we know this is an object
+        auto props = message->Get(prop_key)->ToObject();
 
-            // copy every "own property" of this object where the key
-            // is a string and the value is a string; ignore the rest
-            auto prop_names = props->GetOwnPropertyNames();
-            if (prop_names.IsEmpty() == false)
+        // copy every "own property" of this object where the key
+        // is a string and the value is a string; ignore the rest
+        auto prop_names = props->GetOwnPropertyNames();
+        if (prop_names.IsEmpty() == false)
+        {
+            auto props_count = prop_names->Length();
+            uint32_t i = 0;
+            for (; i < props_count; ++i)
             {
-                auto props_count = prop_names->Length();
-                uint32_t i = 0;
-                for (; i < props_count; ++i)
+                // we are only interested in string property names
+                auto prop_name = prop_names->Get(i);
+                if (prop_name.IsEmpty() == false && prop_name->IsString() == true)
                 {
-                    // we are only interested in string property names
-                    auto prop_name = prop_names->Get(i);
-                    if (prop_name.IsEmpty() == false && prop_name->IsString() == true)
+                    auto prop_name_str = prop_name->ToString();
+
+                    // we are only interested in string property values
+                    v8::Local<v8::Value> prop_value;
+                    if (props->Get(context, prop_name).ToLocal(&prop_value) && prop_value->IsString() == true)
                     {
-                        auto prop_name_str = prop_name->ToString();
+                        auto prop_value_str = prop_value->ToString();
 
-                        // we are only interested in string property values
-                        auto prop_value = props->Get(context, prop_name).ToLocalChecked();
-                        if (prop_value.IsEmpty() == false && prop_value->IsString() == true)
+                        std::string name = v8_to_std_string(prop_name_str);
+                        std::string value = v8_to_std_string(prop_value_str);
+                        if (name.empty() == false && value.empty() == false)
                         {
-                            auto prop_value_str = prop_value->ToString();
-
-                            std::string name = v8_to_std_string(prop_name_str);
-                            std::string value = v8_to_std_string(prop_value_str);
-                            if (name.empty() == false && value.empty() == false)
+                            if (Map_Add(message_properties, name.c_str(), value.c_str()) != MAP_OK)
                             {
-                                if (Map_Add(message_properties, name.c_str(), value.c_str()) != MAP_OK)
-                                {
-                                    LogError("Map_Add failed for property '%s'", name.c_str());
-                                    break;
-                                }
+                                LogError("Map_Add failed for property '%s'", name.c_str());
+                                break;
                             }
                         }
                     }
                 }
+            }
 
-                // if i is not equal to props_count then something went wrong
-                result = i == props_count;
-            }
-            else
-            {
-                // this is not an error; it's just a weird message so we log a warning and
-                // continue on our merry way
-                LogInfo("Warning: message object has a 'properties' property but it has no members");
-                result = true;
-            }
+            // if i is not equal to props_count then something went wrong
+            result = i == props_count;
         }
-    }
-    else
-    {
-        result = true;
-        LogInfo("Message doesn't have properties");
+        else
+        {
+            // this is not an error; it's just a weird message so we log a warning and
+            // continue on our merry way
+            LogInfo("Warning: message object has a 'properties' property but it has no members");
+            result = true;
+        }
     }
 
     return result;
@@ -761,8 +753,8 @@ static void register_module(const v8::FunctionCallbackInfo<v8::Value>& info)
                             else
                             {
                                 // we expect result to be a boolean
-                                auto result = maybe_result.ToLocalChecked();
-                                if (result.IsEmpty() == true || result->IsBoolean() == false)
+                                v8::Local<v8::Value> result;
+                                if (maybe_result.ToLocal(&result) == false || result->IsBoolean() == false)
                                 {
                                     LogInfo("Warning: The gateway object's create method did not return a boolean");
                                     info.GetReturnValue().Set(false);
@@ -1076,8 +1068,8 @@ static void on_run_receive_message(
                 // invoke 'receive' method on gateway; we know this member
                 // exists on the gateway
                 auto gateway = handle_data->module_object.Get(isolate);
-                auto receive_method = gateway->Get(context, prop_key).ToLocalChecked();
-                if (receive_method.IsEmpty() == true || receive_method->IsFunction() == false)
+                v8::Local<v8::Value> receive_method;
+                if (gateway->Get(context, prop_key).ToLocal(&receive_method) == false || receive_method->IsFunction() == false)
                 {
                     LogError("'receive' property on the gateway has an unexpected value");
                 }
@@ -1108,7 +1100,10 @@ void NODEJS_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(module);
         if (handle_data->GetModuleState() != NodeModuleState::initialized)
         {
-            LogError("Module has not been initialized correctly: %s", handle_data->main_path.c_str());
+            LogInfo("Module has not been initialized yet: State: %d, Module: %s",
+                handle_data->GetModuleState(),
+                handle_data->main_path.c_str()
+            );
         }
         else
         {
@@ -1155,11 +1150,18 @@ static void on_quit_node(
                 {
                     // we already verified that this exists and is a function when the module
                     // was registered
-                    auto destroy_method_value = gateway->Get(context, destroy_method_name).ToLocalChecked();
-                    auto destroy_method = destroy_method_value.As<v8::Function>();
+                    v8::Local<v8::Value> destroy_method_value;
+                    if (gateway->Get(context, destroy_method_name).ToLocal(&destroy_method_value) == true)
+                    {
+                        auto destroy_method = destroy_method_value.As<v8::Function>();
 
-                    /*Codes_SRS_NODEJS_13_040: [ NodeJS_Destroy shall invoke the destroy method on module's JS implementation. ]*/
-                    destroy_method->Call(context, gateway, 0, nullptr);
+                        /*Codes_SRS_NODEJS_13_040: [ NodeJS_Destroy shall invoke the destroy method on module's JS implementation. ]*/
+                        destroy_method->Call(context, gateway, 0, nullptr);
+                    }
+                    else
+                    {
+                        LogError("Module's destroy method has suddenly disappeared.");
+                    }
                 }
             }
             else
@@ -1244,8 +1246,9 @@ static void on_start_callback(
                 {
                     // we already verified that this exists and is a function when the module
                     // was registered
-                    auto start_method_value = gateway->Get(context, start_method_name).ToLocalChecked();
-                    if (start_method_value.IsEmpty() != true && start_method_value->IsFunction() == true)
+                    v8::Local<v8::Value> start_method_value;
+                    if (gateway->Get(context, start_method_name).ToLocal(&start_method_value) &&
+                        start_method_value->IsFunction() == true)
                     {
                         auto start_method = start_method_value.As<v8::Function>();
 

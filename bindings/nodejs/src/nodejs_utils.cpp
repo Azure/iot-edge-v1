@@ -20,14 +20,15 @@ v8::Local<v8::Value> nodejs_module::NodeJSUtils::RunScript(
     }
     else
     {
-        auto script = v8::Script::Compile(context, script_source).ToLocalChecked();
-        if (script.IsEmpty() == true)
+        v8::Local<v8::Script> script;
+        if (v8::Script::Compile(context, script_source).ToLocal(&script) == false)
         {
             LogError("Could not compile JS script - %s", script_text.c_str());
         }
         else
         {
-            result = script->Run(context).ToLocalChecked();
+            bool return_value =  script->Run(context).ToLocal(&result);
+            (void)return_value;
         }
     }
 
@@ -104,15 +105,8 @@ PersistentCopyable<v8::Object> nodejs_module::NodeJSUtils::CreateObjectWithMetho
                 {
                     // add the function to the object template
                     obj_template->Set(method_name_str, callback_function);
-                    if (obj_template.IsEmpty() == true)
-                    {
-                        LogError("Could not create v8 object template");
-                    }
-                    else
-                    {
-                        auto instance = obj_template->NewInstance(context).ToLocalChecked();
-                        result.Reset(isolate, instance);
-                    }
+                    auto instance = obj_template->NewInstance(context).ToLocalChecked();
+                    result.Reset(isolate, instance);
                 }
             }
         }
