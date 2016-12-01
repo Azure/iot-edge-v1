@@ -56,7 +56,8 @@ for building and running the samples:
 General documentation
 
 - [Dev box setup](doc/devbox_setup.md) contains instructions for configuring your machine to 
-build the Azure IoT Gateway SDK.
+build the Azure IoT Gateway SDK as well as instructions for configuring your machine to build 
+modules written in Java, Node.js, and .NET.
 
 API documentation can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html).
 

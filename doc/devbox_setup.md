@@ -5,6 +5,7 @@ This document describes how to prepare your development environment to use the *
 - [Setting up a Windows development environment](#windows)
 - [Setting up a Linux development environment](#linux)
 - [Setting up cross-compiling for Wind River Linux 7](#windriver)
+- [Setting up a development environment for module language bindings](#bindings)
 
 <a name="windows"/>
 ## Setting up a Windows development environment
@@ -66,3 +67,12 @@ This section shows you how to set up a development environment for the Azure IoT
  ```
  tools/windriver_linux_c.sh --toolchain /opt/windriver/wrlinux/7.0-intel-baytrail-64
  ```
+
+<a name="bindings">
+## Setting up a development environment for module language bindings
+
+This sections shows you how to set up a development environment for creating modules written in Java, Node.js, and .NET.
+
+- [Java](../samples/java_sample/java_devbox_setup.md)
+- [Node.js](../samples/nodejs_simple_sample/README.md)
+- [.NET](../samples/dotnet_binding_sample/README.md)
