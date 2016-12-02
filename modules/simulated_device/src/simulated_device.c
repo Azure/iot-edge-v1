@@ -16,11 +16,18 @@
 
 typedef struct SIMULATEDDEVICE_DATA_TAG
 {
-    BROKER_HANDLE        broker;
+    BROKER_HANDLE       broker;
     THREAD_HANDLE       simulatedDeviceThread;
     const char *        fakeMacAddress;
+    unsigned int        messagePeriod;
     unsigned int        simulatedDeviceRunning : 1;
 } SIMULATEDDEVICE_DATA;
+
+typedef struct SIMULATEDDEVICE_CONFIG_TAG
+{
+    char *              macAddress;
+    unsigned int        messagePeriod;
+} SIMULATEDDEVICE_CONFIG;
 
 static char msgText[1024];
 
@@ -113,7 +120,7 @@ static int simulated_device_worker(void * user_data)
                 }
                 Map_Destroy(newProperties);
             }
-            ThreadAPI_Sleep(10000);
+            ThreadAPI_Sleep(module_data -> messagePeriod);
         }
     }
 
@@ -149,7 +156,8 @@ static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
 static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* configuration)
 {
     SIMULATEDDEVICE_DATA * result;
-    if (broker == NULL || configuration == NULL)
+    SIMULATEDDEVICE_CONFIG * config = (SIMULATEDDEVICE_CONFIG *) configuration;
+    if (broker == NULL || config == NULL)
     {
         LogError("invalid SIMULATED DEVICE module args.");
         result = NULL;
@@ -170,7 +178,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
             result->simulatedDeviceRunning = 1;
             /* save fake MacAddress */
             char * newFakeAddress;
-            int status = mallocAndStrcpy_s(&newFakeAddress, configuration);
+            int status = mallocAndStrcpy_s(&newFakeAddress, config -> macAddress);
 
             if (status != 0)
             {
@@ -179,6 +187,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
             else
             {
                 result->fakeMacAddress = newFakeAddress;
+                result -> messagePeriod = config -> messagePeriod;
                 result->simulatedDeviceThread = NULL;
 
             }
@@ -190,7 +199,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 
 static void * SimulatedDevice_ParseConfigurationFromJson(const char* configuration)
 {
-	char * result;
+	SIMULATEDDEVICE_CONFIG * result;
     if (configuration == NULL)
     {
         LogError("invalid module args.");
@@ -214,6 +223,7 @@ static void * SimulatedDevice_ParseConfigurationFromJson(const char* configurati
             }
             else
             {
+                SIMULATEDDEVICE_CONFIG config;
                 const char* macAddress = json_object_get_string(root, "macAddress");
                 if (macAddress == NULL)
                 {
@@ -222,10 +232,31 @@ static void * SimulatedDevice_ParseConfigurationFromJson(const char* configurati
                 }
                 else
                 {
-					if (mallocAndStrcpy_s(&result, macAddress) != 0)
-					{
-						result = NULL;
-					}
+                    int period = (int)json_object_get_number(root, "messagePeriod");
+                    if (period <= 0)
+                    {
+                        LogError("Invalid period time specified");
+                        result = NULL;
+                    }
+                    else
+                    {
+                        if (mallocAndStrcpy_s(&(config.macAddress), macAddress) != 0)
+                        {
+                            result = NULL;
+                        }
+                        else
+                        {
+                            config.messagePeriod = period;
+                            result = malloc(sizeof(SIMULATEDDEVICE_CONFIG));
+                            if (result == NULL) {
+                                LogError("allocation of configuration failed");
+                            }
+                            else
+                            {
+                                *result = config;
+                            }
+                        }
+                    }
                 }
             }
             json_value_free(json);
