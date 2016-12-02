@@ -249,6 +249,7 @@ static void * SimulatedDevice_ParseConfigurationFromJson(const char* configurati
                             config.messagePeriod = period;
                             result = malloc(sizeof(SIMULATEDDEVICE_CONFIG));
                             if (result == NULL) {
+                                free(config.macAddress);
                                 LogError("allocation of configuration failed");
                             }
                             else
@@ -269,7 +270,9 @@ void SimulatedDevice_FreeConfiguration(void * configuration)
 {
 	if (configuration != NULL)
 	{
-		free(configuration);
+        SIMULATEDDEVICE_CONFIG * config = (SIMULATEDDEVICE_CONFIG *)configuration;
+        free(config->macAddress);
+        free(config);
 	}
 }
 
