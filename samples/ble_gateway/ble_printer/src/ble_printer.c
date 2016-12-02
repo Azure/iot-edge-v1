@@ -183,6 +183,7 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_ver
 static void print_string(const char* name, const char* timestamp, const CONSTBUFFER* buffer)
 {
     printf("[%s] %s: %.*s\r\n", timestamp, name, (int)buffer->size, buffer->buffer);
+    fflush(stdout);
 }
 
 /**
@@ -216,12 +217,13 @@ static void print_temperature(const char* name, const char* timestamp, const CON
         uint16_t* temps = (uint16_t *)buffer->buffer;
         float ambient, object;
         sensortag_temp_convert(temps[0], temps[1], &ambient, &object);
-        printf("[%s] %s: (%f, %f)\r\n",
+        printf("[%s][BLE Module -> IoTHub Module -> Azure IoT Hub] %s: (%f, %f)\r\n",
             timestamp,
             name,
             ambient,
             object
         );
+        fflush(stdout);
     }
 }
 
@@ -233,4 +235,5 @@ static void print_default(const char* name, const char* timestamp, const CONSTBU
         printf("%02X ", buffer->buffer[i]);
     }
     printf("\r\n");
+    fflush(stdout);
 }
