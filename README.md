@@ -1,6 +1,6 @@
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments
 
-# Azure IoT Gateway SDK
+# [Azure IoT Gateway SDK](https://azure.microsoft.com/en-us/services/iot-hub/iot-gateway-sdk/)
 Using this SDK, developers write applications that enable gateway-connected devices to 
 communicate with Azure IoT Hub. Such applications use a collection of **modules** to aggregate 
 and transform data, process commands, or perform any number of related tasks. Modules 
