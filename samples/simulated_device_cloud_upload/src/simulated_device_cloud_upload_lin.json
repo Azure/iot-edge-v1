@@ -90,6 +90,18 @@
     {
       "source": "mapping",
       "sink": "IotHub"
+    },
+    {
+      "source": "IotHub",
+      "sink": "mapping"
+    },
+    {
+      "source": "mapping",
+      "sink": "BLE1"
+    },
+    {
+      "source": "mapping",
+      "sink": "BLE2"
     }
   ]
 }

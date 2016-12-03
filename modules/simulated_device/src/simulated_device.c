@@ -29,10 +29,48 @@ typedef struct SIMULATEDDEVICE_CONFIG_TAG
     unsigned int        messagePeriod;
 } SIMULATEDDEVICE_CONFIG;
 
-static char msgText[1024];
-
 static void SimulatedDevice_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
+    // Print the properties & content of the received message
+    CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
+    if (properties != NULL)
+    {
+        const char* addr = ((SIMULATEDDEVICE_DATA*)moduleHandle)->fakeMacAddress;
+
+        // We're only interested in cloud-to-device (C2D) messages addressed to
+        // this device
+        if (ConstMap_ContainsKey(properties, GW_MAC_ADDRESS_PROPERTY) == true &&
+            strcmp(addr, ConstMap_GetValue(properties, GW_MAC_ADDRESS_PROPERTY)) == 0)
+        {
+            const char* const * keys;
+            const char* const * values;
+            size_t count;
+
+            if (ConstMap_GetInternals(properties, &keys, &values, &count) == CONSTMAP_OK)
+            {
+                const CONSTBUFFER* content = Message_GetContent(messageHandle);
+                if (content != NULL)
+                {
+                    (void)printf(
+                        "Received a message\r\n"
+                        "Properties:\r\n"
+                        );
+
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        (void)printf("  %s = %s\r\n", keys[i], values[i]);
+                    }
+
+                    (void)printf("Content:\r\n");
+                    (void)printf("  %.*s\r\n", content->size, content->buffer);
+                    (void)fflush(stdout);
+                }
+            }
+        }
+
+        ConstMap_Destroy(properties);
+    }
+
     return;
 }
 
@@ -88,6 +126,8 @@ static int simulated_device_worker(void * user_data)
                 }
                 else
                 {
+                    char msgText[128];
+
                     newMessageCfg.sourceProperties = newProperties;
                     if ((avgTemperature + additionalTemp) > maxSpeed)
                         additionalTemp = 0.0;
@@ -98,6 +138,12 @@ static int simulated_device_worker(void * user_data)
                     }
                     else
                     {
+                        (void)printf("Device: %s, Temperature: %.2f\r\n",
+                            module_data->fakeMacAddress,
+                            avgTemperature + additionalTemp
+                            );
+                        (void)fflush(stdout);
+
                         newMessageCfg.size = strlen(msgText);
                         newMessageCfg.source = (const unsigned char*)msgText;
 
