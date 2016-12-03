@@ -183,6 +183,7 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_ver
 static void print_string(const char* name, const char* timestamp, const CONSTBUFFER* buffer)
 {
     printf("[%s] %s: %.*s\r\n", timestamp, name, (int)buffer->size, buffer->buffer);
+    (void)fflush(stdout);
 }
 
 /**
@@ -222,6 +223,7 @@ static void print_temperature(const char* name, const char* timestamp, const CON
             ambient,
             object
         );
+        (void)fflush(stdout);
     }
 }
 
@@ -233,4 +235,5 @@ static void print_default(const char* name, const char* timestamp, const CONSTBU
         printf("%02X ", buffer->buffer[i]);
     }
     printf("\r\n");
+    (void)fflush(stdout);
 }
