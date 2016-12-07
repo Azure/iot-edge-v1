@@ -140,7 +140,4 @@ In your main pom.xml file, add the Azure IoT Gateway SDK Java binding as a depen
 
 This repository contains a sample gateway that includes modules written in Java that illustrate how to write modules in Java and use the Microsoft Azure IoT Gateway SDK. For more information, see the [readme][readme].
 
-To learn how to run a simple *Getting started* gateway that passes messages around, see [How-To (Java)][lnk-getstarted].
-
-[readme]: ../README.md
-[lnk-getstarted]: java_how_to.md
+[readme]: ./README.md

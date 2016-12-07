@@ -12,11 +12,11 @@ As mentioned in the Dev Box Setup guide, we recommend you create your modules as
 Creating a Java module is easy:
 - **Include the Java binding project in your Maven project (Described in the Dev Box Setup guide)**
 - **Implement the methods**
-  
+
   In order to create a proper module that can be recognized by the gateway, it must extend the ```GatewayModule``` abstract class.
   After extending the ```GatewayModule``` abstract class, you must override the ```public void receive(Message message)``` and ```public void destroy()``` methods and provide a constructor that calls the super constructor.
   Optionally, you may override the ```public void start()``` method which is called to notify modules that it is safe to start processing and sending messages.
-  
+
   ```java
   public class YourModule extends GatewayModule {
     /**
@@ -24,7 +24,7 @@ Creating a Java module is easy:
      * constructor before any module-specific constructor code.
      *
      * The {@code address} parameter must be passed to the super constructor but can be ignored by the module-implementor when writing a module implementation.
-     * 
+     *
      * @param address       The address of the native module pointer
      * @param broker        The {@link Broker} to which this module belongs
      * @param configuration The module-specific configuration
@@ -50,17 +50,17 @@ Creating a Java module is easy:
     }
   }
   ```
-  
+
   To see details on each method, you may see the GatewayModule.java and IGatewayModule.java sources.
-  
+
 - **Publish messages**
 
   Each module has its own ```Broker``` object. Calling the ```Module```s ```int publish(Message message)``` method will publish any message to this ```Broker```.
-  
+
 - **JSON Configuration**
-  
-  A gateway is configured using a JSON configuration file. As a reference, you can see the JSON configuration file located [here](../samples/java_sample/src/java_sample_win.json).
-  
+
+  A gateway is configured using a JSON configuration file. As a reference, you can see the JSON configuration file located [here](./src/java_sample_win.json).
+
   ```json
   {
       "module name": "<<Friendly name for your module>>",
@@ -82,10 +82,10 @@ Creating a Java module is easy:
       }
     }
   ```
-  
+
   According to [Java documentation](https://docs.oracle.com/javase/tutorial/essential/environment/paths.html) one may also set the CLASSPATH environment
   variable rather than including it in this configuration.
-  
+
   **Note:** The "jvm_options" section is not necessary. If ommitted, a default configuration will be used. If included and multiple Java modules
   will be loaded, all configurations MUST be the same. If multiple "jvm_options" configurations are not the same, creation will fail.
   The default configuration is:
@@ -101,7 +101,7 @@ Creating a Java module is easy:
         }
   }
   ```
-  
+
   **Note:** Since the JVM is only loaded once, the full classpath must be set and be the same across all module in a configuration. Similar to the
   "jvm_options" section, if the classpath differs across configuration, creation will fail.
 
@@ -142,7 +142,7 @@ If using cmake and msbuild or make:
   - ```-DJDK_ARCH={jdk_arch}```
   - If using msbuild on Windows: ```msbuild /m /p:Configuration=[Debug | Release] /p:Platform=Win32 azure_iot_gateway_sdk.sln```
   - If using make on Linux: ```make```
-  
+
 ###Running the samples
 On windows:
   - ```cd {project_root}\build\samples\java_sample```

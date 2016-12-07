@@ -6,7 +6,7 @@ Overview
 
 This document specifies the requirements for the gateway module that enables
 interoperability between the gateway itself and modules written in JavaScript
-running on Node.js. The [high level design](./node_bindings_hld.md) contains
+running on Node.js. The [high level design](./nodejs_binding_hld.md) contains
 information on the general approach and might be a more useful read in order to
 understand how the binding works.
 

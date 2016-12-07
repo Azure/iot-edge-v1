@@ -5,7 +5,7 @@ This document describes the simulated device module.
 
 ## Reference
 
-[module.h](../../../../devdoc/module.md)
+[module.h](../../../core/devdoc/module.md)
 
 ### Expected Arguments
 

@@ -1,19 +1,19 @@
 # Azure Functions Module Requirements
 
 ## Overview
-This document describes the Azure Functions module.  This module gets messages received from other modules and sends as an http POST, triggering an Azure Function. 
- 
-#### Http GET 
-This module sends an HTTP POST to https://<hostAddress>/<relativepath>?name=myGatewayDevice. It add the content of all messages received on the Body of the POST (Content-Type: application/json) and also 
+This document describes the Azure Functions module.  This module gets messages received from other modules and sends as an http POST, triggering an Azure Function.
+
+#### Http GET
+This module sends an HTTP POST to https://<hostAddress>/<relativepath>?name=myGatewayDevice. It add the content of all messages received on the Body of the POST (Content-Type: application/json) and also
 adds an HTTP HEADER for key/code credential (if key configurations if present).
 
 
 ## References
-[module.h](../../../../devdoc/module.md)
+[module.h](../../../core/devdoc/module.md)
 
 [Azure Functions Module](azure_functions.md)
 
-[httpapiex.h](../../../../azure-c-shared-utility/c/inc/httpapiex.h)
+[httpapiex.h](../../../deps/c-utility/inc/azure_c_shared_utility/httpapiex.h)
 
 [Introduction to Azure Functions](https://azure.microsoft.com/en-us/blog/introducing-azure-functions/)
 
@@ -33,8 +33,8 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_ver
 
 ## Module_GetApi
 
-This is the primary public interface for the module.  It returns a pointer to 
-the `MODULE_API` structure containing the implementation functions for this module.  
+This is the primary public interface for the module.  It returns a pointer to
+the `MODULE_API` structure containing the implementation functions for this module.
 The following functions are the implementation of those APIs.
 
 **SRS_AZUREFUNCTIONS_04_020: [** `Module_GetApi` shall return the `MODULE_API` structure. **]**
@@ -44,8 +44,8 @@ The following functions are the implementation of those APIs.
 void* AzureFunctions_ParseConfigurationFromJson(const void* configuration);
 ```
 This function creates the configuration data for the Azure Functions module.
-This function expects a string representing a JSON object with two 
-values--hostAddress and relativePath--which together form the URL to an Azure 
+This function expects a string representing a JSON object with two
+values--hostAddress and relativePath--which together form the URL to an Azure
 Function.
 
 **SRS_AZUREFUNCTIONS_05_003: [** If `configuration` is NULL then
@@ -53,28 +53,28 @@ Function.
 
 **SRS_AZUREFUNCTIONS_05_004: [** If `configuration` is not a JSON string, then `AzureFunctions_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
-**SRS_AZUREFUNCTIONS_05_005: [** `AzureFunctions_ParseConfigurationFromJson` shall parse the 
+**SRS_AZUREFUNCTIONS_05_005: [** `AzureFunctions_ParseConfigurationFromJson` shall parse the
 `configuration` as a JSON array of strings. **]**
 
-**SRS_AZUREFUNCTIONS_05_006: [** If the array object does not contain a value 
-named "hostAddress" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return 
+**SRS_AZUREFUNCTIONS_05_006: [** If the array object does not contain a value
+named "hostAddress" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return
 NULL. **]**
 
-**SRS_AZUREFUNCTIONS_05_007: [** If the array object does not contain a value 
-named "relativePath" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return 
+**SRS_AZUREFUNCTIONS_05_007: [** If the array object does not contain a value
+named "relativePath" then `AzureFunctions_ParseConfigurationFromJson` shall fail and return
 NULL. **]**
 
-**SRS_AZUREFUNCTIONS_05_019: [** If the array object contains a value named 
-"key" then `AzureFunctions_ParseConfigurationFromJson` shall create a securityKey based on 
+**SRS_AZUREFUNCTIONS_05_019: [** If the array object contains a value named
+"key" then `AzureFunctions_ParseConfigurationFromJson` shall create a securityKey based on
 input key **]**
 
-**SRS_AZUREFUNCTIONS_05_008: [** `AzureFunctions_ParseConfigurationFromJson` shall call 
+**SRS_AZUREFUNCTIONS_05_008: [** `AzureFunctions_ParseConfigurationFromJson` shall call
 STRING_construct to create hostAddress based on input host address. **]**
 
-**SRS_AZUREFUNCTIONS_05_009: [** `AzureFunctions_ParseConfigurationFromJson` shall call 
+**SRS_AZUREFUNCTIONS_05_009: [** `AzureFunctions_ParseConfigurationFromJson` shall call
 STRING_construct to create relativePath based on input host address. **]**
 
-**SRS_AZUREFUNCTIONS_05_010: [** If creating the strings fails, then 
+**SRS_AZUREFUNCTIONS_05_010: [** If creating the strings fails, then
 `AzureFunctions_ParseConfigurationFromJson` shall fail and return NULL. **]**
 
 **SRS_AZUREFUNCTIONS_17_001: [** `AzureFunctions_ParseConfigurationFromJson` shall allocate an `AZURE_FUNCTIONS_CONFIG` structure. **]**
@@ -84,7 +84,7 @@ STRING_construct to create relativePath based on input host address. **]**
 **SRS_AZUREFUNCTIONS_17_003: [** `AzureFunctions_ParseConfigurationFromJson` shall return `NULL` on failure. **]**
 
 
-**SRS_AZUREFUNCTIONS_05_014: [** `AzureFunctions_ParseConfigurationFromJson` shall release 
+**SRS_AZUREFUNCTIONS_05_014: [** `AzureFunctions_ParseConfigurationFromJson` shall release
 all data it allocated. **]**
 
 ## AzureFunctions_FreeConfiguration
@@ -103,9 +103,9 @@ Thsi function releases any resources allocated by `AzureFunctions_ParseConfigura
 MODULE_HANDLE AzureFunctions_Create(BROKER_HANDLE broker, const void* configuration);
 ```
 
-This function creates the Azure Functions module. This function expects a 
-`AZURE_FUNCTIONS_CONFIG`, which contains three strings--hostAddress, 
-relativePath, and securityKey (optional)--which together form the URL to an 
+This function creates the Azure Functions module. This function expects a
+`AZURE_FUNCTIONS_CONFIG`, which contains three strings--hostAddress,
+relativePath, and securityKey (optional)--which together form the URL to an
 Azure Function.
 
 **SRS_AZUREFUNCTIONS_04_001: [** Upon success, this function shall return a valid pointer to a `MODULE_HANDLE`. **]**
@@ -124,7 +124,7 @@ typedef struct AZURE_FUNCTIONS_DATA_TAG
     BROKER_HANDLE broker;
     AZURE_FUNCTIONS_CONFIG *AzureFunctionsConfiguration;
 } AZURE_FUNCTIONS_DATA;
-```    
+```
 
 Where `broker` is the message broker passed in as input, `AzureFunctionsConfiguration` is structure with the 3 `STRING_HANDLE` for
 `hostAddress`,`relativePath` and `securityKey`.
@@ -157,7 +157,7 @@ This function released all resources owned by the module specified by the `modul
 static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
 
-This function will be the main work of this module. The processing of each 
+This function will be the main work of this module. The processing of each
 message in pseudocode is as follows:
 
 
