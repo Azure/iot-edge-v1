@@ -3,6 +3,12 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
+if(NOT IS_DIRECTORY $ENV{NETFXSDKDir})
+    message(FATAL_ERROR "Environment variable NETFXSDKDir is not defined.")
+endif()
+
+set(NETFXSdkDir $ENV{NETFXSDKDir})
+
 set(dotnet_sources
     ./src/dotnet.cpp
 )
@@ -14,6 +20,7 @@ set(dotnet_headers
 include_directories(./inc)
 include_directories(${GW_INC})
 include_directories(${IOTHUB_CLIENT_INC_FOLDER})
+include_directories(${NETFXSdkDir}Include/um)
 
 #this builds the dotnet dynamic library
 add_library(dotnet MODULE ${dotnet_sources} ${dotnet_headers})
