@@ -15,6 +15,21 @@ namespace Microsoft.Azure.IoT.Gateway
     public class NativeDotNetHostWrapper
     {
         /// <summary>
+        /// Gateways the create from json.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
+        [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_Gateway_CreateFromJson", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GatewayCreateFromJson([MarshalAs(UnmanagedType.LPStr)] string filePath);
+
+        /// <summary>
+        /// Gateways the destroy.
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <returns>IntPtr.</returns>
+        [DllImport(@"dotnet.dll", EntryPoint = "Module_DotNetHost_Gateway_Destroy", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GatewayDestroy(IntPtr gateway);
+
+        /// <summary>
         ///      Module_DotNetHost wrapper for publishing a message.
         /// </summary>
         /// <param name="broker">Handle to the message broker.</param>

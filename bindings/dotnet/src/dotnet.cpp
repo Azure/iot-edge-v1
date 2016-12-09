@@ -8,6 +8,7 @@
 
 #include "azure_c_shared_utility/gballoc.h"
 
+#include "gateway.h"
 #include "module.h"
 #include "message.h"
 #include "azure_c_shared_utility/xlogging.h"
@@ -611,6 +612,16 @@ static void DotNet_Destroy(MODULE_HANDLE module)
         /* Codes_SRS_DOTNET_04_020: [ DotNet_Destroy shall free all resources associated with the given module.. ] */
         delete(handleData);
     }
+}
+
+MODULE_EXPORT GATEWAY_HANDLE Module_DotNetHost_Gateway_CreateFromJson(const char* file_path)
+{
+	return Gateway_CreateFromJson(file_path);
+}
+
+MODULE_EXPORT void Module_DotNetHost_Gateway_Destroy(GATEWAY_HANDLE handle)
+{
+	Gateway_Destroy(handle);
 }
 
 MODULE_EXPORT bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size)
