@@ -1165,7 +1165,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
     /*Tests_SRS_IOTHUBMODULE_02_008: [ Otherwise, `IotHub_Create` shall return a non-`NULL` handle. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_006: [ `IotHub_Create` shall create an empty `VECTOR` containing pointers to `PERSONALITY`s. ]*/
-    /*Tests_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. ]*/
+    /*Tests_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol` or `AMQP_Protocol`, `IotHub_Create` shall create a shared transport by calling `IoTHubTransport_Create`. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_029: [ `IotHub_Create` shall create a copy of `configuration->IoTHubSuffix`. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_028: [ `IotHub_Create` shall create a copy of `configuration->IoTHubName`. ]*/
     /*Tests_SRS_IOTHUBMODULE_17_004: [ `IotHub_Create` shall store the broker. ]*/
@@ -1186,8 +1186,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, STRING_construct(suffix));
 
-        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix))
-            .IgnoreAllArguments();
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(HTTP_Protocol, name, suffix));
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1200,7 +1199,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Destroy(module);
     }
 
-    TEST_FUNCTION(IotHub_Create_does_not_create_a_transport_for_AMQP)
+    TEST_FUNCTION(IotHub_Create_creates_a_transport_for_AMQP)
     {
         ///arrange
         IotHubMocks mocks;
@@ -1215,8 +1214,7 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         EXPECTED_CALL(mocks, STRING_construct(suffix));
 
-        EXPECTED_CALL(mocks, IoTHubTransport_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .NeverInvoked();
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(AMQP_Protocol, name, suffix));
 
         ///act
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
@@ -1820,16 +1818,17 @@ BEGIN_TEST_SUITE(iothub_ut)
 
     }
 
-    /*Tests_SRS_IOTHUBMODULE_05_003: [ If a new personality is created and the module's transport has not already been created, an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_Create` with the corresponding transport provider. ]*/
-    TEST_FUNCTION(IotHub_Receive_creates_a_client_with_AMQP_transport)
+    /*Tests_SRS_IOTHUBMODULE_05_013: [ If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. ]*/
+    TEST_FUNCTION(IotHub_Receive_creates_a_client_with_an_existing_AMQP_transport)
     {
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
         IOTHUB_CLIENT_TRANSPORT_PROVIDER transport = AMQP_Protocol;
         AutoConfig config(transport);
 
-        EXPECTED_CALL(mocks, IoTHubClient_Create(IGNORED_PTR_ARG))
-            .ValidateArgumentBuffer(1, &transport, sizeof(IOTHUB_CLIENT_TRANSPORT_PROVIDER));
+        STRICT_EXPECTED_CALL(mocks, IoTHubTransport_Create(transport, name, suffix));
+        EXPECTED_CALL(mocks, IoTHubClient_CreateWithTransport(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .ValidateArgumentBuffer(2, &transport, sizeof(IOTHUB_CLIENT_TRANSPORT_PROVIDER));
 
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
 

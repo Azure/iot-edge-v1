@@ -19,8 +19,8 @@ send a message with the following properties:
 The body of the message will be sent to IoT Hub on behalf of the given device.
 
 The IotHub module dynamically creates per-device instances of IoTHubClient. It can be configured to use any of the protocols supported by 
-IoTHubClient. Note that only the HTTP transport currently supports sharing one TCP connection across many devices; the AMQP and MQTT transports do
-not. If the IoTHub module is configured to use either AMQP or MQTT, it will create one TCP connection per device.
+IoTHubClient. Note that the AMQP and HTTP transports will share one TCP connection for all devices; the MQTT transport will create a new
+TCP connection for each device.
 
 #### Receiving messages from IoT Hub 
 Upon reception of a message from IoT Hub, this module will publish a message to the broker with the following properties:
@@ -86,7 +86,7 @@ Creates a new IotHub module instance. `configuration` is a pointer to structure 
 **SRS_IOTHUBMODULE_02_002: [** If `configuration` is `NULL` then `IotHub_Create` shall fail and return `NULL`. **]**
 **SRS_IOTHUBMODULE_02_003: [** If `configuration->IoTHubName` is `NULL` then `IotHub_Create` shall and return `NULL`. **]**
 **SRS_IOTHUBMODULE_02_004: [** If `configuration->IoTHubSuffix` is `NULL` then `IotHub_Create` shall fail and return `NULL`. **]**
-**SRS_IOTHUBMODULE_17_001: [** If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. **]**
+**SRS_IOTHUBMODULE_17_001: [** If `configuration->transportProvider` is `HTTP_Protocol` or `AMQP_Protocol`, `IotHub_Create` shall create a shared transport by calling `IoTHubTransport_Create`. **]**
 **SRS_IOTHUBMODULE_17_002: [** If creating the shared transport fails, `IotHub_Create` shall fail and return `NULL`. **]**
 
 Each {device ID, device key, IoTHubClient handle} triplet is referred to as a "personality".  

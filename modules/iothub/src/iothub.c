@@ -248,9 +248,10 @@ static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configurati
             else
             {
                 result->transportProvider = config->transportProvider;
-                if (result->transportProvider == HTTP_Protocol)
+                if (result->transportProvider == HTTP_Protocol ||
+                    result->transportProvider == AMQP_Protocol)
                 {
-                    /*Codes_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol`, `IotHub_Create` shall create a shared HTTP transport by calling `IoTHubTransport_Create`. ]*/
+                    /*Codes_SRS_IOTHUBMODULE_17_001: [ If `configuration->transportProvider` is `HTTP_Protocol` or `AMQP_Protocol`, `IotHub_Create` shall create a shared transport by calling `IoTHubTransport_Create`. ]*/
                     result->transportHandle = IoTHubTransport_Create(config->transportProvider, config->IoTHubName, config->IoTHubSuffix);
                     if (result->transportHandle == NULL)
                     {
