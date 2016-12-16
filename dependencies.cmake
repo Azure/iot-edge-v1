@@ -45,9 +45,7 @@ else()
     find_package(PkgConfig REQUIRED)
 
     #If using a custom install prefix, tell find pkg to use it instead of defaults
-    if(DEFINED ${dependency_install_prefix})
-        set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-    endif()
+    set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 
     pkg_search_module(NANOMSG QUIET nanomsg)
     if(NOT NANOMSG_FOUND)

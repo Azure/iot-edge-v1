@@ -163,7 +163,6 @@ else()
     target_link_libraries(gateway uuid)
 endif()
 
-#set_target_properties(gateway PROPERTIES FOLDER "Gateway")
 #this adds the tests to the build process
 if(NOT ${skip_unittests})
     add_subdirectory(tests)

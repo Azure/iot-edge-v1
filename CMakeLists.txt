@@ -29,7 +29,11 @@ set(${dependency_install_prefix} ${dependency_install_prefix} CACHE INTERNAL "")
 
 if(DEFINED ${dependency_install_prefix})
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${dependency_install_prefix})
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${dependency_install_prefix}/lib)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${dependency_install_prefix}/${CMAKE_INSTALL_LIBDIR})
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+else()
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX})
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
@@ -116,11 +120,11 @@ endfunction()
     
 function(add_sample_to_solution sampleName)
   set_target_properties(${sampleName} PROPERTIES FOLDER "Samples")
-  if(DEFINED ${dependency_install_prefix})
+  #if(DEFINED ${dependency_install_prefix})
     set_target_properties(${sampleName} PROPERTIES
       BUILD_WITH_INSTALL_RPATH TRUE
     )
-  endif()
+  #endif()
 endfunction()
 
 
