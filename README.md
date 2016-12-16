@@ -1,13 +1,24 @@
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments
 
 # Azure IoT Gateway SDK
-Using this SDK, developers write applications that enable gateway-connected devices to 
-communicate with Azure IoT Hub. Such applications use a collection of **modules** to aggregate 
-and transform data, process commands, or perform any number of related tasks. Modules 
-communicate with one another via a message broker. Developers can choose from available modules 
-or write their own to create gateways tailored to any scenario.
+IoT scenarios vary drastically between industries and even between customers within the same industry. 
+The Azure IoT Gateway SDK lets you build IoT solutions tailored to your exact scenario. Connect new 
+or existing devices, regardless of protocol. Process the data in an on-premises gateway using the 
+language of your choice (Java, C#, Node.js, or C), before sending it to the cloud. Deploy the solution 
+on hardware that meets your performance needs and runs the operating system of your choice.
 
-Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
+In the image below an existing device has been connected to the cloud using edge intelligence. The 
+on-premises gateway not only preforms protocol adaptation which allows the device to send data to the 
+cloud, it also filters the data so that only the most important information is uploaded.
+
+![](doc/media/READMEDiagram.png)
+
+Using existing modules from the Azure IoT Gateway SDK ecosystem significantly reduces your development 
+and maintenance costs.  Running the gateway on-premises opens up all kinds of scenarios like 
+communicating between devices in real time, operating your IoT solution with an intermittent cloud 
+connection, or enforcing additional security requirements.
+
+Visit https://azure.microsoft.com/en-us/services/iot-hub/iot-gateway-sdk/ to learn more about the Azure IoT Gateway SDK. 
 
 ## SDK Modules
 The following modules are available in this repository:
@@ -26,7 +37,7 @@ Other people are creating modules for the gateway SDK too! See the **More inform
 a module to find out how to get it, who supports it, etc.
 >| Name          | More information                            | Targets gateway SDK version |
 >|---------------|---------------------------------------------|-----------------------------|
->| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2016-11-02                  |
+>| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2016-11-18                  |
 >| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-18                  |
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 
