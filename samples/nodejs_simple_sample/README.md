@@ -123,12 +123,22 @@ On a terminal windows follow these steps:
 Here is a sample of the gateway_sample.json file filled:
 ```
 {
+"loaders": [
+        {
+            "type": "node",
+            "name": "node",
+            "configuration": {
+                "binding.path": "../../../build/bindings/nodejs/libnodejs_binding.so"
+            }
+        }
+    ],
+
     "modules": [
         {
             "name": "node_printer",
             "loader": {
                 "name": "node",
-                "main.path": "./samples/nodejs_simple_sample/nodejs_modules/printer.js"
+                "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
             },
             "args": null
         },
@@ -137,7 +147,7 @@ Here is a sample of the gateway_sample.json file filled:
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "./samples/nodejs_simple_sample/nodejs_modules/sensor.js"
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js"
                 }
             },
             "args": null
@@ -147,7 +157,7 @@ Here is a sample of the gateway_sample.json file filled:
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "./samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
                 }
             },
             "args": {
@@ -159,7 +169,7 @@ Here is a sample of the gateway_sample.json file filled:
             "loader": {
                 "name": "native",
                 "entrypoint": {
-                    "module.path": "../../modules/logger/liblogger.so"
+                    "module.path": "../../../build/modules/logger/liblogger.so"
                 }
             },
             "args": {
@@ -183,3 +193,19 @@ Here is a sample of the gateway_sample.json file filled:
     ]
 }
 ```
+
+On successful run you should see **sample** output like this
+
+`````
+Gateway is running. Press return to quit.
+printer.receive - 47, 33
+printer.receive - 11, 12
+printer.receive - 39, 30
+printer.receive - 30, 21
+printer.receive - 12, 0
+
+Gateway is quitting
+printer.destroy
+sensor.destroy
+iothub_writer.destroy
+`````
