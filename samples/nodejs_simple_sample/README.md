@@ -138,7 +138,10 @@ Here is a sample of the gateway_sample.json file filled:
             "name": "node_printer",
             "loader": {
                 "name": "node",
+                "entrypoint": {
                 "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
+				}
+                
             },
             "args": null
         },
