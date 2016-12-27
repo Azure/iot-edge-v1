@@ -35,7 +35,7 @@ In order to run a gateway with a Node.js module do the following:
 - Edit file under <\<your azure gateway repo>>\samples\nodejs_simple_sample\src\gateway_sample.json
 - Copy the configuration values from the sample given below.
 - On folder <\<your azure gateway repo>>\build\samples\nodejs_simple_sample\Debug run the following command: 
-- nodejs_simple_sample ..\..\..\..\samples\nodejs_simple_sample\src\gateway_sample.json
+- nodejs_simple_sample ..\..\..\..\samples\nodejs_simple_sample\src\gateway_sample_lin.json
 
 ```
 {
