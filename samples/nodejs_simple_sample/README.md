@@ -141,8 +141,7 @@ Here is a sample of the gateway_sample.json file filled:
                 "entrypoint": {
                 "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
 				}
-                
-            },
+           },
             "args": null
         },
         {
