@@ -21,7 +21,7 @@ mkdir %build-root%
 pushd %build-root%
 
 rem Clone Node.js
-git clone -b shared-691 https://github.com/avranju/node.git
+git clone -b shared-691 --depth 1 https://github.com/avranju/node.git
 pushd node
 
 rem Build Node.js
