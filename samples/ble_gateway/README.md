@@ -85,11 +85,12 @@ Running the sample
 ------------------
 
 In order to bootstrap and run the sample, you'll need to configure each module
-that participates in the gateway. This configuration is provided as JSON. All
-5 participating modules will need to be configured. There is a sample JSON file
-provided in the repo called `gateway_sample.json` which you can use as a
-starting point for building your own configuration file. You should find the
-file at the path `samples/ble_gateway/src` relative to the root of the repo.
+that participates in the gateway. This configuration is provided as a JSON file,
+which must be encoded either as ASCII or UTF-8. All 5 participating modules will need
+to be configured. There is a sample JSON file provided in the repo called
+`gateway_sample.json` which you can use as a starting point for building your
+own configuration file. You should find the file at the path
+`samples/ble_gateway/src` relative to the root of the repo.
 
 In order to run the sample you'll run the `ble_gateway` binary passing the
 path to the configuration JSON file. The following command assumes that you are

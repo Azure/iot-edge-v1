@@ -42,7 +42,7 @@ Running the sample
 ------------------
 
 In order to run the sample you'll need to configure the Azure Functions module.
-This configuration is provided as JSON. There is a sample JSON file
+This configuration is provided as a JSON file, which must be encoded either as ASCII or UTF-8. There is a sample JSON file
 provided in the repo called `azure_functions_lin.json` for linux or `azure_functions_win.json` for windows.
 Edit this file and provice the 3 parameters `hostname`, `relativePath` and `key`(optional).
 

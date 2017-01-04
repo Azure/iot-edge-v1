@@ -59,7 +59,7 @@ Creating a Java module is easy:
 
 - **JSON Configuration**
 
-  A gateway is configured using a JSON configuration file. As a reference, you can see the JSON configuration file located [here](./src/java_sample_win.json).
+  A gateway is configured using a JSON configuration file. The file must be encoded either as ASCII or UTF-8. As a reference, you can see the JSON configuration file located [here](./src/java_sample_win.json).
 
   ```json
   {

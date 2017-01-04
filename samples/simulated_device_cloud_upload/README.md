@@ -84,7 +84,7 @@ match the ids of the two devices you added to your IoT hub, and that the `device
 
 - Run `$ ./samples/simulated_device_cloud_upload/simulated_device_cloud_upload_sample <path to JSON config file>`
 
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json'. 
+>Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json'. 
 
 Windows
 
@@ -110,5 +110,5 @@ match the ids of the two devices you added to your IoT hub, and that the `device
 
 - Run `.\simulated_device_cloud_upload_sample.exe <path to JSON config file>`
 
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\simulated_device_cloud_upload\src\simulated_device_cloud_upload_win.json'.
+>Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\simulated_device_cloud_upload\src\simulated_device_cloud_upload_win.json'.
 
