@@ -96,12 +96,12 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
         {
             /*Codes_SRS_NODEJS_13_006: [ NodeJS_Create shall allocate memory for an instance of the NODEJS_MODULE_HANDLE_DATA structure and use that as the backing structure for the module handle. ]*/
             NODEJS_MODULE_HANDLE_DATA handle_data_input
-            {
+            (
                 broker,
                 STRING_c_str(module_config->main_path),
                 STRING_c_str(module_config->configuration_json),
                 on_module_start
-            };
+            );
 
             try
             {
@@ -1287,6 +1287,7 @@ void call_start_on_module(NODEJS_MODULE_HANDLE_DATA* handle_data)
         });
     });
 }
+
 void NODEJS_Start(MODULE_HANDLE module)
 {
     /*Codes_SRS_NODEJS_13_020: [ NodeJS_Receive shall do nothing if module is NULL. ]*/
@@ -1302,6 +1303,7 @@ void NODEJS_Start(MODULE_HANDLE module)
         call_start_on_module(handle_data);
     }
 }
+
 /*
 *    Required for all modules:  the public API and the designated implementation functions.
 */

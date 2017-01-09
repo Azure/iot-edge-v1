@@ -34,9 +34,9 @@ using namespace nodejs_module;
 "})();"
 
 ModulesManager::ModulesManager() :
-    m_nodejs_thread{ nullptr },
-    m_moduleid_counter{ 0 },
-    m_node_initialized{ false }
+    m_nodejs_thread(nullptr),
+    m_moduleid_counter(0),
+    m_node_initialized(false)
 {}
 
 ModulesManager::~ModulesManager()
@@ -112,19 +112,19 @@ void ModulesManager::ReleaseLock() const
 
 bool ModulesManager::HasModule(size_t module_id) const
 {
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
     return m_modules.find(module_id) != m_modules.end();
 }
 
 NODEJS_MODULE_HANDLE_DATA& ModulesManager::GetModuleFromId(size_t module_id)
 {
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
     return m_modules[module_id];
 }
 
 bool ModulesManager::IsNodeInitialized() const
 {
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
     return m_node_initialized;
 }
 
@@ -133,7 +133,7 @@ NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_
     NODEJS_MODULE_HANDLE_DATA* result;
 
     /*Codes_SRS_NODEJS_MODULES_MGR_13_005: [ AddModule shall acquire a lock on the ModulesManager object. ]*/
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
 
     // start NodeJS if not already started
     if (m_nodejs_thread == nullptr)
@@ -152,7 +152,7 @@ NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_
             m_modules.insert(
                 std::make_pair(
                     module_id,
-                    NODEJS_MODULE_HANDLE_DATA{ handle_data, module_id }
+                    NODEJS_MODULE_HANDLE_DATA(handle_data, module_id)
                 )
             );
 
@@ -193,7 +193,7 @@ NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_
 void ModulesManager::RemoveModule(size_t module_id)
 {
     /*Codes_SRS_NODEJS_MODULES_MGR_13_012: [ RemoveModule shall acquire a lock on the ModulesManager object. ]*/
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
     auto entry = m_modules.find(module_id);
     if (entry != m_modules.end())
     {
@@ -218,7 +218,7 @@ void ModulesManager::JoinNodeThread() const
 {
     THREAD_HANDLE thread;
     {
-        LockGuard<ModulesManager> lock_guard{ *this };
+        LockGuard<ModulesManager> lock_guard(*this);
         thread = m_nodejs_thread;
     }
 
@@ -253,7 +253,7 @@ int ModulesManager::NodeJSRunner()
 
     // reset object state to indicate that the node thread has now
     // left the building
-    LockGuard<ModulesManager> lock_guard{ *this };
+    LockGuard<ModulesManager> lock_guard(*this);
     m_nodejs_thread = nullptr;
     m_node_initialized = false;
 
@@ -268,7 +268,7 @@ int ModulesManager::NodeJSRunnerInternal(void* user_data)
 void ModulesManager::OnNodeInitComplete(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     auto manager = ModulesManager::Get();
-    LockGuard<ModulesManager> lock_guard{ *manager };
+    LockGuard<ModulesManager> lock_guard(*manager);
     manager->m_node_initialized = true;
     for (const auto& callback : manager->m_call_on_init)
     {

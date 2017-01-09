@@ -57,31 +57,31 @@ private:
 
 public:
     MockModule() :
-        m_broker{ nullptr },
-        m_received_message{ false }
+        m_broker(nullptr),
+        m_received_message(false)
     {}
 
     bool get_received_message()
     {
-        LockGuard<MockModule> lock_guard{ *this };
+        LockGuard<MockModule> lock_guard(*this);
         return m_received_message;
     }
 
     void reset()
     {
-        LockGuard<MockModule> lock_guard{ *this };
+        LockGuard<MockModule> lock_guard(*this);
         m_received_message = false;
     }
 
     void create(BROKER_HANDLE broker, const void* configuration)
     {
-        LockGuard<MockModule> lock_guard{ *this };
+        LockGuard<MockModule> lock_guard(*this);
         m_broker = broker;
     }
 
     void receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
     {
-        LockGuard<MockModule> lock_guard{ *this };
+        LockGuard<MockModule> lock_guard(*this);
         m_received_message = true;
     }
 
@@ -101,7 +101,7 @@ public:
 
     void publish_mock_message()
     {
-        LockGuard<MockModule> lock_guard{ *this };
+        LockGuard<MockModule> lock_guard(*this);
 
         MAP_HANDLE message_properties = Map_Create(NULL);
         Map_Add(message_properties, "p1", "v1");
@@ -200,7 +200,7 @@ public:
 
     void Write(std::string contents)
     {
-        std::ofstream stream{ file_path };
+        std::ofstream stream(file_path);
         stream << contents;
     }
 
@@ -247,8 +247,8 @@ private:
 
 public:
     NotifyResult() :
-        m_notify_result{ false },
-        m_notify_result_called{ false }
+        m_notify_result(false),
+        m_notify_result_called(false)
     {}
 
     void AcquireLock() const
@@ -263,31 +263,31 @@ public:
 
     bool WasCalled()
     {
-        LockGuard<NotifyResult> lock_guard{ *this };
+        LockGuard<NotifyResult> lock_guard(*this);
         return m_notify_result_called;
     }
 
     bool GetResult()
     {
-        LockGuard<NotifyResult> lock_guard{ *this };
+        LockGuard<NotifyResult> lock_guard(*this);
         return m_notify_result;
     }
 
     void SetCalled(bool called)
     {
-        LockGuard<NotifyResult> lock_guard{ *this };
+        LockGuard<NotifyResult> lock_guard(*this);
         m_notify_result_called = called;
     }
 
     void SetResult(bool result)
     {
-        LockGuard<NotifyResult> lock_guard{ *this };
+        LockGuard<NotifyResult> lock_guard(*this);
         m_notify_result = result;
     }
 
     void Reset()
     {
-        LockGuard<NotifyResult> lock_guard{ *this };
+        LockGuard<NotifyResult> lock_guard(*this);
         m_notify_result_called = false;
         m_notify_result = false;
     }
@@ -814,7 +814,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_CREATE_RETURNS_NOTHING = ""           \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    create: function (broker, configuration) {" \
+            "    create: function (broker, configuration) {"     \
             "        return false;"                              \
             "    },"                                             \
             "    receive: function(message) {"                   \
@@ -857,7 +857,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_INTERFACE_INVALID = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    foo: function (broker, configuration) {"    \
+            "    foo: function (broker, configuration) {"        \
             "        throw 'whoops';"                            \
             "    },"                                             \
             "    bar: function(message) {"                       \
@@ -899,13 +899,13 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    broker: null,"                                             \
+            "    broker: null,"                                                 \
             "    configuration: null,"                                          \
-            "    create: function (broker, configuration) {"                \
-            "        this.broker = broker;"                             \
+            "    create: function (broker, configuration) {"                    \
+            "        this.broker = broker;"                                     \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.broker.publish({});"                \
+            "            let res = this.broker.publish({});"                    \
             "            _integrationTest1.notify(res);"                        \
             "        }, 1000);"                                                 \
             "        return true;"                                              \
@@ -959,13 +959,13 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    broker: null,"                                             \
+            "    broker: null,"                                                 \
             "    configuration: null,"                                          \
-            "    create: function (broker, configuration) {"                \
-            "        this.broker = broker;"                             \
+            "    create: function (broker, configuration) {"                    \
+            "        this.broker = broker;"                                     \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.broker.publish({"                   \
+            "            let res = this.broker.publish({"                       \
             "                properties: 'boo',"                                \
             "                content: new Uint8Array(["                         \
             "                    Math.random() * 50,"                           \
@@ -1025,13 +1025,13 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_INVALID_PUBLISH = ""                                 \
             "'use strict';"                                                     \
             "module.exports = {"                                                \
-            "    broker: null,"                                             \
+            "    broker: null,"                                                 \
             "    configuration: null,"                                          \
-            "    create: function (broker, configuration) {"                \
-            "        this.broker = broker;"                             \
+            "    create: function (broker, configuration) {"                    \
+            "        this.broker = broker;"                                     \
             "        this.configuration = configuration;"                       \
             "        setTimeout(() => {"                                        \
-            "            let res = this.broker.publish({"                   \
+            "            let res = this.broker.publish({"                       \
             "                properties: {},"                                   \
             "                content: ''"                                       \
             "            });"                                                   \
@@ -1088,10 +1088,10 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_RECEIVE_IS_CALLED = ""                   \
             "'use strict';"                                         \
             "module.exports = {"                                    \
-            "    broker: null,"                                 \
+            "    broker: null,"                                     \
             "    configuration: null,"                              \
-            "    create: function (broker, configuration) {"    \
-            "        this.broker = broker;"                 \
+            "    create: function (broker, configuration) {"        \
+            "        this.broker = broker;"                         \
             "        this.configuration = configuration;"           \
             "        setTimeout(() => {"                            \
             "            _mock_module1.publish_mock_message();"     \
@@ -1181,10 +1181,10 @@ BEGIN_TEST_SUITE(nodejs_int)
         const char* MODULE_DESTROY_IS_CALLED = ""                \
             "'use strict';"                                      \
             "module.exports = {"                                 \
-            "    broker: null,"                              \
+            "    broker: null,"                                  \
             "    configuration: null,"                           \
-            "    create: function (broker, configuration) {" \
-            "        this.broker = broker;"              \
+            "    create: function (broker, configuration) {"     \
+            "        this.broker = broker;"                      \
             "        this.configuration = configuration;"        \
             "        return true;"                               \
             "    },"                                             \

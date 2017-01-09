@@ -26,12 +26,12 @@ struct NODEJS_MODULE_HANDLE_DATA
 {
     NODEJS_MODULE_HANDLE_DATA()
         :
-        broker{ nullptr },
-        on_module_start{ nullptr },
-        module_id{ 0 },
-        v8_isolate{ nullptr },
-        module_state{ NodeModuleState::error },
-        start_pending{ false }
+        broker(nullptr),
+        on_module_start(nullptr),
+        module_id(0),
+        v8_isolate(nullptr),
+        module_state(NodeModuleState::error),
+        start_pending(false)
     {
     }
 
@@ -41,14 +41,14 @@ struct NODEJS_MODULE_HANDLE_DATA
         const char* config,
         PFNMODULE_START module_start)
         :
-        broker{ broker },
-        main_path{ path },
-        configuration_json{ config == nullptr ? "null" : config },
-        on_module_start{ module_start },
-        module_id{ 0 },
-        v8_isolate{ nullptr },
-        module_state{ NodeModuleState::error },
-        start_pending{ false }
+        broker(broker),
+        main_path(path),
+        configuration_json(config == nullptr ? "null" : config),
+        on_module_start(module_start),
+        module_id(0),
+        v8_isolate(nullptr),
+        module_state(NodeModuleState::error),
+        start_pending(false)
     {
     }
 
@@ -118,25 +118,25 @@ struct NODEJS_MODULE_HANDLE_DATA
 
     NodeModuleState GetModuleState() const
     {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
         return module_state;
     }
 
     void SetModuleState(NodeModuleState state)
     {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
         module_state = state;
     }
 
     bool GetStartPending()
     {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
         return start_pending;
     }
 
     void SetStartPending(bool isPending)
     {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard{ *this };
+        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
         start_pending = isPending;
     }
 

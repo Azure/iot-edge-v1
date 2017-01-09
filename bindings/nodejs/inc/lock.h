@@ -62,7 +62,7 @@ namespace nodejs_module
         const T& m_lockable;
 
     public:
-        explicit LockGuard(const T& lockable) : m_lockable{ lockable }
+        explicit LockGuard(const T& lockable) : m_lockable(lockable)
         {
             m_lockable.AcquireLock();
         }
