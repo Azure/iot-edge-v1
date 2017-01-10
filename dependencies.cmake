@@ -55,6 +55,7 @@ else()
     #If earlier cmake
     if("${CMAKE_VERSION}" VERSION_GREATER 3.0.2)
         pkg_search_module(NANOMSG REQUIRED nanomsg)
+        set (NANOMSG_LIB_LOCATION "${NANOMSG_LIBDIR}/lib${NANOMSG_LIBRARIES}.so")
     else()
         if(DEFINED ${dependency_install_prefix})
             set(NANOMSG_INCLUDEDIR "${dependency_install_prefix}/include")
@@ -65,19 +66,32 @@ else()
             pkg_search_module(NANOMSG REQUIRED nanomsg)
             set(NANOMSG_LIBRARY_DIRS "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
         endif()
+        set (NANOMSG_LIB_LOCATION "${NANOMSG_LIBRARY_DIRS}/lib${NANOMSG_LIBRARIES}.so")
+
     endif()
 
-    add_library(nanomsg STATIC IMPORTED)
-    set(NANOMSG_INCLUDES "${NANOMSG_INCLUDEDIR}"  CACHE INTERNAL "")
-    message(STATUS "NANOMSG LIBRARIES: ${NANOMSG_LIBRARIES}")
-    message(STATUS "NANOMSG LDFLAGS: ${NANOMSG_LDFLAGS}")
-    message(STATUS "NANOMSG CFLAGS: ${NANOMSG_CFLAGS}")
-    set_target_properties(nanomsg PROPERTIES
+    if (NOT NANOMSG_LIBDIR STREQUAL "/usr/lib")
+    # There seems to be a problem in CMake if nanomsg is found in the system 
+    # default location when cross compiling. If it's anywhere 
+    # else, we can create a imported target for it.  (Actually, this might 
+    # fail for any cross compile where nanomsg points to a system directory,
+    # so this might need to be refined as we find edge cases)
+        add_library(nanomsg SHARED IMPORTED)
+
+        set_target_properties(nanomsg PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${NANOMSG_INCLUDEDIR}"
             INTERFACE_LINK_LIBRARIES "${NANOMSG_LIBRARIES}"
             INTERFACE_COMPILE_OPTIONS "${NANOMSG_LDFLAGS}"
-            IMPORTED_LOCATION "${NANOMSG_LIBRARY_DIRS}/lib${NANOMSG_LIBRARIES}.so"
+            IMPORTED_LOCATION "${NANOMSG_LIB_LOCATION}"
         )
+        message(STATUS "NANOMSG LIBRARIES: ${NANOMSG_LIBRARIES}")
+        message(STATUS "NANOMSG LDFLAGS: ${NANOMSG_LDFLAGS}")
+        message(STATUS "NANOMSG CFLAGS: ${NANOMSG_CFLAGS}")
+        message(STATUS "NANOMSG LOCATION: ${NANOMSG_LIB_LOCATION}")
+    endif()
+    set(NANOMSG_INCLUDES "${NANOMSG_INCLUDEDIR}"  CACHE INTERNAL "")
+
+
 endif()
 
 ###############################################################################
