@@ -6,7 +6,6 @@ This document describes how to prepare your development environment to use the *
 -  [Maven 3](#installmaven)
 -  [Azure IoT Gateway SDK for Java](#installgw)
    -  [Build from source](#installgwsource)
-   -  [Include using Maven](#installgwmaven)
 -  [Application Samples](#samplecode)
 
 <a name="installjava"/>
@@ -112,28 +111,10 @@ Open a command prompt and use the following commands for the steps above:
 The compiled JAR file with all dependencies bundled in can then be found at:
 
 ```
-{IoT gateway SDK root}/bindings/java/gateway-java-binding/target/gateway-java-binding-{version}-with-deps.jar
+{IoT gateway SDK root}/bindings/java/gateway-java-binding/target/gateway-java-binding-{version}.jar
 ```
 
 When you're ready to build your own module in Java, include this JAR file in your project to get the interfaces and classes that you need.
-
-<a name="installgwmaven">
-### Get the Java binding for the Azure IoT Gateway SDK from Maven (as a dependency)
-_This is the recommended method of including the Azure IoT Gateway SDK in your project, however this method will only work if your project is a Maven project_
-
-_For a guide on creating a maven project, see here: https://maven.apache.org/guides/getting-started/ _
-
-- Navigate to http://search.maven.org, search for **com.microsoft.azure.gateway** and take note of the latest version number (or the version number of whichever version of the sdk you desire to use).
-
-In your main pom.xml file, add the Azure IoT Gateway SDK Java binding as a dependency using your desired version as follows:
-```
-<dependency>
-    <groupId>com.microsoft.azure.gateway</groupId>
-    <artifactId>gateway-java-binding</artifactId>
-    <version>1.0.0</version>
-    <!--This is the current version number as of the writing of this document. Yours may be different.-->
-</dependency>
-```
 
 <a name="samplecode">
 ## Sample applications
