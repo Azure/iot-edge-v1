@@ -39,7 +39,7 @@ a module to find out how to get it, who supports it, etc.
 >|---------------|---------------------------------------------|-----------------------------|
 >| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2016-11-18                  |
 >| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-18                  |
->| GZip Compression (NodeJS) | https://github.com/Azure/iot-gateway-compression-gzip-nodejs | *latest*                  |
+>| GZip Compression (NodeJS) | https://github.com/Azure/iot-gateway-compression-gzip-nodejs | 2016-12-16                  |
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 
 more info.
