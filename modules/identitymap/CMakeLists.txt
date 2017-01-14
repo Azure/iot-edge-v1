@@ -32,6 +32,6 @@ if(install_modules)
     install(TARGETS identity_map LIBRARY DESTINATION "${LIB_INSTALL_DIR}/modules") 
 endif()
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
 	add_subdirectory(tests)
 endif()

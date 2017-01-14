@@ -34,5 +34,7 @@ add_dependencies(azure_functions_sample hello_world azure_functions)
 target_link_libraries(azure_functions_sample gateway)
 linkSharedUtil(azure_functions_sample)
 install_broker(azure_functions_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(azure_functions_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_iothub_client_dll(azure_functions_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(azure_functions_sample)

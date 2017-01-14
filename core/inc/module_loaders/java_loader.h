@@ -11,6 +11,7 @@
 #include "module_loader.h"
 #include "java_module_host.h"
 #include "gateway_version.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -74,7 +75,7 @@ typedef struct JAVA_LOADER_ENTRYPOINT_TAG
     STRING_HANDLE classPath;
 } JAVA_LOADER_ENTRYPOINT;
 
-MOCKABLE_FUNCTION(, const MODULE_LOADER*, JavaLoader_Get);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT const MODULE_LOADER*, JavaLoader_Get);
 
 #ifdef __cplusplus
 }

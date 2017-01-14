@@ -10,6 +10,14 @@ module.exports = [
             return '$1' + '$2' + versions.gateway.core;
         }
     },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "CMakeLists.txt",
+        "search": "(set\\(GATEWAY\\_VERSION[\\s]+)(\\d+.\\d+.\\d+)([\\s]+.*)",
+        "replaceString": function(versions){
+            return '$1' + versions.gateway.core + '$3';
+        }
+    },
     ///////////////////////////////////////////////////
     // Azure IoT Gateway SDK - DotNET binding
     ///////////////////////////////////////////////////

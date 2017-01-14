@@ -59,28 +59,42 @@ Creating a Java module is easy:
 
 - **JSON Configuration**
 
-  A gateway is configured using a JSON configuration file. As a reference, you can see the JSON configuration file located [here](./src/java_sample_win.json).
+  A gateway is configured using a JSON configuration file. The file must be encoded either as ASCII or UTF-8. As a reference, you can see the JSON configuration file located [here](./src/java_sample_win.json).
 
   ```json
   {
-      "module name": "<<Friendly name for your module>>",
-      "module path": "<<path/to/java_module_host.[so|dll]>>",
-      "args": {
-        "class_path": "<<Complete java class path containing all .jar and .class files necessary>>",
-        "library_path": "<<path/to/dir/containing/java_module_host.[so|dll]>>",
-        "class_name": "<<Name of your module class>>",
-        "args": <<User-defined JSON configuration for your Java module>>,
-        "jvm_options": {
-          "version": <<Version number>>,
-          "debug": [true | false],
-          "debug_port": <<Remote debugging port>>,
-          "verbose": [true | false],
-          "additional_options": [
-            "<<Any additional options>>"
-          ]
+      "loaders": [
+        {
+          "type": "java",
+          "name": "java",
+          "configuration":{
+            "jvm.options":{
+                "library.path": "<<path/to/dir/containing/java_module_host.[so|dll]>>",
+                "version": <<Version number>>,
+                "debug": [true | false],
+                "debug_port": <<Remote debugging port>>,
+                "verbose": [true | false],
+                "additional_options": [
+                  "<<Any additional options>>"
+                ]
+              }
+          }
+
         }
-      }
-    }
+      ],
+      "modules": [
+        {
+          "name": "<<Friendly name for your module>>",
+          "loader":{
+            "name": "java",
+          "entrypoint": {
+              "class.name": "<<Name of your module class>>",
+              "class.path": "<<Complete java class path containing all .jar and .class files necessary>>"
+            }
+          },
+          "args": <<User-defined JSON configuration for your Java module>>
+        }
+  }
   ```
 
   According to [Java documentation](https://docs.oracle.com/javase/tutorial/essential/environment/paths.html) one may also set the CLASSPATH environment
@@ -92,15 +106,29 @@ Creating a Java module is easy:
 
   ```json
   {
-      "jvm_options": {
-          "version": 4,
-          "debug": false,
-          "debug_port": 9876,
-          "verbose": false,
-          "additional_options": null
-        }
+    ...
+    "jvm.options": {
+      "library.path": "<<Default search paths (see below)>>",
+      "version": 5,
+      "debug": false,
+      "debug_port": 9876,
+      "verbose": false,
+      "additional_options": null
+    }
+    ...
   }
   ```
+
+  **Note:** The default search locations are as follows:
+
+  On Windows: 
+
+      %PROGRAMFILES%\azure_iot_gateway_sdk-{version}\lib\modules\java_module_host.dll
+      %PROGRAMFILES(x86)%\azure_iot_gateway_sdk-{version}\lib\modules\java_module_host.dll
+
+  On Linux:
+
+      /usr/local/lib/modules/java_module_host.so
 
   **Note:** Since the JVM is only loaded once, the full classpath must be set and be the same across all module in a configuration. Similar to the
   "jvm_options" section, if the classpath differs across configuration, creation will fail.

@@ -13,7 +13,7 @@ mkdir -p $build_root
 
 # build Node.js
 pushd $build_root
-git clone -b shared-691 https://github.com/avranju/node.git
+git clone -b shared-691 --depth 1 https://github.com/avranju/node.git
 pushd node
 ./configure --shared
 make -j $(nproc)

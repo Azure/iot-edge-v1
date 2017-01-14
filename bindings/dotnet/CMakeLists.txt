@@ -34,7 +34,7 @@ target_link_libraries(dotnet_static gateway mscoree)
 linkSharedUtil(dotnet)
 linkSharedUtil(dotnet_static)
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
 	add_subdirectory(tests)
 endif()
 

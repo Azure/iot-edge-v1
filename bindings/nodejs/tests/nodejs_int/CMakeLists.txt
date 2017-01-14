@@ -37,6 +37,11 @@ target_link_libraries(${theseTestsName}_exe ${LIBS})
 target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
 install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 copy_node_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+
+set_target_properties(${theseTestsName}_exe PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+)
 
 if(WIN32)
     target_include_directories(

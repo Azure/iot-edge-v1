@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(azure_iot_gateway_sdk)
 
-set(GATEWAY_VERSION 1.0.0 CACHE INTERNAL "")
+set(GATEWAY_VERSION 1.0.1 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -37,9 +37,13 @@ else()
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
+# tests and samples should use pre-install path to gateway.so
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/core/)
+
 #the following variables are project-wide and can be used with cmake-gui
-option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always built]" OFF)
-option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) [if possible, they are always built]" OFF)
+option(run_unittests "set run_unittests to ON to run unittests (default is OFF)" OFF)
+option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) " OFF)
+option(nuget_e2e_tests "" OFF)
 option(install_executables "should cmake run cmake's install function (that includes dynamic link libraries) [it does for yocto]" OFF)
 option(install_modules "should cmake install the default gateway modules" OFF)
 option(enable_java_binding "set enable_java_binding to ON to enable building of Java binding (default is OFF)" OFF)
@@ -50,6 +54,7 @@ option(enable_ble_module "set enable_ble_module to OFF to remove ble module from
 option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
 option(use_http "set use_http to ON if http is to be used, set to OFF to not use http" ON)
 option(use_mqtt "set use_mqtt to ON if mqtt is to be used, set to OFF to not use mqtt" ON)
+
 
 SET(use_condition ON CACHE BOOL "Build C shared utility with condition code" FORCE)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -120,11 +125,9 @@ endfunction()
     
 function(add_sample_to_solution sampleName)
   set_target_properties(${sampleName} PROPERTIES FOLDER "Samples")
-  #if(DEFINED ${dependency_install_prefix})
-    set_target_properties(${sampleName} PROPERTIES
-      BUILD_WITH_INSTALL_RPATH TRUE
-    )
-  #endif()
+  set_target_properties(${sampleName} PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+  )
 endfunction()
 
 
@@ -184,6 +187,46 @@ function(install_broker whatIsBuilding whatIsBuildingLocation)
   endif()
 endfunction(install_broker)
 
+set(preinstall_gateway_library_dll ${CMAKE_CURRENT_BINARY_DIR}/core/$(Configuration)/gateway.dll)
+
+function(copy_gateway_dll whatIsBuilding whatIsBuildingLocation)
+  if(WIN32)
+    add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${preinstall_gateway_library_dll}
+          ${whatIsBuildingLocation})
+    if(EXISTS "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll")
+        add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll"
+          ${whatIsBuildingLocation})
+    endif()
+
+
+  endif()
+endfunction(copy_gateway_dll)
+
+function(copy_iothub_client_dll whatIsBuilding whatIsBuildingLocation)
+  if(WIN32)
+    if(EXISTS "${azure_iot_sdks_DIR}/../bin/iothub_client.dll")
+      add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${azure_iot_sdks_DIR}/../bin/iothub_client.dll"
+        ${whatIsBuildingLocation})
+    endif()
+  endif()
+endfunction(copy_iothub_client_dll)
+
+function(copy_iothub_service_dll whatIsBuilding whatIsBuildingLocation)
+  if(WIN32)
+    if(EXISTS "${azure_iot_sdks_DIR}/../bin/iothub_service_client.dll")
+      add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${azure_iot_sdks_DIR}/../bin/iothub_service_client.dll"
+        ${whatIsBuildingLocation})
+    endif()
+  endif()
+endfunction(copy_iothub_service_dll)
 
 if(${ARCHITECTURE} STREQUAL "x86_64")
    set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x64/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
@@ -193,6 +236,7 @@ if(${ARCHITECTURE} STREQUAL "x86_64")
    set(dotnet_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/SensorModule/bin/x64/$(Configuration)/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
 
    set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x64/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+
 elseif(${ARCHITECTURE} STREQUAL "x86")
    set(dotnet_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/Microsoft.Azure.IoT.Gateway/bin/x86/$(Configuration)/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
 

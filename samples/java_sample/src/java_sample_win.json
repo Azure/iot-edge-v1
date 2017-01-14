@@ -6,7 +6,8 @@
           "configuration":{
               "jvm.options":{
                   "library.path": "..\\..\\bindings\\java\\Debug"
-              }
+              },
+              "binding.path": "..\\..\\bindings\\java\\Debug\\java_module_host.dll"
           }
           
       }

@@ -20,6 +20,7 @@ typedef struct BROKER_HANDLE_DATA_TAG* BROKER_HANDLE;
 #include "azure_c_shared_utility/macro_utils.h"
 #include "message.h"
 #include "module.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 #include <cstddef>
@@ -56,7 +57,7 @@ DEFINE_ENUM(BROKER_RESULT, BROKER_RESULT_VALUES);
 *   
 *    @return        A valid #BROKER_HANDLE upon success, or @c NULL upon failure.
 */
-extern BROKER_HANDLE Broker_Create(void);
+GATEWAY_EXPORT BROKER_HANDLE Broker_Create(void);
 
 /** @brief        Increments the reference count of a message broker.
 *
@@ -65,7 +66,7 @@ extern BROKER_HANDLE Broker_Create(void);
 *
 *    @param        broker  The #BROKER_HANDLE to be cloned.
 */
-extern void Broker_IncRef(BROKER_HANDLE broker);
+GATEWAY_EXPORT void Broker_IncRef(BROKER_HANDLE broker);
 
 /** @brief        Decrements the reference count of a message broker.
 *
@@ -75,7 +76,7 @@ extern void Broker_IncRef(BROKER_HANDLE broker);
 *
 *    @param        broker  The #BROKER_HANDLE whose ref count will be decremented.
 */
-extern void Broker_DecRef(BROKER_HANDLE broker);
+GATEWAY_EXPORT void Broker_DecRef(BROKER_HANDLE broker);
 
 /** @brief        Publishes a message to the message broker.
 *
@@ -93,7 +94,7 @@ extern void Broker_DecRef(BROKER_HANDLE broker);
 *
 *    @return        A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE_HANDLE message);
+GATEWAY_EXPORT BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE_HANDLE message);
 
 /** @brief        Adds a module to the message broker.
 *
@@ -108,7 +109,7 @@ extern BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, 
 *
 *    @return        A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module);
+GATEWAY_EXPORT BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module);
 
 /** @brief        Removes a module from the message broker.
 *   
@@ -117,7 +118,7 @@ extern BROKER_RESULT Broker_AddModule(BROKER_HANDLE broker, const MODULE* module
 *   
 *    @return        A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
+GATEWAY_EXPORT BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* module);
 
 /** @brief        Adds a route to the message broker.
 *
@@ -132,7 +133,7 @@ extern BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MODULE* mod
 *
 *    @return        A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
+GATEWAY_EXPORT BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
 
 /** @brief        Removes a route from the message broker.
 *
@@ -141,13 +142,13 @@ extern BROKER_RESULT Broker_AddLink(BROKER_HANDLE broker, const BROKER_LINK_DATA
 *
 *    @return        A #BROKER_RESULT describing the result of the function.
 */
-extern BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
+GATEWAY_EXPORT BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* link);
 
 /** @brief      Disposes of resources allocated by a message broker.
 *
 *    @param      broker  The #BROKER_HANDLE to be destroyed.
 */
-extern void Broker_Destroy(BROKER_HANDLE broker);
+GATEWAY_EXPORT void Broker_Destroy(BROKER_HANDLE broker);
 
 #ifdef __cplusplus
 }

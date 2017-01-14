@@ -17,6 +17,7 @@
 
 #include "module.h"
 #include "module_loader.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -33,7 +34,7 @@ typedef struct DYNAMIC_LOADER_ENTRYPOINT_TAG
 } DYNAMIC_LOADER_ENTRYPOINT;
 
 /** @brief      The API for the dynamically linked module loader. */
-MOCKABLE_FUNCTION(, const MODULE_LOADER*, DynamicLoader_Get);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT const MODULE_LOADER*, DynamicLoader_Get);
 
 #ifdef __cplusplus
 }

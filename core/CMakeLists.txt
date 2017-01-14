@@ -77,10 +77,12 @@ set(gateway_h_sources
     ./inc/module_access.h
     ./inc/experimental/event_system.h
     ./inc/gateway.h
+    ./inc/gateway_export.h
     ./inc/gateway_version.h
     ./inc/module_loader.h
     ./inc/dynamic_library.h
     ./src/gateway_internal.h
+    ../deps/parson/parson.h
 )
 
 # Add the module loaders
@@ -140,31 +142,44 @@ endif()
 
 include_directories(./inc)
 
-add_library(gateway
+add_library(gateway SHARED
+    ${gateway_c_sources}
+    ${gateway_h_sources}
+)
+
+add_library(gateway_static STATIC
     ${gateway_c_sources}
     ${gateway_h_sources}
 )
 
 if(WIN32)
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
+    target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
 else()
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
 
     target_link_libraries(gateway ${NN_REQUIRED_LIBRARIES})
     target_link_libraries(gateway m)
+
+    target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
+
+    target_link_libraries(gateway_static ${NN_REQUIRED_LIBRARIES})
+    target_link_libraries(gateway_static m)
 endif()
 
 if(WIN32)
     target_link_libraries(gateway rpcrt4.lib)
+    target_link_libraries(gateway_static rpcrt4.lib)
 else()
     find_package(PkgConfig REQUIRED)
     pkg_search_module(UIDLINUX REQUIRED uuid)
 
     target_link_libraries(gateway uuid)
+    target_link_libraries(gateway_static uuid)
 endif()
 
 #this adds the tests to the build process
-if(NOT ${skip_unittests})
+if(${run_unittests})
     add_subdirectory(tests)
 endif()
 
@@ -197,7 +212,7 @@ else()
     set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX})
 endif()
 
-install(TARGETS gateway EXPORT gatewayTargets
+install(TARGETS gateway gateway_static EXPORT gatewayTargets
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
     RUNTIME DESTINATION ${LIB_INSTALL_DIR}/../bin

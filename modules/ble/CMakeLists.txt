@@ -115,7 +115,7 @@ linkSharedUtil(ble_c2d_static)
 add_module_to_solution(ble)
 add_module_to_solution(ble_c2d)
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
     add_subdirectory(tests)
 endif()
 

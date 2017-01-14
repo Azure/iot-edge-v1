@@ -22,7 +22,7 @@ rem ----------------------------------------------------------------------------
 rem // default build options
 set build-config=Debug
 set build-platform=Win32
-set CMAKE_skip_unittests=OFF
+set CMAKE_run_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
 set enable-java-binding=OFF
@@ -34,7 +34,7 @@ set dependency_install_prefix="-Ddependency_install_prefix=%local-install%"
 if "%1" equ "" goto args-done
 if "%1" equ "--config" goto arg-build-config
 if "%1" equ "--platform" goto arg-build-platform
-if "%1" equ "--skip-unittests" goto arg-skip-unittests
+if "%1" equ "--run-unittests" goto arg-run-unittests
 if "%1" equ "--run-e2e-tests" goto arg-run-e2e-tests
 if "%1" equ "--enable-dotnet-binding" goto arg-enable-dotnet-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
@@ -56,8 +56,8 @@ if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
 goto args-continue
 
-:arg-skip-unittests
-set CMAKE_skip_unittests=ON
+:arg-run-unittests
+set CMAKE_run_unittests=ON
 goto args-continue
 
 :arg-run-e2e-tests
@@ -112,18 +112,18 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake %dependency_install_prefix% -Dskip_unittests:BOOL=%CMAKE_skip_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
+        cmake %dependency_install_prefix% -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake %dependency_install_prefix% -Dskip_unittests:BOOL=%CMAKE_skip_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
+        cmake %dependency_install_prefix% -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
-if "%CMAKE_skip_unittests%"=="ON" if "%CMAKE_run_e2e_tests%"=="OFF" goto skip-tests
+if "%CMAKE_run_unittests%"=="OFF" if "%CMAKE_run_e2e_tests%"=="OFF" goto skip-tests
 
 ctest -C "debug" -V
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
@@ -141,7 +141,7 @@ echo build.cmd [options]
 echo options:
 echo  --config value            Build configuration (e.g. [Debug], Release)
 echo  --platform value          Build platform (e.g. [Win32], x64, ...)
-echo  --skip-unittests          Do not build/run unit tests
+echo  --run-unittests           Build/run unit tests
 echo  --run-e2e-tests           Build/run end-to-end tests
 echo  --enable-dotnet-binding   Build the .NET binding
 echo  --enable-java-binding     Build the Java binding

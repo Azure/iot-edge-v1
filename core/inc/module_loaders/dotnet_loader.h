@@ -9,6 +9,7 @@
 
 #include "module.h"
 #include "module_loader.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -31,7 +32,7 @@ typedef struct DOTNET_LOADER_ENTRYPOINT_TAG
     STRING_HANDLE dotnetModuleEntryClass;
 } DOTNET_LOADER_ENTRYPOINT;
 
-MOCKABLE_FUNCTION(, const MODULE_LOADER*, DotnetLoader_Get);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT const MODULE_LOADER*, DotnetLoader_Get);
 
 #ifdef __cplusplus
 }

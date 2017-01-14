@@ -14,11 +14,14 @@ include_directories(${IOTHUB_CLIENT_INC_FOLDER} ${GW_INC} ${GW_INC}/experimental
 
 add_executable(events_sample ${events_headers} ${events_sources})
 
-target_link_libraries(events_sample gateway)
+#use static library because functions aren't public.
+target_link_libraries(events_sample gateway_static)
 linkSharedUtil(events_sample)
 
 add_dependencies(events_sample hello_world)
 install_broker(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_iothub_client_dll(events_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 # add events_sample to non-standard "Experimental" VS project folder for now 
 #add_sample_to_solution(events_sample)

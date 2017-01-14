@@ -6,7 +6,8 @@
           "configuration":{
               "jvm.options":{
                   "library.path": "../../bindings/java"
-              }
+              },
+              "binding.path": "../../bindings/java/libjava_module_host.so"
           }
           
       }

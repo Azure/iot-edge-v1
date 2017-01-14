@@ -467,9 +467,9 @@ static unsigned char* copy_contents(
                     if (copied != *psize)
                     {
                         LogError("CopyContents failed");
+                        free((void*)result);
                         result = NULL;
                         *psize = 0;
-                        free((void*)result);
                     }
                 }
             }

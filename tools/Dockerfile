@@ -38,5 +38,5 @@ ENTRYPOINT rm -rf /gateway && \
            git clone ${GATEWAY_REPO} /gateway && \
            git -C /gateway checkout ${COMMIT_ID} && \
            git -C /gateway submodule update --init && \
-           /gateway/tools/build.sh -rv --enable-java-binding --enable-nodejs-binding && \
+           /gateway/tools/build.sh --run-unittests -rv --enable-java-binding --enable-nodejs-binding && \
            bash

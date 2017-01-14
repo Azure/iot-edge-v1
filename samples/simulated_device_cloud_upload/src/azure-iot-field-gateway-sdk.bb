@@ -2,13 +2,13 @@ DESCRIPTION = ""
 LICENSE = "MI"
 SRC_URI = "file:///home/<<userName>>/azure-iot-gateway-sdk"
 
-LIC_FILES_CHKSUM = "file:///home/<<userName>>/azure-iot-gateway-sdk/deps/iot-sdk/LICENSE;md5=4283671594edec4c13aeb073c219237a"
+LIC_FILES_CHKSUM = "file:///home/<<userName>>/azure-iot-gateway-sdk/deps/iot-sdk-c/LICENSE;md5=4283671594edec4c13aeb073c219237a"
 
 PROVIDES = "azure-iot-gateway-sdk"
 
 DEPENDS = "glib-2.0 curl"
 
-EXTRA_OECMAKE = "-Dinstall_executables:BOOL=ON -Drun_as_a_service:BOOL=ON -Dskip_unittests:BOOL=ON"
+EXTRA_OECMAKE = "-Dinstall_executables:BOOL=ON -Drun_as_a_service:BOOL=ON -Drun_unittests:BOOL=OFF"
 
 S = "${WORKDIR}/home/azure-iot-gateway-sdk"
 

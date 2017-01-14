@@ -30,6 +30,7 @@
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/constmap.h"
 #include "azure_c_shared_utility/constbuffer.h"
+#include "gateway_export.h"
 
 #ifdef __cplusplus
 #include <cstdint>
@@ -98,7 +99,7 @@ typedef struct MESSAGE_BUFFER_CONFIG_TAG
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              NULL upon failure.
  */
-extern MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
+GATEWAY_EXPORT MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
 
 /** @brief      Creates a new reference counted message from a byte array
  *              containing the serialized form of a message.
@@ -112,7 +113,7 @@ extern MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              NULL upon failure.
  */
-extern MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
+GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
 
 /** @brief      Creates a byte array representation of a MESSAGE_HANDLE. 
  *
@@ -129,7 +130,7 @@ extern MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, i
  *              size required for a full successful serialization. Returns a 
  *              negative value when an error occurs.
  */
-extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size);
+GATEWAY_EXPORT int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size);
 
 /** @brief      Creates a new message from a @c CONSTBUFFER source and
  *              @c MAP_HANDLE.
@@ -146,7 +147,7 @@ extern int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* 
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              @c NULL upon failure.
  */
-extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg);
+GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg);
 
 /** @brief      Creates a clone of the message.
  *
@@ -158,7 +159,7 @@ extern MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg)
  *  @return     A non-NULL #MESSAGE_HANDLE cloned from @c message, or @c NULL 
  *              upon failure.
  */
-extern MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
+GATEWAY_EXPORT MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
 
 /** @brief      Gets the properties of a message.
  *
@@ -172,7 +173,7 @@ extern MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
  *              message, or @c NULL upon failure.
  *
  */
-extern CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
+GATEWAY_EXPORT CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
 
 /** @brief      Gets the content of a message.
  *
@@ -184,7 +185,7 @@ extern CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
  *  @return     A non-NULL pointer to a @c CONSTBUFFER representing the content
  *              of the message, or @c NULL upon failure.
  */
-extern const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
+GATEWAY_EXPORT const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
 
 /** @brief      Gets the @c CONSTBUFFER handle that may be used to access the 
  *              message content.
@@ -197,13 +198,13 @@ extern const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
  *  @return     A non-NULL @c CONSTBUFFER_HANDLE representing the message 
  *              content, or @c NULL upon failure.
  */
-extern CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
+GATEWAY_EXPORT CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
 
 /** @brief      Disposes of resources allocated by the message.
  *       
  *  @param      message     The #MESSAGE_HANDLE to be destroyed.
  */
-extern void Message_Destroy(MESSAGE_HANDLE message);
+GATEWAY_EXPORT void Message_Destroy(MESSAGE_HANDLE message);
 
 #ifdef __cplusplus
 }

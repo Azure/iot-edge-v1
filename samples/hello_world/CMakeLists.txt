@@ -31,5 +31,6 @@ add_dependencies(hello_world_sample hello_world logger)
 target_link_libraries(hello_world_sample gateway nanomsg)
 linkSharedUtil(hello_world_sample)
 install_broker(hello_world_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(hello_world_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(hello_world_sample)

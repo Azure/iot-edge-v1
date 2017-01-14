@@ -32,6 +32,6 @@ if(install_executables)
     install(TARGETS azure_functions LIBRARY DESTINATION lib) 
 endif()
 
-if(NOT ${skip_unittests})
+if(${run_unittests})
 	add_subdirectory(tests)
 endif()
