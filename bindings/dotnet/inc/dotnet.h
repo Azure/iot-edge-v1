@@ -5,6 +5,7 @@
 #define DOTNET_H
 
 #include "module.h"
+#include "gateway.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -21,6 +22,10 @@ typedef struct DOTNET_HOST_CONFIG_TAG
 MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
 
 extern __declspec(dllexport) bool Module_DotNetHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size);
+
+extern __declspec(dllexport) GATEWAY_HANDLE Module_DotNetHost_Gateway_CreateFromJson(const char* file_path);
+
+extern __declspec(dllexport) void Module_DotNetHost_Gateway_Destroy(GATEWAY_HANDLE handle);
 
 #ifdef __cplusplus
 }

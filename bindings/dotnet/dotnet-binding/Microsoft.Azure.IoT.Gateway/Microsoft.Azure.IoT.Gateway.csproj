@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IBroker.cs" />
     <Compile Include="IGatewayModule.cs" />
     <Compile Include="IGatewayModuleStart.cs" />
     <Compile Include="Message.cs" />

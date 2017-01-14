@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.IoT.Gateway
 {
     /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
-    public class Broker
+    public class Broker : IBroker
     {
         private long brokerHandle;
 
