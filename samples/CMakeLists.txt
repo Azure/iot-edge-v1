@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 add_subdirectory(hello_world)
+add_subdirectory(device_ping)
 add_subdirectory(simulated_device_cloud_upload)
 add_subdirectory(experimental/events_sample)
 add_subdirectory(azure_functions_sample)
