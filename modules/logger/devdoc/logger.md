@@ -6,8 +6,8 @@ High level design
 
 ### Overview
 
-This module logs all the received traffic. The module has no filtering, so it logs everything into a file. The file contains a JSON object. THe JSON object 
-is an array of individual JSON values. There are 2 types of such JSON values: markers for being/end of logging and effective log data.
+This module logs all the received traffic. The module has no filtering, so it logs everything into a file. The file contains a JSON object. The JSON object 
+is an array of individual JSON values. There are 2 types of such JSON values: markers for begin/end of logging and effective log data.
 
 #### Additional data types
 ```c
