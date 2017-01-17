@@ -1,11 +1,11 @@
 # Azure Functions Module Requirements
 
 ## Overview
-This document describes the Azure Functions module.  This module gets messages received from other modules and sends as an http POST, triggering an Azure Function.
+This document describes the Azure Functions module. This module gets messages received from other modules and sends as an http POST, triggering an Azure Function.
 
 #### Http GET
-This module sends an HTTP POST to https://<hostAddress>/<relativepath>?name=myGatewayDevice. It add the content of all messages received on the Body of the POST (Content-Type: application/json) and also
-adds an HTTP HEADER for key/code credential (if key configurations if present).
+This module sends an HTTP POST to https://<hostAddress>/<relativepath>?name=myGatewayDevice. It adds the content of all messages received on the body of the POST (Content-Type: application/json) and also
+adds an HTTP HEADER for key/code credential (if key configurations present).
 
 
 ## References
@@ -92,7 +92,7 @@ all data it allocated. **]**
 static void AzureFunctions_FreeConfiguration(void * configuration)
 ```
 
-Thsi function releases any resources allocated by `AzureFunctions_ParseConfigurationFromJson`.
+This function releases any resources allocated by `AzureFunctions_ParseConfigurationFromJson`.
 
 **SRS_AZUREFUNCTIONS_17_004: [** `AzureFunctions_FreeConfiguration` shall do nothing if `configuration` is `NULL`. **]**
 
@@ -161,26 +161,26 @@ This function will be the main work of this module. The processing of each
 message in pseudocode is as follows:
 
 
-01: Retrieves the content of the message received;
+01: Retrieve the content of the message received
 
-02: Create an HTTPAPIEX handle;
+02: Create an HTTPAPIEX handle
 
 03: Clone the relative path handle
 
-04: Adds to the  `name` parameter together with an ID (Hard Coded) to the relative path;
+04: Add to the `name` parameter together with an ID (Hard Coded) to the relative path
 
-05: adds the content of the message as a body of the HTTP POST, content type application/json;
+05: Add the content of the message as a body of the HTTP POST, content type application/json
 
-06: Adds securityKey as HTTP Header, if security key string exists;
+06: Add securityKey in HTTP Header, if security key string exists
 
-07: call HTTPAPIEX_ExecuteRequest to send the message;
+07: Call HTTPAPIEX_ExecuteRequest to send the message
 
-08: logs the reply back by the Azure Functions.
+08: Log the reply back by the Azure Functions
 
 
-**SRS_AZUREFUNCTIONS_04_010: [** If `moduleHandle` is NULL than `AzureFunctions_Receive` shall fail and return. **]**
+**SRS_AZUREFUNCTIONS_04_010: [** If `moduleHandle` is NULL then `AzureFunctions_Receive` shall fail and return. **]**
 
-**SRS_AZUREFUNCTIONS_04_011: [** If `messageHandle` is NULL than `AzureFunctions_Receive` shall fail and return. **]**
+**SRS_AZUREFUNCTIONS_04_011: [** If `messageHandle` is NULL then `AzureFunctions_Receive` shall fail and return. **]**
 
 **SRS_AZUREFUNCTIONS_04_012: [** `AzureFunctions_Receive` shall get the message content by calling  `Message_GetContent`, if it fails it shall fail and return. **]**
 
