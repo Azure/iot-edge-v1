@@ -23,7 +23,7 @@ build and JDK environment set up.
 
 ## Tests
 By default the entrypoint of the image is to run unit tests for the Gateway and bindings from the upstream
-repository on `develop` branch. Additionally tests are also checked for memory leaks with valgrind.
+repository on `master` branch. Additionally tests are also checked for memory leaks with valgrind.
 You can easily run the tests with `docker run --rm azure-iot-gateway`.
 
 You can change which repository and branch you want to download and test the Gateway from by overriding

@@ -82,7 +82,7 @@ GATEWAY_EXPORT void Broker_DecRef(BROKER_HANDLE broker);
 *
 *    @details    For details about threading with regard to the message broker
 *                and modules connected to it, see
-*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
+*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
 *    @param        broker    The #BROKER_HANDLE onto which the message will be
 *                        published.
@@ -100,7 +100,7 @@ GATEWAY_EXPORT BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE 
 *
 *    @details    For details about threading with regard to the message broker
 *                and modules connected to it, see 
-*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
+*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
 *    @param        broker          The #BROKER_HANDLE onto which the module will be 
 *                                added.
@@ -124,7 +124,7 @@ GATEWAY_EXPORT BROKER_RESULT Broker_RemoveModule(BROKER_HANDLE broker, const MOD
 *
 *    @details    For details about threading with regard to the message broker
 *                and modules connected to it, see
-*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
+*                <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/broker_hld.md">Broker High Level Design Documentation</a>.
 *
 *    @param        broker          The #BROKER_HANDLE onto which the module will be
 *                                added.

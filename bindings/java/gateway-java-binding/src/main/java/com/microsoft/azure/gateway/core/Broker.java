@@ -20,7 +20,7 @@ public class Broker {
      * Native Broker_Publish function. When this method is called, it will call into the native Broker_Publish
      * function to publish the provided {@link Message} to the native Broker.
      *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/pubsub_bus_requirements.md" target="_top">Message broker documentation</a>
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_broker_requirements.md" target="_top">Message broker documentation</a>
      *
      * @param brokerAddr The address of the pointer to the native Broker.
      * @param moduleAddr The address of the pointer to the native module.
@@ -38,7 +38,7 @@ public class Broker {
     /**
      * Publishes the {@link Message} to the {@link Broker}.
      *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/pubsub_bus_requirements.md" target="_top">Message broker documentation</a>
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_broker_requirements.md" target="_top">Message broker documentation</a>
      *
      * @param moduleAddr The address of the pointer to the native module.
      * @param message The serialized {@link Message} to be published.
