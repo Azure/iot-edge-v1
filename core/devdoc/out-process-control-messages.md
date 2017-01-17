@@ -21,6 +21,10 @@ The basic structure of the control message is simple. It will look like this:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 +----------------------+   --+
+| header1: uint8_t     |     |
++----------------------+     |
+| header2: uint8_t     |     |
++----------------------+     |
 | version: uint8_t     |     |
 +----------------------+     |
 | type: uint8_t        |     |
@@ -38,13 +42,17 @@ The basic structure of the control message is simple. It will look like this:
 This structure is always transmitted over the “wire” in network byte order (big
 endian). Here’s what each of these fields mean:
 
+-   **header1** - This is an unsigned byte containing 0xA1.
+
+-   **header2** - This is an unsigned byte containing 0x6C.
+
 -   **version** - This is an unsigned byte containing the version number that
     signifies the structure of the rest of the message. As modifications to the
     structure of any of the supported messages or the base message structure are
     made this version number is increased. When a module host process or the
     gateway process receives a message with a version number that it does not
     recognize it is expected to treat that as an error. To begin with the
-    version number will have the hexadecimal value `0x10`.
+    version number will have the hexadecimal value `0x01`.
 
 -   **type** - This is an enumeration that indicates the message type. This is
     used to signify whether the message is a *create*, *start* or *destroy*
@@ -62,18 +70,17 @@ Represented in C syntax, this is what the struct looks like:
 typedef enum CONTROL_MESSAGE_TYPE_TAG
 {
     CONTROL_MESSAGE_TYPE_ERROR,
-    CONTROL_MESSAGE_TYPE_CREATE,
-    CONTROL_MESSAGE_TYPE_CREATE_REPLY,
-    CONTROL_MESSAGE_TYPE_START,
-    CONTROL_MESSAGE_TYPE_DESTROY
+    CONTROL_MESSAGE_TYPE_MODULE_CREATE,
+    CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY,
+    CONTROL_MESSAGE_TYPE_MODULE_START,
+    CONTROL_MESSAGE_TYPE_MODULE_DESTROY
 }CONTROL_MESSAGE_TYPE;
 
 typedef struct CONTROL_MESSAGE_TAG
 {
-               uint8_t  version;
-  CONTROL_MESSAGE_TYPE  type;
-              uint32_t  total_size;
-}CONTROL_MESSAGE;
+    uint8_t  version;
+    CONTROL_MESSAGE_TYPE  type;
+} CONTROL_MESSAGE;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Why not use the gateway message API for building & serializing control messages?
@@ -93,26 +100,57 @@ The *create* message is sent by the gateway to the module host process to
 indicate that the remote module should be loaded and instantiated. The [high
 level design document](./on-out-process-gateway-modules.md) specifies what this
 message should be composed of. The `type` field will have the value
-`CONTROL_MESSAGE_TYPE_CREATE` and the body of the message will be a struct that
+`CONTROL_MESSAGE_TYPE_MODULE_CREATE` and the body of the message will be a struct that
 looks like this (as specified in the high level design document):
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-typedef struct NN_URL_TAG
+typedef struct MESSAGE_URI_TAG
 {
-    const uint32_t  url_size;
-    const uint8_t*  url;
-}NN_URL;
+    uint8_t   uri_type;
+    uint32_t  uri_size;
+    uint8_t*  uri;
+}MESSAGE_URI;
 
-typedef struct CONTROL_MESSAGE_CREATE_TAG
+typedef struct CONTROL_MESSAGE_MODULE_CREATE_TAG
 {
+
     CONTROL_MESSAGE  base;
-     const uint32_t  urls_count;
-     const NN_URL*   urls;
-     const uint32_t  args_size;
-        const char*  args;
-     const uint32_t  loader_size;
-        const char*  loader_arguments;
-}CONTROL_MESSAGE_CREATE;
+    uint8_t gateway_message_version;
+    MESSAGE_URI   uri;
+    uint32_t  args_size;
+    char*     args;
+}CONTROL_MESSAGE_MODULE_CREATE;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The structure of the serialized message will look like:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++---------------------------+                           --+
+| CONTROL_MESSAGE           |                             |  Header
++---------------------------+                           --+
+| gateway_message_version:  |                             |
+| uint8_t                   |                             |
++---------------------------+  --+                        |
+| uri_type: uint8_t         |    |                        |
++---------------------------+    |                        |
+|                           |    |                        |
+| uri_size: uint32_t        |    |                        |
+|                           |    |  MESSAGE_URI           |
++---------------------------+    |                        |
+| uri[0]                    |    |                        |
+| [...]                     |    |                        |
+| uri[uri_size-2]           |    |                        |
+| '\0'                      |    |                        |
++---------------------------+  --+                        |  Body
+|                           |    |                        |
+| args_size: uint32_t       |    |                        |
+|                           |    |                        |
++---------------------------+    |  module args           |
+| args[0]                   |    |                        |
+| [...]                     |    |                        |
+| args[args_size-2]         |    |                        |
+| '\0'                      |    |                        |
++---------------------------+  --+                      --+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create message reply
@@ -120,18 +158,26 @@ Create message reply
 
 This message is sent by the module host process to indicate whether the module
 creation was successful or not. The message `type` field will have the value
-`CONTROL_MESSAGE_TYPE_CREATE` and the body of the message is a single unsigned
-8-bit value containing either `1` or `0` indicating `true` and `false`
-respectively. A value of `true` signifies that the module was loaded and
-initialized and created successfully and `false` indicates that an error
-occurred and the module could not be loaded. Here’s what the struct looks like:
+`CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY` and the body of the message is a 
+single unsigned 8-bit value, with 0 indicating success and any non-zero value 
+indicating failure. Here’s what the struct looks like:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-typedef struct CONTROL_MESSAGE_CREATE_REPLY_TAG
+typedef struct CONTROL_MESSAGE_MODULE_REPLY_TAG
 {
     CONTROL_MESSAGE  base;
-            uint8_t  create_status;
-}CONTROL_MESSAGE_CREATE_REPLY;
+            uint8_t  status;
+}CONTROL_MESSAGE_MODULE_REPLY;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The serialed format of the message is:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++------------------------+                           --+
+| CONTROL_MESSAGE        |                             |  Header
++------------------------+                           --+
+| status: uint8_t        |                             |  Body
++------------------------+                           --+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Start module
@@ -140,7 +186,7 @@ Start module
 This message is sent by the gateway to signal the module host process that the
 `Module_Start` API in the remote module should be invoked. There is no message
 body for this message. The `type` field is set to the value
-`CONTROL_MESSAGE_TYPE_START`.
+`CONTROL_MESSAGE_TYPE_MODULE_START`.
 
 Destroy module
 --------------
@@ -148,4 +194,4 @@ Destroy module
 This message is sent by the gateway to signal the module host process that the
 `Module_Destroy` API in the remote module should be invoked and the module
 should be unloaded. There is no message body for this message. The `type` field
-is set to the value `CONTROL_MESSAGE_TYPE_DESTROY`.
+is set to the value `CONTROL_MESSAGE_TYPE_MODULE_DESTROY`.

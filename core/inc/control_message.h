@@ -4,22 +4,33 @@
 #ifndef CONTROL_MESSAGE_H
 #define CONTROL_MESSAGE_H
 
-#include "azure_c_shared_utility/macro_utils.h"
-
 #ifdef __cplusplus
+#include <cstdint>
+#include <cstddef>
+#include <cinttypes>
 extern "C"
 {
+#else
+#include <stdint.h>
+#include <stddef.h>
+#include <inttypes.h>
+#include <stdbool.h>
 #endif
 
-#define CONTROL_MESSAGE_VERSION_1           0x0010
+#include "azure_c_shared_utility/umock_c_prod.h"
+
+#include "azure_c_shared_utility/macro_utils.h"
+#include "gateway_export.h"
+
+#define CONTROL_MESSAGE_VERSION_1           0x01
 #define CONTROL_MESSAGE_VERSION_CURRENT     CONTROL_MESSAGE_VERSION_1
 
 #define CONTROL_MESSAGE_TYPE_VALUES      \
-    CONTROL_MESSAGE_TYPE_ERROR           \
-    CONTROL_MESSAGE_TYPE_CREATE          \
-    CONTROL_MESSAGE_TYPE_CREATE_REPLY    \
-    CONTROL_MESSAGE_TYPE_START           \
-    CONTROL_MESSAGE_TYPE_DESTROY
+    CONTROL_MESSAGE_TYPE_ERROR,          \
+    CONTROL_MESSAGE_TYPE_MODULE_CREATE,         \
+    CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY,   \
+    CONTROL_MESSAGE_TYPE_MODULE_START,          \
+    CONTROL_MESSAGE_TYPE_MODULE_DESTROY
 
 /** @brief    Enumeration specifying the various types of control messages that
  *            can be sent from a gateway process to a module host process.
@@ -40,64 +51,57 @@ typedef struct CONTROL_MESSAGE_TAG
      */
     CONTROL_MESSAGE_TYPE  type;
 
-    /** @brief  The total size of this message including the size of the
-     *          CONTROL_MESSAGE header struct.
-     */
-    uint32_t  total_size;
 }CONTROL_MESSAGE;
 
 /** @brief    Defines the structure of a nanomsg URL.
  */
-typedef struct NN_URL_TAG
+typedef struct MESSAGE_URI_TAG
 {
     /** @brief  The size of the URL string.
      */
-    const uint32_t  url_size;
+    uint32_t  uri_size;
+
+    /** @brief  Type of URL.
+     */
+    uint8_t  uri_type;
 
     /** @brief  The actual URL.
      */
-    const uint8_t*  url;
-}NN_URL;
+    char*  uri;
+}MESSAGE_URI;
 
 /** @brief    Defines the structure of the message that is sent for the
  *            "create" control message.
  */
-typedef struct CONTROL_MESSAGE_CREATE_TAG
+typedef struct CONTROL_MESSAGE_MODULE_CREATE_TAG
 {
     /** @brief  The "base" message information.
      */
-    CONTROL_MESSAGE base;
+	CONTROL_MESSAGE base;
 
-    /** @brief  Size of the array pointed at by the "urls" field.
-     */
-    const uint32_t urls_count;
+	/** @brief  The current version of gateway message. 
+	*/
+	uint8_t  gateway_message_version;
 
     /** @brief  An array of URLs defining nanomsg binding URLs. The size is
-     *          is given by the `urls_count` field.
+     *          is given by the `uris_count` field.
      */
-    const NN_URL* urls;
+    MESSAGE_URI uri;
 
     /** @brief  Size of the module arguments.
      */
-    const uint32_t args_size;
+    uint32_t args_size;
 
     /** @brief  Serialized JSON string of module arguments.
      */
-    const char* args;
+    char* args;
 
-    /** @brief  Size of the loader statement.
-     */
-    const uint32_t loader_size;
-
-    /** @brief  Serialized JSON string of the loader arguments.
-     */
-    const char* loader_arguments;
-}CONTROL_MESSAGE_CREATE;
+}CONTROL_MESSAGE_MODULE_CREATE;
 
 /** @brief    Defines the structure of the message that is sent in reply to the
  *            "create" control message.
  */
-typedef struct CONTROL_MESSAGE_CREATE_REPLY_TAG
+typedef struct CONTROL_MESSAGE_MODULE_REPLY_TAG
 {
     /** @brief  The "base" message information.
      */
@@ -107,11 +111,56 @@ typedef struct CONTROL_MESSAGE_CREATE_REPLY_TAG
      *          processed successfully or not. This field uses the value 1 to
      *          indicate success and the value 0 to indicate failure.
      */
-    uint8_t create_status;
-}CONTROL_MESSAGE_CREATE_REPLY;
+    uint8_t status;
+}CONTROL_MESSAGE_MODULE_REPLY;
+
+
+/** @brief      Creates a new control message from a byte array
+ *              containing the serialized form.
+ *
+ *  @details    The newly created control message the same content as
+ *              the original control message.
+ *
+ *  @param      source  Pointer to a byte array.
+ *  @param      size    size in bytes of the array
+ *
+ *  @return     A non-NULL #CONTROL_MESSAGE pointer for the newly 
+ *              created message, or NULL upon failure.
+ */
+MOCKABLE_FUNCTION (,GATEWAY_EXPORT CONTROL_MESSAGE *, ControlMessage_CreateFromByteArray, const unsigned char*, source, size_t, size);
+
+/** @brief      Destroys a control message.
+ *
+ *  @details    Frees all uri, and module arguments.
+ *
+ *  @param      message  Pointer to a control message.
+ *
+ *  @return     none.
+ */
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, ControlMessage_Destroy, CONTROL_MESSAGE *, message);
+
+
+/** @brief      Creates a byte array representation of a CONTROL_MESSAGE. 
+ *
+ *  @details    The byte array created can be used with function
+ *              #ControlMessage_CreateFromByteArray to reproduce the control 
+ *              message. If buffer is not set, this function will return the 
+ *              serialization size.
+ *
+ *  @param      message         A #CONTROL_MESSAGE. Must not be NULL.
+ *  @param      buf             A byte array pointer in memory, or NULL.
+ *  @param      size            An int32_t that specifies the size of buf.
+ *
+ *  @return     An int32_t that specifies the size of the serialized message
+ *              written when "buf" is not NULL. If "buf" is NULL and "size" is zero, 
+ *				returns the size required for a full successful serialization. Returns a 
+ *              negative value when an error occurs.
+ */
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT int32_t, ControlMessage_ToByteArray,CONTROL_MESSAGE *, message, unsigned char*, buf, int32_t, size);
 
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /*CONTROL_MESSAGE_H*/

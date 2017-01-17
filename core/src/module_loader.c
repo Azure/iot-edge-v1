@@ -16,6 +16,7 @@
 #include "module.h"
 #include "module_loader.h"
 #include "module_loaders/dynamic_loader.h"
+#include "module_loaders/outprocess_loader.h"
 
 #ifdef NODE_BINDING_ENABLED
 #include "module_loaders/node_loader.h"
@@ -99,6 +100,7 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
 #ifdef DOTNET_CORE_BINDING_ENABLED
                     , DotnetCoreLoader_Get()
 #endif
+                    , OutprocessLoader_Get()
                 };
 
                 size_t loaders_count = sizeof(supported_loaders) / sizeof(supported_loaders[0]);
@@ -538,6 +540,9 @@ MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type)
     if (strcmp(type, "native") == 0)
         /*Codes_SRS_MODULE_LOADER_13_060: [ ModuleLoader_ParseType shall return a valid MODULE_LOADER_TYPE if type is a recognized module loader type string. ]*/
         loader_type = NATIVE;
+    else if (strcmp(type, "outprocess") == 0)
+        /*Codes_SRS_MODULE_LOADER_13_060: [ ModuleLoader_ParseType shall return a valid MODULE_LOADER_TYPE if type is a recognized module loader type string. ]*/
+        loader_type = OUTPROCESS;
     else if (strcmp(type, "node") == 0)
         /*Codes_SRS_MODULE_LOADER_13_060: [ ModuleLoader_ParseType shall return a valid MODULE_LOADER_TYPE if type is a recognized module loader type string. ]*/
         loader_type = NODEJS;
@@ -560,7 +565,9 @@ MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type)
 bool ModuleLoader_IsDefaultLoader(const char* name)
 {
     /*Codes_SRS_MODULE_LOADER_13_061: [ ModuleLoader_IsDefaultLoader shall return true if name is the name of a default module loader and false otherwise. The default module loader names are 'native', 'node', 'java' , 'dotnet' and 'dotnetcore'. ]*/
-    return strcmp(name, "native") == 0
+    return strcmp(name, DYNAMIC_LOADER_NAME) == 0
+           ||
+           strcmp(name, OUTPROCESS_LOADER_NAME) == 0
            ||
            strcmp(name, "node") == 0
            ||

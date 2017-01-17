@@ -36,7 +36,7 @@ Loader Configuration
 
 A loader is defined by the following attributes:
 
--   **Type**: Can be *native*, *java*, *node* or *dotnet*
+-   **Type**: Can be *native*, *outprocess*, *java*, *node* or *dotnet*
 
 -   **Name**: A string that can be used to reference a given loader
 
@@ -92,6 +92,9 @@ referenced using the following loader names:
 
 -   `native`: This implements loading of native modules - that is, plain C
     modules.
+
+-   `outprocess`: This implements out of process modules - that is, modules
+    running in a different process on the same system.
 
 -   `java`: This implements loading of modules implemented using the Java
     programming language and compiled to JAR files.
@@ -200,6 +203,8 @@ MODULE_LOADER* module_loaders[] = {
     #ifdef NODE_BINDING_ENABLED
     , NodeBindingLoader_Get()
     #endif
+
+    , OutprocessLoader_Get()
 };
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -227,6 +232,8 @@ work is given below:
 ### Loading Modules
 
 The process of loading a given gateway module is described below:
+
+![Loading Module Sequence](./media/module_loader_create.png)
 
 1.  When initializing the gateway from JSON, it first attempts to parse the
     module’s entrypoint data by calling the loader’s `ParseEntryPointFromJson`
