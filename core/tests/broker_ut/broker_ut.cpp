@@ -547,7 +547,7 @@ public:
         int send_length;
         if (len == NN_MSG)
         {
-            send_length = nn_current_msg_size;
+            send_length = (int)nn_current_msg_size;
             free(*(void**)buf); // send is supposed to free auto created buffer on success
         }
         else

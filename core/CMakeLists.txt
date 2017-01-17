@@ -60,6 +60,7 @@ endmacro (nn_check_lib)
 
 set(gateway_c_sources
     ./src/message.c
+    ./src/message_queue.c
     ./src/internal/event_system.c
     ./src/gateway_internal.c
     ./src/gateway.c
@@ -72,6 +73,7 @@ set(gateway_c_sources
 
 set(gateway_h_sources
     ./inc/message.h
+    ./inc/message_queue.h
     ./inc/broker.h
     ./inc/module.h
     ./inc/module_access.h
@@ -89,10 +91,12 @@ set(gateway_h_sources
 set(gateway_c_sources
     ${gateway_c_sources}
     ./src/module_loaders/dynamic_loader.c
+
 )
 set(gateway_h_sources
     ${gateway_h_sources}
     ./inc/module_loaders/dynamic_loader.h
+
 )
 
 if(${enable_dotnet_binding})
@@ -155,6 +159,28 @@ if(${enable_nodejs_binding})
     include_directories(../bindings/nodejs/inc)
 endif()
 
+if(${enable_native_remote_modules})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ../proxy/message/src/control_message.c
+        ../proxy/outprocess/src/module_loaders/outprocess_loader.c
+        ../proxy/outprocess/src/module_loaders/outprocess_module.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ../proxy/message/inc/control_message.h
+        ../proxy/outprocess/inc/module_loaders/outprocess_loader.h
+        ../proxy/outprocess/inc/module_loaders/outprocess_module.h
+    )
+    add_definitions(-DOUTPROCESS_ENABLED)
+    include_directories( ../proxy/outprocess/inc)
+    include_directories( ../proxy/message/inc)
+
+endif()
+
+
+
+
 include_directories(./inc)
 
 add_library(gateway SHARED
@@ -212,11 +238,11 @@ endif ()
 
 # (re)set the include and lib dirs for the install based on platform
 if(WIN32)
-    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}" CACHE INTERNAL "Needs to be included to share across projects" FORCE)
     set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE INTERNAL "Library install dir")
     set(package_location "cmake")
 else()
-    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}")
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}" CACHE INTERNAL "Needs to be included to share across projects" FORCE)
     set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}/${VERSION_PREFIX}" CACHE INTERNAL "Library install dir")
     set(package_location "${LIB_INSTALL_DIR}/cmake")
 endif()

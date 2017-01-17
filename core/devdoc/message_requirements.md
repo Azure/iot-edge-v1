@@ -17,6 +17,9 @@ The creation of the message is considered finished at the moment when the messag
 
 ## Exposed API
 ```C
+#define GATEWAY_MESSAGE_VERSION_1           0x01
+#define GATEWAY_MESSAGE_VERSION_CURRENT     GATEWAY_MESSAGE_VERSION_1
+
 typedef struct MESSAGE_HANDLE_DATA_TAG* MESSAGE_HANDLE;
 
 typedef struct MESSAGE_CONFIG_TAG
@@ -79,6 +82,7 @@ Message_Create creates a new message from the cfg parameter.
  ### Implementation details
  the structure of the byte array shall be as follows:
  a header formed of the following hex characters in this order: 0xA1 0x60
+ 1 byte representing the message version.
  4 bytes in MSB order representing the total size of the byte array.
  4 bytes in MSB order representing the number of properties
  for every property, 2 arrays of null terminated characters representing the name of the property and the value.
@@ -87,15 +91,20 @@ Message_Create creates a new message from the cfg parameter.
 
  The smallests message that can be composed has size:
     - 2 (0xA1 0x60) = fixed header
-    - 4 (0x00 0x00 0x00 0x0E) = arrray size [14 bytes in total]
+    - 1 (0x01) = message version (default value is 0x01)
+    - 4 (0x00 0x00 0x00 0x0F) = array size [15 bytes in total]
     - 4 (0x00 0x00 0x00 0x00) = 0 properties that follow
     - 4 (0x00 0x00 0x00 0x00) = 0 bytes of message content
 
 
  **SRS_MESSAGE_02_022: [** If `source` is NULL then `Message_CreateFromByteArray` shall fail and return NULL. **]**
- **SRS_MESSAGE_02_023: [** If `source` is not NULL and and `size` parameter is smaller than 14 then `Message_CreateFromByteArray` shall fail and return NULL. **]**
+
+ **SRS_MESSAGE_02_023: [** If `source` is not NULL and and `size` parameter is smaller than 15 then `Message_CreateFromByteArray` shall fail and return NULL. **]**
+
  **SRS_MESSAGE_02_024: [** If the first two bytes of `source` are not 0xA1 0x60 then `Message_CreateFromByteArray` shall fail and return NULL. **]**
+
  **SRS_MESSAGE_02_037: [** If the size embedded in the message is not the same as `size` parameter then `Message_CreateFromByteArray` shall fail and return NULL. **]**
+ 
  **SRS_MESSAGE_02_025: [** If while parsing the message content, a read would occur past the end of the array (as indicated by `size`) then `Message_CreateFromByteArray` shall fail and return NULL. **]**
 
  The MESSAGE_HANDLE shall be constructed as follows:
