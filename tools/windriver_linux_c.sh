@@ -93,8 +93,9 @@ fi
 # -----------------------------------------------------------------------------
 # -- Set environment variables
 # -----------------------------------------------------------------------------
-. $toolchain_root/env.sh
+source $toolchain_root/env.sh
 
+TOOLCHAIN_OPTION="-DCMAKE_TOOLCHAIN_FILE=$OECORE_NATIVE_SYSROOT/usr/share/cmake/OEToolchainConfig.cmake"
 # -----------------------------------------------------------------------------
 # -- After the environment is set up, we can run cmake.
 # -----------------------------------------------------------------------------
@@ -107,7 +108,7 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake -Ddependency_install_prefix=$local_install -DCMAKE_BUILD_TYPE=Debug -Drun_unittests:BOOL=OFF -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cmake $TOOLCHAIN_OPTION -Ddependency_install_prefix=$local_install -DCMAKE_BUILD_TYPE=Debug -Drun_unittests:BOOL=OFF -Drun_e2e_tests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)
