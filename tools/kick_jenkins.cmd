@@ -46,10 +46,8 @@ if not defined current_branch (
 )
 
 REM Must be on a topic branch when running this script
-set __exit=1
-if not "%current_branch%"=="master" if not "%current_branch%"=="develop" set __exit=0
-if %__exit%==1 (
-    echo You cannot call this script from 'develop' or 'master'. Change to a topic branch first.  Aborting...
+if "%current_branch%"=="master" (
+    echo You cannot call this script from 'master'. Change to a topic branch first.  Aborting...
     goto :eof
 )
 
@@ -86,7 +84,7 @@ echo ****************************************************************
 
 
 REM kick off the build!
-java -jar "%build-root%"\tools\jenkins-cli.jar -s http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/ build _integrate-into-develop -p COMMIT_ID=%tracking_name% -p AZURE_REPO=%repo_url% -p BRANCH_TO_MERGE_TO=develop -s -v
+java -jar "%build-root%"\tools\jenkins-cli.jar -s http://azure-iot-sdks-ci.westus.cloudapp.azure.com:8080/ build _integrate-into-develop -p COMMIT_ID=%tracking_name% -p AZURE_REPO=%repo_url% -p BRANCH_TO_MERGE_TO=master -s -v
 
 rem -----------------------------------------------------------------------------
 rem -- done
@@ -103,4 +101,3 @@ if not !ERRORLEVEL!==0 (
     exit /b !ERRORLEVEL!
 )
 goto :eof
-

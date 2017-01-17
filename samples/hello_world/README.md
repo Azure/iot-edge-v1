@@ -275,8 +275,8 @@ Each module must specify a:
 * **loader**: a loader which knows how to load the desired module.  Loaders are an extension 
 point for loading different types of modules. We provide loaders for use with modules written 
 in native C, Node.js, Java, and .Net. The Hello World sample only uses the "native" loader since 
-all the modules in this sample are dynamic libraries written in C. Please refer to the [Node](https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/samples/nodejs_simple_sample/), 
-[Java](https://github.com/Azure/azure-iot-gateway-sdk/tree/develop/samples/java_sample), or [.Net](https://github.com/Azure/azure-iot-gateway-sdk/tree/develop/samples/dotnet_binding_sample) 
+all the modules in this sample are dynamic libraries written in C. Please refer to the [Node](https://github.com/Azure/azure-iot-gateway-sdk/blob/master/samples/nodejs_simple_sample/), 
+[Java](https://github.com/Azure/azure-iot-gateway-sdk/tree/master/samples/java_sample), or [.Net](https://github.com/Azure/azure-iot-gateway-sdk/tree/master/samples/dotnet_binding_sample) 
 samples for more information on using modules written in different languages.
     * **name**: name of the loader used to load the module.  
     * **entrypoint**: the path to the library containing the module. For Linux this is a .so 
@@ -447,4 +447,3 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
     addJSONString(handleData->fout, STRING_c_str(jsonToBeAppended);
 }
 ```
-

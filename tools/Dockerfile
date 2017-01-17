@@ -32,7 +32,7 @@ ENV NODE_INCLUDE /build_nodejs/dist/inc
 ENV NODE_LIB /build_nodejs/dist/lib
 
 ENV GATEWAY_REPO https://github.com/Azure/azure-iot-gateway-sdk
-ENV COMMIT_ID develop
+ENV COMMIT_ID master
 
 ENTRYPOINT rm -rf /gateway && \
            git clone ${GATEWAY_REPO} /gateway && \

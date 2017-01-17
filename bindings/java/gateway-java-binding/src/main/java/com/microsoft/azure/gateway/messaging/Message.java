@@ -32,7 +32,7 @@ public final class Message {
     /**
      * Construcor for a {@link Message} created from a fully and properly serialized message {@link byte[]}.
      *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
      *
      * @param serializedMessage The fully serialized message.
      *
@@ -51,7 +51,7 @@ public final class Message {
     /**
      * Serializes the {@link Message} to a {@link byte[]}.
      *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/develop/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
+     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_requirements.md" target="_top">Message Documentation</a>
      *
      * @return The serialized {@link byte[]}.
      * @throws IOException If this {@link Message} cannot be serialized.
