@@ -17,6 +17,11 @@ endif()
 if(${enable_dotnet_binding})
     add_subdirectory(dotnet_loader_ut)
 endif()
+
+if(${enable_dotnet_core_binding})
+    add_subdirectory(dotnet_core_loader_ut)
+endif()
+
 if(${enable_nodejs_binding})
     add_subdirectory(node_loader_ut)
 endif()

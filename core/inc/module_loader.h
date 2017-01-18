@@ -103,6 +103,7 @@ typedef struct MODULE_LOADER_API_TAG
     NATIVE,     \
     JAVA,       \
     DOTNET,     \
+    DOTNETCORE, \
     NODEJS     
 
 /**

@@ -110,6 +110,21 @@ if(${enable_dotnet_binding})
     include_directories(../bindings/dotnet/inc)
 endif()
 
+if(${enable_dotnet_core_binding})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ./src/module_loaders/dotnet_core_loader.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ./inc/module_loaders/dotnet_core_loader.h
+    )
+    # This symbol needs to be defined to cause this module loader to be
+    # available for the gateway.
+    add_definitions(-DDOTNET_CORE_BINDING_ENABLED)
+    include_directories(../bindings/dotnetcore/inc)
+endif()
+
 if(${enable_java_binding})
     set(gateway_c_sources
         ${gateway_c_sources}

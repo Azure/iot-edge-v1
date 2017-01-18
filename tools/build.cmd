@@ -26,6 +26,7 @@ set rebuild_deps=OFF
 set CMAKE_run_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
+set CMAKE_enable_dotnet_core_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set CMAKE_enable_ble_module=ON
@@ -40,6 +41,7 @@ if "%1" equ "--platform" goto arg-build-platform
 if "%1" equ "--run-unittests" goto arg-run-unittests
 if "%1" equ "--run-e2e-tests" goto arg-run-e2e-tests
 if "%1" equ "--enable-dotnet-binding" goto arg-enable-dotnet-binding
+if "%1" equ "--enable-dotnet-core-binding" goto arg-enable-dotnet-core-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
@@ -74,6 +76,14 @@ goto args-continue
 
 :arg-enable-dotnet-binding
 set CMAKE_enable_dotnet_binding=ON
+call %current-path%\build_dotnet.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+goto args-continue
+
+:arg-enable-dotnet-core-binding
+set CMAKE_enable_dotnet_core_binding=ON
+call %current-path%\build_dotnet_core.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
 :arg-enable-java-binding
@@ -124,11 +134,11 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14 Win64" "%build-root%"
+        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14 Win64" "%build-root%" 
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14" "%build-root%"
+        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14" "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
@@ -151,21 +161,22 @@ rem ----------------------------------------------------------------------------
 :usage
 echo build.cmd [options]
 echo options:
-echo  --config value            Build configuration (e.g. [Debug], Release)
-echo  --disable-ble-module      Do not build the BLE module
-echo  --enable-dotnet-binding   Build .NET binding
-echo  --enable-java-binding     Build Java binding
-echo                            (JAVA_HOME must be defined in your environment)
-echo  --enable-nodejs-binding   Build Node.js binding
-echo                            (NODE_INCLUDE, NODE_LIB must be defined)
-echo  --platform value          Build platform (e.g. [Win32], x64, ...)
-echo  --rebuild-deps            Force rebuild of dependencies
-echo  --run-e2e-tests           Build/run end-to-end tests
-echo  --run-unittests           Build/run unit tests
-echo  --system-deps-path        Search for dependencies in a system-level location,
-echo                            e.g. "C:\Program Files (x86)", and install if not
-echo                            found. When this option is omitted the path is
-echo                            %local-install%.
-echo  --use-xplat-uuid          Use SDK's platform-independent UUID implementation
+echo  --config value                 Build configuration (e.g. [Debug], Release)
+echo  --disable-ble-module           Do not build the BLE module
+echo  --enable-dotnet-binding        Build .NET binding
+echo  --enable-dotnet-core-binding   Build the .NET Core binding
+echo  --enable-java-binding          Build Java binding
+echo                                 (JAVA_HOME must be defined in your environment)
+echo  --enable-nodejs-binding        Build Node.js binding
+echo                                 (NODE_INCLUDE, NODE_LIB must be defined)
+echo  --platform value               Build platform (e.g. [Win32], x64, ...)
+echo  --rebuild-deps                 Force rebuild of dependencies
+echo  --run-e2e-tests                Build/run end-to-end tests
+echo  --run-unittests                Build/run unit tests
+echo  --system-deps-path             Search for dependencies in a system-level location,
+echo                                 e.g. "C:\Program Files (x86)", and install if not
+echo                                 found. When this option is omitted the path is
+echo                                 %local-install%.
+echo  --use-xplat-uuid               Use SDK's platform-independent UUID implementation
 goto :eof
 

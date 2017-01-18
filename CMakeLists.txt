@@ -71,6 +71,7 @@ option(enable_java_binding "set enable_java_binding to ON to enable building of 
 option(enable_nodejs_binding "set enable_nodejs_binding to ON to enable building of Node JS binding (default is OFF)" OFF)
 option(run_as_a_service "Flags that we have the goal of running gateway as a service for samples and OS that supports it." OFF)
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
+option(enable_dotnet_core_binding "set enable_dotnet_core_binding to ON to build dotnet core binding host binaries (default is OFF)" OFF)
 option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
 option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
 option(use_http "set use_http to ON if http is to be used, set to OFF to not use http" ON)
@@ -269,6 +270,16 @@ elseif(${ARCHITECTURE} STREQUAL "x86")
 endif()
 
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
+
+
+set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.IoT.Gateway/bin/$(Configuration)/netstandard1.6/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
+
+set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/SensorModule/bin/$(Configuration)/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
+
+set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/PrinterModule/bin/$(Configuration)PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+
+
+set(dotnet_core_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnetcore/$(Configuration)/dotnetcore.dll CACHE INTERNAL "The location of dotnetcore.dll" FORCE)
 
 function(install_binaries whatIsBuilding whatIsBuildingLocation whatIsBinaryLocation)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD

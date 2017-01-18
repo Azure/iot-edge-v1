@@ -52,6 +52,13 @@ goto args-loop
 
 :args-done
 
+rem -----------------------------------------------------------------------------
+rem -- dotnet restore
+rem -----------------------------------------------------------------------------
+call dotnet restore %build-root%\bindings\dotnetcore\dotnet-core-binding\
+
+
+
 if %build-clean%==1 (
     call :clean-a-solution "%build-root%\bindings\dotnetcore\dotnet-core-binding\dotnet-core-binding.sln" %build-config% %build-platform%
     if not !errorlevel!==0 exit /b !errorlevel!
