@@ -1,3 +1,4 @@
+
 # How-To Enable Node JS Module Development
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Node JS module development.
 
@@ -7,7 +8,7 @@ This document describes how to prepare your development environment to use the *
 
 ## Prerequisites
 - Install [Python 2.7](https://www.python.org/downloads/release/python-2712/)
-- Clone https://github.com/Azure/azure-iot-gateway-sdk.git
+- [Prepare your development environment](../../doc/devbox_setup.md)
 
 ## Building
 ### Windows
