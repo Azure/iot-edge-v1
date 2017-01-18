@@ -1,4 +1,4 @@
-# How-To (Node JS)
+# How-To Enable Node JS Module Development
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Node JS module development.
 
 - [Node JS](https://nodejs.org/)
@@ -11,31 +11,34 @@ This document describes how to prepare your development environment to use the *
 
 ## Building
 ### Windows
-Open a Developer Command Prompt for VS and: 
-
-- cd <\<your azure repo>>\tools
-- Run build_nodejs.cmd ==> build_nodejs.cmd downloads and builds Node JS from source as runtime linked modules.
-- Set 2 environment variables : `NODE_INCLUDE=<your azure-iot-gateway_root>\build_nodejs\dist\inc` and `NODE_LIB=<your aziore-iot-gateway_root>\%build-root%\build_nodejs\dist\lib`. These envioronment variables are a path to node.dll library and header files used by our Node JS binding. 
-- run build.cmd --enable-nodejs-binding
+From a Visual Studio Developer Command Prompt:
+- `cd <azure_iot_gateway_sdk_root>\tools`
+- `build_nodejs.cmd`
+ - Will download and build Node JS from source as runtime linked modules
+ - Will set two environment variables (a path to node.dll library and header files used by our Node JS binding):
+    - `NODE_INCLUDE=<azure_iot_gateway_sdk_root>\build_nodejs\dist\inc`
+    - `NODE_LIB=<azure_iot_gateway_sdk_root>\%build-root%\build_nodejs\dist\lib`
+- `build.cmd --enable-nodejs-binding`
 
 
 ### Linux
-Open a terminal window and run the following commands:
+From the command line:
 
-- cd <\<your azure gateway repo>>\tools
-- build_nodejs.sh ==> build_nodejs.sh downloads and builds Node JS from source as runtime linked modules.
-- Copy and paste the export message that shows up on screen so you have the NODE_INCLUDE and NODE_LIB environment variables set.
-- build.sh --enable-nodejs-binding
+- `cd <azure_iot_gateway_sdk_root>/tools`
+- `build_nodejs.sh`
+  - Will download and build Node JS from source as runtime linked modules
+- Copy and paste the export message that shows up on screen to set the NODE_INCLUDE and NODE_LIB environment variables
+- `build.sh --enable-nodejs-binding`
 
 
 ## Running simple sample
 ### Windows
 In order to run a gateway with a Node.js module do the following:
 
-- Edit file under <\<your azure gateway repo>>\samples\nodejs_simple_sample\src\gateway_sample.json
+- Edit file under `<azure_iot_gateway_sdk_root>\samples\nodejs_simple_sample\src\gateway_sample.json`
 - Copy the configuration values from the sample given below.
-- On folder <\<your azure gateway repo>>\build\samples\nodejs_simple_sample\Debug run the following command: 
-- nodejs_simple_sample ..\..\..\..\samples\nodejs_simple_sample\src\gateway_sample_win.json
+- In folder `<azure_iot_gateway_sdk_root>\build\samples\nodejs_simple_sample\Debug` run the following command: 
+- `nodejs_simple_sample ..\..\..\..\samples\nodejs_simple_sample\src\gateway_sample_win.json`
 
 ```
 {
@@ -114,11 +117,10 @@ In order to run a gateway with a Node.js module do the following:
 
 ### Linux
 On a terminal windows follow these steps:
-- Assuming that your azure-iot-gateway-sdk was cloned at ~/azure-iot-gateway-sdk/
-- Edit file under ~/azure-iot-gateway-sdk/samples/nodejs_simple_sample/src/gateway_sample.json
+- Edit file under `<azure_iot_gateway_sdk_root>/samples/nodejs_simple_sample/src/gateway_sample.json`
 - Copy the configuration values from the sample given below.
-- On folder ~/azure-iot-gateway-sdk/build/samples/nodejs_simple_sample run the following command: 
-- ./nodejs_simple_sample ../../../samples/nodejs_simple_sample/src/gateway_sample_lin.json
+- In folder `<azure_iot_gateway_sdk_root>/build/samples/nodejs_simple_sample` run the following command: 
+- `./nodejs_simple_sample ../../../samples/nodejs_simple_sample/src/gateway_sample_lin.json`
 
 Here is a sample of the gateway_sample.json file filled:
 ```
@@ -198,7 +200,7 @@ Here is a sample of the gateway_sample.json file filled:
 
 On successful run you should see **sample** output like this
 
-`````
+```
 Gateway is running. Press return to quit.
 printer.receive - 47, 33
 printer.receive - 11, 12
@@ -210,4 +212,4 @@ Gateway is quitting
 printer.destroy
 sensor.destroy
 iothub_writer.destroy
-`````
+```
