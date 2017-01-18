@@ -222,3 +222,8 @@ api_reference/
 # install prefix
 install-deps/
 Testing/Temporary/CTestCostData.txt
+
+# .NET Core Project Files
+project.lock.json
+.vs/
+restore.db
