@@ -13,10 +13,9 @@ This document describes how to prepare your development environment to use the *
 ### Windows
 From a Visual Studio Developer Command Prompt:
 - `cd <azure_iot_gateway_sdk_root>\tools`
-- `build_nodejs.cmd` - Will download and build Node JS from source as runtime linked modules
- - Will set two environment variables (a path to node.dll library and header files used by our Node JS binding):
-    - `NODE_INCLUDE=<azure_iot_gateway_sdk_root>\build_nodejs\dist\inc`
-    - `NODE_LIB=<azure_iot_gateway_sdk_root>\build_nodejs\dist\lib`
+- `build_nodejs.cmd`
+  - Will download and build Node JS from source as runtime linked modules
+- Copy and paste the set message that shows up on screen to set the `NODE_INCLUDE` and `NODE_LIB` environment variables
 - `build.cmd --enable-nodejs-binding`
 
 
@@ -25,7 +24,7 @@ From the command line:
 - `cd <azure_iot_gateway_sdk_root>/tools`
 - `build_nodejs.sh`
   - Will download and build Node JS from source as runtime linked modules
-- Copy and paste the export message that shows up on screen to set the NODE_INCLUDE and NODE_LIB environment variables
+- Copy and paste the export message that shows up on screen to set the `NODE_INCLUDE` and `NODE_LIB` environment variables
 - `build.sh --enable-nodejs-binding`
 
 
