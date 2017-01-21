@@ -1,18 +1,18 @@
 # How-To Enable Node JS Module Development
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Node JS module development.
-
 - [Node JS](https://nodejs.org/)
 - [Google V8](https://developers.google.com/v8/)
 - [libuv](http://libuv.org/)
+
 ## Prerequisites
-_- Install [Python 2.7](https://www.python.org/downloads/release/python-2712/)
+- Install [Python 2.7](https://www.python.org/downloads/release/python-2712/)
+- Ensure Python is added to your `PATH` environment variable (*Control Panel - Edit environment variables for your account*)
 - [Prepare your development environment](../../doc/devbox_setup.md)
 
 ## Building simple sample
 ### Windows
 From a Visual Studio Developer Command Prompt:
 - `cd <azure_iot_gateway_sdk_root>\tools`
-- `set PATH=%PATH%;C:\Python27`
 - `build_nodejs.cmd` - Will download and build Node JS from source as runtime linked modules
  - Will set two environment variables (a path to node.dll library and header files used by our Node JS binding):
     - `NODE_INCLUDE=<azure_iot_gateway_sdk_root>\build_nodejs\dist\inc`
