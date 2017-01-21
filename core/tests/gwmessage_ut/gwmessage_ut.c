@@ -3,10 +3,7 @@
 
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
+#include <stddef.h>
 #include "testrunnerswitcher.h"
 #include "umock_c.h"
 #include "umocktypes_charptr.h"

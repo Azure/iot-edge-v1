@@ -3,10 +3,6 @@
 
 #include <stdlib.h>
 
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
 #include <glib.h>
 
 #include "azure_c_shared_utility/macro_utils.h"

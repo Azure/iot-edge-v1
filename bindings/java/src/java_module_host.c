@@ -2,9 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
-#ifdef __CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
 
 #ifdef UNDER_TEST /*This flag tells the compiler to redefine JNIEXPORT, JNIIMPORT, and JNICALL so this module can be unit tested using umock_c*/
 

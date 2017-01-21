@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#ifdef __cplusplus
+#include <cstdlib>
+#else
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
 #endif
 
 #include "testrunnerswitcher.h"
@@ -36,7 +37,7 @@ static void my_gballoc_free(void* s)
 #include "message.h"
 #include "azure_c_shared_utility/base64.h"
 #include "azure_c_shared_utility/gballoc.h"
-#include <parson.h>
+#include "parson.h"
 
 MOCKABLE_FUNCTION(, JSON_Value*, json_parse_string, const char *, string);
 MOCKABLE_FUNCTION(, const char*, json_object_get_string, const JSON_Object *, object, const char *, name);

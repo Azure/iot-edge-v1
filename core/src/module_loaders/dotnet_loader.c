@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+#ifdef __cplusplus
+#include <cstdlib>
+#include <cstring>
+#else
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
+#include <string.h>
 #endif
 #include "azure_c_shared_utility/gballoc.h"
-#include <string.h>
-
 #include "azure_c_shared_utility/xlogging.h"
 #include "parson.h"
 

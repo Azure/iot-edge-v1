@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
+#include <stdbool.h>
 #include <string.h>
-
 #include "azure_c_shared_utility/gballoc.h"
 
 /*because it is linked statically, this include will bring in some uniquely (by convention) named functions*/

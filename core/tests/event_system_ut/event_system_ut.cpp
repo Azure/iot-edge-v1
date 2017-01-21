@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <cstdlib>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
+#include <cstddef>
+#include <cstdbool>
 #include <vector>
 #include <list>
 
@@ -16,6 +14,7 @@
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/condition.h"
 #include "azure_c_shared_utility/singlylinkedlist.h"
+#include "azure_c_shared_utility/vector.h"
 
 #include "experimental/event_system.h"
 

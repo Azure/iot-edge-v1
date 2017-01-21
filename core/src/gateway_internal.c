@@ -2,13 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+#include <stddef.h>
+#include <stdbool.h>
 #include <azure_c_shared_utility/gballoc.h>
 #include <azure_c_shared_utility/xlogging.h>
 
-#include <stdbool.h>
 #include <azure_c_shared_utility/vector.h>
 
 #include "experimental/event_system.h"
