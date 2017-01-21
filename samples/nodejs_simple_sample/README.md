@@ -33,7 +33,7 @@ From the command line:
 
 ### Windows
 In order to run a gateway with a Node.js module do the following:
-- Update the `iothub_writer` module config JSON (*shown below*) in `<azure_iot_gateway_sdk_root>\samples\nodejs_simple_sample\src\gateway_sample_win.json` by replacing `<IoT Hub Device Connection String>` with your actual IoT Hub device connection string
+- Update the `iothub_writer` module config JSON (*shown below*) in `<azure_iot_gateway_sdk_root>\samples\nodejs_simple_sample\src\gateway_sample_win.json` by replacing `<IoTHub device connection string>` with your actual IoT Hub device connection string
 ```
         {
             "name": "iothub_writer",
@@ -44,7 +44,7 @@ In order to run a gateway with a Node.js module do the following:
                 }
             },
             "args": {
-                "connection_string": "<IoT Hub Device Connection String>"
+                "connection_string": "<IoTHub device connection string>"
             }
         },
 ```
@@ -53,7 +53,7 @@ In order to run a gateway with a Node.js module do the following:
 
 ### Linux
 On a terminal windows follow these steps:
-- Update the `iothub_writer` module config JSON (*shown below*) in `<azure_iot_gateway_sdk_root>\samples\nodejs_simple_sample\src\gateway_sample_lin.json` by replacing `<IoT Hub Device Connection String>` with your actual IoT Hub device connection string
+- Update the `iothub_writer` module config JSON (*shown below*) in `<azure_iot_gateway_sdk_root>\samples\nodejs_simple_sample\src\gateway_sample_lin.json` by replacing `<IoTHub device connection string>` with your actual IoT Hub device connection string
 ```
         {
             "name": "iothub_writer",
@@ -64,7 +64,7 @@ On a terminal windows follow these steps:
                 }
             },
             "args": {
-                "connection_string": "<IoT Hub Device Connection String>"
+                "connection_string": "<IoTHub device connection string>"
             }
         },
 ```
