@@ -4,7 +4,9 @@
 #ifndef NODEJS_COMMON_H
 #define NODEJS_COMMON_H
 
+#include <future>
 #include <string>
+#include <utility>
 
 #include "v8.h"
 
@@ -18,7 +20,6 @@ typedef void(*PFNMODULE_START)(NODEJS_MODULE_HANDLE_DATA* handle_data);
 enum class NodeModuleState
 {
     error,
-    initializing,
     initialized
 };
 
@@ -55,6 +56,7 @@ struct NODEJS_MODULE_HANDLE_DATA
     NODEJS_MODULE_HANDLE_DATA(NODEJS_MODULE_HANDLE_DATA&& rhs)
     {
         broker = rhs.broker;
+        create_complete = std::move(rhs.create_complete);
         main_path = rhs.main_path;
         configuration_json = rhs.configuration_json;
         v8_isolate = rhs.v8_isolate;
@@ -140,16 +142,17 @@ struct NODEJS_MODULE_HANDLE_DATA
         start_pending = isPending;
     }
 
-    BROKER_HANDLE               broker;
-    std::string                 main_path;
-    std::string                 configuration_json;
-    v8::Isolate                 *v8_isolate;
-    v8::Persistent<v8::Object>  module_object;
-    size_t                      module_id;
-    PFNMODULE_START             on_module_start;
-    NodeModuleState             module_state;
-    bool                        start_pending;
-    nodejs_module::Lock         object_lock;
+    BROKER_HANDLE broker;
+    std::promise<NodeModuleState> create_complete;
+    std::string main_path;
+    std::string configuration_json;
+    v8::Isolate *v8_isolate;
+    v8::Persistent<v8::Object> module_object;
+    size_t module_id;
+    PFNMODULE_START on_module_start;
+    NodeModuleState module_state;
+    bool start_pending;
+    nodejs_module::Lock object_lock;
 };
 
 #endif /*NODEJS_COMMON_H*/

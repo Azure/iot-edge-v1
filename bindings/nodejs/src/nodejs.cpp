@@ -1,9 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include <cstdlib>
+#include <chrono>
 #include <cstdbool>
+#include <cstdlib>
 #include <cstddef>
+#include <new>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "azure_c_shared_utility/gballoc.h"
 
 #ifdef WIN32
@@ -11,11 +17,6 @@
 #else
 #include <unistd.h>
 #endif
-
-#include <string>
-#include <new>
-#include <sstream>
-#include <vector>
 
 #include "uv.h"
 #include "v8.h"
@@ -61,6 +62,7 @@
     "  }"                                                                      \
     "})();"
 
+static void NODEJS_Destroy(MODULE_HANDLE module);
 static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
 static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config);
 void call_start_on_module(NODEJS_MODULE_HANDLE_DATA* handle_data);
@@ -110,7 +112,31 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
                 }
                 else
                 {
-                    handle_data->SetModuleState(NodeModuleState::initializing);
+                    // Wait for the module to become fully initialized
+                    NodeModuleState module_state;
+                    std::future<NodeModuleState> create_gate = handle_data->create_complete.get_future();
+                    switch (create_gate.wait_for(std::chrono::seconds(10)))
+                    {
+                      case std::future_status::ready:
+                          module_state = create_gate.get();
+                        break;
+                      case std::future_status::deferred:
+                      case std::future_status::timeout:
+                      default:
+                          module_state = NodeModuleState::error;
+                        break;
+                    }
+                    if (NodeModuleState::initialized != module_state)
+                    {
+                        LogError("Node process failed to start");
+                        modules_manager->RemoveModule(handle_data->module_id);
+                        NODEJS_Destroy(reinterpret_cast<MODULE_HANDLE>(handle_data));
+                        handle_data = NULL;
+                    }
+                    else
+                    {
+                        handle_data->SetModuleState(module_state);
+                    }
 
                     /*Codes_SRS_NODEJS_13_005: [ NodeJS_Create shall return a non-NULL MODULE_HANDLE when successful. ]*/
                     result = reinterpret_cast<MODULE_HANDLE>(handle_data);
@@ -817,7 +843,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
     v8::Isolate* isolate = handle_data->v8_isolate = v8::Isolate::GetCurrent();
     if (isolate == nullptr)
     {
-        handle_data->SetModuleState(NodeModuleState::error);
+        handle_data->create_complete.set_value(NodeModuleState::error);
         LogError("v8 isolate is nullptr");
     }
     else
@@ -827,7 +853,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
         auto context = isolate->GetCurrentContext();
         if (context.IsEmpty() == true)
         {
-            handle_data->SetModuleState(NodeModuleState::error);
+            handle_data->create_complete.set_value(NodeModuleState::error);
             LogError("No active v8 context found.");
         }
         else
@@ -839,7 +865,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
             */
             if (create_gateway_host(isolate, context) == false)
             {
-                handle_data->SetModuleState(NodeModuleState::error);
+                handle_data->create_complete.set_value(NodeModuleState::error);
                 LogError("Could not create gateway host in v8 global context");
             }
             else
@@ -861,7 +887,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                     auto result = nodejs_module::NodeJSUtils::RunScript(isolate, context, script_str.str());
                     if (result.IsEmpty() == true)
                     {
-                        handle_data->SetModuleState(NodeModuleState::error);
+                        handle_data->create_complete.set_value(NodeModuleState::error);
                         LogError("registerModule script returned nullptr");
                     }
                     else
@@ -869,7 +895,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                         // this must be boolean and must evaluate to true
                         if (result->IsBoolean() == false)
                         {
-                            handle_data->SetModuleState(NodeModuleState::error);
+                            handle_data->create_complete.set_value(NodeModuleState::error);
                             LogError("Expected registerModule to return boolean but it did not.");
                         }
                         else
@@ -877,12 +903,12 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             auto bool_result = result->ToBoolean();
                             if (bool_result->BooleanValue() == false)
                             {
-                                handle_data->SetModuleState(NodeModuleState::error);
+                                handle_data->create_complete.set_value(NodeModuleState::error);
                                 LogError("Expected registerModule to return 'true' but it returned 'false'");
                             }
                             else
                             {
-                                handle_data->SetModuleState(NodeModuleState::initialized);
+                                handle_data->create_complete.set_value(NodeModuleState::initialized);
                                 if (handle_data->GetStartPending() == true)
                                 {
                                     call_start_on_module(handle_data);
@@ -1227,11 +1253,7 @@ static void on_start_callback(
     if (modules_manager->HasModule(module_id) == true)
     {
         auto& handle_data = modules_manager->GetModuleFromId(module_id);
-        if (handle_data.GetModuleState() == NodeModuleState::initializing)
-        {
-            handle_data.SetStartPending(true);
-        }
-        else if (handle_data.GetModuleState() == NodeModuleState::initialized)
+        if (handle_data.GetModuleState() == NodeModuleState::initialized)
         {
             if (handle_data.module_object.IsEmpty() == false)
             {
