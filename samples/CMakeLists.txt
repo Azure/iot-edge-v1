@@ -12,6 +12,10 @@ if(${enable_dotnet_binding})
     add_subdirectory(dotnet_binding_sample)
 endif()
 
+if(${enable_dotnet_core_binding})
+    add_subdirectory(dotnet_core_binding_sample)
+endif()
+
 if(${enable_java_binding})
     add_subdirectory(java_sample)
 endif()
