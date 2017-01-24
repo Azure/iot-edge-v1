@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>Azure.IoT.Gateway.SDK.Net</id>
-    <version>2017.01.13.2</version>
-    <title>Azure IoT Gateway SDK for .Net Framework</title>
-    <description>This package contains the Microsoft Azure IoT Gateway SDK targeting the .NET Framework</description>
+    <id>Azure.IoT.Gateway.SDK</id>
+    <version>2017.01.13-alpha</version>
+    <title>Azure IoT Gateway SDK</title>
+    <description>This package contains the Microsoft Azure IoT Gateway SDK</description>
     <authors>Microsoft Corporation</authors>
     <language>en-US</language>
     <projectUrl>https://github.com/azure/azure-iot-gateway-sdk</projectUrl>
     <licenseUrl>https://github.com/Azure/azure-iot-gateway-sdk/blob/master/License.txt</licenseUrl>
-    <tags>Microsoft Azure IoT Gateway SDK dotnet net40</tags>
+    <tags>Microsoft Azure IoT Gateway SDK</tags>
   </metadata>
   <files>
-    <file src="..\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway\bin\x86\Release\Microsoft.Azure.IoT.Gateway.dll" target="lib\net40" />
-    <file src="..\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway\bin\x86\Release\Microsoft.Azure.IoT.Gateway.pdb" target="lib\net40" />
-    <file src="..\build\core\Debug\gateway.dll" target="build\x86" />
-    <file src="..\build\bindings\dotnet\Release\dotnet.dll" target="build\x86" />
+    <file src="..\build\core\Release\gateway.dll" target="build\x86" />
+    <file src="..\build\core\Release\gateway.pdb" target="build\x86" />
     <file src="..\build\modules\iothub\Release\iothub.dll" target="build\x86" />
+    <file src="..\build\modules\iothub\Release\iothub.pdb" target="build\x86" />
     <file src="..\install-deps\bin\aziotsharedutil.dll" target="build\x86" />
+    <file src="..\install-deps\bin\aziotsharedutil.pdb" target="build\x86" />
     <file src="..\install-deps\bin\iothub_client.dll" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_client.pdb" target="build\x86" />
     <file src="..\install-deps\bin\iothub_service_client.dll" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_service_client.pdb" target="build\x86" />
     <file src="..\install-deps\bin\nanomsg.dll" target="build\x86" />
+    <file src="..\install-deps\bin\nanomsg.pdb" target="build\x86" />
     <file src="..\install-deps\bin\serializer.dll" target="build\x86" />
+    <file src="..\install-deps\bin\serializer.pdb" target="build\x86" />
   </files>
 </package>
