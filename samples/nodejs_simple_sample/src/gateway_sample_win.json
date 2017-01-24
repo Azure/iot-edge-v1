@@ -38,7 +38,7 @@
                 }
             },
             "args": {
-                "connection_string": "<<IoT Hub Device Connection String>>"
+                "connection_string": "<IoT Hub device connection string>"
             }
         },
         {

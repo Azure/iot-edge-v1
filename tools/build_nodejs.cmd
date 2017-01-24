@@ -47,8 +47,7 @@ copy node\build\Release\lib\*.lib dist\lib
 
 popd
 
-rem Export environment variables for where the include/lib files can be found
-set "NODE_INCLUDE=%build-root%\dist\inc"
-set "NODE_LIB=%build-root%\dist\lib"
+rem Set environment variables for where the include/lib files can be found
+@endlocal & set NODE_INCLUDE=%build-root%\dist\inc\ & set NODE_LIB=%build-root%\dist\lib\
 
 goto :eof
