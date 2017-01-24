@@ -1,11 +1,20 @@
 {
+    "loaders": [
+        {
+            "type": "node",
+            "name": "node",
+            "configuration": {
+                "binding.path": "../../../bindings/nodejs/Debug/libnodejs_binding.so"
+            }
+        }
+    ],
     "modules": [
         {
             "name": "node_printer",
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "<<path to printer.js>>"
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/printer.js"
                 }
             },
             "args": null
@@ -15,7 +24,7 @@
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "<<path to sensor.js>>"
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/sensor.js"
                 }
             },
             "args": null
@@ -25,11 +34,11 @@
             "loader": {
                 "name": "node",
                 "entrypoint": {
-                    "main.path": "<<path to iothub_writer.js>>"
+                    "main.path": "../../../samples/nodejs_simple_sample/nodejs_modules/iothub_writer.js"
                 }
             },
             "args": {
-                "connection_string": "<<IoT Hub Device Connection String>>"
+                "connection_string": "<IoT Hub device connection string>"
             }
         },
         {
@@ -37,11 +46,11 @@
             "loader": {
                 "name": "native",
                 "entrypoint": {
-                    "module.path": "<<path to logger.dll>>"
+                    "module.path": "../../../modules/logger/Debug/liblogger.so"
                 }
             },
             "args": {
-                "filename": "<<path to log file>>"
+                "filename": "log.txt"
             }
         }
     ],
