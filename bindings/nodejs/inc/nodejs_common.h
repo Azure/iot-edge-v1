@@ -31,8 +31,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start(nullptr),
         module_id(0),
         v8_isolate(nullptr),
-        module_state(NodeModuleState::error),
-        start_pending(false)
+        module_state(NodeModuleState::error)
     {
     }
 
@@ -48,22 +47,19 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start(module_start),
         module_id(0),
         v8_isolate(nullptr),
-        module_state(NodeModuleState::error),
-        start_pending(false)
+        module_state(NodeModuleState::error)
     {
     }
 
     NODEJS_MODULE_HANDLE_DATA(NODEJS_MODULE_HANDLE_DATA&& rhs)
     {
         broker = rhs.broker;
-        create_complete = std::move(rhs.create_complete);
         main_path = rhs.main_path;
         configuration_json = rhs.configuration_json;
         v8_isolate = rhs.v8_isolate;
         on_module_start = rhs.on_module_start;
         module_id = rhs.module_id;
         module_state = rhs.module_state;
-        start_pending = rhs.start_pending;
 
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
@@ -82,7 +78,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start = rhs.on_module_start;
         module_id = rhs.module_id;
         module_state = rhs.module_state;
-        start_pending = rhs.start_pending;
 
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
@@ -100,7 +95,6 @@ struct NODEJS_MODULE_HANDLE_DATA
         on_module_start = rhs.on_module_start;
         this->module_id = module_id;
         module_state = rhs.module_state;
-        start_pending = rhs.start_pending;
 
         if (v8_isolate != nullptr && rhs.module_object.IsEmpty() == false)
         {
@@ -130,20 +124,7 @@ struct NODEJS_MODULE_HANDLE_DATA
         module_state = state;
     }
 
-    bool GetStartPending()
-    {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
-        return start_pending;
-    }
-
-    void SetStartPending(bool isPending)
-    {
-        nodejs_module::LockGuard<NODEJS_MODULE_HANDLE_DATA> lock_guard(*this);
-        start_pending = isPending;
-    }
-
     BROKER_HANDLE broker;
-    std::promise<NodeModuleState> create_complete;
     std::string main_path;
     std::string configuration_json;
     v8::Isolate *v8_isolate;
@@ -151,8 +132,15 @@ struct NODEJS_MODULE_HANDLE_DATA
     size_t module_id;
     PFNMODULE_START on_module_start;
     NodeModuleState module_state;
-    bool start_pending;
     nodejs_module::Lock object_lock;
+
+    /*
+     * WARNING: The promise follows the lifespan of the class, NOT
+     *          the lifespan of the handle data. This means the
+     *          std::future<NodeModuleState> associated with this
+     *          class will NOT survive a copy or move operation.
+     */
+    std::promise<NodeModuleState> create_complete;
 };
 
 #endif /*NODEJS_COMMON_H*/

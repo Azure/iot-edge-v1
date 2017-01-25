@@ -67,6 +67,8 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data);
 static bool validate_input(BROKER_HANDLE broker, const NODEJS_MODULE_CONFIG* module_config);
 void call_start_on_module(NODEJS_MODULE_HANDLE_DATA* handle_data);
 
+static const size_t NODE_LOAD_TIMEOUT_S = 10;
+
 static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configuration)
 {
     MODULE_HANDLE result;
@@ -114,16 +116,16 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
                 {
                     // Wait for the module to become fully initialized
                     NodeModuleState module_state;
-                    std::future<NodeModuleState> create_gate = handle_data->create_complete.get_future();
-                    switch (create_gate.wait_for(std::chrono::seconds(10)))
+                    auto create_gate = handle_data->create_complete.get_future();
+                    switch (create_gate.wait_for(std::chrono::seconds(NODE_LOAD_TIMEOUT_S)))
                     {
                       case std::future_status::ready:
-                          module_state = create_gate.get();
+                        module_state = create_gate.get();
                         break;
                       case std::future_status::deferred:
                       case std::future_status::timeout:
                       default:
-                          module_state = NodeModuleState::error;
+                        module_state = NodeModuleState::error;
                         break;
                     }
                     if (NodeModuleState::initialized != module_state)
@@ -909,10 +911,7 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             else
                             {
                                 handle_data->create_complete.set_value(NodeModuleState::initialized);
-                                if (handle_data->GetStartPending() == true)
-                                {
-                                    call_start_on_module(handle_data);
-                                }
+                                call_start_on_module(handle_data);
                             }
                         }
                     }
@@ -1286,7 +1285,6 @@ static void on_start_callback(
             {
                 LogError("Module does not have a JS object that needs to be destroyed.");
             }
-            handle_data.SetStartPending(false);
         }
         else
         {
