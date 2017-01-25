@@ -703,18 +703,9 @@ BEGIN_TEST_SUITE(nodejs_int)
         auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
@@ -745,18 +736,9 @@ BEGIN_TEST_SUITE(nodejs_int)
         auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
@@ -788,18 +770,9 @@ BEGIN_TEST_SUITE(nodejs_int)
         auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
@@ -831,18 +804,9 @@ BEGIN_TEST_SUITE(nodejs_int)
         auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
-        ASSERT_IS_TRUE(handle_data->module_object.IsEmpty() == false);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
@@ -874,17 +838,9 @@ BEGIN_TEST_SUITE(nodejs_int)
         auto result = NODEJS_Create(g_broker, &config);
 
         ///assert
-        ASSERT_IS_NOT_NULL(result);
-
-        // wait for 15 seconds for the create to get done
-        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
-        ASSERT_IS_TRUE(handle_data->GetModuleState() == NodeModuleState::error);
+        ASSERT_IS_NULL(result);
 
         ///cleanup
-        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
@@ -1210,11 +1166,7 @@ BEGIN_TEST_SUITE(nodejs_int)
         ///act
         auto result = NODEJS_Create(g_broker, &config);
 
-        // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
 
         NODEJS_Destroy(result);
 
@@ -1270,11 +1222,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         NODEJS_Start(result);
 
-        // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
 
         ///assert
         wait_for_predicate(15, [handle_data]() {
@@ -1325,11 +1273,7 @@ BEGIN_TEST_SUITE(nodejs_int)
 
         auto result = NODEJS_Create(g_broker, &config);
 
-        // wait for 15 seconds for the create to get done
         NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
-        wait_for_predicate(15, [handle_data]() {
-            return handle_data->GetModuleState() != NodeModuleState::initializing;
-        });
 
         ///act
 
