@@ -51,7 +51,7 @@ In order to run a gateway with a Node.js module do the following:
 - `Debug\nodejs_simple_sample ..\..\..\samples\nodejs_simple_sample\src\gateway_sample_win.json`
 
 ### Linux
-On a terminal windows follow these steps:
+On a terminal window follow these steps:
 - `cd <azure_iot_gateway_sdk_root>/samples/nodejs_simple_sample/src/`
 - Update `gateway_sample_lin.json` by replacing `<IoT Hub device connection string>` (in the `iothub_writer` module config JSON (*shown below*)) with your actual IoT Hub device connection string
 ```
@@ -69,7 +69,7 @@ On a terminal windows follow these steps:
         },
 ```
 - `cd ../../../build/samples/nodejs_simple_sample/`
-- `./Debug/nodejs_simple_sample ../../../samples/nodejs_simple_sample/src/gateway_sample_lin.json`
+- `./nodejs_simple_sample ../../../samples/nodejs_simple_sample/src/gateway_sample_lin.json`
 
 
 ## Simple sample output
