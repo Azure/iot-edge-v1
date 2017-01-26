@@ -69,7 +69,7 @@ static MODULE_LIBRARY_HANDLE DynamicModuleLoader_Load(const MODULE_LOADER* loade
                         //Codes_SRS_DYNAMIC_MODULE_LOADER_13_003: [ DynamicModuleLoader_Load shall return NULL if an underlying platform call fails. ]
                         free(result);
                         result = NULL;
-                        LogError("DynamicLibrary_LoadLibrary() returned NULL");
+                        LogError("DynamicLibrary_LoadLibrary() returned NULL for module %s", moduleLibraryFileName);
                     }
                     else
                     {

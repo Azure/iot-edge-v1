@@ -4,7 +4,7 @@
             "type": "node",
             "name": "node",
             "configuration": {
-                "binding.path": "../../../bindings/nodejs/Debug/libnodejs_binding.so"
+                "binding.path": "../../bindings/nodejs/libnodejs_binding.so"
             }
         }
     ],
@@ -46,7 +46,7 @@
             "loader": {
                 "name": "native",
                 "entrypoint": {
-                    "module.path": "../../../modules/logger/Debug/liblogger.so"
+                    "module.path": "../../modules/logger/liblogger.so"
                 }
             },
             "args": {
