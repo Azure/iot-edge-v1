@@ -8,6 +8,7 @@ build_clean=
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 local_install=$build_root/install-deps
 log_dir=$build_root
+rebuild_deps=OFF
 run_unittests=OFF
 run_e2e_tests=OFF
 run_valgrind=0
@@ -16,12 +17,15 @@ enable_nodejs_binding=OFF
 toolchainfile=
 enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
+build_config=Debug
 
 cd "$build_root"
 usage ()
 {
     echo "build.sh [options]"
     echo "options"
+    echo " -f,  --config <value>         Build specified configuration. Default value is 'Debug'"
+    echo " --rebuild-deps                Force re-build of dependencies"
     echo " -x,  --xtrace                 Print a trace of each command"
     echo " -c,  --clean                  Remove previous build artifacts"
     echo " -cl, --compileoption <value>  Specify a gcc compile option"
@@ -59,12 +63,18 @@ process_args ()
         # save arg to pass as toolchain file
         toolchainfile="$arg"
         save_next_arg=0
+      elif [ $save_next_arg == 3 ]
+      then
+        # save build configuration
+        build_config="$arg"
+        save_next_arg=0
       else
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;
               "-c" | "--clean" ) build_clean=1;;
               "--run-unittests" ) run_unittests=ON;;
               "--run-e2e-tests" ) run_e2e_tests=ON;;
+              "--rebuild-deps" ) rebuild_deps=ON;;
               "-cl" | "--compileoption" ) save_next_arg=1;;
               "-rv" | "--run-valgrind" ) run_valgrind=1;;
               "--enable-java-binding" ) enable_java_binding=ON;;
@@ -72,6 +82,7 @@ process_args ()
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
               "--system-deps-path" ) dependency_install_prefix=;;
+              "-f" | "--config" ) save_next_arg=3;;
               * ) usage;;
           esac
       fi
@@ -123,7 +134,7 @@ pushd "$cmake_root"
 cmake $toolchainfile \
       $dependency_install_prefix \
       -DcompileOption_C:STRING="$extracloptions" \
-      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE="$build_config" \
       -Drun_unittests:BOOL=$run_unittests \
       -Drun_e2e_tests:BOOL=$run_e2e_tests \
       -Denable_java_binding:BOOL=$enable_java_binding \
@@ -131,6 +142,7 @@ cmake $toolchainfile \
       -Denable_ble_module:BOOL=$enable_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \
       -Dbuild_cores=$CORES \
+      -Drebuild_deps:BOOL=$rebuild_deps \
       "$build_root"
 
 make --jobs=$CORES
@@ -144,7 +156,7 @@ then
         ctest -j $CORES --output-on-failure
         export LD_LIBRARY_PATH=
     else
-        ctest -j $CORES -C "Debug" --output-on-failure
+        ctest -j $CORES -C $build_config --output-on-failure
     fi
 fi
 

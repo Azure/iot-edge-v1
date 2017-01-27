@@ -22,6 +22,7 @@ rem ----------------------------------------------------------------------------
 rem // default build options
 set build-config=Debug
 set build-platform=Win32
+set rebuild_deps=OFF
 set CMAKE_run_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
 set CMAKE_enable_dotnet_binding=OFF
@@ -33,6 +34,7 @@ set dependency_install_prefix="-Ddependency_install_prefix=%local-install%"
 :args-loop
 if "%1" equ "" goto args-done
 if "%1" equ "--config" goto arg-build-config
+if "%1" equ "--rebuild-deps" goto arg-rebuild-deps
 if "%1" equ "--platform" goto arg-build-platform
 if "%1" equ "--run-unittests" goto arg-run-unittests
 if "%1" equ "--run-e2e-tests" goto arg-run-e2e-tests
@@ -54,6 +56,10 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
+goto args-continue
+
+:arg-rebuild-deps
+set rebuild_deps=ON
 goto args-continue
 
 :arg-run-unittests
@@ -112,11 +118,11 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 pushd %cmake-root%
 if %build-platform% == x64 (
     echo ***Running CMAKE for Win64***
-        cmake %dependency_install_prefix% -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%" -G "Visual Studio 14 Win64"
+        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% "%build-root%" -G "Visual Studio 14 Win64"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 ) else (
     echo ***Running CMAKE for Win32***
-        cmake %dependency_install_prefix% -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% "%build-root%"
+        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% "%build-root%"
         if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
@@ -140,6 +146,7 @@ rem ----------------------------------------------------------------------------
 echo build.cmd [options]
 echo options:
 echo  --config value            Build configuration (e.g. [Debug], Release)
+echo  --rebuild-deps            Force re-build of dependencies
 echo  --platform value          Build platform (e.g. [Win32], x64, ...)
 echo  --run-unittests           Build/run unit tests
 echo  --run-e2e-tests           Build/run end-to-end tests
