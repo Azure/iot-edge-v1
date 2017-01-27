@@ -81,6 +81,9 @@ pointer to a `NODEJS_MODULE_CONFIG` object.
 **SRS_NODEJS_13_036: [** `NodeJS_Create` shall invoke `ModulesManager::AddModule` to add a new module to it's internal list. **]**
 
 **SRS_NODEJS_13_011: [** When the `NODEJS_MODULE_HANDLE_DATA::on_module_start` function is invoked, a new JavaScript object shall be created and added to the v8 global context with the name `gatewayHost`. The object shall implement the following interface (TypeScript syntax used below is just for the purpose of description):
+
+**SRS_NODEJS_27_046: [** `NodeJS_Create` shall block until the JS module has become fully initialized. **]**
+
 ```ts
 interface GatewayModuleHost {
     registerModule: (module: GatewayModule) => void;
