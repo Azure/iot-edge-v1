@@ -65,10 +65,10 @@ function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDi
 endfunction()
 
 #Additional arguments to the specific projects cmake command may be specified after specifying the cmakeRootDirectory
-function(findAndInstall libraryName submoduleRootDirectory cmakeRootDirectory)
+function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDirectory)
 
     if(NOT ${libraryName}_FOUND)
-        find_package(${libraryName} QUIET CONFIG HINTS ${dependency_install_prefix})
+        find_package(${libraryName} ${version} QUIET CONFIG HINTS ${dependency_install_prefix})
         if(NOT ${libraryName}_FOUND)
             message(STATUS "${libraryName} not found...")
             message(STATUS "Building ${libraryName}...")
@@ -124,7 +124,7 @@ function(findAndInstall libraryName submoduleRootDirectory cmakeRootDirectory)
             endif()
 
             #Attempt to find library with the REQUIRED option
-            find_package(${libraryName} REQUIRED CONFIG HINTS ${dependency_install_prefix})
+            find_package(${libraryName} ${version} REQUIRED CONFIG HINTS ${dependency_install_prefix})
         endif()
     endif()
 

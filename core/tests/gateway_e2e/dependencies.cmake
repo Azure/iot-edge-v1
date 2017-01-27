@@ -6,12 +6,12 @@ include("../../../gatewayFunctions.cmake")
 ###############################################################################
 ###########################Find/Install/Build uamqp############################
 ###############################################################################
-findAndInstall(uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 ###########################Find/Install/Build umqtt############################
 ###############################################################################
-findAndInstall(umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
@@ -36,4 +36,4 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/parson/README.md)
         message(FATAL_ERROR "Error pulling parson submodule: ${res}")
     endif()
 endif()
-findAndInstall(azure_iot_sdks ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Dbuild_as_dynamic=ON -Drun_e2e_tests=ON -Duse_openssl=OFF -G "${CMAKE_GENERATOR}")
+findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Dbuild_as_dynamic=ON -Drun_e2e_tests=ON -Duse_openssl=OFF -G "${CMAKE_GENERATOR}")
