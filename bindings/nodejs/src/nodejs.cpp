@@ -114,6 +114,7 @@ static MODULE_HANDLE NODEJS_Create(BROKER_HANDLE broker, const void* configurati
                 }
                 else
                 {
+                    /* Codes_SRS_NODEJS_27_046: [ `NodeJS_Create` shall block until the JS module has become fully initialized. ] */
                     // Wait for the module to become fully initialized
                     NodeModuleState module_state;
                     auto create_gate = handle_data->create_complete.get_future();
