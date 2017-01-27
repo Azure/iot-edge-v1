@@ -911,7 +911,6 @@ static void on_module_start(NODEJS_MODULE_HANDLE_DATA* handle_data)
                             else
                             {
                                 handle_data->create_complete.set_value(NodeModuleState::initialized);
-                                call_start_on_module(handle_data);
                             }
                         }
                     }
