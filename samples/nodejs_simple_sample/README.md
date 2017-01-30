@@ -2,7 +2,7 @@
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Node JS module development.
 
 ## Prerequisites
-- Install [Python 2.7](https://www.python.org/downloads/release/python-27/)
+- Install [Python 2.7](https://www.python.org/downloads/release/python-27)
 - Install [Node.js](https://nodejs.org/)
 - Ensure Python is added to your `PATH` environment variable (*Control Panel - Edit environment variables for your account*)
 - [Prepare your development environment](../../doc/devbox_setup.md)
