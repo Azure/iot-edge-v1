@@ -3,8 +3,8 @@ This document describes how to prepare your development environment to use the *
 
 ## Prerequisites
 - Install [Python 2.7](https://www.python.org/downloads/release/python-27)
+  - **Windows Users** - Ensure Python is added to your `PATH` environment variable (*Control Panel - Edit environment variables for your account*)
 - Install [Node.js](https://nodejs.org/)
-- Ensure Python is added to your `PATH` environment variable (*Control Panel - Edit environment variables for your account*)
 - [Prepare your development environment](../../doc/devbox_setup.md)
 
 ## Building simple sample
@@ -20,10 +20,10 @@ From a Visual Studio Developer Command Prompt:
 ### Linux
 From the command line:
 - `cd <azure_iot_gateway_sdk_root>/tools/`
-- `build_nodejs.sh`
+- `./build_nodejs.sh`
   - Will download and build Node JS from source as runtime linked modules
 - Copy and paste the `export` message that shows up on screen to set the `NODE_INCLUDE` and `NODE_LIB` environment variables
-- `build.sh --enable-nodejs-binding`
+- `./build.sh --enable-nodejs-binding`
 - `cd ../samples/nodejs_simple_sample/nodejs_modules/`
 - `npm install`
 
