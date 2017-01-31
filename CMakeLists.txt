@@ -269,14 +269,14 @@ elseif(${ARCHITECTURE} STREQUAL "x86")
    set(dotnet_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnet/dotnet-binding/PrinterModule/bin/x86/$(Configuration)/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
 endif()
 
-set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/$(Configuration)/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
+set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/${CMAKE_BUILD_TYPE}/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
 
 
-set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.IoT.Gateway/bin/$(Configuration)/netstandard1.6/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll (windows)" FORCE)
+set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.IoT.Gateway/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll" FORCE)
 
-set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/SensorModule/bin/$(Configuration)/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll (windows)" FORCE)
+set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/SensorModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll" FORCE)
 
-set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/PrinterModule/bin/$(Configuration)/netstandard1.6/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll (windows)" FORCE)
+set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/PrinterModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll" FORCE)
 
 
 set(dotnet_core_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnetcore/$(Configuration)/dotnetcore.dll CACHE INTERNAL "The location of dotnetcore.dll" FORCE)

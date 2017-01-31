@@ -392,7 +392,7 @@ void* DotnetCoreModuleLoader_BuildModuleConfiguration(
             }
             else
             {
-                if (mallocAndStrcpy_s(&((char*)result->entry_type), (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModuleEntryClass)) != 0)
+                if (mallocAndStrcpy_s((char**)&(result->entry_type), (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModuleEntryClass)) != 0)
                 {
                     //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                     LogError("Failed to malloc and Copy dotnetModuleEntryClass String.");
@@ -401,7 +401,7 @@ void* DotnetCoreModuleLoader_BuildModuleConfiguration(
                 }
                 else
                 {
-                    if (mallocAndStrcpy_s(&((char*)result->assembly_name), (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModulePath)) != 0)
+                    if (mallocAndStrcpy_s((char**)&result->assembly_name, (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModulePath)) != 0)
                     {
                         //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                         LogError("Failed to malloc and Copy assembly_name failed.");
@@ -411,7 +411,7 @@ void* DotnetCoreModuleLoader_BuildModuleConfiguration(
                     }
                     else
                     {
-                        if (module_configuration != NULL && mallocAndStrcpy_s(&((char*)result->module_args), (char*)module_configuration) != 0)
+                        if (module_configuration != NULL && mallocAndStrcpy_s((char**)&(result->module_args), (char*)module_configuration) != 0)
                         {
                             //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
                             LogError("Malloc and Copy for module_configuration failed.");
