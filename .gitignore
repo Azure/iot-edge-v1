@@ -12,6 +12,7 @@
 *.suo
 *.user
 *.sln.docstates
+*.VC.db
 
 # Build results
 

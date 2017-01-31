@@ -30,7 +30,7 @@ Design
 ---------------------
 The **.NET Core Module Host** is a C module that
 
-1. Creates a [.NET Core](https://github.com/dotnet/) CLR instance;
+1. Creates a [.NET Core](https://github.com/dotnet/) CLR instance (If not created already, since we can only have one instance of the .NET Core CLR per process);
 
 2. Creates delegates for .NET Module Calls (Create, destroy, receive, start);
 
@@ -74,11 +74,11 @@ The JSON configuration for [.NET Core](https://github.com/dotnet/)  Module will 
 When the **.NET Core Module Host**’s `Module_Create` function is invoked by the
 gateway process, it:
 
--   Creates a CLR instance by calling `coreclr_initialize; 
+-   If a CLR instance has not already been initialized, creates a new CLR instance by calling `coreclr_initialize`. 
 
--   Creates [.NET Core](https://github.com/dotnet/)  Delegates for Create, Receive, Start and Destroy;
+-   Creates [.NET Core](https://github.com/dotnet/)  Delegates for Create, Receive, Start and Destroy.
 
--   Calls Create Delegate, which will call the Create method on the user [.NET Core](https://github.com/dotnet/)  Module (Module that implemented `IGatewayModule`);
+-   Calls Create Delegate, which will call the Create method on the user [.NET Core](https://github.com/dotnet/)  Module (Module that implemented `IGatewayModule`).
 
 ### Module\_Start
 
@@ -109,16 +109,20 @@ gateway, it:
 .NET Wrappers and objects
 -------------------------
 
-This is going to be a layer written in .NET that will wrap a method in our host that is responsible to publish a given message. 
+This is going to be a layer written in .NET that will wrap a method in our host that is responsible for publishing a given message. 
 For [.NET Core](https://github.com/dotnet/)  Modules the following wrappers will be provided:
 
-1. `Message` - Object that represents a message;
+1. `Message` - Class that represents a message;
 
-2. `Broker` - Object that represents the broker, which passes messages between modules;
+2. `Broker` - Class that represents the broker, which passes messages between modules;
 
 3. `IGatewayModule` - interface that has to be implemented by the [.NET Core](https://github.com/dotnet/)  Module; 
 
-4. `nativeDotNetHostWrapper` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the .NET User, it will be called by the Broker Class when the user calls Publish.
+4. `nativeDotNetHostWrapper` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the managed module implementer. It will be called by the `Broker` class when the user calls `Publish`.
+
+5. `NativeManagedGatewayInterop` - Holds all the instances of the .NET Core modules that have been loaded. Uses reflection to check if the module implements `IGatewayModule` and calls the module methods. 
+
+6. `DotNetCoreModuleInstance` - This class holds an `IGatewayModule` object and `MethodInfo`s for `Receive`, `Destroy` and `Start`(if implemented). `nativeManageGatewayInterop` stores an instance of this class per loaded module. 
 
 The high level design of these objects and interfaces is documented below:
 
