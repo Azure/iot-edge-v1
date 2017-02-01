@@ -12,28 +12,28 @@ namespace Microsoft.Azure.IoT.Gateway
     /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
     public class Broker
     {
-        private long brokerHandle;
+        private IntPtr brokerHandle;
 
-        private long moduleHandle;
+        private IntPtr moduleHandle;
 
-        private BrokerInterop dotnetCoreWrapper;
+        private BrokerInterop brokerInterop;
 
 #if !DOXYGEN_SHOULD_SKIP_THIS
         /// <summary>
-        ///   Constructor for a Broker that receives a reference to a broker, module and a nativeWrapper. NativeWrapper is used for Unit Tests.
+        ///   Constructor for a Broker that receives a reference to a broker, module and a brokerInterop. NativeWrapper is used for Unit Tests.
         /// </summary>
         /// <param name="broker">A reference to an existing broker.</param>
         /// <param name="module">A reference to an existing module.</param>
         /// <param name="nativeWrapper">A Native DotNet Core Host Wrapper used for Mocking purposes on Unit Tests.</param>
-        public Broker(long broker, long module, BrokerInterop nativeWrapper)
+        public Broker(IntPtr broker, IntPtr module, BrokerInterop brokerInterop)
         {
             /* Codes_SRS_DOTNET_CORE_BROKER_04_001: [ If broker is <= 0, Broker constructor shall throw a new ArgumentException ] */
-            if (broker <= 0)
+            if (broker == IntPtr.Zero)
             {
                 throw new ArgumentOutOfRangeException("Invalid broker");
             }
             /* Codes_SRS_DOTNET_CORE_BROKER_04_007: [ If module is <= 0, Broker constructor shall throw a new ArgumentException ] */
-            else if (module <= 0)
+            else if (module == IntPtr.Zero)
             {
                 throw new ArgumentOutOfRangeException("Invalid source module");
             }
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.IoT.Gateway
                 /* Codes_SRS_DOTNET_CORE_BROKER_04_002: [ If broker and module are greater than 0, Broker constructor shall save this value and succeed. ] */
                 this.brokerHandle = broker;
                 this.moduleHandle = module;
-                this.dotnetCoreWrapper = nativeWrapper;
+                this.brokerInterop = brokerInterop;
             }
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="broker">A reference to an existing broker.</param>
         /// <param name="module">A reference to an existing module.</param>
-        public Broker(long broker, long module) : this(broker, module, new BrokerInterop())
+        public Broker(IntPtr broker, IntPtr module) : this(broker, module, new BrokerInterop())
         {
 
         }
@@ -73,11 +73,11 @@ namespace Microsoft.Azure.IoT.Gateway
             /* Codes_SRS_DOTNET_CORE_BROKER_04_006: [ If Module_DotNetCoreHost_PublishMessage fails, Publish shall thrown an Application Exception with message saying that Broker Publish failed. ] */
             try
             {
-                this.dotnetCoreWrapper.PublishMessage((IntPtr)this.brokerHandle, (IntPtr)this.moduleHandle, messageObject);
+                this.brokerInterop.PublishMessage(this.brokerHandle, this.moduleHandle, messageObject);
             }
             catch(Exception e)
             {
-                throw new Exception("Failed to Publish Message.", e);
+                throw new Exception("Failed to publish message.", e);
             }
         }
 
