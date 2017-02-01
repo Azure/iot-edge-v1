@@ -72,7 +72,7 @@ Creating a Java module is easy:
                 "library.path": "<<path/to/dir/containing/java_module_host.[so|dll]>>",
                 "version": <<Version number>>,
                 "debug": [true | false],
-                "debug_port": <<Remote debugging port>>,
+                "debug.port": <<Remote debugging port>>,
                 "verbose": [true | false],
                 "additional_options": [
                   "<<Any additional options>>"
@@ -111,7 +111,7 @@ Creating a Java module is easy:
       "library.path": "<<Default search paths (see below)>>",
       "version": 5,
       "debug": false,
-      "debug_port": 9876,
+      "debug.port": 9876,
       "verbose": false,
       "additional_options": null
     }
