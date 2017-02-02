@@ -46,12 +46,13 @@ void my_gballoc_free(void* ptr)
 
 #include "real_strings.h"
 
-
 #define ENABLE_MOCKS
+
+#define GATEWAY_EXPORT_H
+#define GATEWAY_EXPORT
 
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/gballoc.h"
-
 
 #include "parson.h"
 #include "dynamic_library.h"

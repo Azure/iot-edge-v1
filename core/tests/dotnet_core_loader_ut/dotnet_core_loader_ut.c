@@ -47,6 +47,9 @@ void my_gballoc_free(void* ptr)
 
 #define ENABLE_MOCKS
 
+#define GATEWAY_EXPORT_H
+#define GATEWAY_EXPORT
+
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/gballoc.h"
 
@@ -115,6 +118,8 @@ MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, val
 
 static TEST_MUTEX_HANDLE g_testByTest;
 static TEST_MUTEX_HANDLE g_dllByDll;
+static const MODULE_LOADER* g_loader;
+static MODULE_LOADER_BASE_CONFIGURATION* g_config;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
@@ -230,20 +235,22 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     //mallocAndStrcpy_s Hook
     REGISTER_GLOBAL_MOCK_HOOK(mallocAndStrcpy_s, real_mallocAndStrcpy_s);
 
-    const MODULE_LOADER* loader = DotnetCoreLoader_Get();
-    DotnetCoreModuleLoader_Load = loader->api->Load;
-    DotnetCoreModuleLoader_Unload = loader->api->Unload;
-    DotnetCoreModuleLoader_GetModuleApi = loader->api->GetApi;
-    DotnetCoreModuleLoader_ParseEntrypointFromJson = loader->api->ParseEntrypointFromJson;
-    DotnetCoreModuleLoader_FreeEntrypoint = loader->api->FreeEntrypoint;
-    DotnetCoreModuleLoader_ParseConfigurationFromJson = loader->api->ParseConfigurationFromJson;
-    DotnetCoreModuleLoader_FreeConfiguration = loader->api->FreeConfiguration;
-    DotnetCoreModuleLoader_BuildModuleConfiguration = loader->api->BuildModuleConfiguration;
-    DotnetCoreModuleLoader_FreeModuleConfiguration = loader->api->FreeModuleConfiguration;
+    g_loader = DotnetCoreLoader_Get();
+    g_config = g_loader->configuration;
+    DotnetCoreModuleLoader_Load = g_loader->api->Load;
+    DotnetCoreModuleLoader_Unload = g_loader->api->Unload;
+    DotnetCoreModuleLoader_GetModuleApi = g_loader->api->GetApi;
+    DotnetCoreModuleLoader_ParseEntrypointFromJson = g_loader->api->ParseEntrypointFromJson;
+    DotnetCoreModuleLoader_FreeEntrypoint = g_loader->api->FreeEntrypoint;
+    DotnetCoreModuleLoader_ParseConfigurationFromJson = g_loader->api->ParseConfigurationFromJson;
+    DotnetCoreModuleLoader_FreeConfiguration = g_loader->api->FreeConfiguration;
+    DotnetCoreModuleLoader_BuildModuleConfiguration = g_loader->api->BuildModuleConfiguration;
+    DotnetCoreModuleLoader_FreeModuleConfiguration = g_loader->api->FreeModuleConfiguration;
 }
 
 TEST_SUITE_CLEANUP(TestClassCleanup)
 {
+    g_loader->api->FreeConfiguration(g_loader, g_config);
     umock_c_deinit();
 
     TEST_MUTEX_DESTROY(g_testByTest);
@@ -888,7 +895,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_j
 }
 
 
-//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the assemblyName by reading the value of the attribute assembly.name. ]
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_013: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_object_get_string_returns_NULL)
 {
@@ -929,7 +936,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_m
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entryType by reading the value of the attribute entry.type. ]
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_013: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_json_object_get_string_for_module_entry_class_fails)
 {
@@ -987,7 +994,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_S
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entryType by reading the value of the attribute entry.type. ]
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_013: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall return NULL if an underlying platform call fails. ]
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_STRING_construct_for_module_entry_class_fails)
 {
@@ -1019,8 +1026,8 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_returns_NULL_when_S
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
-//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the entryType by reading the value of the attribute entry.type. ]
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall retrieve the assemblyName by reading the value of the attribute assembly.name. ]
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_015: [ DotnetCoreModuleLoader_ParseEntrypointFromJson shall return a non-NULL pointer to the parsed representation of the entrypoint when successful. ]
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseEntrypointFromJson_succeeds)
 {
@@ -1099,11 +1106,15 @@ TEST_FUNCTION(DotnetCoreModuleLoader_FreeEntrypoint_frees_resources)
 
 
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
-TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_when_malloc_fails)
+TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_when_malloc_for_DOTNET_CORE_LOADER_CONFIGURATION_fails)
 {
     // arrange
-    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION)))
-        .SetReturn(NULL);
+    malloc_will_fail = true;
+    malloc_fail_count = 1;
+    
+    STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42));
+
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION)));
 
     // act
     MODULE_LOADER_BASE_CONFIGURATION* result = DotnetCoreModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
@@ -1113,16 +1124,70 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_whe
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
+//Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
+TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_when_malloc_for_DOTNET_CORE_CLR_OPTIONS_fails)
+{
+    // arrange
+    malloc_will_fail = true;
+    malloc_fail_count = 2;
+
+    STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION)));
+
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_CLR_OPTIONS)));
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    // act
+    MODULE_LOADER_BASE_CONFIGURATION* result = DotnetCoreModuleLoader_ParseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42);
+
+    // assert
+    ASSERT_IS_NULL(result);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
 
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_019: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_when_ModuleLoader_ParseBaseConfigurationFromJson_fails)
 {
     // arrange
-    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION)));
+    STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42));
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION)));
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_CLR_OPTIONS)));
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, DOTNET_CORE_CLR_PATH_DEFAULT))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, DOTNET_CORE_CLR_PATH_KEY))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
     STRICT_EXPECTED_CALL(ModuleLoader_ParseBaseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
         .IgnoreArgument(1)
         .SetReturn(MODULE_LOADER_ERROR);
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
@@ -1136,10 +1201,43 @@ TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_returns_NULL_whe
 
 
 //Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_019: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
+/* Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_040: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall set default paths on clrOptions. ] */
+/* Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_041: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall check if JSON contains DOTNET_CORE_CLR_PATH_KEY, and if it has it shall change the value of clrOptions->coreClrPath. ] */
+/* Tests_SRS_DOTNET_CORE_MODULE_LOADER_04_042: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall check if JSON contains DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY, and if it has it shall change the value of clrOptions->trustedPlatformAssembliesLocation . ] */
 TEST_FUNCTION(DotnetCoreModuleLoader_ParseConfigurationFromJson_succeeds)
 {
     // arrange
-    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION)));
+    
+    STRICT_EXPECTED_CALL(json_value_get_object((const JSON_Value*)0x42));
+
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION)));
+
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(DOTNET_CORE_CLR_OPTIONS)));
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, DOTNET_CORE_CLR_PATH_DEFAULT))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, DOTNET_CORE_CLR_PATH_KEY))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(json_object_get_string(IGNORED_PTR_ARG, DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
     STRICT_EXPECTED_CALL(ModuleLoader_ParseBaseConfigurationFromJson(IGNORED_PTR_ARG, (const JSON_Value*)0x42))
         .IgnoreArgument(1)
         .SetReturn(MODULE_LOADER_SUCCESS);
@@ -1180,6 +1278,13 @@ TEST_FUNCTION(DotnetCoreModuleLoader_FreeConfiguration_frees_resources)
     umock_c_reset_all_calls();
 
     STRICT_EXPECTED_CALL(ModuleLoader_FreeBaseConfiguration(config));
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument_ptr();
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument_ptr();
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument_ptr();
+
     STRICT_EXPECTED_CALL(gballoc_free(config));
 
     // act
@@ -1224,7 +1329,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_BuildModuleConfiguration_returns_NULL_when_
     DOTNET_CORE_LOADER_ENTRYPOINT entrypoint = { (STRING_HANDLE)0x42, 0 };
 
     // act
-    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, NULL);
+    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(g_loader, &entrypoint, NULL);
 
     // assert
     ASSERT_IS_NULL(result);
@@ -1290,6 +1395,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_BuildModuleConfiguration_succeeds)
 {
     // arrange
     DOTNET_CORE_LOADER_ENTRYPOINT entrypoint = { (STRING_HANDLE)STRING_construct("foo"), (STRING_HANDLE)STRING_construct("foo2") };
+
     char* module_config = "boo";
     umock_c_reset_all_calls();
 
@@ -1310,7 +1416,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_BuildModuleConfiguration_succeeds)
 
 
     ///act
-    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, module_config);
+    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(g_loader, &entrypoint, module_config);
 
     // assert
     ASSERT_IS_NOT_NULL(result);
@@ -1319,7 +1425,7 @@ TEST_FUNCTION(DotnetCoreModuleLoader_BuildModuleConfiguration_succeeds)
     // cleanup
     STRING_delete(entrypoint.dotnetCoreModulePath);
     STRING_delete(entrypoint.dotnetCoreModuleEntryClass);
-    DotnetCoreModuleLoader_FreeModuleConfiguration(IGNORED_PTR_ARG, result);
+    DotnetCoreModuleLoader_FreeModuleConfiguration(g_loader, result);
 }
 
 
@@ -1342,17 +1448,8 @@ TEST_FUNCTION(DotnetCoreModuleLoader_FreeModuleConfiguration_frees_resources)
     STRING_HANDLE module_config = STRING_construct("boo");
     umock_c_reset_all_calls();
 
-    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetCoreModuleEntryClass))
-        .SetReturn("foo2");
-    
-    STRICT_EXPECTED_CALL(STRING_c_str(entrypoint.dotnetCoreModulePath))
-        .SetReturn("foo");
+    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(g_loader, &entrypoint, module_config);
 
-    void* result = DotnetCoreModuleLoader_BuildModuleConfiguration(NULL, &entrypoint, module_config);
-
-    ASSERT_IS_NOT_NULL(result);
 
     umock_c_reset_all_calls();
 

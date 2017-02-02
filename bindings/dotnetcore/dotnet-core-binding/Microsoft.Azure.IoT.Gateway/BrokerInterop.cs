@@ -22,7 +22,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <param name="message">Message content as a byte array.</param>
         /// <param name="size">Size of the byte array.</param>
         /// <returns></returns>
-        [DllImport(@"dotnetcore.dll", EntryPoint = "Module_DotNetCoreHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(@"dotnetcore", EntryPoint = "Module_DotNetCoreHost_PublishMessage", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool Module_DotNetCoreHost_PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message, Int32 size);
 
         /// <summary>

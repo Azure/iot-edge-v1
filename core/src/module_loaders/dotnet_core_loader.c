@@ -18,21 +18,28 @@
 #include "dynamic_library.h"
 #include "azure_c_shared_utility/crt_abstractions.h"
 
+#define CONFIGURATION         ((DOTNET_CORE_LOADER_CONFIGURATION*)(loader->configuration))
+
 typedef struct DOTNET_CORE_MODULE_HANDLE_DATA_TAG
 {
     DYNAMIC_LIBRARY_HANDLE  binding_module;
     const MODULE_API* api;
 }DOTNET_CORE_MODULE_HANDLE_DATA;
 
+static DOTNET_CORE_LOADER_CONFIGURATION* create_default_config();
+
+static int set_default_paths(DOTNET_CORE_CLR_OPTIONS* options);
+
+static DYNAMIC_LIBRARY_HANDLE hCoreCLRModule;
 
 static DYNAMIC_LIBRARY_HANDLE DotnetCoreModuleLoader_LoadBindingModule(const MODULE_LOADER* loader)
 {
     // find the binding path from the loader configuration; if there isn't one, use
     // a default path
     const char* binding_path = DOTNET_CORE_BINDING_MODULE_NAME;
-    if (loader != NULL && loader->configuration != NULL && loader->configuration->binding_path != NULL)
+    if (loader != NULL && CONFIGURATION != NULL && CONFIGURATION->base.binding_path != NULL)
     {
-        binding_path = STRING_c_str(loader->configuration->binding_path);
+        binding_path = STRING_c_str(CONFIGURATION->base.binding_path);
     }
 
     return DynamicLibrary_LoadLibrary(binding_path);
@@ -216,7 +223,7 @@ static void* DotnetCoreModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER*
             }
             else
             {
-                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the assembly_name by reading the value of the attribute assembly.name. ]
+                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_014: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the assemblyName by reading the value of the attribute assembly.name. ]
                 const char* dotnetCoreModulePath = json_object_get_string(entrypoint, "assembly.name");
                 if (dotnetCoreModulePath == NULL)
                 {
@@ -239,7 +246,7 @@ static void* DotnetCoreModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER*
                         }
                         else
                         {
-                            //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entry_type by reading the value of the attribute entry.type. ]
+                            //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_036: [ DotnetModuleLoader_ParseEntrypointFromJson shall retrieve the entryType by reading the value of the attribute entry.type. ]
                             const char* dotnetCoreModuleEntryClass = json_object_get_string(entrypoint, "entry.type");
                             if (dotnetCoreModuleEntryClass == NULL)
                             {
@@ -308,30 +315,119 @@ static MODULE_LOADER_BASE_CONFIGURATION* DotnetCoreModuleLoader_ParseConfigurati
 {
     (void)loader;
 
-    MODULE_LOADER_BASE_CONFIGURATION* result = (MODULE_LOADER_BASE_CONFIGURATION*)malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION));
-    if (result != NULL)
+    DOTNET_CORE_LOADER_CONFIGURATION* config;
+
+    if (json == NULL)
     {
-        //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_019: [ DotnetModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
-        if (ModuleLoader_ParseBaseConfigurationFromJson(result, json) != MODULE_LOADER_SUCCESS)
-        {
-            LogError("ModuleLoader_ParseBaseConfigurationFromJson failed");
-            free(result);
-            result = NULL;
-        }
-        else
-        {
-            /**
-            * Everything's good.
-            */
-        }
+        /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ] */
+        LogError("json is NULL.");
+        config = NULL;
     }
     else
     {
-        //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ]
-        LogError(" malloc failed");
+        JSON_Object* object = json_value_get_object(json);
+        if (object == NULL)
+        {
+            /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ] */
+            config = NULL;
+            LogError("could not retrieve json object.");
+        }
+        else
+        {
+            config = (DOTNET_CORE_LOADER_CONFIGURATION*)malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION));
+            if (config == NULL)
+            {
+                LogError("malloc failed.");
+            }
+            else
+            {
+                config->clrOptions = (DOTNET_CORE_CLR_OPTIONS*)malloc(sizeof(DOTNET_CORE_CLR_OPTIONS));
+                if (config->clrOptions == NULL)
+                {
+                    /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_018: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall return NULL if an underlying platform call fails. ] */
+                    free(config);
+                    config = NULL;
+                    LogError("malloc failed.");
+                }
+                else
+                {
+                    /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_040: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall set default paths on clrOptions. ] */
+                    int status = set_default_paths(config->clrOptions);
+
+                    if (status != 0)
+                    {
+                        free(config->clrOptions);
+                        config->clrOptions = NULL;
+                        free(config);
+                        config = NULL;
+                        LogError("Failed to set default paths.");
+                    }
+                    else
+                    {
+                        const char* temp = json_object_get_string(object, DOTNET_CORE_CLR_PATH_KEY);
+                        if (temp != NULL)
+                        {
+                            free((char*)(config->clrOptions->coreClrPath));
+                            /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_041: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall check if JSON contains DOTNET_CORE_CLR_PATH_KEY, and if it has it shall change the value of clrOptions->coreClrPath. ] */
+                            status = mallocAndStrcpy_s((char**)(&config->clrOptions->coreClrPath), temp);
+                        }
+
+                        if (status != 0)
+                        {
+                            free(config->clrOptions);
+                            config->clrOptions = NULL;
+                            free(config);
+                            config = NULL;
+                            LogError("Failed to allocate binding.coreClrPath");
+                        }
+                        else
+                        {
+                            const char* temp = json_object_get_string(object, DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY);
+                            if (temp != NULL)
+                            {
+                                free((char*)(config->clrOptions->trustedPlatformAssembliesLocation));
+                                /* Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_042: [ DotnetCoreModuleLoader_ParseConfigurationFromJson shall check if JSON contains DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY, and if it has it shall change the value of clrOptions->trustedPlatformAssembliesLocation . ] */
+                                status = mallocAndStrcpy_s((char**)(&config->clrOptions->trustedPlatformAssembliesLocation), temp);
+                            }
+
+                            if (status != 0)
+                            {
+                                free((char*)config->clrOptions->coreClrPath);
+                                free(config->clrOptions);
+                                config->clrOptions = NULL;
+                                free(config);
+                                config = NULL;
+                                LogError("Failed to allocate binding.coreClrPath");
+                            }
+                            else
+                            {
+                                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_019: [ DotnetModuleLoader_ParseConfigurationFromJson shall call ModuleLoader_ParseBaseConfigurationFromJson to parse the loader configuration and return the result. ]
+                                if (ModuleLoader_ParseBaseConfigurationFromJson(&((DOTNET_CORE_LOADER_CONFIGURATION*)(config))->base, json) != MODULE_LOADER_SUCCESS)
+                                {
+                                    LogError("ModuleLoader_ParseBaseConfigurationFromJson failed");
+                                    free((char*)config->clrOptions->trustedPlatformAssembliesLocation);
+                                    free((char*)config->clrOptions->coreClrPath);
+                                    free(config->clrOptions);
+                                    config->clrOptions = NULL;
+                                    free(config);
+                                    config = NULL;
+                                    LogError("Failed to allocate binding.coreClrPath");
+                                }
+                                else
+                                {
+                                    /**
+                                    * Everything's good.
+                                    */
+                                }
+                            }
+                        }                        
+                    }
+                }
+            }
+        }
     }
 
-    return result;
+    return (MODULE_LOADER_BASE_CONFIGURATION*)config;
 }
 
 static void DotnetCoreModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
@@ -343,6 +439,11 @@ static void DotnetCoreModuleLoader_FreeConfiguration(const MODULE_LOADER* loader
         //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_021: [ DotnetModuleLoader_FreeConfiguration shall call ModuleLoader_FreeBaseConfiguration to free resources allocated by ModuleLoader_ParseBaseConfigurationFromJson. ]
         ModuleLoader_FreeBaseConfiguration(configuration);
         //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_022: [ DotnetModuleLoader_FreeConfiguration shall free resources allocated by DotnetModuleLoader_ParseConfigurationFromJson. ]
+        DOTNET_CORE_LOADER_CONFIGURATION* dotNetCoreLoaderConfig = (DOTNET_CORE_LOADER_CONFIGURATION*)configuration;
+
+        free((char*)dotNetCoreLoaderConfig->clrOptions->coreClrPath);
+        free((char*)dotNetCoreLoaderConfig->clrOptions->trustedPlatformAssembliesLocation);
+        free(dotNetCoreLoaderConfig->clrOptions);
         free(configuration);
     }
     else
@@ -358,7 +459,6 @@ void* DotnetCoreModuleLoader_BuildModuleConfiguration(
     const void* module_configuration
 )
 {
-    (void)loader;
     DOTNET_CORE_HOST_CONFIG* result;
     if (entrypoint == NULL)
     {
@@ -383,53 +483,62 @@ void* DotnetCoreModuleLoader_BuildModuleConfiguration(
         }
         else
         {
-            //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_026: [ DotnetModuleLoader_BuildModuleConfiguration shall build a DOTNET_HOST_CONFIG object by copying information from entrypoint and module_configuration and return a non-NULL pointer. ]
-            result = (DOTNET_CORE_HOST_CONFIG*)malloc(sizeof(DOTNET_CORE_HOST_CONFIG));
-            if (result == NULL)
+            if (loader == NULL || CONFIGURATION->clrOptions == NULL)
             {
-                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                LogError("malloc failed.");
+                result = NULL;
+                LogError("loader or loader clrOptions is NULL");
             }
             else
             {
-                if (mallocAndStrcpy_s((char**)&(result->entry_type), (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModuleEntryClass)) != 0)
+                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_026: [ DotnetModuleLoader_BuildModuleConfiguration shall build a DOTNET_HOST_CONFIG object by copying information from entrypoint and module_configuration and return a non-NULL pointer. ]
+                result = (DOTNET_CORE_HOST_CONFIG*)malloc(sizeof(DOTNET_CORE_HOST_CONFIG));
+                if (result == NULL)
                 {
                     //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                    LogError("Failed to malloc and Copy dotnetModuleEntryClass String.");
-                    free(result);
-                    result = NULL;
+                    LogError("malloc failed.");
                 }
                 else
                 {
-                    if (mallocAndStrcpy_s((char**)&result->assembly_name, (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModulePath)) != 0)
+                    if (mallocAndStrcpy_s((char**)&(result->entryType), (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModuleEntryClass)) != 0)
                     {
                         //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                        LogError("Failed to malloc and Copy assembly_name failed.");
-                        free((char*)result->entry_type);
+                        LogError("Failed to malloc and Copy dotnetModuleEntryClass String.");
                         free(result);
                         result = NULL;
                     }
                     else
                     {
-                        if (module_configuration != NULL && mallocAndStrcpy_s((char**)&(result->module_args), (char*)module_configuration) != 0)
+                        if (mallocAndStrcpy_s((char**)&result->assemblyName, (char*)STRING_c_str(dotnet_core_entrypoint->dotnetCoreModulePath)) != 0)
                         {
                             //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
-                            LogError("Malloc and Copy for module_configuration failed.");
-                            free((char*)result->assembly_name);
-                            free((char*)result->entry_type);
+                            LogError("Failed to malloc and Copy assemblyName failed.");
+                            free((char*)result->entryType);
                             free(result);
                             result = NULL;
                         }
-                        else if(module_configuration == NULL)
-                        {
-                            result->module_args = NULL;
-                        }
                         else
                         {
-                            //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_026: [ DotnetModuleLoader_BuildModuleConfiguration shall build a DOTNET_HOST_CONFIG object by copying information from entrypoint and module_configuration and return a non-NULL pointer. ]
-                            /**
-                            * Everything's good.
-                            */
+                            if (module_configuration != NULL && mallocAndStrcpy_s((char**)&(result->moduleArgs), (char*)module_configuration) != 0)
+                            {
+                                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_025: [ DotnetModuleLoader_BuildModuleConfiguration shall return NULL if an underlying platform call fails. ]
+                                LogError("Malloc and Copy for module_configuration failed.");
+                                free((char*)result->assemblyName);
+                                free((char*)result->entryType);
+                                free(result);
+                                result = NULL;
+                            }
+                            else if (module_configuration == NULL)
+                            {
+                                result->moduleArgs = NULL;
+                            }
+                            else
+                            {
+                                //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_026: [ DotnetModuleLoader_BuildModuleConfiguration shall build a DOTNET_HOST_CONFIG object by copying information from entrypoint and module_configuration and return a non-NULL pointer. ]
+                                /**
+                                * Everything's good.
+                                */
+                                result->clrOptions = CONFIGURATION->clrOptions;
+                            }
                         }
                     }
                 }
@@ -448,9 +557,9 @@ void DotnetCoreModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader,
     {
         DOTNET_CORE_HOST_CONFIG* configuration = (DOTNET_CORE_HOST_CONFIG*)module_configuration;
         //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_028: [ DotnetModuleLoader_FreeModuleConfiguration shall free the DOTNET_HOST_CONFIG object. ]
-        free((char*)configuration->module_args);
-        free((char*)configuration->entry_type);
-        free((char*)configuration->assembly_name);
+        free((char*)configuration->moduleArgs);
+        free((char*)configuration->entryType);
+        free((char*)configuration->assemblyName);
         free((void*)module_configuration);
     }
     else
@@ -477,6 +586,7 @@ MODULE_LOADER_API Dotnet_Core_Module_Loader_API =
     .FreeModuleConfiguration = DotnetCoreModuleLoader_FreeModuleConfiguration
 };
 
+
 MODULE_LOADER Dotnet_Core_Module_Loader =
 {
     DOTNETCORE, //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_038: [ MODULE_LOADER::type shall be DOTNETCORE. ]
@@ -487,6 +597,92 @@ MODULE_LOADER Dotnet_Core_Module_Loader =
 
 const MODULE_LOADER* DotnetCoreLoader_Get(void)
 {
+    MODULE_LOADER* loader;
+
+    MODULE_LOADER_BASE_CONFIGURATION* default_config = (MODULE_LOADER_BASE_CONFIGURATION*)create_default_config();
+
+    if (default_config == NULL)
+    {
+        loader = NULL;
+        LogError("Error creating default config.");
+    }
+    else
+    {
+        loader = &Dotnet_Core_Module_Loader;
+        loader->configuration = default_config;
+    }
+
+
     //Codes_SRS_DOTNET_CORE_MODULE_LOADER_04_029: [ DotnetLoader_Get shall return a non-NULL pointer to a MODULE_LOADER struct. ]
-    return &Dotnet_Core_Module_Loader;
+    return loader;
+}
+
+static int set_default_paths(DOTNET_CORE_CLR_OPTIONS* options)
+{
+    int result = 0;
+
+    if (options == NULL)
+    {
+        result = __LINE__;
+    }
+    else
+    {
+        //set coreClrPath 
+        result = mallocAndStrcpy_s((char**)(&options->coreClrPath), DOTNET_CORE_CLR_PATH_DEFAULT);
+        if (result != 0)
+        {
+            result = __LINE__;
+        }
+        else
+        {
+            //set trustedPlatformAssembliesLocation
+            result = mallocAndStrcpy_s((char**)(&options->trustedPlatformAssembliesLocation), DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT);
+            if (result != 0)
+            {
+                free((char*)(options->coreClrPath));
+                result = __LINE__;
+            }
+        }
+    }
+
+    return result;
+}
+
+static DOTNET_CORE_LOADER_CONFIGURATION* create_default_config()
+{
+    DOTNET_CORE_LOADER_CONFIGURATION* result;
+
+    DOTNET_CORE_CLR_OPTIONS* default_clr_options = (DOTNET_CORE_CLR_OPTIONS*)malloc(sizeof(DOTNET_CORE_CLR_OPTIONS));
+    if (default_clr_options == NULL)
+    {
+        result = NULL;
+        LogError("malloc failed.");
+    }
+    else
+    {
+        if (set_default_paths(default_clr_options) != 0)
+        {
+            free(default_clr_options);
+            result = NULL;
+            LogError("Failed to set default paths.");
+        }
+        else
+        {
+            result = (DOTNET_CORE_LOADER_CONFIGURATION*)malloc(sizeof(DOTNET_CORE_LOADER_CONFIGURATION));
+            if (result == NULL)
+            {
+                free((char*)(default_clr_options->coreClrPath));
+                free((char*)(default_clr_options->trustedPlatformAssembliesLocation));
+                free(default_clr_options);
+                result = NULL;
+                LogError("malloc failed.");
+            }
+            else
+            {
+                result->base.binding_path = NULL;
+                result->clrOptions = default_clr_options;
+            }
+        }
+    }
+    return result;
 }

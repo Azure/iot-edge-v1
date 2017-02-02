@@ -5,20 +5,28 @@
 #define DOTNETCORE_H
 
 #include "module.h"
+#include "dynamic_library.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+typedef struct DOTNET_CORE_CLR_OPTIONS_TAG
+{
+    const char* coreClrPath;
+    const char* trustedPlatformAssembliesLocation;
+}DOTNET_CORE_CLR_OPTIONS;
+
 typedef struct DOTNET_CORE_HOST_CONFIG_TAG
 {
-    const char* assembly_name;
-    const char* entry_type;
-    const char* module_args;
+    const char* assemblyName;
+    const char* entryType;
+    const char* moduleArgs;
+    DOTNET_CORE_CLR_OPTIONS* clrOptions;
 }DOTNET_CORE_HOST_CONFIG;
 
-MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gateway_api_version);
+MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gatewayApiVersion);
 
 MODULE_EXPORT bool Module_DotNetCoreHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size);
 

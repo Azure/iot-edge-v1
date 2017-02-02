@@ -7,15 +7,17 @@
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/umock_c_prod.h"
 
+#include "gateway_export.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 typedef void*  DYNAMIC_LIBRARY_HANDLE;
 
-MOCKABLE_FUNCTION(, DYNAMIC_LIBRARY_HANDLE, DynamicLibrary_LoadLibrary, const char*, dynamicLibraryFileName);
-MOCKABLE_FUNCTION(, void, DynamicLibrary_UnloadLibrary, DYNAMIC_LIBRARY_HANDLE, libraryHandle);
-MOCKABLE_FUNCTION(, void*, DynamicLibrary_FindSymbol, DYNAMIC_LIBRARY_HANDLE, libraryHandle, const char*, symbolName);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT DYNAMIC_LIBRARY_HANDLE, DynamicLibrary_LoadLibrary, const char*, dynamicLibraryFileName);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, DynamicLibrary_UnloadLibrary, DYNAMIC_LIBRARY_HANDLE, libraryHandle);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void*, DynamicLibrary_FindSymbol, DYNAMIC_LIBRARY_HANDLE, libraryHandle, const char*, symbolName);
 
 #ifdef __cplusplus
 }

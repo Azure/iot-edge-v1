@@ -26,6 +26,9 @@
 #ifdef DOTNET_BINDING_ENABLED
 #include "module_loaders/dotnet_loader.h"
 #endif
+#ifdef DOTNET_CORE_BINDING_ENABLED
+#include "module_loaders/dotnet_core_loader.h"
+#endif
 
 static MODULE_LOADER_RESULT add_module_loader(const MODULE_LOADER* loader);
 
@@ -92,6 +95,9 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
 #endif
 #ifdef DOTNET_BINDING_ENABLED
                     , DotnetLoader_Get()
+#endif
+#ifdef DOTNET_CORE_BINDING_ENABLED
+                    , DotnetCoreLoader_Get()
 #endif
                 };
 
@@ -541,6 +547,9 @@ MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type)
     else if (strcmp(type, "dotnet") == 0)
         /*Codes_SRS_MODULE_LOADER_13_060: [ ModuleLoader_ParseType shall return a valid MODULE_LOADER_TYPE if type is a recognized module loader type string. ]*/
         loader_type = DOTNET;
+    else if (strcmp(type, "dotnetcore") == 0)
+        /*Codes_SRS_MODULE_LOADER_13_060: [ ModuleLoader_ParseType shall return a valid MODULE_LOADER_TYPE if type is a recognized module loader type string. ]*/
+        loader_type = DOTNETCORE;
     else
         /*Codes_SRS_MODULE_LOADER_13_059: [ ModuleLoader_ParseType shall return UNKNOWN if type is not a recognized module loader type string. ]*/
         loader_type = UNKNOWN;
@@ -550,14 +559,16 @@ MODULE_LOADER_TYPE ModuleLoader_ParseType(const char* type)
 
 bool ModuleLoader_IsDefaultLoader(const char* name)
 {
-    /*Codes_SRS_MODULE_LOADER_13_061: [ ModuleLoader_IsDefaultLoader shall return true if name is the name of a default module loader and false otherwise. ]*/
+    /*Codes_SRS_MODULE_LOADER_13_061: [ ModuleLoader_IsDefaultLoader shall return true if name is the name of a default module loader and false otherwise. The default module loader names are 'native', 'node', 'java' , 'dotnet' and 'dotnetcore'. ]*/
     return strcmp(name, "native") == 0
            ||
            strcmp(name, "node") == 0
            ||
            strcmp(name, "java") == 0
            ||
-           strcmp(name, "dotnet") == 0;
+           strcmp(name, "dotnet") == 0
+           ||
+           strcmp(name, "dotnetcore") == 0;
 }
 
 static MODULE_LOADER_RESULT add_loader_from_json(const JSON_Value* loader, size_t index)

@@ -13,7 +13,7 @@ if(${enable_dotnet_binding})
 endif()
 
 if(${enable_dotnet_core_binding})
-    add_subdirectory(dotnet_core_binding_sample)
+    add_subdirectory(dotnet_core_module_sample)
 endif()
 
 if(${enable_java_binding})

@@ -281,6 +281,8 @@ set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotne
 
 set(dotnet_core_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnetcore/$(Configuration)/dotnetcore.dll CACHE INTERNAL "The location of dotnetcore.dll" FORCE)
 
+set(dotnet_core_host_binding_so ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnetcore/libdotnetcore.so CACHE INTERNAL "The location of libdotnetcore.so" FORCE)
+
 function(install_binaries whatIsBuilding whatIsBuildingLocation whatIsBinaryLocation)
   add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different

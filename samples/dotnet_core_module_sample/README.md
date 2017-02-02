@@ -54,9 +54,9 @@ Copy these binaries to the same folder you run your gateway.
 
 Running the sample
 ------------------
-1. Open azure_iot_gateway_sdk solution and configure project `dotnet_core_binding_sample` as a Startup Sample.
-2. Go to the Project Properties and change `Command Arguments` to point to dotnet_core_binding_sample.json.
-3. Copy the following binaries to the folder: `build\samples\dotnet_core_binding_sample\Debug`:
+1. Open azure_iot_gateway_sdk solution and configure project `dotnet_core_module_sample` as a Startup Sample.
+2. Go to the Project Properties and change `Command Arguments` to point to dotnet_core_module_sample.json.
+3. Copy the following binaries to the folder: `build\samples\dotnet_core_module_sample\Debug`:
     * Microsoft.Azure.IoT.Gateway.dll(and pdb if you want to debug).
     * PrinterModule.dll.
     * SensorModule.dll.
@@ -156,6 +156,37 @@ Modules may also implement the `IGatewayModuleStart` interface.  The Start metho
 4. Add your new module on Json configuration:
 ```json
 {
+    "modules" :
+    [
+        {
+            "name": "dotnet_printer_module", ==> Your new module name. 
+            "loader": {
+                "name": "dotnetcore",
+                "entrypoint": {
+
+                    "assembly.name": "SensorModule",==> This is the name of your module dll. On this sample it is SensorModule.dll
+                    "entry.type": "SensorModule.DotNetSensorModule" ==> This is the name of your Class (Namespace.ClassName) that implements IGatewayModule.
+                }
+            },
+            "args": "module configuration"  ==> This is any configuration you want to use on your sample. It will be passed to you as a byte[] that should be converted to an UTF-8 Encoded String, you can add a JSON configuration in it.
+        }
+    ]
+}
+```
+5. If you want to load .NET Core CLR from a different location you can add a `loader` item on your JSON Configuration. Sample with CLR path:
+```json
+{
+     "loaders": [
+        {
+            "type": "dotnetcore",
+            "name": "dotnetcore",
+            "configuration": {
+                "binding.path": "..\\..\\..\\bindings\\dotnetcore\\Debug\\dotnetcore.dll",
+                "binding.coreclrpath": "<Path to your .NET Core Path.>",
+                "binding.trustedplatformassemblieslocation": "<Path to find trusted platform assemblies, used by CLR."
+            }
+        }
+    ],
     "modules" :
     [
         {

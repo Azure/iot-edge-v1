@@ -4,17 +4,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 compileAsC99()
-set(theseTestsName modules_manager_ut)
+set(theseTestsName dotnetcore_ut)
 
 set(${theseTestsName}_cpp_files
     ${theseTestsName}.cpp
 )
 
-set(modules_manager_test_sources
-    ../../src/modules_manager.cpp
+set(dotnetcore_test_sources
+    ../../src/dotnetcore.cpp
 )
-set(modules_manager_test_headers
-    ../../inc/modules_manager.h
+set(dotnetcore_test_headers
+    ../../inc/dotnetcore.h
 )
 
 include_directories(
@@ -24,11 +24,11 @@ include_directories(
 )
 
 set(${theseTestsName}_c_files
-    ${modules_manager_test_sources}
+    ${dotnetcore_test_sources}
 )
 
 set(${theseTestsName}_h_files
-    ${modules_manager_test_headers}
+    ${dotnetcore_test_headers}
 )
 
 add_definitions(-DUNDER_TEST)

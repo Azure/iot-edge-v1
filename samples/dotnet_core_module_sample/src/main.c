@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     GATEWAY_HANDLE gateway;
     if (argc != 2)
     {
-        printf("usage: dotnet_core_binding_sample configFile\n");
+        printf("usage: dotnet_core_module_sample configFile\n");
         printf("where configFile is the name of the file that contains the Gateway configuration\n");
     }
     else

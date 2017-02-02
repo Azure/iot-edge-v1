@@ -60,21 +60,25 @@ pointer to a `DOTNET_CORE_HOST_CONFIG` object.
 
 **SRS_DOTNET_CORE_04_005: [** `DotNetCore_Create` shall return `NULL` if `configuration->module_args` is `NULL`. **]**
 
+**SRS_DOTNET_CORE_04_035: [** `DotNetCore_Create` shall return `NULL` if `configuration->clrOptions` is `NULL`. **]**
+
+**SRS_DOTNET_CORE_04_036: [** `DotNetCore_Create` shall return `NULL` if `configuration->clrOptions->coreclrpath` is `NULL`. **]**
+
+**SRS_DOTNET_CORE_04_037: [** `DotNetCore_Create` shall return `NULL` if `configuration->clrOptions->trustedplatformassemblieslocation` is `NULL`. **]**
+
 **SRS_DOTNET_CORE_04_006: [** `DotNetCore_Create` shall return `NULL` if an underlying API call fails. **]**
 
 **SRS_DOTNET_CORE_04_007: [** `DotNetCore_Create` shall return a non-`NULL` `MODULE_HANDLE` when successful. **]**
 
-**SRS_DOTNET_CORE_04_008: [** `DotNetCore_Create` shall acquire a reference to the singleton `ModulesManager` object. **]**
-
-**SRS_DOTNET_CORE_04_009: [** `DotNetCore_Create` shall invoke `ModulesManager::AddModule` to add a new module to it's internal list. **]**
-
-**SRS_DOTNET_CORE_04_010: [** `DotNetCore_Create` shall load `coreclr.dll` library, if not loaded yet. **]**
+**SRS_DOTNET_CORE_04_010: [** `DotNetCore_Create` shall load `coreclr` library, if not loaded yet. **]**
 
 **SRS_DOTNET_CORE_04_011: [** `DotNetCore_Create` shall get address for 3 external methods `coreclr_initialize`, `coreclr_shutdown` and `coreclr_create_delegate` and save it to global reference for Dot Net Core binding. **]**
 
-**SRS_DOTNET_CORE_04_012: [** `DotNetCore_Create` shall build a list or property values to `initialize coreclr`, if not started yet.  **]**
-
 **SRS_DOTNET_CORE_04_013: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create` **]**
+
+**SRS_DOTNET_CORE_04_021: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive` **]**
+
+**SRS_DOTNET_CORE_04_024: [** `DotNetCore_Destroy` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy` **]**
 
 **SRS_DOTNET_CORE_04_014: [** `DotNetCore_Create` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
 
@@ -102,8 +106,6 @@ void DotNetCore_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
 
 **SRS_DOTNET_CORE_04_020: [** `DotNetCore_Receive` shall call `Message_ToByteArray` to serialize `message`. **]**
 
-**SRS_DOTNET_CORE_04_021: [** `DotNetCore_Receive` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive` **]**
-
 **SRS_DOTNET_CORE_04_022: [** `DotNetCore_Receive` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
 
 DotNetCore_Destroy
@@ -113,7 +115,9 @@ void DotNetCore_Destroy(MODULE_HANDLE module);
 ```
 **SRS_DOTNET_CORE_04_023: [** `DotNetCore_Destroy` shall do nothing if `module` is `NULL`. **]**
 
-**SRS_DOTNET_CORE_04_024: [** `DotNetCore_Destroy` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy` **]**
+**SRS_DOTNET_CORE_04_038: [** `DotNetCore_Destroy` shall release all resources allocated by `DotNetCore_Create`. **]**
+
+**SRS_DOTNET_CORE_04_039: [** `DotNetCore_Destroy` shall verify that there is no module and shall shutdown the dotnet core clr. **]**
 
 **SRS_DOTNET_CORE_04_025: [** `DotNetCore_Destroy` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
 

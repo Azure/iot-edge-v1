@@ -6,6 +6,6 @@
 int main(void)
 {
     size_t failedTestCount = 0;
-    RUN_TEST_SUITE(modules_manager_ut, failedTestCount);
+    RUN_TEST_SUITE(dotnetcore_ut, failedTestCount);
     return failedTestCount;
 }

@@ -17,18 +17,32 @@ Exposed API
 #define DOTNET_CORE_LOADER_NAME "dotnetcore"
 
 #if WIN32
-#define DOTNET_CORE_BINDING_MODULE_NAME    "dotnetcore.dll"
+#define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\coreclr.dll"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\"
 #else
-#define DOTNET_CORE_BINDING_MODULE_NAME    "libdotnetcore.so"
+#define DOTNET_CORE_BINDING_MODULE_NAME                                "./libdotnetcore.so"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/libcoreclr.so"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/"
 #endif
 
-    /** @brief Structure to load a dotnet core module */
-    typedef struct DOTNET_CORE_LOADER_ENTRYPOINT_TAG
-    {
-        STRING_HANDLE dotnetCoreModulePath;
+#define DOTNET_CORE_CLR_PATH_KEY                                "binding.coreclrpath"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY    "binding.trustedplatformassemblieslocation"
 
-        STRING_HANDLE dotnetCoreModuleEntryClass;
-    } DOTNET_CORE_LOADER_ENTRYPOINT;
+/** @brief Module Loader Configuration, including clrOptions Configuration. */
+typedef struct DOTNET_CORE_LOADER_CONFIGURATION_TAG
+{
+    MODULE_LOADER_BASE_CONFIGURATION base;
+    DOTNET_CORE_CLR_OPTIONS* clrOptions;
+} DOTNET_CORE_LOADER_CONFIGURATION;
+
+/** @brief Structure to load a dotnet module */
+typedef struct DOTNET_CORE_LOADER_ENTRYPOINT_TAG
+{
+    STRING_HANDLE dotnetCoreModulePath;
+
+    STRING_HANDLE dotnetCoreModuleEntryClass;
+} DOTNET_CORE_LOADER_ENTRYPOINT;
 
     /** @brief  The API for the dotnet core module loader. */
     extern const MODULE_LOADER* DotnetCoreLoader_Get(void);
@@ -126,9 +140,16 @@ DotnetCoreModuleLoader_ParseConfigurationFromJson
 ```C
 MODULE_LOADER_BASE_CONFIGURATION* DotnetCoreModuleLoader_ParseConfigurationFromJson(const JSON_Value* json);
 ```
-Parses the module loader configuration from the given JSON and returns a `MODULE_LOADER_BASE_CONFIGURATION` pointer.
+Parses the module loader configuration from the given JSON and returns a `DOTNET_CORE_LOADER_ENTRYPOINT` pointer.
 
 **SRS_DOTNET_CORE_MODULE_LOADER_04_018: [** `DotnetCoreModuleLoader_ParseConfigurationFromJson` shall return `NULL` if an underlying platform call fails. **]**
+
+**SRS_DOTNET_CORE_MODULE_LOADER_04_040: [** `DotnetCoreModuleLoader_ParseConfigurationFromJson` shall set default paths on `clrOptions`.
+ **]**
+
+**SRS_DOTNET_CORE_MODULE_LOADER_04_041: [** `DotnetCoreModuleLoader_ParseConfigurationFromJson` shall check if JSON contains `DOTNET_CORE_CLR_PATH_KEY`, and if it has it shall change the value of `clrOptions->coreclrpath`. **]**
+
+**SRS_DOTNET_CORE_MODULE_LOADER_04_042: [** `DotnetCoreModuleLoader_ParseConfigurationFromJson` shall check if JSON contains `DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY`, and if it has it shall change the value of `clrOptions->trustedplatformassemblieslocation` . **]**
 
 **SRS_DOTNET_CORE_MODULE_LOADER_04_019: [** `DotnetCoreModuleLoader_ParseConfigurationFromJson` shall call `ModuleLoader_ParseBaseConfigurationFromJson` to parse the loader configuration and return the result. **]**
 

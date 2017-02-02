@@ -10,6 +10,8 @@
 #include "module.h"
 #include "module_loader.h"
 #include "gateway_export.h"
+#include "dotnetcore.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -19,10 +21,24 @@ extern "C"
 #define DOTNET_CORE_LOADER_NAME            "dotnetcore"
 
 #if WIN32
-#define DOTNET_CORE_BINDING_MODULE_NAME    "dotnetcore.dll"
+#define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\coreclr.dll"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\"
 #else
-#define DOTNET_CORE_BINDING_MODULE_NAME    "libdotnetcore.so"
+#define DOTNET_CORE_BINDING_MODULE_NAME                                "./libdotnetcore.so"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/libcoreclr.so"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/"
 #endif
+
+#define DOTNET_CORE_CLR_PATH_KEY                                "binding.coreclrpath"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_KEY    "binding.trustedplatformassemblieslocation"
+   
+/** @brief Module Loader Configuration, including clrOptions Configuration. */
+typedef struct DOTNET_CORE_LOADER_CONFIGURATION_TAG
+{
+    MODULE_LOADER_BASE_CONFIGURATION base;
+    DOTNET_CORE_CLR_OPTIONS* clrOptions;
+} DOTNET_CORE_LOADER_CONFIGURATION;
 
 /** @brief Structure to load a dotnet module */
 typedef struct DOTNET_CORE_LOADER_ENTRYPOINT_TAG

@@ -6,6 +6,6 @@ build_root=$(cd "$(dirname "$0")/.." && pwd)
 cd $build_root
 
 # -- C --
-./tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding "$@" #-x
+./tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding --enable-dotnet-core-binding "$@" #-x
 [ $? -eq 0 ] || exit $?
  

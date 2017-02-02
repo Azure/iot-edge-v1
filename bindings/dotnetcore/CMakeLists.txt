@@ -3,14 +3,22 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
+if(WIN32)
+    set(dotnetcore_utils_file ./src/adapters/dotnetcore_utils_windows.cpp)
+elseif(LINUX)
+    set(dotnetcore_utils_file ./src/adapters/dotnetcore_utils_linux.cpp)
+endif()
+
+
 set(dotnet_core_sources
-    ./src/modules_manager.cpp
+    ./src/dotnetcore.cpp
+    ${dotnetcore_utils_file}
 )
 
 set(dotnet_core_headers
     ./inc/dotnetcore.h
     ./inc/dotnetcore_common.h
-    ./inc/modules_manager.h
+    ./inc/dotnetcore_utils.h
 )
 
 include_directories(./inc)
@@ -30,7 +38,7 @@ linkSharedUtil(dotnetcore)
 linkSharedUtil(dotnet_core_static)
 
 if(${run_unittests})
-	add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
 
 add_binding_to_solution(dotnetcore)

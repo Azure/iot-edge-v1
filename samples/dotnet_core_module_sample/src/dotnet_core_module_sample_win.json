@@ -18,7 +18,7 @@
                 "name": "dotnetcore",
                 "entrypoint": {
                     "assembly.name": "SensorModule",
-                    "entry.type": "SensorModule.DotNetCoreSensorModule"
+                    "entry.type": "SensorModule.DotNetSensorModule"
                 }
             },
             "args": "module configuration"
@@ -29,7 +29,7 @@
                 "name": "dotnetcore",
                 "entrypoint": {
                     "assembly.name": "PrinterModule",
-                    "entry.type": "PrinterModule.DotNetCorePrinterModule"
+                    "entry.type": "PrinterModule.DotNetPrinterModule"
                 }
             },
             "args": "module configuration"
