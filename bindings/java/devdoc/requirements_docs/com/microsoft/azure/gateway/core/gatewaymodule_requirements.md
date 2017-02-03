@@ -2,9 +2,9 @@
 
 ## Overview
 
-The GatewayModule abstract class must be extended by any module written in Java; all 
-Java modules must extend from the same abstract class. All methods to be
-implemented by the module-creator will be called by the gateway when necessary.
+The `GatewayModule` abstract class may be extended by any module written in Java; all 
+Java modules must extend this abstract class or implement `IGatewayModule` interface. 
+All methods to be implemented by the module-creator will be called by the gateway when necessary.
 
 ## References
 

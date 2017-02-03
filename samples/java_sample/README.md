@@ -13,7 +13,10 @@ Creating a Java module is easy:
 - **Include the Java binding project in your Maven project (Described in the Dev Box Setup guide)**
 - **Implement the methods**
 
-  In order to create a proper module that can be recognized by the gateway, it must extend the ```GatewayModule``` abstract class.
+  In order to create a proper module that can be recognized by the gateway, it must extend the ```GatewayModule``` abstract class or implement ```IGatewayModule``` interface.
+  
+  ### Extend GatewayModule abstract class
+
   After extending the ```GatewayModule``` abstract class, you must override the ```public void receive(Message message)``` and ```public void destroy()``` methods and provide a constructor that calls the super constructor.
   Optionally, you may override the ```public void start()``` method which is called to notify modules that it is safe to start processing and sending messages.
 
@@ -51,6 +54,30 @@ Creating a Java module is easy:
   }
   ```
 
+  ### Implement IGatewayModule interface
+
+  ```java
+  public class YourModule implements IGatewayModule {
+    
+    public void create(long moduleAddr, Broker broker, String configuration) {
+		  // Implement method and store moduleAddr, broker and configuration into class fields if they are required later
+      // moduleAddr and broker are required to publish messages
+	  }
+
+	  public void start() {
+		  // Add implementation here
+	  }
+
+	  public void receive(byte[] source) {	
+		  // Add implementation here
+	  }
+
+	  public void destroy() {
+		  // Add implementation here
+	  }
+  }
+  ```
+
   To see details on each method, you may see the GatewayModule.java and IGatewayModule.java sources.
 
 - **Publish messages**
@@ -74,7 +101,7 @@ Creating a Java module is easy:
                 "debug": [true | false],
                 "debug.port": <<Remote debugging port>>,
                 "verbose": [true | false],
-                "additional_options": [
+                "additional.options": [
                   "<<Any additional options>>"
                 ]
               }
@@ -96,12 +123,10 @@ Creating a Java module is easy:
         }
   }
   ```
-
-  According to [Java documentation](https://docs.oracle.com/javase/tutorial/essential/environment/paths.html) one may also set the CLASSPATH environment
-  variable rather than including it in this configuration.
-
-  **Note:** The "jvm_options" section is not necessary. If ommitted, a default configuration will be used. If included and multiple Java modules
-  will be loaded, all configurations MUST be the same. If multiple "jvm_options" configurations are not the same, creation will fail.
+  **Note** Name of your module class is a fully-qualified class name. For example, the fully-qualified class name for com.microsoft.azure.gateway.sample.YourModule class is: "com/microsoft/azure/gateway/sample/YourModule"
+ 
+  **Note:** The "jvm.options" section is not necessary. If ommitted, a default configuration will be used. If included and multiple Java modules
+  will be loaded, all configurations MUST be the same. If multiple "jvm.options" configurations are not the same, creation will fail.
   The default configuration is:
 
   ```json
@@ -113,7 +138,7 @@ Creating a Java module is easy:
       "debug": false,
       "debug.port": 9876,
       "verbose": false,
-      "additional_options": null
+      "additional.options": null
     }
     ...
   }

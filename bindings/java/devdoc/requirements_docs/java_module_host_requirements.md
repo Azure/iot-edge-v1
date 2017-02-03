@@ -8,7 +8,7 @@ well as manage the lifetime of the Java Virtual Machine. Please read the [high
 level design](../java_binding_hld.md) document for more design details. This
 module will be built as a dynamic library and loaded by the Java class using
 `System.loadLibrary(...)` in order to publish messages to the broker. The path
-to the .dll or .so must be included in `library_path` of the configuration for
+to the .dll or .so must be included in `library.path` of the configuration for
 the java module host, or be part of the default library path.
 
 ## References
@@ -105,7 +105,9 @@ pointer to a `JAVA_MODULE_HOST_CONFIG` structure.
 
 **SRS_JAVA_MODULE_HOST_14_014: [** This function shall find the `Broker` Java class, get the constructor, and create a `Broker` Java object. **]**
 
-**SRS_JAVA_MODULE_HOST_14_015: [** This function shall find the user-defined Java module class using `configuration->class_name`, get the constructor, and create an instance of this module object. **]**
+**SRS_JAVA_MODULE_HOST_14_015: [** This function shall find the user-defined Java module class using `configuration->class_name`, get the constructor this three parameters: long moduleAddr, Broker broker, String configuration and create an instance of this module object. **]**
+
+**SRS_JAVA_MODULE_HOST_24_059: [** If the constructor with three parameters was not found in the Java module class, this function shall find no-argument constructor, create an instance of the module and call `create` method from the module. **]**
 
 **SRS_JAVA_MODULE_HOST_14_016: [** This function shall return `NULL` if any returned `jclass`, `jmethodID`, or `jobject` is `NULL`. **]**
 

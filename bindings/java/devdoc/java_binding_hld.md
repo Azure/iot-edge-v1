@@ -33,25 +33,35 @@ this module will be similar to the configuration for the Node Module Host:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json
 {
-    "modules": [
+    "loaders": [
         {
-            "module name": "java_poller",
-            "module path": "/path/to/java_module_host.so|.dll",
-            "args": {
-                "class_path": "/path/to/relevant/class/files",
-                "library_path": "/path/to/dir/with/java_module_host.so|.dll",
-                "class_name": "Poller",
-                "args": {
-                    "frequency": 30
-                },
-                "jvm_options": {
+            "type": "java",
+            "name": "java",
+            "configuration": {
+                "jvm.options": {
+                    "library.path": "./path/to/java_module_host.so|.dll",
                     "version": 8,
                     "debug": true,
-                    "debug_port": 9876,
+                    "debug.port": 9876,
                     "verbose": false,
-                    "additional_options": [
+                    "additional.options": [
                         "-Djava.version=1.8"
                     ]
+                }
+            }
+        }
+    ],
+    "modules": [
+        {
+            "name": "java_poller",
+            "loader": {
+                "name": "java",
+                "entrypoint": {
+                    "class.name": "Poller",
+                    "class.path": "/path/to/relevant/class/files"
+                },
+                "args": {
+                    "frequency": 30
                 }
             }
         }
@@ -59,10 +69,10 @@ this module will be similar to the configuration for the Node Module Host:
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As usual, the `module path` specifies the path to the DLL/SO that implements the
-**Java Module Host**. The `args.class_path` specifies the path to the directory
-where all necessary Java class files are located, `args.class_name` is the name
-of the class that implements the module code, and finally `args.jvm_options` is
+As usual, the `library.path` specifies the path to the DLL/SO that implements the
+**Java Module Host**. The `entrypoint.class.path` specifies the path to the directory
+where all necessary Java class files are located, `entrypoint.class.name` is the name
+of the class that implements the module code. `entrypoint.jvm.options` is
 a JSON object containing any options to be passed to the JVM upon creation.
 
  
@@ -71,16 +81,14 @@ Gateway Module (Java)
 ---------------------
 
 The **Java Module Host** will handle calling into the gateway module written in
-Java when necessary, therefore each module written in Java must implement the
-same `IGatewayModule` interface shown below:
+Java when necessary, therefore implementation methods for `create`, `start`, `destroy` and `receive` should not hang. 
+Each module written in Java must implement the `IGatewayModule` interface shown below:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ java
 public interface IGatewayModule {
 
     /**
-     * The create method is called by the subclass constructor when the native 
-     * Gateway creates the Module. The constructor
-     * should save both the {@code moduleAddr} and {@code broker} parameters.
+     * The create method is called when the native Gateway creates the Module.
      *
      * @param moduleAddr The address of the native module pointer
      * @param broker The {@link Broker} to which this Module belongs
@@ -122,9 +130,9 @@ public interface IGatewayModule {
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To simplify this, the Azure IoT Gateway SDK provides an abstract `GatewayModule`
-class which implements the `IGatewayModule` interface. Module-implementers
-should extend this abstract class when creating a module.
+The implementaion of `IGatewayModule` should save the moduleAddr and broker arguments from `create` method in order to use them later to send messages to gateway. 
+To simplify this, the Azure IoT Gateway SDK provides an abstract `GatewayModule` class which implements the `IGatewayModule` interface. Module-implementers
+may extend this abstract class when creating a module. If the module extends the `GatewayModule` class the constructor calls `create` method.
 
  
 
@@ -144,10 +152,11 @@ gateway, it:
 
 -   Constructs a `Broker` Java object using the `BROKER_HANDLE`.
 
--   Finds the module’s class with the name specified by the `args.class_name`,
-    invokes the constructor passing in the native `MODULE_HANDLE` address,
-    the `Broker` object and the JSON args string for that module, and 
-    creates the Java module.
+-   Finds the module’s class with the name specified by the `entrypoint.class.name`,
+    finds the constructor that matches these three arguments: the native `MODULE_HANDLE` address,
+    the `Broker` object and the JSON args string for that module and invokes it. 
+    If the constructor with three parameters is not found, finds no-argument constructor and invokes it and 
+    invokes `create` method implemented by the Java module.
 
 -   Gets a global reference to the newly created `GatewayModule` object to be
     saved by the `JAVA_MODULE_HOST_HANDLE`.

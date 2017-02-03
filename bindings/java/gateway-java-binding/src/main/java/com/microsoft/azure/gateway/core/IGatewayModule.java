@@ -7,8 +7,7 @@ package com.microsoft.azure.gateway.core;
 public interface IGatewayModule {
 
     /**
-     * The create method is called by the subclass constructor when the native Gateway creates the module. The constructor
-     * should save the {@code broker} parameter.
+     * The create method is called when the native Gateway creates the Module.
      *
      * @param moduleAddr The address of the native module pointer
      * @param broker The {@link Broker} to which this module belongs
