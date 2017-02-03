@@ -7,6 +7,10 @@ if(${enable_dotnet_binding})
     add_subdirectory(dotnet)
 endif()
 
+if(${enable_dotnet_core_binding})
+    add_subdirectory(dotnetcore)
+endif()
+
 if(${enable_java_binding})
     add_subdirectory(java)
 endif()
