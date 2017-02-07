@@ -4,7 +4,6 @@
 
 set -e
 
-build_clean=
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 local_install=$build_root/install-deps
 log_dir=$build_root
@@ -27,7 +26,6 @@ usage ()
     echo " -f,  --config <value>         Build specified configuration. Default value is 'Debug'"
     echo " --rebuild-deps                Force re-build of dependencies"
     echo " -x,  --xtrace                 Print a trace of each command"
-    echo " -c,  --clean                  Remove previous build artifacts"
     echo " -cl, --compileoption <value>  Specify a gcc compile option"
     echo "   Example: -cl -O1 -cl ..."
     echo " -rv, --run-valgrind           Execute ctest with valgrind"
@@ -47,7 +45,6 @@ usage ()
 
 process_args ()
 {
-    build_clean=0
     save_next_arg=0
     extracloptions=" "
 
@@ -71,7 +68,6 @@ process_args ()
       else
           case "$arg" in
               "-x" | "--xtrace" ) set -x;;
-              "-c" | "--clean" ) build_clean=1;;
               "--run-unittests" ) run_unittests=ON;;
               "--run-e2e-tests" ) run_e2e_tests=ON;;
               "--rebuild-deps" ) rebuild_deps=ON;;
