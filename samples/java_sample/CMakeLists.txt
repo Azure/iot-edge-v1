@@ -36,5 +36,10 @@ install_broker(java_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 copy_gateway_dll(java_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 copy_iothub_client_dll(java_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
+add_custom_command(TARGET java_sample POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/java_modules/CoreRuntime
+    ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
+
 
 add_sample_to_solution(java_sample)
