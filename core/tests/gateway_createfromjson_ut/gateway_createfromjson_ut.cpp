@@ -980,14 +980,6 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
     STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG,IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-        .IgnoreArgument(1)
-        .IgnoreArgument(2)
-        .IgnoreArgument(3);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-        .IgnoreArgument(1)
-        .IgnoreArgument(2)
-        .IgnoreArgument(3);
     STRICT_EXPECTED_CALL(mocks, Broker_RemoveModule(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);

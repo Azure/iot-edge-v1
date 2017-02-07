@@ -554,8 +554,13 @@ void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_D
     remove_module_from_any_source(gateway_handle, *module_data_pptr);
     LINK_DATA *link;
     /* Codes_SRS_GATEWAY_26_018: [ This function shall remove any links that contain the removed module either as a source or sink. ] */
-    while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, (*module_data_pptr)->module_name)) != NULL)
-        gateway_removelink_internal(gateway_handle, link);
+    if (gateway_handle->links)
+    {
+        while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, (*module_data_pptr)->module_name)) != NULL)
+        {
+            gateway_removelink_internal(gateway_handle, link);
+        }
+    }
 
     free((*module_data_pptr)->module_name);
 
