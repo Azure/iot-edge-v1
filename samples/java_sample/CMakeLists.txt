@@ -41,5 +41,9 @@ add_custom_command(TARGET java_sample POST_BUILD
     ${CMAKE_CURRENT_SOURCE_DIR}/java_modules/CoreRuntime
     ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
 
+add_custom_command(TARGET java_sample POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_BINARY_DIR}/../../bindings/java/$(Configuration)/java_module_host.dll
+    ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
 
 add_sample_to_solution(java_sample)
