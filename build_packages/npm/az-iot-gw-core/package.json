@@ -1,0 +1,23 @@
+{
+  "name": "az-iot-gw-core",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+  },
+  "keywords": [
+    "Azure",
+    "IoT",
+    "Gateway",
+    "Core"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
