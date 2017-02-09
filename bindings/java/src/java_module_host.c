@@ -801,8 +801,9 @@ static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_stri
                 }
                 if (jvm_options->debug == 1 && result == 0) {
                     char debug_str[64];
+                    int valid_port = jvm_options->debug_port > 0 && jvm_options->debug_port <= DEBUG_PORT_MAX_VALUE ? jvm_options->debug_port : DEBUG_PORT_DEFAULT;
                     /*Codes_SRS_JAVA_MODULE_HOST_14_033:[The function shall concatenate the user supplied options to the option key names.]*/
-                    if (sprintf(debug_str, "-Xrunjdwp:transport=dt_socket,address=%i,server=y,suspend=y", jvm_options->debug_port != 0 ? jvm_options->debug_port : DEBUG_PORT_DEFAULT) < 0)
+                    if (sprintf_s(debug_str, 64, "-Xrunjdwp:transport=dt_socket,address=%i,server=y,suspend=y", valid_port) < 0)
                     {
                         LogError("sprintf failed.");
                         result = __LINE__;

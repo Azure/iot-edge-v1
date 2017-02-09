@@ -18,5 +18,6 @@
 #define MODULE_CREATE_METHOD_NAME "create"
 #define MODULE_CREATE_DESCRIPTOR "(JLcom/microsoft/azure/gateway/core/Broker;Ljava/lang/String;)V"
 #define DEBUG_PORT_DEFAULT 9876
+#define DEBUG_PORT_MAX_VALUE 65535
 
 #endif /*JAVA_MODULE_HOST_COMMON_H*/

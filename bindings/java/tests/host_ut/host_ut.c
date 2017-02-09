@@ -1278,14 +1278,194 @@ TEST_FUNCTION(JavaModuleHost_Create_module_constructor_without_params_API_failur
 /*Tests_SRS_JAVA_MODULE_HOST_14_032: [The function shall construct a new STRING_HANDLE for each option.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_033: [The function shall concatenate the user supplied options to the option key names.]*/
 /*Tests_SRS_JAVA_MODULE_HOST_14_034: [The function shall push the new STRING_HANDLE onto the newly created vector.]*/
+TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_invalid_port_no_additional_args_success)
+{
+    JVM_OPTIONS options = {
+        "class/path",
+        "library/path",
+        8,
+        true,
+        65536,
+        false,
+        NULL
+    };
+
+    JAVA_MODULE_HOST_CONFIG config2 =
+    {
+        "TestClass",
+        "{hello}",
+        &options
+    };
+    char debug_options[64];
+    sprintf_s(debug_options, 64, "-Xrunjdwp:transport=dt_socket,address=%i,server=y,suspend=y", DEBUG_PORT_DEFAULT);
+
+    //Arrange
+
+    STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
+
+    STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(JavaVMOption) * 5));
+    STRICT_EXPECTED_CALL(STRING_construct("-Djava.class.path="));
+    STRICT_EXPECTED_CALL(STRING_concat(IGNORED_PTR_ARG, config2.options->class_path))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(STRING_construct("-Djava.library.path="));
+    STRICT_EXPECTED_CALL(STRING_concat(IGNORED_PTR_ARG, config2.options->library_path))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(STRING_construct("-Xrs"));
+    STRICT_EXPECTED_CALL(STRING_construct("-Xdebug"));
+    STRICT_EXPECTED_CALL(STRING_construct(debug_options));
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(JNI_CreateJavaVM(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 0))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 2))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 3))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 4))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_destroy(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(JavaModuleHostManager_Add(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+    STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, BROKER_CLASS_NAME))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, BROKER_CONSTRUCTOR_DESCRIPTOR))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(NewObjectV(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, config2.class_name))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(GetMethodID(IGNORED_PTR_ARG, IGNORED_PTR_ARG, CONSTRUCTOR_METHOD_NAME, MODULE_CONSTRUCTOR_DESCRIPTOR))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(NewStringUTF(IGNORED_PTR_ARG, config.configuration_json))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(NewObjectV(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(NewGlobalRef(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
+
+    //Act
+    MODULE_HANDLE result = JavaModuleHost_Create((BROKER_HANDLE)0x42, &config2);
+
+    //Assert
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    //Cleanup
+    JavaModuleHost_Destroy(result);
+
+}
+
+/*Tests_SRS_JAVA_MODULE_HOST_14_005: [This function shall return a non-NULL MODULE_HANDLE when successful. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_006: [This function shall allocate memory for an instance of a JAVA_MODULE_HANDLE_DATA structure to be used as the backing structure for this module. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_037: [This function shall get a singleton instance of a JavaModuleHostManager.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_007: [This function shall initialize a JavaVMInitArgs structure using the JVM_OPTIONS structure configuration->options. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_010: [If this is the first Java module to load, this function shall create the JVM using the JavaVMInitArgs through a call to JNI_CreateJavaVM and save the JavaVM and JNIEnv pointers in the JAVA_MODULE_HANDLE_DATA. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_012: [This function shall increment the count of modules in the JavaModuleHostManager. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_014: [This function shall find the Broker Java class, get the constructor, and create a Broker Java object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_015 :[This function shall find the user - defined Java module class using configuration->class_name, get the constructor, and create an instance of this module object.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_018: [The function shall save a new global reference to the Java module object in JAVA_MODULE_HANDLE_DATA->module. ]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_030: [The function shall set the JavaVMInitArgs structures nOptions, version and JavaVMOption* options member variables]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_031: [The function shall create a new VECTOR_HANDLE to store the option strings.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_032: [The function shall construct a new STRING_HANDLE for each option.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_033: [The function shall concatenate the user supplied options to the option key names.]*/
+/*Tests_SRS_JAVA_MODULE_HOST_14_034: [The function shall push the new STRING_HANDLE onto the newly created vector.]*/
 TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_additional_args_success)
 {
     JVM_OPTIONS options = {
         "class/path",
         "library/path",
         8,
-        false,
-        -1,
+        true,
+        9000,
         false,
         NULL
     };
@@ -1307,7 +1487,7 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
     STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
     STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreAllArguments();
-    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(JavaVMOption) * 2));
+    STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(JavaVMOption) * 5));
     STRICT_EXPECTED_CALL(STRING_construct("-Djava.class.path="));
     STRICT_EXPECTED_CALL(STRING_concat(IGNORED_PTR_ARG, config2.options->class_path))
         .IgnoreArgument(1);
@@ -1326,6 +1506,25 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
     STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
         .IgnoreAllArguments();
 
+    STRICT_EXPECTED_CALL(STRING_construct("-Xrs"));
+    STRICT_EXPECTED_CALL(STRING_construct("-Xdebug"));
+    STRICT_EXPECTED_CALL(STRING_construct("-Xrunjdwp:transport=dt_socket,address=9000,server=y,suspend=y"));
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+
     STRICT_EXPECTED_CALL(JNI_CreateJavaVM(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments();
 
@@ -1338,6 +1537,24 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
     STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 2))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 3))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(VECTOR_element(IGNORED_PTR_ARG, 4))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
         .IgnoreAllArguments();
