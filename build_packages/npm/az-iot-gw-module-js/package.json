@@ -5,10 +5,9 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Azure/azure-iot-gateway-sdk"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [
     "Azure",
     "IoT",
@@ -17,8 +16,6 @@
   ],
   "author": "Microsoft Corporation",
   "license": "MIT",
-  "dependencies": {
-  },
-  "devDependencies": {
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
