@@ -27,12 +27,22 @@ mkdir npm
 xcopy %root%\pkgs\npm npm /S /Q
 
 rem copy binary files for azure iot gateway core runtime.
-mkdir npm\az-iot-gw-core\core
-copy %root%\build\core\Debug\gateway.dll npm\az-iot-gw-core\core
-copy %root%\install-deps\bin\aziotsharedutil.dll npm\az-iot-gw-core\core
-copy %root%\install-deps\bin\\nanomsg.dll npm\az-iot-gw-core\core
-copy %root%\build_nodejs\node\Release\node.dll npm\az-iot-gw-core\core
-copy %root%\build\bindings\nodejs\Debug\nodejs_binding.dll npm\az-iot-gw-core\core
+mkdir npm\az-iot-gw-core\bin\win
+copy %root%\build\core\Debug\gateway.dll npm\az-iot-gw-core\bin\win
+copy %root%\install-deps\bin\aziotsharedutil.dll npm\az-iot-gw-core\bin\win
+copy %root%\install-deps\bin\\nanomsg.dll npm\az-iot-gw-core\bin\win
+copy %root%\build_nodejs\node\Release\node.dll npm\az-iot-gw-core\bin\win
+copy %root%\build\bindings\nodejs\Debug\nodejs_binding.dll npm\az-iot-gw-core\bin\win
+
+
+rem copy files for azure iot gateway module development.
+mkdir npm\az-iot-gw-module-js\module
+copy %root%\build\modules\logger\Debug\logger.dll npm\az-iot-gw-module-js\module
+mkdir npm\az-iot-gw-module-js\bin\win
+copy %root%\build\samples\nodejs_simple_sample\Debug\nodejs_simple_sample.exe npm\az-iot-gw-module-js\bin\win\gw.exe
+copy %root%\samples\nodejs_simple_sample\src\gateway_sample_win.json npm\az-iot-gw-module-js\bin\win\gw.config.json
+mkdir npm\az-iot-gw-module-js\sample
+xcopy %root%\samples\nodejs_simple_sample\nodejs_modules npm\az-iot-gw-module-js\sample /S /Q
 
 popd
 
