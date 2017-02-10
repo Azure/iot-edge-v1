@@ -1,0 +1,55 @@
+{
+  "loaders": [
+    {
+      "type": "node",
+      "name": "node",
+      "configuration": {
+        "binding.path": "bindings\\win\\nodejs_binding.dll"
+      }
+    }
+  ],
+  "modules": [
+    {
+      "name": "node_printer",
+      "loader": {
+        "name": "node",
+        "entrypoint": {
+          "main.path": "samples/simple/modules/printer.js"
+        }
+      },
+      "args": null
+    },
+    {
+      "name": "node_sensor",
+      "loader": {
+        "name": "node",
+        "entrypoint": {
+          "main.path": "samples/simple/modules/sensor.js"
+        }
+      },
+      "args": null
+    },
+    {
+      "name": "Logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "modules\\native\\win\\logger.dll"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "*",
+      "sink": "Logger"
+    },
+    {
+      "source": "node_sensor",
+      "sink": "node_printer"
+    }
+  ]
+}
