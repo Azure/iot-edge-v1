@@ -25,6 +25,7 @@
 #include "java_module_host_manager.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/strings.h"
+#include "azure_c_shared_utility/crt_abstractions.h"
 #include "java_module_host.h"
 #include "java_module_host_common.h"
 #include "module_access.h"
@@ -1296,8 +1297,8 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_invalid
         "{hello}",
         &options
     };
-    char debug_options[64];
-    sprintf_s(debug_options, 64, "-Xrunjdwp:transport=dt_socket,address=%i,server=y,suspend=y", DEBUG_PORT_DEFAULT);
+    char debug_options[DEBUG_OPTIONS_STR_SIZE];
+    sprintf_s(debug_options, DEBUG_OPTIONS_STR_SIZE, "-Xrunjdwp:transport=dt_socket,address=%i,server=y,suspend=y", DEBUG_PORT_DEFAULT);
 
     //Arrange
 
