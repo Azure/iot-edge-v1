@@ -209,6 +209,7 @@ extern "C"
 {
 #endif
     VECTOR_HANDLE real_VECTOR_create(size_t elementSize);
+    VECTOR_HANDLE real_VECTOR_move(VECTOR_HANDLE handle);
     void real_VECTOR_destroy(VECTOR_HANDLE handle);
 
     /* insertion */
@@ -289,6 +290,7 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 
     //Vector Hooks
     REGISTER_GLOBAL_MOCK_HOOK(VECTOR_create, real_VECTOR_create);
+    REGISTER_GLOBAL_MOCK_HOOK(VECTOR_move, real_VECTOR_move);
     REGISTER_GLOBAL_MOCK_HOOK(VECTOR_push_back, real_VECTOR_push_back);
     REGISTER_GLOBAL_MOCK_HOOK(VECTOR_size, real_VECTOR_size);
     REGISTER_GLOBAL_MOCK_HOOK(VECTOR_destroy, real_VECTOR_destroy);

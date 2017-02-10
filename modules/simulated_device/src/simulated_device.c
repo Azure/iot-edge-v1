@@ -62,7 +62,7 @@ static void SimulatedDevice_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE m
                     }
 
                     (void)printf("Content:\r\n");
-                    (void)printf("  %.*s\r\n", content->size, content->buffer);
+                    (void)printf("  %.*s\r\n", (int)content->size, content->buffer);
                     (void)fflush(stdout);
                 }
             }

@@ -15,6 +15,7 @@
 #include "azure_c_shared_utility/map.h"
 #include "messageproperties.h"
 #include "module_access.h"
+#include "azure_c_shared_utility/vector_types_internal.h"
 
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;

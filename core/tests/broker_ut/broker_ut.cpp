@@ -9,11 +9,12 @@
 #include "micromockcharstararenullterminatedstrings.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/vector.h"
+#include "azure_c_shared_utility/vector_types_internal.h"
 #include "azure_c_shared_utility/singlylinkedlist.h"
 #include "message.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/refcount.h"
 #include "azure_c_shared_utility/uniqueid.h"
+#include "azure_c_shared_utility/xlogging.h"
 #include "nanomsg/nn.h"
 #include "nanomsg/pubsub.h"
 

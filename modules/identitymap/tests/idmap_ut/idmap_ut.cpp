@@ -9,6 +9,7 @@
 #include "azure_c_shared_utility/map.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/vector.h"
+#include "azure_c_shared_utility/vector_types_internal.h"
 #include "messageproperties.h"
 #include "module_access.h"
 

@@ -113,7 +113,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
         g_testByTest = MicroMockCreateMutex();
         ASSERT_IS_NOT_NULL(g_testByTest);
         platform_init();
-        g_iothubAcctInfo = IoTHubAccount_Init(true);
+        g_iothubAcctInfo = IoTHubAccount_Init();
         ASSERT_IS_NOT_NULL(g_iothubAcctInfo);
     }
 
@@ -164,9 +164,10 @@ BEGIN_TEST_SUITE(gateway_e2e)
         e2eModuleConfiguration.sendData = sendData->expectedString;
 
         /* Setup: data for identity map module */
+        IOTHUB_PROVISIONED_DEVICE* device = IoTHubAccount_GetSASDevice(g_iothubAcctInfo);
         IDENTITY_MAP_CONFIG e2eModuleMapping[1];
-        e2eModuleMapping[0].deviceId = IoTHubAccount_GetDeviceId(g_iothubAcctInfo);
-        e2eModuleMapping[0].deviceKey = IoTHubAccount_GetDeviceKey(g_iothubAcctInfo);
+        e2eModuleMapping[0].deviceId = device->deviceId;
+        e2eModuleMapping[0].deviceKey = device->primaryAuthentication;
         e2eModuleMapping[0].macAddress = "01:01:01:01:01:01";
 
         VECTOR_HANDLE e2eModuleMappingVector = VECTOR_create(sizeof(IDENTITY_MAP_CONFIG));
@@ -242,7 +243,15 @@ BEGIN_TEST_SUITE(gateway_e2e)
         platform_init();
         //step3: get the data from the other side
         {
-            IOTHUB_TEST_HANDLE iotHubTestHandle = IoTHubTest_Initialize(IoTHubAccount_GetEventHubConnectionString(g_iothubAcctInfo), IoTHubAccount_GetIoTHubConnString(g_iothubAcctInfo), IoTHubAccount_GetDeviceId(g_iothubAcctInfo), IoTHubAccount_GetDeviceKey(g_iothubAcctInfo), IoTHubAccount_GetEventhubListenName(g_iothubAcctInfo), IoTHubAccount_GetEventhubAccessKey(g_iothubAcctInfo), IoTHubAccount_GetSharedAccessSignature(g_iothubAcctInfo), IoTHubAccount_GetEventhubConsumerGroup(g_iothubAcctInfo));
+            IOTHUB_TEST_HANDLE iotHubTestHandle = IoTHubTest_Initialize(
+                IoTHubAccount_GetEventHubConnectionString(g_iothubAcctInfo),
+                IoTHubAccount_GetIoTHubConnString(g_iothubAcctInfo),
+                IoTHubAccount_GetSASDevice(g_iothubAcctInfo)->deviceId,
+                IoTHubAccount_GetEventhubListenName(g_iothubAcctInfo),
+                IoTHubAccount_GetEventhubAccessKey(g_iothubAcctInfo),
+                IoTHubAccount_GetSharedAccessSignature(g_iothubAcctInfo),
+                IoTHubAccount_GetEventhubConsumerGroup(g_iothubAcctInfo)
+                );
             ASSERT_IS_NOT_NULL(iotHubTestHandle);
 
             IOTHUB_TEST_CLIENT_RESULT result = IoTHubTest_ListenForEventForMaxDrainTime(iotHubTestHandle, IoTHubCallback, IoTHubAccount_GetIoTHubPartitionCount(g_iothubAcctInfo), sendData);

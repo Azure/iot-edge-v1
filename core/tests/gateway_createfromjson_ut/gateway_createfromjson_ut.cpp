@@ -15,6 +15,8 @@
 #include "../src/gateway_internal.h"
 #include <parson.h>
 
+#include "azure_c_shared_utility/vector_types_internal.h"
+
 #define DUMMY_JSON_PATH "x.json"
 #define MISCONFIG_JSON_PATH "invalid_json.json"
 #define MISSING_INFO_JSON_PATH "missing_info_json.json"

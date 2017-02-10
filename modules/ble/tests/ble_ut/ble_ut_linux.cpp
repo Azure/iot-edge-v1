@@ -19,6 +19,7 @@
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/base64.h"
 #include "azure_c_shared_utility/vector.h"
+#include "azure_c_shared_utility/vector_types_internal.h"
 #include "azure_c_shared_utility/buffer_.h"
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/threadapi.h"

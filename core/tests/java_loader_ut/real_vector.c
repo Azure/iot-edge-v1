@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #define VECTOR_create real_VECTOR_create
+#define VECTOR_move real_VECTOR_move
 #define VECTOR_destroy real_VECTOR_destroy
 #define VECTOR_push_back real_VECTOR_push_back
 #define VECTOR_erase real_VECTOR_erase

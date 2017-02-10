@@ -15,6 +15,7 @@
 #include "azure_c_shared_utility/condition.h"
 #include "azure_c_shared_utility/singlylinkedlist.h"
 #include "azure_c_shared_utility/vector.h"
+#include "azure_c_shared_utility/vector_types_internal.h"
 
 #include "experimental/event_system.h"
 

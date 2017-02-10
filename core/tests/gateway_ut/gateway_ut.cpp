@@ -14,6 +14,9 @@
 #include "experimental/event_system.h"
 #include "module_loader.h"
 
+#include "azure_c_shared_utility/vector_types_internal.h"
+
+
 #define DUMMY_LIBRARY_PATH "x.dll"
 
 #define GBALLOC_H

@@ -27,15 +27,6 @@ using namespace mscorlib;
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-#define GBALLOC_H
-
-extern "C" int gballoc_init(void);
-extern "C" void gballoc_deinit(void);
-extern "C" void* gballoc_malloc(size_t size);
-extern "C" void* gballoc_calloc(size_t nmemb, size_t size);
-extern "C" void* gballoc_realloc(void* ptr, size_t size);
-extern "C" void gballoc_free(void* ptr);
-
 #define DefaultCLRVersion L"v4.0.30319"
 
 // {A63CE3E8-D57A-4135-A7DD-C2F878D68D11}
@@ -90,7 +81,7 @@ extern "C" void  gballoc_free(void* ptr);
 
 namespace BASEIMPLEMENTATION
 {
-    /*if malloc is defined as gballoc_malloc at this moment, there'd be serious trouble*/
+/*if malloc is defined as gballoc_malloc at this moment, there'd be serious trouble*/
 #define Lock(x) (LOCK_OK + gballocState - gballocState) /*compiler warning about constant in if condition*/
 #define Unlock(x) (LOCK_OK + gballocState - gballocState)
 #define Lock_Init() (LOCK_HANDLE)0x42

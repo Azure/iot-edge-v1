@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <cstdbool>
-#include "azure_c_shared_utility/gballoc.h"
 
 #include "module.h"
 #include "message.h"
@@ -485,7 +484,7 @@ bool buildMessageObject(MESSAGE_HANDLE messageHandle, _AssemblyPtr spAzureIoTGat
 			}
 		}
     }
-	catch (const std::bad_alloc & msgErr)
+	catch (const std::bad_alloc &)
 	{
 		LogError("Exception Thrown. Allocate message failed");
 	}
