@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Microsoft.Azure.Devices.Gateway.Core</id>
+    <version>1.0.0</version>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <language>en-US</language>
+    <licenseUrl>https://github.com/Azure/azure-iot-gateway-sdk/blob/master/License.txt</licenseUrl>
+    <projectUrl>https://github.com/azure/azure-iot-gateway-sdk</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This package contains the Microsoft Azure IoT Gateway SDK Core dependencies.</description>
+    <releaseNotes>Initial release of the Microsoft Azure IoT Gateway SDK module developer startup package.</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Microsoft Azure IoT Gateway SDK Device Module Developer Core Native</tags>
+  </metadata>
+  <files> 
+     <file src="..\build\core\Release\gateway.dll" target="build\x86" /> 
+     <file src="..\build\core\Release\gateway.pdb" target="build\x86" /> 
+     <file src="..\install-deps\bin\aziotsharedutil.dll" target="build\x86" /> 
+     <file src="..\install-deps\bin\nanomsg.dll" target="build\x86" />
+     <file src="content\Microsoft.Azure.Devices.Gateway.Core.targets" target="build" />
+   </files> 
+</package>
