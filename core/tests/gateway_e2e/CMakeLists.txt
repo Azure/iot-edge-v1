@@ -46,18 +46,22 @@ if(WIN32)
         target_link_libraries(${theseTestsName}_dll
             gateway
             iothub_test
-            rpcrt4
             iothub_client_http_transport
         )
+        if(NOT ${use_xplat_uuid})
+            target_link_libraries(${theseTestsName}_exe rpcrt4)
+        endif()
     endif()
     
     if(TARGET ${theseTestsName}_exe)
         target_link_libraries(${theseTestsName}_exe
             gateway
             iothub_test
-            rpcrt4
             iothub_client_http_transport
         )    
+        if(NOT ${use_xplat_uuid})
+            target_link_libraries(${theseTestsName}_exe rpcrt4)
+        endif()
         install_broker(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
         copy_gateway_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
         copy_iothub_client_dll(${theseTestsName}_exe ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
@@ -66,14 +70,18 @@ if(WIN32)
 else()
     if(TARGET ${theseTestsName}_exe)
         target_link_libraries(${theseTestsName}_exe
-            iothub_test
             gateway
+            iothub_test
             aziotsharedutil
-            uuid
             iothub_service_client
             iothub_client_http_transport
+            pthread
         )
-        target_link_libraries(${theseTestsName}_exe pthread)
+        if(NOT ${use_xplat_uuid})
+            find_package(PkgConfig REQUIRED)
+            pkg_search_module(UUID REQUIRED uuid)
+            target_link_libraries(${theseTestsName}_exe ${UUID_LIBRARIES})
+        endif()
         linkUAMQP(${theseTestsName}_exe)    
         linkHttp(${theseTestsName}_exe)
     endif()
