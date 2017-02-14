@@ -19,7 +19,7 @@ carrying device ID, key, and temperature are received by the IotHub module, they
 The logger module logs all the exchanges on the message broker to a file. 
 
 ## How to build the sample:
-Linux
+### Linux
 
 1. Open a shell
 2. Navigate to `azure-iot-gateway-sdk\tools\`
@@ -39,7 +39,7 @@ Linux
 
 >run `ctest -j $(nproc) -C Debug --output-on-failure`
 
-Windows
+### Windows
 
 1. Open a Developer Command for VS2015 as an Administrator
 2. Navigate to `azure-iot-gateway-sdk/tools/`
@@ -58,6 +58,41 @@ Windows
 >To run the tests:
 
 >run `ctest -C Debug -V`
+
+### Yocto Linux and Intel Edison
+
+We recommend using the Azure recipes provided by Intel available in the 
+[meta-iot-cloud](https://github.com/intel-iot-devkit/meta-iot-cloud) repository.
+Follow the instructions in the 
+[README](https://github.com/intel-iot-devkit/meta-iot-cloud#configuration) to 
+build an Edison image with the azure-iot-gateway-sdk libraries included.
+
+#### Intel Edison
+
+The Edison does not support all of the Azure recipes available in the "meta-iot-cloud" repository. To get the Edison image to build, we have to limit the recipes included in the image.
+
+- Remove the azure-iot-gateway-sdk-java target.
+
+    The recipe for azure-iot-gateway-sdk defines three targets, 
+    "azure-iot-gateway-sdk", "azure-iot-gateway-sdk-bluetooth", and 
+    "azure-iot-gateway-sdk-java". The dependencies for Java require libraries 
+    not included in the Edison BSP source package. To avoid building the Java 
+    target, add the following line to your `conf/local.conf` file. This 
+    line will limit the packages to the "azure-iot-gateway-sdk" and 
+    "azure-iot-gateway-sdk-bluetooth" targets.
+
+```
+PACKAGECONFIG_pn-azure-iot-gateway-sdk = "bluetooth"
+```
+
+    
+- Add the azure-iot-gateway-sdk recipe to the target.
+
+    Edit the Edison image recipe to include the "azure-iot-gateway-sdk" target.  For example:
+
+```
+meta-intel-edison/meta-intel-edison-distro/recipes-core/images/edison-image.bb:IMAGE_INSTALL += "azure-iot-gateway-sdk"
+```
 
 ## How to run the sample:
 Linux
