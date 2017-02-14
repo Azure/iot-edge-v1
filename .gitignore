@@ -222,3 +222,6 @@ api_reference/
 # install prefix
 install-deps/
 Testing/Temporary/CTestCostData.txt
+
+# ignore package build folder
+build_packages/**
