@@ -9,7 +9,7 @@ set current-path=%~dp0
 rem // remove trailing slash
 set current-path=%current-path:~0,-1%
 
-set build-root=%current-path%\..\build_packages
+set build-root=%current-path%\..\build\dist_pkgs
 set root=%current-path%\..\
 
 rem Resolve to fully qualified path
@@ -24,7 +24,7 @@ pushd %build-root%
 
 rem Copy package definition and README files into npm folder.
 mkdir npm
-xcopy %root%\pkgs\npm npm /S /Q
+xcopy %root%\dist_pkgs\npm npm /S /Q
 copy %root%\LICENSE.txt npm\az-iot-gw\LICENSE
 copy %root%\LICENSE.txt npm\az-iot-gw-module-js\LICENSE
 
