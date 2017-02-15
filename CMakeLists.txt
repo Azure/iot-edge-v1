@@ -286,3 +286,5 @@ add_subdirectory(modules)
 add_subdirectory(bindings)
 
 add_subdirectory(samples)
+
+add_subdirectory(./dist_pkgs/gw)
