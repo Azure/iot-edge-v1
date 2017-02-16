@@ -15,10 +15,10 @@
     <tags>Microsoft Azure IoT Gateway SDK Device Module Developer Core Native</tags>
   </metadata>
   <files> 
-     <file src="..\build\core\Release\gateway.dll" target="build\x86" /> 
-     <file src="..\build\core\Release\gateway.pdb" target="build\x86" /> 
-     <file src="..\install-deps\bin\aziotsharedutil.dll" target="build\x86" /> 
-     <file src="..\install-deps\bin\nanomsg.dll" target="build\x86" />
+     <file src="..\..\build\core\Release\gateway.dll" target="build\x86" /> 
+     <file src="..\..\build\core\Release\gateway.pdb" target="build\x86" /> 
+     <file src="..\..\install-deps\bin\aziotsharedutil.dll" target="build\x86" /> 
+     <file src="..\..\install-deps\bin\nanomsg.dll" target="build\x86" />
      <file src="content\Microsoft.Azure.Devices.Gateway.Core.targets" target="build" />
    </files> 
 </package>
