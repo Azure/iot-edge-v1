@@ -22,8 +22,8 @@
   <files>
      <file src="..\..\build\bindings\dotnet\Release\dotnet.dll" target="build\net40" /> 
      <file src="..\..\build\bindings\dotnet\Release\dotnet.pdb" target="build\net40" />
-     <file src="..\..\build\samples\dotnet_binding_sample\Release\dotnet_binding_sample.exe" target="build\net40" />
-     <file src="..\..\build\samples\dotnet_binding_sample\Release\dotnet_binding_sample.pdb" target="build\net40" />
+     <file src="..\..\build\dist_pkgs\gw\Release\gw.exe" target="build\net40" />
+     <file src="..\..\build\dist_pkgs\gw\Release\gw.pdb" target="build\net40" />
      <file src="..\..\build\samples\dotnet_binding_sample\Release\PrinterModule.dll" target="build\net40" />
      <file src="..\..\build\samples\dotnet_binding_sample\Release\SensorModule.dll" target="build\net40" />
      <file src="..\..\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway\bin\x86\Release\Microsoft.Azure.IoT.Gateway.dll" target="lib\net40" />
