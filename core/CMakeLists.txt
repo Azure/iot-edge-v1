@@ -66,6 +66,7 @@ set(gateway_c_sources
     ./src/gateway_createfromjson.c
     ./src/broker.c
     ./src/module_loader.c
+	./src/oop_module.c
     ${dynamic_library_c_file}
 )
 
@@ -81,6 +82,7 @@ set(gateway_h_sources
     ./inc/gateway_version.h
     ./inc/module_loader.h
     ./inc/dynamic_library.h
+	./inc/oop_module.h
     ./src/gateway_internal.h
     ../deps/parson/parson.h
 )
