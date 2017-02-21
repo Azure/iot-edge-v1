@@ -11,3 +11,9 @@ dotnet restore
 
 dotnet build ./Microsoft.Azure.IoT.Gateway ./PrinterModule ./SensorModule ./E2ETestModule
 [ $? -eq 0 ] || exit $?
+
+cd $build_root/bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.IoT.Gateway.Tests
+
+dotnet test
+[ $? -eq 0 ] || exit $?
+

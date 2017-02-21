@@ -57,6 +57,10 @@ rem -- dotnet restore
 rem -----------------------------------------------------------------------------
 call dotnet restore %build-root%\bindings\dotnetcore\dotnet-core-binding\
 
+rem -----------------------------------------------------------------------------
+rem -- run Unit Tests
+rem -----------------------------------------------------------------------------
+call dotnet test %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.IoT.Gateway.Tests
 
 
 if %build-clean%==1 (
