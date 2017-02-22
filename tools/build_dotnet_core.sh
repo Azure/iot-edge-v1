@@ -9,5 +9,5 @@ cd $build_root/bindings/dotnetcore/dotnet-core-binding
 dotnet restore
 [ $? -eq 0 ] || exit $?
 
-dotnet build ./Microsoft.Azure.IoT.Gateway ./PrinterModule ./SensorModule
+dotnet build ./Microsoft.Azure.IoT.Gateway ./PrinterModule ./SensorModule ./E2ETestModule
 [ $? -eq 0 ] || exit $?

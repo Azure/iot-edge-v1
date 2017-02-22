@@ -385,8 +385,7 @@ static void DotNetCore_Destroy(MODULE_HANDLE module)
         if (m_dotnet_core_modules_counter == 0)
         {
             /* Codes_SRS_DOTNET_CORE_04_039: [ DotNetCore_Destroy shall verify that there is no module and shall shutdown the dotnet core clr. ] */
-            m_ptr_coreclr_shutdown(hostHandle, domainId);
-            DynamicLibrary_UnloadLibrary(hCoreCLRModule);
+            m_ptr_coreclr_shutdown(hostHandle, domainId); //Can't call Unload CoreCLR otherwise CLR will crash. 
             hCoreCLRModule = NULL;
         }
     }

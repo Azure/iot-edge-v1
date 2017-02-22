@@ -1157,8 +1157,6 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         STRICT_EXPECTED_CALL(mocks, STRING_delete((STRING_HANDLE)0x42));
         STRICT_EXPECTED_CALL(mocks, STRING_delete((STRING_HANDLE)0x42));
 
-        STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary((DYNAMIC_LIBRARY_HANDLE)0X42));
-
         ///act
         MODULE_DESTROY(theAPIS)(result);
         MODULE_DESTROY(theAPIS)(result2);
@@ -1194,8 +1192,6 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, STRING_delete((STRING_HANDLE)0x42));
-
-        STRICT_EXPECTED_CALL(mocks, DynamicLibrary_UnloadLibrary((DYNAMIC_LIBRARY_HANDLE)0X42));
 
         ///act
         MODULE_DESTROY(theAPIS)(result);

@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0-*",
+
+    "dependencies": {
+        "Microsoft.Azure.IoT.Gateway": "1.0.0-*",
+        "NETStandard.Library": "1.6.0",
+        "system.threading.thread": "4.0.0"
+    },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  }
+}
