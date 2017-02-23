@@ -34,6 +34,8 @@ typedef struct OUTPROCESS_LOADER_ENTRYPOINT_TAG
     STRING_HANDLE control_id;
     /** @brief The URI for the gateway message channel.*/
     STRING_HANDLE message_id;
+    /** @brief controls timeout for ipc retries. */
+    unsigned int default_wait;
 } OUTPROCESS_LOADER_ENTRYPOINT;
 
 /** @brief      The API for the out of process proxy module loader. */
@@ -97,14 +99,20 @@ pointer to the parsed data.
 
 **SRS_OUTPROCESS_LOADER_17_012: [** This function shall return `NULL` if `json` is `NULL`. **]**
 
-**SRS_OUTPROCESS_LOADER_17_013: [** This function shall return `NULL` if "activation.type" is not present in `json`. **]**
+**SRS_OUTPROCESS_LOADER_17_013: [** This function shall return `NULL` if `activation.type` is not present in `json`. **]**
 
-**SRS_OUTPROCESS_LOADER_17_014: [** This function shall return `NULL` if "activation.type is not "NONE". **]**
+**SRS_OUTPROCESS_LOADER_17_014: [** This function shall return `NULL` if `activation.type` is not `NONE`. **]**
 
 
-**SRS_OUTPROCESS_LOADER_17_041: [** This function shall return `NULL` if "control.id" is not present in `json`. **]**
+**SRS_OUTPROCESS_LOADER_17_041: [** This function shall return `NULL` if `control.id` is not present in `json`. **]**
 
 **SRS_OUTPROCESS_LOADER_17_016: [** This function shall allocate a `OUTPROCESS_LOADER_ENTRYPOINT` structure. **]**
+
+**SRS_OUTPROCESS_LOADER_17_043: [** This function shall read the `timeout` value. **]**
+
+**SRS_OUTPROCESS_LOADER_17_044: [** If `timeout` is set, the `default_wait` shall be set to this value, else it will be set to a default of 1000 ms. **]**  
+
+This timeout controls how long a module will wait before retrying to connect to remote module on startup. If remote module is expected to take a long time to start, setting this will reduce the number of retires before success.
 
 **SRS_OUTPROCESS_LOADER_17_017: [** This function shall assign the entrypoint activation_type to NONE. **]**
 
@@ -155,7 +163,7 @@ void* OutprocessModuleLoader_BuildModuleConfiguration(
 );
 ```
 
-**SRS_OUTPROCESS_LOADER_17_026: [** This function shall return `NULL` if `loader`, `entrypoint`, `control_id`, or `module_configuration` is `NULL`. **]**  Note: If there is no module configuration, this function expects the configuration will be the string "null".
+**SRS_OUTPROCESS_LOADER_17_026: [** This function shall return `NULL` if `entrypoint`, `control_id`, or `module_configuration` is `NULL`. **]**  Note: If there is no module configuration, this function expects the configuration will be the string "null".
 
 **SRS_OUTPROCESS_LOADER_17_027: [** This function shall allocate a `OUTPROCESS_MODULE_CONFIG` structure. **]**
 

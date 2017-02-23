@@ -1,0 +1,41 @@
+{
+  "modules": [
+    {
+      "name": "out of process logger",
+      "loader": {
+        "name": "outprocess",
+        "entrypoint": {
+          "activation.type": "none",
+          "control.id": "outprocess_module_control"
+        }
+      },
+      "args": {
+        "outprocess.loader" : {
+          "name": "native", 
+          "entrypoint": {
+            "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+          }
+        },
+        "module.args": {
+          "filename": "log.txt"
+        }
+      }
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
+        }
+      },
+      "args": null
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "out of process logger"
+    }
+  ]
+}

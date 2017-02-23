@@ -38,6 +38,7 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 	STRING_HANDLE module_args;
 	OUTPROCESS_MODULE_LIFECYCLE lifecyle_model;
 	BROKER_HANDLE broker;
+	unsigned int remote_message_wait;
 
 	THREAD_CONTROL message_receive_thread;
 	THREAD_CONTROL message_send_thread;
@@ -248,7 +249,7 @@ static int outprocessCreate(void *param)
 		else
 		{
 			int control_fd = handleData->control_socket;
-			
+			int remote_message_wait = (int)handleData->remote_message_wait;
 			(void)Unlock(handleData->handle_lock);
 			int should_continue = 1;
 
@@ -266,9 +267,8 @@ static int outprocessCreate(void *param)
 				else
 				{
 					/*Codes_SRS_OUTPROCESS_MODULE_17_013: [ This function shall send the Create Message on the control channel. ]*/
-					int default_wait = 250; /* 250 ms */
-					size_t default_wait_size = sizeof(default_wait);
-					if (nn_setsockopt(control_fd, NN_SOL_SOCKET, NN_RCVTIMEO, &default_wait, default_wait_size) < 0)
+					size_t default_wait_size = sizeof(remote_message_wait);
+					if (nn_setsockopt(control_fd, NN_SOL_SOCKET, NN_RCVTIMEO, &remote_message_wait, default_wait_size) < 0)
 					{
 						LogError("Unable to set a receive timeout.");
 						nn_freemsg(creationMessage); /* won't get to send that message we just created */
@@ -291,7 +291,7 @@ static int outprocessCreate(void *param)
 							}
 							else
 							{
-								ThreadAPI_Sleep((unsigned int)default_wait);
+								ThreadAPI_Sleep((unsigned int)remote_message_wait);
 							}
 						}
 						else
@@ -302,7 +302,7 @@ static int outprocessCreate(void *param)
 							if (recvBytes < 0)
 							{
 								int recv_error = nn_errno();
-								if (recv_error != EAGAIN)
+								if (recv_error != EAGAIN  && recv_error != ETIMEDOUT)
 								{
 									LogError("unexpected error on control channel receive: %d", recv_error);
 									should_continue = 0;
@@ -741,11 +741,13 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 							0
 						};
 						module->broker = broker;
+						module->remote_message_wait = config->remote_message_wait;
 						module->message_receive_thread = default_thread;
 						module->message_send_thread = default_thread;
 						module->control_thread = default_thread;
 						module->async_create_thread = default_thread;
 						module->lifecyle_model = config->lifecycle_model;
+
 						/*Codes_SRS_OUTPROCESS_MODULE_17_041: [ This function shall intitialize a lock for each thread for thread management. ]*/
 						if ((module->message_receive_thread.thread_lock = Lock_Init()) == NULL)
 						{

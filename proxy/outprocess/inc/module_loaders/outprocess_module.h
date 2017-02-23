@@ -33,6 +33,8 @@ typedef struct OUTPROCESS_MODULE_CONFIG_DATA
     STRING_HANDLE message_uri;
     /** @brief Arguments for the module .*/
     STRING_HANDLE outprocess_module_args;
+	/** @brief controls timeout for ipc retries. */
+	unsigned int remote_message_wait;
 } OUTPROCESS_MODULE_CONFIG;
 
 /** @brief the API fr this module */

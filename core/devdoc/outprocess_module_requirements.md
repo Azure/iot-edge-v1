@@ -15,6 +15,7 @@ typedef struct OUTPROCESS_MODULE_CONFIG_DATA
     STRING_HANDLE message_url;
     STRING_HANDLE outprocess_loader_args;
     STRING_HANDLE outprocess_module_args;
+    unsigned int default_wait;
 } OUTPROCESS_MODULE_CONFIG;
 
 extern const MODULE_API_1 Outprocess_Module_API_all =

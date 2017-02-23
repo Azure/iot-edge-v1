@@ -59,44 +59,36 @@ macro (nn_check_lib LIB SYM DEF)
 endmacro (nn_check_lib)
 
 set(gateway_c_sources
+    ${dynamic_library_c_file}
     ./src/message.c
     ./src/message_queue.c
-    ./src/internal/event_system.c
-    ./src/gateway_internal.c
-    ./src/gateway.c
-    ./src/gateway_createfromjson.c
-    ./src/broker.c
     ./src/module_loader.c
-    ${dynamic_library_c_file}
 )
-
 
 set(gateway_h_sources
     ./inc/message.h
-    ./inc/message_queue.h
-    ./inc/broker.h
     ./inc/module.h
     ./inc/module_access.h
+    ./inc/module_loader.h
+    ./inc/dynamic_library.h
+    ../deps/parson/parson.h
     ./inc/experimental/event_system.h
     ./inc/gateway.h
     ./inc/gateway_export.h
     ./inc/gateway_version.h
-    ./inc/module_loader.h
-    ./inc/dynamic_library.h
     ./src/gateway_internal.h
-    ../deps/parson/parson.h
+    ./inc/message_queue.h
+    ./inc/broker.h    
 )
 
 # Add the module loaders
 set(gateway_c_sources
     ${gateway_c_sources}
     ./src/module_loaders/dynamic_loader.c
-
 )
 set(gateway_h_sources
     ${gateway_h_sources}
     ./inc/module_loaders/dynamic_loader.h
-
 )
 
 if(${enable_dotnet_binding})
@@ -165,23 +157,40 @@ if(${enable_native_remote_modules})
         ../proxy/message/src/control_message.c
         ../proxy/outprocess/src/module_loaders/outprocess_loader.c
         ../proxy/outprocess/src/module_loaders/outprocess_module.c
-    )
+        )
+
     set(gateway_h_sources
         ${gateway_h_sources}
         ../proxy/message/inc/control_message.h
         ../proxy/outprocess/inc/module_loaders/outprocess_loader.h
         ../proxy/outprocess/inc/module_loaders/outprocess_module.h
     )
+
     add_definitions(-DOUTPROCESS_ENABLED)
     include_directories( ../proxy/outprocess/inc)
     include_directories( ../proxy/message/inc)
 
 endif()
 
+set(module_host_sources
+    ${gateway_c_sources}
+)
 
-
+set(gateway_c_sources
+    ${gateway_c_sources}
+    ./src/internal/event_system.c
+    ./src/gateway_internal.c
+    ./src/gateway.c
+    ./src/gateway_createfromjson.c
+    ./src/broker.c
+)
 
 include_directories(./inc)
+
+add_library(module_host_static STATIC
+    ${module_host_sources}
+    ${gateway_h_sources}
+)
 
 add_library(gateway SHARED
     ${gateway_c_sources}
@@ -193,30 +202,35 @@ add_library(gateway_static STATIC
     ${gateway_h_sources}
 )
 
+target_link_libraries(module_host_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
+
 if(WIN32)
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
+
     target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
 else()
     target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
-
     target_link_libraries(gateway ${NN_REQUIRED_LIBRARIES})
     target_link_libraries(gateway m)
 
     target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
-
     target_link_libraries(gateway_static ${NN_REQUIRED_LIBRARIES})
     target_link_libraries(gateway_static m)
+
+    target_link_libraries(module_host_static m ${NN_REQUIRED_LIBRARIES})
 endif()
 
 if(NOT ${use_xplat_uuid})
     if(WIN32)
         target_link_libraries(gateway rpcrt4.lib)
         target_link_libraries(gateway_static rpcrt4.lib)
+        target_link_libraries(module_host_static rpcrt4.lib)
     else()
         find_package(PkgConfig REQUIRED)
         pkg_search_module(UUID REQUIRED uuid)
         target_link_libraries(gateway ${UUID_LIBRARIES})
         target_link_libraries(gateway_static ${UUID_LIBRARIES})
+        target_link_libraries(module_host_static ${UUID_LIBRARIES})
     endif()
 endif()
 
@@ -254,13 +268,13 @@ else()
     set(AIG_INCLUDE_DIRS ${AIG_HEADER_INSTALL_PREFIX})
 endif()
 
-install(TARGETS gateway gateway_static EXPORT gatewayTargets
+install(TARGETS gateway gateway_static module_host_static EXPORT gatewayTargets
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
     RUNTIME DESTINATION ${LIB_INSTALL_DIR}/../bin
     INCLUDES DESTINATION ${AIG_INCLUDE_DIRS}
 )
-install(FILES ${gateway_h_sources} DESTINATION ${AIG_HEADER_INSTALL_PREFIX})
+install(FILES ${gateway_h_sources} ${gateway_h_sources} DESTINATION ${AIG_HEADER_INSTALL_PREFIX})
 
 include(CMakePackageConfigHelpers)
 

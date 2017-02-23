@@ -379,6 +379,7 @@ void ModuleLoader_Destroy(void)
             if (loader->configuration != NULL)
             {
                 loader->api->FreeConfiguration(loader, loader->configuration);
+				loader->configuration = NULL;
             }
 
             // if this is not a default loader then free resources allocated in

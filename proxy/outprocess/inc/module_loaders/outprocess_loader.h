@@ -45,6 +45,8 @@ typedef struct OUTPROCESS_LOADER_ENTRYPOINT_TAG
     STRING_HANDLE control_id;
     /** @brief The URI for the gateway message channel.*/
     STRING_HANDLE message_id;
+	/** @brief controls timeout for ipc retries. */
+	unsigned int remote_message_wait;
 } OUTPROCESS_LOADER_ENTRYPOINT;
 
 /** @brief      The API for the out of process proxy module loader. */

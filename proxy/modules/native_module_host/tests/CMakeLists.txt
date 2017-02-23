@@ -3,5 +3,4 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-add_subdirectory(gateway)
-add_subdirectory(modules)
+add_subdirectory(native_module_host_ut)

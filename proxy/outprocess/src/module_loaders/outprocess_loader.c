@@ -20,6 +20,8 @@ DEFINE_ENUM_STRINGS(OUTPROCESS_LOADER_ACTIVATION_TYPE, OUTPROCESS_LOADER_ACTIVAT
 #define IPC_URI_HEAD_SIZE 6
 #define MESSAGE_URI_SIZE (INPROC_URI_HEAD_SIZE + LOADER_GUID_SIZE +1)
 
+#define REMOTE_MESSAGE_WAIT_DEFAULT 1000;
+
 typedef struct OUTPROCESS_MODULE_HANDLE_DATA_TAG
 {
 	const MODULE_API* api;
@@ -125,6 +127,7 @@ static void* OutprocessModuleLoader_ParseEntrypointFromJson(const struct MODULE_
 	//		"activation.type" : "none",
 	//		"control.id" : "outproc_module_control", 
 	//		"message.id" : "outproc_module_message", (optional)
+	//		"timeout" : numeric, (optional, default 250 ms)
 	//		}
 	//  }
 	OUTPROCESS_LOADER_ENTRYPOINT * config;
@@ -178,6 +181,17 @@ static void* OutprocessModuleLoader_ParseEntrypointFromJson(const struct MODULE_
 					}
 					else
 					{
+						/*Codes_SRS_OUTPROCESS_LOADER_17_043: [ This function shall read the "timeout" value. ]*/
+						/*Codes_SRS_OUTPROCESS_LOADER_17_044: [ If "timeout" is set, the remote_message_wait shall be set to this value, else it will be set to a default of 1000 ms. ]*/
+						double timeout = json_object_get_number(entrypoint, "timeout");
+						if (timeout == 0)
+						{
+							config->remote_message_wait = REMOTE_MESSAGE_WAIT_DEFAULT;
+						}
+						else
+						{
+							config->remote_message_wait = (unsigned int)timeout;
+						}
 						/*Codes_SRS_OUTPROCESS_LOADER_17_017: [ This function shall assign the entrypoint activation_type to NONE. ] */
 						config->activation_type = OUTPROCESS_LOADER_ACTIVATION_NONE;
 						/*Codes_SRS_OUTPROCESS_LOADER_17_018: [ This function shall assign the entrypoint control_id to the string value of "control.id" in json, NULL if not present. ] */
@@ -242,12 +256,11 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 	const void* module_configuration
 )
 {
-	(void)loader;
 	OUTPROCESS_MODULE_CONFIG * fullModuleConfiguration;
 
 	if ((entrypoint == NULL) || (module_configuration == NULL))
 	{
-		/*Codes_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if loader, entrypoint, control_id, or module_configuration is NULL. ] */
+		/*Codes_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if entrypoint, control_id, or module_configuration is NULL. ] */
 		LogError("Remote Loader needs both entry point and module configuration");
 		fullModuleConfiguration = NULL;
 	}
@@ -300,6 +313,7 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 				fullModuleConfiguration->control_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, STRING_c_str(ep->control_id), ".ipc");
 				if (fullModuleConfiguration->control_uri == NULL)
 				{
+					/*Codes_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if entrypoint, control_id, or module_configuration is NULL. ] */
 					/*Codes_SRS_OUTPROCESS_LOADER_17_036: [ If any call fails, this function shall return NULL. ]*/
 					LogError("unable to allocate a control channel URI");
 					STRING_delete(fullModuleConfiguration->message_uri);
@@ -323,6 +337,7 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 					else
 					{
 						/*Codes_SRS_OUTPROCESS_LOADER_17_035: [ Upon success, this function shall return a valid pointer to an OUTPROCESS_MODULE_CONFIG structure. ]*/
+						fullModuleConfiguration->remote_message_wait = ep->remote_message_wait;
 						fullModuleConfiguration->lifecycle_model = OUTPROCESS_LIFECYCLE_SYNC;
 					}
 				}
