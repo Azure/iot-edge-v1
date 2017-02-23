@@ -900,8 +900,6 @@ TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
@@ -1040,8 +1038,6 @@ TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
@@ -1155,8 +1151,6 @@ TEST_FUNCTION(Gateway_Create_AddModule_WithDuplicatedModuleName_Fails)
     STRICT_EXPECTED_CALL(mocks, VECTOR_erase(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
@@ -1535,8 +1529,6 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_Links_fromNonExistingModule_Fa
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
@@ -1645,10 +1637,6 @@ TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
@@ -1759,10 +1747,6 @@ TEST_FUNCTION(Gateway_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
         .IgnoreArgument(1)
         .IgnoreArgument(2);
 
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1); //Modules
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1); //Links
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Modules.
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))

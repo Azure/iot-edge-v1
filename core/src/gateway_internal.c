@@ -552,10 +552,10 @@ void gateway_removemodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_D
     module.module_handle = (*module_data_pptr)->module;
 
     remove_module_from_any_source(gateway_handle, *module_data_pptr);
-    LINK_DATA *link;
     /* Codes_SRS_GATEWAY_26_018: [ This function shall remove any links that contain the removed module either as a source or sink. ] */
     if (gateway_handle->links)
     {
+        LINK_DATA *link;
         while ((link = VECTOR_find_if(gateway_handle->links, link_name_both_find, (*module_data_pptr)->module_name)) != NULL)
         {
             gateway_removelink_internal(gateway_handle, link);
@@ -690,23 +690,26 @@ int add_module_to_any_source(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* m
 
 void remove_module_from_any_source(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* module)
 {
-    size_t link;
-    size_t num_links = VECTOR_size(gateway_handle->links);
-    for (link = 0; link < num_links; link++)
+    if (gateway_handle->links)
     {
-        LINK_DATA * link_data = VECTOR_element(gateway_handle->links, link);
-        if (link_data->from_any_source)
+        size_t link;
+        size_t num_links = VECTOR_size(gateway_handle->links);
+        for (link = 0; link < num_links; link++)
         {
-            MODULE_DATA** module_sink = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink->module_name);
-            if (module_sink == NULL)
+            LINK_DATA * link_data = VECTOR_element(gateway_handle->links, link);
+            if (link_data->from_any_source)
             {
-                LogError("Could not find sink for link [%s]", link_data->module_sink);
-            }
-            else
-            {
-                if (remove_one_link_from_broker(gateway_handle, module->module, (*module_sink)->module) != 0)
+                MODULE_DATA** module_sink = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, link_data->module_sink->module_name);
+                if (module_sink == NULL)
                 {
-                    LogError("Unable to remove link to Broker.");
+                    LogError("Could not find sink for link [%s]", link_data->module_sink);
+                }
+                else
+                {
+                    if (remove_one_link_from_broker(gateway_handle, module->module, (*module_sink)->module) != 0)
+                    {
+                        LogError("Unable to remove link to Broker.");
+                    }
                 }
             }
         }

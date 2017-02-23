@@ -960,10 +960,6 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
-    STRICT_EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, Broker_RemoveLink(IGNORED_PTR_ARG,IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
