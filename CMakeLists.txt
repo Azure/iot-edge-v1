@@ -296,6 +296,10 @@ add_subdirectory(core)
 
 include_directories(${GW_INC}) # GW_INC defined in core
 
+if (${enable_native_remote_modules})
+    add_subdirectory(proxy)
+endif()
+
 add_subdirectory(modules)
 
 add_subdirectory(bindings)

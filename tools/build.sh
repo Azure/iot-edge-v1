@@ -15,6 +15,7 @@ run_valgrind=0
 enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
+enable_native_remote_modules=ON
 toolchainfile=
 enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
@@ -27,23 +28,25 @@ usage ()
     echo "options"
     echo " -cl, --compileoption <val>  Specify a gcc compile option"
     echo "   Example: -cl -O1 -cl ..."
-    echo " -f,  --config <value>        Build configuration (e.g. [Debug], Release)"
-    echo " --disable-ble-module         Do not build the BLE module"
-    echo " --enable-dotnet-core-binding Build the .NET Core binding"
-    echo " --enable-java-binding        Build Java binding"
-    echo "                              (JAVA_HOME must be defined in your environment)"
-    echo " --enable-nodejs-binding      Build Node.js binding"
-    echo "                              (NODE_INCLUDE, NODE_LIB must be defined)"
-    echo " --rebuild-deps               Force rebuild of dependencies"
-    echo " --run-e2e-tests              Build/run end-to-end tests"
-    echo " --run-unittests              Build/run unit tests"
-    echo " -rv,  --run-valgrind         Execute ctest with valgrind"
-    echo " --system-deps-path           Search for dependencies in a system-level location,"
-    echo "                              e.g. /usr/local, and install if not found. When this"
-    echo "                              option is omitted the path is $local_install."
-    echo " --toolchain-file <file>      Pass CMake a toolchain file for cross-compiling"
-    echo " --use-xplat-uuid             Use SDK's platform-independent UUID implementation"
-    echo " -x,  --xtrace                Print a trace of each command"
+    echo " -f,  --config <value>          Build configuration (e.g. [Debug], Release)"
+    echo " --disable-ble-module           Do not build the BLE module"
+    echo " --enable-dotnet-core-binding   Build the .NET Core binding"
+    echo " --enable-java-binding          Build Java binding"
+    echo "                                (JAVA_HOME must be defined in your environment)"
+    echo " --enable-nodejs-binding        Build Node.js binding"
+    echo "                                (NODE_INCLUDE, NODE_LIB must be defined)"
+    echo " --enable-native-remote-modules Build the infrastructure required"
+    echo "                                to support native remote modules"
+    echo " --rebuild-deps                 Force rebuild of dependencies"
+    echo " --run-e2e-tests                Build/run end-to-end tests"
+    echo " --run-unittests                Build/run unit tests"
+    echo " -rv,  --run-valgrind           Execute ctest with valgrind"
+    echo " --system-deps-path             Search for dependencies in a system-level location,"
+    echo "                                e.g. /usr/local, and install if not found. When this"
+    echo "                                option is omitted the path is $local_install."
+    echo " --toolchain-file <file>        Pass CMake a toolchain file for cross-compiling"
+    echo " --use-xplat-uuid               Use SDK's platform-independent UUID implementation"
+    echo " -x,  --xtrace                  Print a trace of each command"
     exit 1
 }
 
@@ -80,6 +83,7 @@ process_args ()
               "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
+              "--enable-native-remote-modules" ) enable_native_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
               "--system-deps-path" ) dependency_install_prefix=;;
@@ -156,6 +160,7 @@ cmake $toolchainfile \
       -Denable_java_binding:BOOL=$enable_java_binding \
       -Denable_dotnet_core_binding:BOOL=$enable_dotnet_core_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
+      -Denable_native_remote_modules:BOOL=$enable_native_remote_modules \
       -Denable_ble_module:BOOL=$enable_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \
       -Dbuild_cores=$CORES \

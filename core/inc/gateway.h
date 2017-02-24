@@ -13,6 +13,9 @@
 
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/vector.h"
+
+#include "nanomsg\nn.h"
+
 #include "module.h"
 #include "module_loader.h"
 #include "gateway_export.h"
@@ -22,7 +25,7 @@ extern "C"
 {
 #endif
 
-#define GATWAY_CONNECTION_ID_MAX         128
+#define GATEWAY_CONNECTION_ID_MAX           NN_SOCKADDR_MAX
 #define GATEWAY_MESSAGE_VERSION_1           0x01
 #define GATEWAY_MESSAGE_VERSION_CURRENT     GATEWAY_MESSAGE_VERSION_1
 
