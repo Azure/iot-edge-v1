@@ -95,10 +95,13 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
     BROKER_HANDLE broker;
 }IOTHUB_HANDLE_DATA;
 
-extern "C" const TRANSPORT_PROVIDER* HTTP_Protocol(void) { return NULL; }
-extern "C" const TRANSPORT_PROVIDER* AMQP_Protocol(void) { return NULL; }
-extern "C" const TRANSPORT_PROVIDER* MQTT_Protocol(void) { return NULL; }
-extern "C" const TRANSPORT_PROVIDER* ABCD_Protocol(void) { return NULL; }
+// NOTE Each of these dummy transport provider functions have to do something a
+// little different (e.g. return a different ptr value), or else the optimizer
+// will collapse them into one function in Release builds.
+extern "C" const TRANSPORT_PROVIDER* HTTP_Protocol(void) { return (TRANSPORT_PROVIDER*)0x1; }
+extern "C" const TRANSPORT_PROVIDER* AMQP_Protocol(void) { return (TRANSPORT_PROVIDER*)0x2; }
+extern "C" const TRANSPORT_PROVIDER* MQTT_Protocol(void) { return (TRANSPORT_PROVIDER*)0x3; }
+extern "C" const TRANSPORT_PROVIDER* ABCD_Protocol(void) { return (TRANSPORT_PROVIDER*)0x4; }
 
 #define BROKER_HANDLE_VALID ((BROKER_HANDLE)(1))
 
