@@ -42,6 +42,9 @@ REM Copy files to be signed to the tosign folder
 xcopy /q /y /R %root%build\bindings\dotnet\Release\dotnet.dll %csu-source%
 if %errorlevel% neq 0  goto :EOF
 
+xcopy /q /y /R %root%build\bindings\java\Release\java_module_host.dll %csu-source%
+if %errorlevel% neq 0  goto :EOF
+
 xcopy /q /y /R %root%build_nodejs\node\Release\node.dll %csu-source%
 if %errorlevel% neq 0  goto :EOF
 
@@ -66,6 +69,9 @@ if %errorlevel% neq 0 goto :EOF
 
 REM Copy the siged dlls from the signed folder to their original locations
 xcopy /q /y /R %csu-output%\dotnet.dll build\bindings\dotnet\Release
+if %errorlevel% neq 0  goto :EOF
+
+xcopy /q /y /R %csu-output%\java_module_host.dll %root%build\bindings\java\Release
 if %errorlevel% neq 0  goto :EOF
 
 xcopy /q /y /R %csu-output%\node.dll %root%build_nodejs\node\Release
