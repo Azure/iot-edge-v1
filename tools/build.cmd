@@ -22,6 +22,7 @@ rem ----------------------------------------------------------------------------
 rem // default build options
 set build-config=Debug
 set build-platform=Win32
+set build-platform-dotnet=x86
 set rebuild_deps=OFF
 set CMAKE_run_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
@@ -60,6 +61,10 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
+set build-platform-dotnet=%1
+if "%1" neq "Win32" goto args-continue
+rem Correct "Win32" to "x86" for .NET builds
+set build-platform-dotnet=x86
 goto args-continue
 
 :arg-rebuild-deps
@@ -76,13 +81,13 @@ goto args-continue
 
 :arg-enable-dotnet-binding
 set CMAKE_enable_dotnet_binding=ON
-call %current-path%\build_dotnet.cmd
+call %current-path%\build_dotnet.cmd --config %build-config% --platform %build-platform-dotnet%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
 :arg-enable-dotnet-core-binding
 set CMAKE_enable_dotnet_core_binding=ON
-call %current-path%\build_dotnet_core.cmd
+call %current-path%\build_dotnet_core.cmd --config %build-config% --platform %build-platform-dotnet%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
@@ -147,7 +152,7 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 if "%CMAKE_run_unittests%"=="OFF" if "%CMAKE_run_e2e_tests%"=="OFF" goto skip-tests
 
-ctest -C "debug" -V
+ctest -C "%build-config%" -V
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 :skip-tests
 
