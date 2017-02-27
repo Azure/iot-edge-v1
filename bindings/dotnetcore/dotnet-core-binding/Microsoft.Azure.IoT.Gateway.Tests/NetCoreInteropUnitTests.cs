@@ -113,7 +113,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             {
                 returnValue = NetCoreInterop.Create((IntPtr)0x42, (IntPtr)0x42, "AnyAssemblyName", "AnyEntryType", null);
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 ///assert
                 ///
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             {
                 NetCoreInterop.Create((IntPtr)0x42, (IntPtr)0x42, "AnyAssemblyName", "AnyEntryType", "AnyConfiguration");
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 ///assert
                 ///
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             {
                 NetCoreInterop.Create((IntPtr)0x42, (IntPtr)0x42, "AnyAssemblyName", "AnyEntryType", "AnyConfiguration");
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 ///assert
                 ///
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             {
                 NetCoreInterop.Create((IntPtr)0x42, (IntPtr)0x42, "AnyAssemblyName", "AnyEntryType", "AnyConfiguration");
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 ///assert
                 ///
