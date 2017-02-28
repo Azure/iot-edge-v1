@@ -127,19 +127,19 @@ static int connection_setup(OUTPROCESS_HANDLE_DATA* handleData, OUTPROCESS_MODUL
 		else
 		{
 			/*Codes_SRS_OUTPROCESS_MODULE_17_009: [ This function shall bind and connect the pair socket to the message_uri. ]*/
-			int message_connect_id = nn_connect(handleData->message_socket, STRING_c_str(config->message_uri));
-			if (message_connect_id < 0)
-			{
-				result = message_connect_id;
-				LogError("remote socket failed to connect to message URL, result = %d, errno = %d", result, errno);
-			}
-			else
-			{
+			//int message_connect_id = nn_connect(handleData->message_socket, STRING_c_str(config->message_uri));
+			//if (message_connect_id < 0)
+			//{
+			//	result = message_connect_id;
+			//	LogError("remote socket failed to connect to message URL, result = %d, errno = %d", result, errno);
+			//}
+			//else
+			//{
 				/*
 				* Now, the control socket.
 				*/
 				/*Codes_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
-				handleData->control_socket = nn_socket(AF_SP, NN_REQ);
+				handleData->control_socket = nn_socket(AF_SP, NN_PAIR);
 				if (handleData->control_socket < 0)
 				{
 					result = handleData->control_socket;
@@ -158,7 +158,7 @@ static int connection_setup(OUTPROCESS_HANDLE_DATA* handleData, OUTPROCESS_MODUL
 					{
 						result = 0;
 					}
-				}
+				//}
 			}
 		}
 	}

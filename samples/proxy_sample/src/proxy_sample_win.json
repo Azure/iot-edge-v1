@@ -1,0 +1,32 @@
+{
+  "modules": [
+    {
+      "name": "out of process",
+      "loader": {
+        "name": "outprocess",
+        "entrypoint": {
+          "activation.type": "none",
+          "control.id": "outprocess_module_control",
+          "message.id": "outprocess_module_message"
+        }
+      },
+      "args": "THIS IS THE OOP MODULE CONFIGURATION"
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
+        }
+      },
+      "args": null
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "out of process"
+    }
+  ]
+}

@@ -279,13 +279,13 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 				else
 				{
 					/*Codes_SRS_OUTPROCESS_LOADER_17_032: [ The message uri shall be composed of "ipc://" + unique id . ]*/
-					fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, uuid);
+					fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, uuid, ".ipc");
 				}
 			}
 			else
 			{
 				/*Codes_SRS_OUTPROCESS_LOADER_17_033: [ This function shall allocate and copy each string in OUTPROCESS_LOADER_ENTRYPOINT and assign them to the corresponding fields in OUTPROCESS_MODULE_CONFIG. ]*/
-				fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, STRING_c_str(ep->message_id));
+				fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, STRING_c_str(ep->message_id), ".ipc");
 			}
 			if (fullModuleConfiguration->message_uri == NULL)
 			{
@@ -297,7 +297,7 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 			else 
 			{
 				/*Codes_SRS_OUTPROCESS_LOADER_17_033: [ This function shall allocate and copy each string in OUTPROCESS_LOADER_ENTRYPOINT and assign them to the corresponding fields in OUTPROCESS_MODULE_CONFIG. ]*/
-				fullModuleConfiguration->control_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, STRING_c_str(ep->control_id));
+				fullModuleConfiguration->control_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, STRING_c_str(ep->control_id), ".ipc");
 				if (fullModuleConfiguration->control_uri == NULL)
 				{
 					/*Codes_SRS_OUTPROCESS_LOADER_17_036: [ If any call fails, this function shall return NULL. ]*/

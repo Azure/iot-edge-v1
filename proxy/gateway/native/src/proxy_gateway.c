@@ -1,19 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#include "azure_c_shared_utility/gballoc.h"
+#include "azure_c_shared_utility/strings.h"
+#include "azure_c_shared_utility/lock.h"
+#include "azure_c_shared_utility/threadapi.h"
+#include "azure_c_shared_utility/xlogging.h"
+
 #include "proxy_gateway.h"
 #include "broker.h"
 
 #include "stdlib.h"
 #include "string.h"
+#include <errno.h>
+
 
 #include "nanomsg/nn.h"
 #include "nanomsg/pair.h"
+#include "nanomsg/reqrep.h"
 
-#include "azure_c_shared_utility/gballoc.h"
-#include "azure_c_shared_utility/lock.h"
-#include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/xlogging.h"
+
 
 #include "../../message/inc/control_message.h"
 #include "gateway.h"
@@ -119,25 +125,25 @@ ProxyGateway_Attach (
     } else if (NULL == connection_id) {
         LogError("%s: NULL parameter - connection_id", __FUNCTION__);
         remote_module = NULL;
-    } else if (GATEWAY_CONNECTION_ID_MAX > strnlen(connection_id, (GATEWAY_CONNECTION_ID_MAX + 1)) ) {
+    } else if (GATEWAY_CONNECTION_ID_MAX < strnlen(connection_id, (GATEWAY_CONNECTION_ID_MAX + 1)) ) {
         LogError("%s: connection_id exceeds GATEWAY_CONNECTION_ID_MAX in length", __FUNCTION__);
         remote_module = NULL;
     // Allocate and initialize the remote module data structure
     } else if (NULL == (remote_module = (REMOTE_MODULE_HANDLE)calloc(1, sizeof(REMOTE_MODULE)))) {
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
     } else {
-        static const size_t ENDPOINT_LENGTH_MAX = (sizeof("ipc://") + GATEWAY_CONNECTION_ID_MAX);
+        static const size_t ENDPOINT_LENGTH_MAX = (sizeof("ipc://") + GATEWAY_CONNECTION_ID_MAX + sizeof(".ipc"));
 
-        char * control_channel_uri;
+        STRING_HANDLE control_channel_uri;
 
-        if (NULL == (control_channel_uri = (char *)malloc(strnlen(connection_id, ENDPOINT_LENGTH_MAX)))) {
+		// Transform the connection id into a nanomsg URI
+		control_channel_uri = STRING_construct_sprintf("%s%s%s", "ipc://", connection_id, ".ipc");
+        if (NULL == control_channel_uri) {
             LogError("%s: Unable to allocate memory!", __FUNCTION__);
             free(remote_module);
             remote_module = NULL;
         } else {
-            // Transform the connection id into a nanomsg URI
-            (void)strcpy(control_channel_uri, "ipc://");
-            (void)strncat(control_channel_uri, connection_id, GATEWAY_CONNECTION_ID_MAX + 1);
+
 
             // Create the socket
             if (-1 == (remote_module->control_socket = nn_socket(AF_SP, NN_PAIR))) {
@@ -145,15 +151,16 @@ ProxyGateway_Attach (
                 free(remote_module);
                 remote_module = NULL;
             // Connect to the control channel URI
-            } else if ( 0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, control_channel_uri))) {
+            } else if ( 0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, STRING_c_str(control_channel_uri)))) {
                 LogError("%s: Unable to connect to the gateway control channel!", __FUNCTION__);
+				nn_close(remote_module->control_socket);
                 free(remote_module);
                 remote_module = NULL;
-            } else {
+			} else {
                 // Save the module API
                 remote_module->module.module_apis = module_apis;
             }
-            free(control_channel_uri);
+            STRING_delete(control_channel_uri);
         }
     }
 
@@ -232,11 +239,17 @@ RemoteModule_DoWork (
         void * control_message = NULL;
 
         // Check for message on control channel
+		int receive_error = 0;
         bytes_received = nn_recv(remote_module->control_socket, &control_message, NN_MSG, NN_DONTWAIT);
-        if (EAGAIN == bytes_received) {
-            // no messages available at this time    
-        } else if (0 > bytes_received) {
-            LogError("%s: Unexpected error received from the control channel!", __FUNCTION__);
+		receive_error = errno;
+        if (0 > bytes_received) {
+			if (EAGAIN == receive_error) {
+				// no messages available at this time    
+			}
+			else
+			{
+				LogError("%s: Unexpected error received from the control channel!", __FUNCTION__);
+			}
         } else {
             CONTROL_MESSAGE * structured_control_message;
 
@@ -267,13 +280,19 @@ RemoteModule_DoWork (
         // Check first message on each message channel
         void * module_message = NULL;
 
+		receive_error = 0;
         bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
-        if (bytes_received < 0 && EAGAIN != bytes_received) {
-            // unexpected error
-            LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
-        } else if (EAGAIN == bytes_received) {
-            // no messages available at this time
-        } else {
+		receive_error = errno;
+        if (bytes_received < 0)
+		{
+			if (EAGAIN == receive_error) {
+				// no messages available at this time    
+			}
+			else
+			{
+				LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
+			}
+		}else {
             MESSAGE_HANDLE structured_module_message;
 
             // Parse message body
@@ -332,7 +351,7 @@ RemoteModule_HaltWorkerThread (
             LogError("%s: Unable to release mutex!", __FUNCTION__);
             result = __LINE__;
         // Halt the message thread
-        } else if (THREADAPI_OK != ThreadAPI_Join(remote_module->message_thread, &thread_exit_result)) {
+        } else if (THREADAPI_OK != ThreadAPI_Join(remote_module->message_thread->thread, &thread_exit_result)) {
             LogError("%s: Unable to halt message thread!", __FUNCTION__);
             result = __LINE__;
         } else {
@@ -376,7 +395,7 @@ RemoteModule_StartWorkerThread (
     } else if (NULL != remote_module->message_thread) {
         LogInfo("%s: Worker thread has already been initialized.", __FUNCTION__);
 	// Allocate and initialize the message thread data structure
-    } else if (	remote_module->message_thread = (MESSAGE_THREAD_HANDLE)calloc(1, sizeof(MESSAGE_THREAD))) {
+    } else if (NULL == (remote_module->message_thread = (MESSAGE_THREAD_HANDLE)calloc(1, sizeof(MESSAGE_THREAD)))) {
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
         result = __LINE__;
 	// Create a mutex for context shared between threads
@@ -384,7 +403,7 @@ RemoteModule_StartWorkerThread (
         LogError("%s: Unable to create mutex!", __FUNCTION__);
         result = __LINE__;
 	// Start the message pump thread
-    } else if (THREADAPI_OK != ThreadAPI_Create(&remote_module->message_thread->thread, worker_thread, remote_module)) {
+    } else if (THREADAPI_OK != ThreadAPI_Create(&(remote_module->message_thread->thread), worker_thread, remote_module)) {
         LogError("%s: Unable to create worker thread!", __FUNCTION__);
         result = __LINE__;
     } else {
@@ -671,20 +690,31 @@ send_control_reply (
         },
         .status = response,
     };
-    unsigned char * message_buffer = NULL;
     size_t message_size;
 
-    if (0 > (message_size = ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, 0))) {
+    if (0 > (message_size = ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, NULL, 0))) {
         LogError("%s: Unable to serialize message!", __FUNCTION__);
         result = __LINE__;
     } else {
-        if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, NN_DONTWAIT))) {
-            LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
-            result = __LINE__;
-        } else {
-            result = 0;
-        }
-        free(message_buffer);
+		unsigned char * message_buffer = malloc(message_size);
+		if (NULL == message_buffer)
+		{
+			LogError("%s: Unable to allocate message!", __FUNCTION__);
+			result = __LINE__;
+
+		}
+		else
+		{
+			ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, message_size);
+			if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, NN_DONTWAIT))) {
+				LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
+				result = __LINE__;
+			}
+			else {
+				result = 0;
+			}
+			free(message_buffer);
+		}
     }
 
     return result;
