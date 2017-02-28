@@ -78,8 +78,8 @@ void NodeJSIdle::InvokeCallbacks()
     AcquireLock();
     while (m_callbacks.empty() == false)
     {
-        auto cb = m_callbacks.back();
-        m_callbacks.pop_back();
+        auto cb = m_callbacks.front();
+        m_callbacks.pop();
         ReleaseLock();
         cb();
         AcquireLock();

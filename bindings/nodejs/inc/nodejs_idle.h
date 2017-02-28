@@ -4,7 +4,7 @@
 #ifndef NODEJS_IDLE_H
 #define NODEJS_IDLE_H
 
-#include <vector>
+#include <queue>
 #include <functional>
 
 #include "uv.h"
@@ -17,7 +17,7 @@ namespace nodejs_module
     class NodeJSIdle
     {
     private:
-        std::vector<std::function<void()>> m_callbacks;
+        std::queue<std::function<void()>> m_callbacks;
         Lock m_lock;
 
         /**
@@ -59,7 +59,7 @@ namespace nodejs_module
     void NodeJSIdle::AddCallback(TCallback callback)
     {
         LockGuard<NodeJSIdle> lock_guard{ *this };
-        m_callbacks.push_back(callback);
+        m_callbacks.push(callback);
     }
 };
 

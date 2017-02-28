@@ -7,6 +7,8 @@
 #include <fstream>
 #include <cstdio>
 #include <memory>
+#include <chrono>
+#include <sstream>
 
 #include "uv.h"
 #include "v8.h"
@@ -102,6 +104,14 @@ public:
         MAP_HANDLE message_properties = Map_Create(NULL);
         Map_Add(message_properties, "p1", "v1");
         Map_Add(message_properties, "p2", "v2");
+
+        // add a property with a time-stamp
+        using namespace std::chrono;
+        high_resolution_clock::time_point tp = high_resolution_clock::now();
+        auto ts = tp.time_since_epoch();
+        std::stringstream ss;
+        ss << ts.count();
+        Map_Add(message_properties, "ts", ss.str().c_str());
 
         MESSAGE_CONFIG config;
         unsigned char buffer[] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
@@ -1361,6 +1371,86 @@ BEGIN_TEST_SUITE(nodejs_int)
         NODEJS_Destroy(result);
         Message_Destroy(message);
         Map_Destroy(message_properties);
+        STRING_delete(config.configuration_json);
+        STRING_delete(config.main_path);
+    }
+
+    TEST_FUNCTION(messages_are_delivered_in_order)
+    {
+        ///arrange
+        const char* MODULE_RECEIVE_IS_CALLED = ""                         \
+            "'use strict';"                                               \
+            "module.exports = {"                                          \
+            "    previousTs: -1,"                                         \
+            "    create: function () {"                                   \
+            "        setTimeout(() => {"                                  \
+            "            _mock_module1.publish_mock_message();"           \
+            "            _mock_module1.publish_mock_message();"           \
+            "        }, 10);"                                             \
+            "        return true;"                                        \
+            "    },"                                                      \
+            "    receive: function (message) {"                           \
+            "        let ts = parseInt(message.properties['ts']);"        \
+            "        if (this.previousTs !== -1) {"                       \
+            "            _integrationTest9.notify(this.previousTs < ts);" \
+            "        }"                                                   \
+            "        this.previousTs = ts;"                               \
+            "    },"                                                      \
+            "    destroy: function () {"                                  \
+            "    }"                                                       \
+            "};";
+
+        TempFile js_file;
+        js_file.Write(MODULE_RECEIVE_IS_CALLED);
+
+        NODEJS_MODULE_CONFIG config = {
+            STRING_construct(js_file.js_file_path.c_str()),
+            STRING_construct("{}")
+        };
+
+        // setup a function to be called from the JS test code
+        NodeJSIdle::Get()->AddCallback([]() {
+            auto notify_result_obj = NodeJSUtils::CreateObjectWithMethod(
+                "notify", notify_result
+            );
+            NodeJSUtils::AddObjectToGlobalContext("_integrationTest9", notify_result_obj);
+
+            auto publish_mock_msg_obj = NodeJSUtils::CreateObjectWithMethod(
+                "publish_mock_message", publish_mock_message
+            );
+            NodeJSUtils::AddObjectToGlobalContext("_mock_module1", publish_mock_msg_obj);
+        });
+
+        ///act
+        auto result = NODEJS_Create(g_broker, &config);
+        const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
+        MODULE module = {
+            apis,
+            result
+        };
+        Broker_AddModule(g_broker, &module);
+        BROKER_LINK_DATA broker_data =
+        {
+            g_module.module_handle,
+            result
+        };
+        Broker_AddLink(g_broker, &broker_data);
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+
+        // wait for 15 seconds for the publish to happen
+        NODEJS_MODULE_HANDLE_DATA* handle_data = reinterpret_cast<NODEJS_MODULE_HANDLE_DATA*>(result);
+        wait_for_predicate(15, [handle_data]() {
+            return g_notify_result.WasCalled() == true;
+        });
+        ASSERT_IS_TRUE(g_notify_result.WasCalled() == true);
+        ASSERT_IS_TRUE(g_notify_result.GetResult() == true);
+
+        ///cleanup
+        Broker_RemoveModule(g_broker, &module);
+        NODEJS_Destroy(result);
         STRING_delete(config.configuration_json);
         STRING_delete(config.main_path);
     }
