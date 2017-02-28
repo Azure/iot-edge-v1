@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#define GATEWAY_EXPORT_H
+#define GATEWAY_EXPORT
+
 static bool malloc_will_fail = false;
 static size_t malloc_fail_count = 0;
 static size_t malloc_count = 0;
@@ -39,24 +42,21 @@ void my_gballoc_free(void* ptr)
 #include "umocktypes_stdint.h"
 
 // defined to turn off dll linkage warnings
-#define NN_STATIC_LIB
 #include <nanomsg/nn.h>
 #include <nanomsg/pair.h>
 #include <nanomsg/reqrep.h>
 
+#include "message.h"
 #include "real_strings.h"
 
 
 #define ENABLE_MOCKS
-#define GATEWAY_EXPORT_H
-#define GATEWAY_EXPORT
 
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/lock.h"
 #include "broker.h"
-#include "message.h"
 #include "module_loader.h"
 
 #undef ENABLE_MOCKS
