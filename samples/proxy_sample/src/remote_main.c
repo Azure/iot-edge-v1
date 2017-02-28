@@ -17,7 +17,7 @@ void test_FreeConfiguration(void* configuration)
 MODULE_HANDLE test_Create(BROKER_HANDLE broker, const void* configuration)
 {
     printf("test_Create\n");
-    MODULE_HANDLE m = (MODULE_HANDLE)"module handle";
+    MODULE_HANDLE m = (MODULE_HANDLE)"remote module";
     return m;
 }
 void test_Destroy(MODULE_HANDLE moduleHandle)
@@ -26,7 +26,7 @@ void test_Destroy(MODULE_HANDLE moduleHandle)
 }
 void test_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-    printf("test_Destroy: %s, %p\n", (char *)moduleHandle, messageHandle);
+    printf("test_Receive: %s, %p\n", (char *)moduleHandle, messageHandle);
 }
 void test_Start(MODULE_HANDLE moduleHandle)
 {

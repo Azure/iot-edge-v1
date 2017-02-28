@@ -620,6 +620,10 @@ worker_thread (
             LogError("%s: Failed to release mutex!", __FUNCTION__);
             result = __LINE__;
         }
+		else
+		{
+			result = 0;
+		}
     }
     ThreadAPI_Exit(result);
 
@@ -686,7 +690,7 @@ send_control_reply (
     CONTROL_MESSAGE_MODULE_REPLY reply = {
         .base = {
             .type = CONTROL_MESSAGE_TYPE_MODULE_REPLY,
-            .version = MODULE_API_VERSION_1,
+            .version = CONTROL_MESSAGE_VERSION_CURRENT,
         },
         .status = response,
     };
