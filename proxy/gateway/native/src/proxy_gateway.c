@@ -93,7 +93,7 @@ typedef struct REMOTE_MODULE_TAG {
 /* Codes_SRS_PROXY_GATEWAY_027_011: [`ProxyGateway_Attach` shall create a socket for the Azure IoT Gateway control channel by calling `int nn_socket(int domain, int protocol)` with `AF_SP` as the `domain` and `NN_PAIR` as the `protocol`] */
 /* Codes_SRS_PROXY_GATEWAY_027_012: [If the call to `nn_socket` returns -1, then `ProxyGateway_Attach` shall free any previously allocated memory and return `NULL`] */
 /* Codes_SRS_PROXY_GATEWAY_027_013: [`ProxyGateway_Attach` shall bind to the Azure IoT Gateway control channel by calling `int nn_bind(int s, const char * addr)` with the newly created socket as `s` and the newly formulated connection string as `addr`] */
-/* Codes_SRS_PROXY_GATEWAY_027_014: [If the call to `nn_bind` returns a negative value, then `ProxyGateway_Attach` shall free any previously allocated memory and return `NULL`] */
+/* Codes_SRS_PROXY_GATEWAY_027_014: [If the call to `nn_bind` returns a negative value, then `ProxyGateway_Attach` shall close the socket, free any previously allocated memory and return `NULL`] */
 /* Codes_SRS_PROXY_GATEWAY_027_015: [If no errors are encountered, then `ProxyGateway_Attach` return a handle to the OopModule instance] */
 REMOTE_MODULE_HANDLE
 ProxyGateway_Attach (
@@ -230,15 +230,16 @@ ProxyGateway_Detach (
 /* SRS_PROXY_GATEWAY_027_031: [Control Channel - If unable process the create message, `RemoteModule_DoWork` shall return a non-zero value] */
 /* SRS_PROXY_GATEWAY_027_032: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_START and `Module_Start` was provided, then `RemoteModule_DoWork` shall call `void Module_Start(MODULE_HANDLE moduleHandle)`] */
 /* SRS_PROXY_GATEWAY_027_033: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `RemoteModule_DoWork` shall call `void Module_Destroy(MODULE_HANDLE moduleHandle)`] */
-/* SRS_PROXY_GATEWAY_027_034: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the parsed control message by calling `void ControlMessage_Destroy(CONTROL_MESSAGE * message)` using the parsed control message as `message`] */
-/* SRS_PROXY_GATEWAY_027_035: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
-/* SRS_PROXY_GATEWAY_027_036: [Message Channel - `RemoteModule_DoWork` shall poll each gateway message channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with each message socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
-/* SRS_PROXY_GATEWAY_027_037: [Message Channel - If no message is available or an error occurred, then `RemoteModule_DoWork` shall abandon the message channel request] */
-/* SRS_PROXY_GATEWAY_027_038: [Message Channel - If a module message was received, then `RemoteModule_DoWork` will parse that message by calling `MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char * source, int32_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
-/* SRS_PROXY_GATEWAY_027_039: [Message Channel - If unable to parse the module message, then `RemoteModule_DoWork` shall free any previously allocated memory and abandon the message channel request] */
-/* SRS_PROXY_GATEWAY_027_040: [Message Channel - `RemoteModule_DoWork` shall pass the structured message to the module by calling `void Module_Receive(MODULE_HANDLE moduleHandle)` using the parsed message as `moduleHandle`] */
-/* SRS_PROXY_GATEWAY_027_041: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the parsed module message by calling `void Message_Destroy(MESSAGE_HANDLE * message)` using the parsed module message as `message`] */
-/* SRS_PROXY_GATEWAY_027_042: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
+/* SRS_PROXY_GATEWAY_027_034: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `RemoteModule_DoWork` shall disconnect from the message channel] */
+/* SRS_PROXY_GATEWAY_027_035: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the parsed control message by calling `void ControlMessage_Destroy(CONTROL_MESSAGE * message)` using the parsed control message as `message`] */
+/* SRS_PROXY_GATEWAY_027_036: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
+/* SRS_PROXY_GATEWAY_027_037: [Message Channel - `RemoteModule_DoWork` shall poll each gateway message channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with each message socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
+/* SRS_PROXY_GATEWAY_027_038: [Message Channel - If no message is available or an error occurred, then `RemoteModule_DoWork` shall abandon the message channel request] */
+/* SRS_PROXY_GATEWAY_027_039: [Message Channel - If a module message was received, then `RemoteModule_DoWork` will parse that message by calling `MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char * source, int32_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
+/* SRS_PROXY_GATEWAY_027_040: [Message Channel - If unable to parse the module message, then `RemoteModule_DoWork` shall free any previously allocated memory and abandon the message channel request] */
+/* SRS_PROXY_GATEWAY_027_041: [Message Channel - `RemoteModule_DoWork` shall pass the structured message to the module by calling `void Module_Receive(MODULE_HANDLE moduleHandle)` using the parsed message as `moduleHandle`] */
+/* SRS_PROXY_GATEWAY_027_042: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the parsed module message by calling `void Message_Destroy(MESSAGE_HANDLE * message)` using the parsed module message as `message`] */
+/* SRS_PROXY_GATEWAY_027_043: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
 void
 RemoteModule_DoWork (
     REMOTE_MODULE_HANDLE remote_module
@@ -289,7 +290,7 @@ RemoteModule_DoWork (
         }
 
         // Check first message on message channel
-        if ( -1 != remote_module->message_socket ) {
+        if ( 0 <= remote_module->message_socket ) {
             void * module_message = NULL;
 
             bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
@@ -319,19 +320,19 @@ RemoteModule_DoWork (
 }
 
 
-/* Codes_SRS_PROXY_GATEWAY_027_043: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Codes_SRS_PROXY_GATEWAY_027_044: [Prerequisite Check - If a worker thread does not exist, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Codes_SRS_PROXY_GATEWAY_027_045: [`RemoteModule_HaltWorkerThread` shall obtain the thread mutex in order to signal the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
-/* Codes_SRS_PROXY_GATEWAY_027_046: [If unable to obtain the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Codes_SRS_PROXY_GATEWAY_027_047: [`RemoteModule_HaltWorkerThread` shall release the thread mutex upon signalling by calling `LOCK_RESULT Unlock(LOCK_HANDLE handle)`] */
-/* Codes_SRS_PROXY_GATEWAY_027_048: [If unable to release the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Codes_SRS_PROXY_GATEWAY_027_049: [`RemoteModule_HaltWorkerThread` shall halt the thread by calling `THREADAPI_RESULT ThreadAPI_Join(THREAD_HANDLE handle, int * res)`] */
-/* Codes_SRS_PROXY_GATEWAY_027_050: [If unable to join the thread, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Codes_SRS_PROXY_GATEWAY_027_051: [`RemoteModule_HaltWorkerThread` shall free the thread mutex by calling `LOCK_RESULT Lock_Deinit(LOCK_HANDLE handle)`] */
-/* Codes_SRS_PROXY_GATEWAY_027_052: [If unable to free the thread mutex, then `RemoteModule_HaltWorkerThread` shall ignore the result and continue processing] */
-/* Codes_SRS_PROXY_GATEWAY_027_053: [`RemoteModule_HaltWorkerThread` shall free the memory allocated to the thread details] */
-/* Codes_SRS_PROXY_GATEWAY_027_054: [If an error is returned from the worker thread, then `RemoteModule_HaltWorkerThread` shall return the worker thread's error code] */
-/* Codes_SRS_PROXY_GATEWAY_027_055: [If no errors are encountered, then `RemoteModule_HaltWorkerThread` shall return zero] */
+/* Codes_SRS_PROXY_GATEWAY_027_044: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
+/* Codes_SRS_PROXY_GATEWAY_027_045: [Prerequisite Check - If a worker thread does not exist, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
+/* Codes_SRS_PROXY_GATEWAY_027_046: [`RemoteModule_HaltWorkerThread` shall obtain the thread mutex in order to signal the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
+/* Codes_SRS_PROXY_GATEWAY_027_047: [If unable to obtain the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
+/* Codes_SRS_PROXY_GATEWAY_027_048: [`RemoteModule_HaltWorkerThread` shall release the thread mutex upon signalling by calling `LOCK_RESULT Unlock(LOCK_HANDLE handle)`] */
+/* Codes_SRS_PROXY_GATEWAY_027_049: [If unable to release the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
+/* Codes_SRS_PROXY_GATEWAY_027_050: [`RemoteModule_HaltWorkerThread` shall halt the thread by calling `THREADAPI_RESULT ThreadAPI_Join(THREAD_HANDLE handle, int * res)`] */
+/* Codes_SRS_PROXY_GATEWAY_027_051: [If unable to join the thread, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
+/* Codes_SRS_PROXY_GATEWAY_027_052: [`RemoteModule_HaltWorkerThread` shall free the thread mutex by calling `LOCK_RESULT Lock_Deinit(LOCK_HANDLE handle)`] */
+/* Codes_SRS_PROXY_GATEWAY_027_053: [If unable to free the thread mutex, then `RemoteModule_HaltWorkerThread` shall ignore the result and continue processing] */
+/* Codes_SRS_PROXY_GATEWAY_027_054: [`RemoteModule_HaltWorkerThread` shall free the memory allocated to the thread details] */
+/* Codes_SRS_PROXY_GATEWAY_027_055: [If an error is returned from the worker thread, then `RemoteModule_HaltWorkerThread` shall return the worker thread's error code] */
+/* Codes_SRS_PROXY_GATEWAY_027_056: [If no errors are encountered, then `RemoteModule_HaltWorkerThread` shall return zero] */
 int
 RemoteModule_HaltWorkerThread (
     REMOTE_MODULE_HANDLE remote_module
@@ -502,7 +503,7 @@ Broker_Publish (
 
 /* SRS_PROXY_GATEWAY_027_0xx: [`connect_to_message_channel` shall create a socket for the Azure IoT Gateway message channel by calling `int nn_socket(int domain, int protocol)` with `AF_SP` as `domain` and `MESSAGE_URI::uri_type` as `protocol`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If a call to `nn_socket` returns -1, then `connect_to_message_channel` shall free any previously allocated memory, abandon the control message and prepare for the next create message] */
-/* SRS_PROXY_GATEWAY_027_0xx: [`connect_to_message_channel` shall connect to the Azure IoT Gateway message channel by calling `int nn_connect(int s, const char * addr)` with the newly created socket as `s` and `MESSAGE_URI::uri` as `addr`] */
+/* SRS_PROXY_GATEWAY_027_0xx: [`connect_to_message_channel` shall bind to the Azure IoT Gateway message channel by calling `int nn_bind(int s, const char * addr)` with the newly created socket as `s` and `MESSAGE_URI::uri` as `addr`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If a call to `nn_connect` returns a negative value, then `connect_to_message_channel` shall free any previously allocated memory, abandon the control message and prepare for the next create message] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If no errors are encountered, then `connect_to_message_channel` shall return zero] */
 int
@@ -678,6 +679,10 @@ process_module_create_message (
 }
 
 
+/* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall calculate the serialized message size by calling `size_t ControlMessage_ToByteArray(CONTROL MESSAGE * message, unsigned char * buf, size_t size)`] */
+/* SRS_PROXY_GATEWAY_027_0xx: [If unable to calculate the serialized message size, `send_control_reply` shall return a non-zero value] */
+/* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` allocate the necessary space for the serialized message] */
+/* SRS_PROXY_GATEWAY_027_0xx: [If unable to allocate memory, `send_control_reply` shall return a non-zero value] */
 /* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall serialize a creation reply indicating the creation status by calling `size_t ControlMessage_ToByteArray(CONTROL MESSAGE * message, unsigned char * buf, size_t size)`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to serialize the creation message reply, `send_control_reply` shall return a non-zero value] */
 /* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall send the serialized message by calling `int nn_send(int s, const void * buf, size_t len, int flags)` using the serialized message as the `buf` parameter and the value returned from `ControlMessage_ToByteArray` as `len`] */
@@ -697,33 +702,28 @@ send_control_reply (
         },
         .status = response,
     };
+    unsigned char * message_buffer = NULL;
     size_t message_size;
 
-    if (0 > (message_size = ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, NULL, 0))) {
-        LogError("%s: Unable to serialize message!", __FUNCTION__);
+    if (0 > (message_size = ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, 0))) {
+        LogError("%s: Unable to calculate serialized message size!", __FUNCTION__);
         result = __LINE__;
     } else {
-		unsigned char * message_buffer = malloc(message_size);
-		if (NULL == message_buffer)
-		{
-			LogError("%s: Unable to allocate message!", __FUNCTION__);
-			result = __LINE__;
-
-		}
-		else
-		{
-			ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, message_size);
-			if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, 0))) {
-				LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
-				result = __LINE__;
-			}
-			else {
-				result = 0;
-			}
-			free(message_buffer);
-		}
+        if (NULL == (message_buffer = malloc(message_size))) {
+            LogError("%s: Unable to allocate message!", __FUNCTION__);
+            result = __LINE__;
+        } else if (0 > ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, message_size)) {
+            LogError("%s: Unable to serialize message!", __FUNCTION__);
+            result = __LINE__;
+        } else if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, NN_DONTWAIT))) {
+            LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
+            result = __LINE__;
+        } else {
+            result = 0;
+        }
+        free(message_buffer);
     }
-
+    
     return result;
 }
 
