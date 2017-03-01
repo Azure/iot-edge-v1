@@ -279,15 +279,12 @@ RemoteModule_DoWork (
                     if (((MODULE_API_1 *)remote_module->module.module_apis)->Module_Start) {
                         ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Start(remote_module->module.module_handle);
                     }
-                      break;
+                    break;
                   case CONTROL_MESSAGE_TYPE_MODULE_DESTROY: 
-				  {
-					  ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Destroy(remote_module->module.module_handle);
-					  remote_module->module.module_handle = NULL;
-					  nn_close(remote_module->message_socket);
-					  remote_module->message_socket = -1;
-					  break;
-				  }
+                    ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Destroy(remote_module->module.module_handle);
+                    remote_module->module.module_handle = NULL;
+                    disconnect_from_message_channel(remote_module);
+                    break;
                   default: LogError("ERROR: REMOTE_MODULE - Received unsupported message type! [%d]\n", structured_control_message->type); break;
                 }
                 ControlMessage_Destroy(structured_control_message);
@@ -535,7 +532,7 @@ connect_to_message_channel (
         LogError("%s: Unable to connect to the gateway message channel!", __FUNCTION__);
         result = __LINE__;
         (void)nn_close(remote_module->message_socket);
-        remote_module->message_socket = 0;
+        remote_module->message_socket = -1;
     } else {
         result = 0;
     }
@@ -551,9 +548,9 @@ disconnect_from_message_channel (
     REMOTE_MODULE_HANDLE remote_module
 ) {
     (void)nn_shutdown(remote_module->message_socket, remote_module->message_endpoint);
-    remote_module->message_endpoint = 0;
+    remote_module->message_endpoint = -1;
     (void)nn_close(remote_module->message_socket);
-    remote_module->message_socket = 0;
+    remote_module->message_socket = -1;
 
     return;
 }
