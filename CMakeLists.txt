@@ -197,7 +197,7 @@ include_directories(./deps/parson)
 
 function(link_broker whatIsBuilding)
 
-target_link_libraries(${whatIsBuilding} nanomsg )
+target_link_libraries(${whatIsBuilding} nanomsg ${NN_REQUIRED_LIBRARIES})
 
 endfunction(link_broker)
 

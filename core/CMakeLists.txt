@@ -236,11 +236,11 @@ endif ()
 
 # (re)set the include and lib dirs for the install based on platform
 if(WIN32)
-    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}" CACHE INTERNAL "Needs to be included to share across projects" FORCE)
     set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE INTERNAL "Library install dir")
     set(package_location "cmake")
 else()
-    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}")
+    set(AIG_HEADER_INSTALL_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${VERSION_PREFIX}" CACHE INTERNAL "Needs to be included to share across projects" FORCE)
     set (LIB_INSTALL_DIR "${LIB_INSTALL_DIR}/${VERSION_PREFIX}" CACHE INTERNAL "Library install dir")
     set(package_location "${LIB_INSTALL_DIR}/cmake")
 endif()

@@ -27,7 +27,7 @@ linkSharedUtil(proxy_gateway)
 
 set_target_properties(proxy_gateway PROPERTIES FOLDER "Proxy/Gateway")
 
-#install(FILES ./inc/proxy_gateway.h DESTINATION ${AIG_HEADER_INSTALL_PREFIX})
+install(FILES ./inc/proxy_gateway.h DESTINATION ${AIG_HEADER_INSTALL_PREFIX})
 
 #if(${run_unittests})
 #    add_subdirectory(tests)
