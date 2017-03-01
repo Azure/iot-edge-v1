@@ -1,27 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "azure_c_shared_utility/gballoc.h"
-#include "azure_c_shared_utility/strings.h"
-#include "azure_c_shared_utility/lock.h"
-#include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/xlogging.h"
-
 #include "proxy_gateway.h"
 #include "broker.h"
 
-#include "stdlib.h"
-#include "string.h"
-#include <errno.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <nanomsg/nn.h>
+#include <nanomsg/pair.h>
 
-#include "nanomsg/nn.h"
-#include "nanomsg/pair.h"
-#include "nanomsg/reqrep.h"
+#include <azure_c_shared_utility/gballoc.h>
+#include <azure_c_shared_utility/lock.h>
+#include <azure_c_shared_utility/threadapi.h>
+#include <azure_c_shared_utility/xlogging.h>
 
-
-
-#include "../../message/inc/control_message.h"
+#include "control_message.h"
 #include "gateway.h"
 #include "message.h"
 
