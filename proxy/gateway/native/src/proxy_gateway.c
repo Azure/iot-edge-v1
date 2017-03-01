@@ -250,17 +250,13 @@ RemoteModule_DoWork (
         void * control_message = NULL;
 
         // Check for message on control channel
-		int receive_error = 0;
         bytes_received = nn_recv(remote_module->control_socket, &control_message, NN_MSG, NN_DONTWAIT);
-		receive_error = nn_errno();
         if (0 > bytes_received) {
-			if (EAGAIN == receive_error) {
-				// no messages available at this time    
-			}
-			else
-			{
-				LogError("%s: Unexpected error received from the control channel!", __FUNCTION__);
-			}
+            if (EAGAIN == nn_errno()) {
+                // no messages available at this time
+            } else {
+                LogError("%s: Unexpected error received from the control channel!", __FUNCTION__);
+            }
         } else {
             CONTROL_MESSAGE * structured_control_message;
 
@@ -292,39 +288,31 @@ RemoteModule_DoWork (
             (void)nn_freemsg(control_message);
         }
 
-        // Check first message on each message channel
-        void * module_message = NULL;
+        // Check first message on message channel
+        if ( -1 != remote_module->message_socket ) {
+            void * module_message = NULL;
 
-		if (0 < remote_module->message_socket)	
-		{
-			receive_error = 0;
-			bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
-			receive_error = nn_errno();
-			if (bytes_received < 0)
-			{
-				if (EAGAIN == receive_error) {
-					// no messages available at this time    
-				}
-				else
-				{
-					LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
-				}
-			}
-			else {
-				MESSAGE_HANDLE structured_module_message;
+            bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
+            if (0 > bytes_received) {
+                if (EAGAIN == nn_errno()) {
+                    // no messages available at this time
+                } else {
+                    LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
+                }
+            } else {
+                MESSAGE_HANDLE structured_module_message;
 
-				// Parse message body
-				if (NULL == (structured_module_message = Message_CreateFromByteArray((unsigned char *)module_message, bytes_received))) {
-					LogError("%s: Unable to parse message!", __FUNCTION__);
-				}
-				else {
-					// Forward the gateway message
-					((MODULE_API_1 *)remote_module->module.module_apis)->Module_Receive(remote_module->module.module_handle, structured_module_message);
-					Message_Destroy(structured_module_message);
-				}
-				(void)nn_freemsg(module_message);
-			}
-		}
+                // Parse message body
+                if (NULL == (structured_module_message = Message_CreateFromByteArray((const unsigned char *)module_message, bytes_received))) {
+                    LogError("%s: Unable to parse control message!", __FUNCTION__);
+                } else {
+                    // Forward the gateway message
+                    ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Receive(remote_module->module.module_handle, structured_module_message);
+                    Message_Destroy(structured_module_message);
+                }
+                (void)nn_freemsg(module_message);
+            }
+        }
     }
 
     return;
