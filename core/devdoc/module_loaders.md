@@ -204,7 +204,9 @@ MODULE_LOADER* module_loaders[] = {
     , NodeBindingLoader_Get()
     #endif
 
+    #ifdef OUTPROCESS_ENABLED
     , OutprocessLoader_Get()
+    #endif
 };
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

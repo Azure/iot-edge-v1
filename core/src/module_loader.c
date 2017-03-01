@@ -16,8 +16,10 @@
 #include "module.h"
 #include "module_loader.h"
 #include "module_loaders/dynamic_loader.h"
-#include "module_loaders/outprocess_loader.h"
 
+#ifdef OUTPROCESS_ENABLED
+#include "module_loaders/outprocess_loader.h"
+#endif
 #ifdef NODE_BINDING_ENABLED
 #include "module_loaders/node_loader.h"
 #endif
@@ -100,7 +102,9 @@ MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
 #ifdef DOTNET_CORE_BINDING_ENABLED
                     , DotnetCoreLoader_Get()
 #endif
+#ifdef OUTPROCESS_ENABLED
                     , OutprocessLoader_Get()
+#endif
                 };
 
                 size_t loaders_count = sizeof(supported_loaders) / sizeof(supported_loaders[0]);
@@ -524,6 +528,13 @@ MODULE_LOADER* ModuleLoader_GetDefaultLoaderForType(MODULE_LOADER_TYPE type)
         result = ModuleLoader_FindByName(DOTNET_LOADER_NAME);
         break;
 #endif
+
+#ifdef OUTPROCESS_ENABLED
+    case OUTPROCESS:
+        /*Codes_SRS_MODULE_LOADER_13_058: [ ModuleLoader_GetDefaultLoaderForType shall return a non-NULL MODULE_LOADER pointer when the loader type is a recongized type. ]*/
+        result = ModuleLoader_FindByName(OUTPROCESS_LOADER_NAME);
+        break;
+#endif 
 
     default:
         /*Codes_SRS_MODULE_LOADER_13_057: [ ModuleLoader_GetDefaultLoaderForType shall return NULL if type is not a recongized loader type. ]*/

@@ -64,7 +64,6 @@ set(gateway_c_sources
     ./src/gateway_internal.c
     ./src/gateway.c
     ./src/gateway_createfromjson.c
-    ./src/control_message.c
     ./src/broker.c
     ./src/module_loader.c
     ${dynamic_library_c_file}
@@ -80,7 +79,6 @@ set(gateway_h_sources
     ./inc/gateway.h
     ./inc/gateway_export.h
     ./inc/gateway_version.h
-    ./inc/control_message.h
     ./inc/module_loader.h
     ./inc/dynamic_library.h
     ./src/gateway_internal.h
@@ -91,14 +89,12 @@ set(gateway_h_sources
 set(gateway_c_sources
     ${gateway_c_sources}
     ./src/module_loaders/dynamic_loader.c
-    ./src/module_loaders/outprocess_loader.c
-    ./src/module_loaders/outprocess_module.c
+
 )
 set(gateway_h_sources
     ${gateway_h_sources}
     ./inc/module_loaders/dynamic_loader.h
-    ./inc/module_loaders/outprocess_loader.h
-    ./inc/module_loaders/outprocess_module.h
+
 )
 
 if(${enable_dotnet_binding})
@@ -160,6 +156,28 @@ if(${enable_nodejs_binding})
     add_definitions(-DNODE_BINDING_ENABLED)
     include_directories(../bindings/nodejs/inc)
 endif()
+
+if(${enable_native_remote_modules})
+    set(gateway_c_sources
+        ${gateway_c_sources}
+        ../proxy/message/src/control_message.c
+        ../proxy/outprocess/src/module_loaders/outprocess_loader.c
+        ../proxy/outprocess/src/module_loaders/outprocess_module.c
+    )
+    set(gateway_h_sources
+        ${gateway_h_sources}
+        ../proxy/message/inc/control_message.h
+        ../proxy/outprocess/inc/module_loaders/outprocess_loader.h
+        ../proxy/outprocess/inc/module_loaders/outprocess_module.h
+    )
+    add_definitions(-DOUTPROCESS_ENABLED)
+    include_directories( ../proxy/outprocess/inc)
+    include_directories( ../proxy/message/inc)
+
+endif()
+
+
+
 
 include_directories(./inc)
 

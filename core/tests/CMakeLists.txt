@@ -5,8 +5,6 @@ cmake_minimum_required(VERSION 2.8.12)
 
 add_subdirectory(broker_ut)
 add_subdirectory(dynamic_library_ut)
-add_subdirectory(outprocess_loader_ut)
-add_subdirectory(outprocess_module_ut)
 add_subdirectory(event_system_ut)
 add_subdirectory(gateway_ut)
 add_subdirectory(gateway_createfromjson_ut)
@@ -27,6 +25,11 @@ endif()
 
 if(${enable_nodejs_binding})
     add_subdirectory(node_loader_ut)
+endif()
+
+if (${enable_native_remote_modules})
+    add_subdirectory(outprocess_loader_ut)
+    add_subdirectory(outprocess_module_ut)
 endif()
 
 if(${run_e2e_tests})

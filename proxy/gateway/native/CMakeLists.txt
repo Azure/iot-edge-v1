@@ -12,12 +12,12 @@ include_directories(${GW_INC})
 set(proxy_gateway_sources
     ./src/proxy_gateway.c
     ../../../core/src/message.c
-    ../../../core/src/control_message.c
+    ../../message/src/control_message.c
 )
 set(proxy_gateway_headers
     ./inc/proxy_gateway.h
     ../../../core/inc/message.h
-    ../../../core/inc/control_message.h
+    ../../message/inc/control_message.h
 )
 
 # this builds the proxy_gateway dynamic library

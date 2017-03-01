@@ -83,7 +83,9 @@ static const size_t g_enabled_loaders[] =
 #ifdef DOTNET_CORE_BINDING_ENABLED
     , 1
 #endif
+#ifdef OUTPROCESS_ENABLED
 	, 1		// outprocess_loader
+#endif
 };
 
 static const size_t LOADERS_COUNT = sizeof(g_enabled_loaders) / sizeof(g_enabled_loaders[0]);
@@ -537,7 +539,9 @@ TEST_FUNCTION(ModuleLoader_Initialize_succeeds)
 #ifdef DOTNET_CORE_BINDING_ENABLED
     STRICT_EXPECTED_CALL(DotnetCoreLoader_Get());
 #endif
+#ifdef OUTPROCESS_ENABLED
 STRICT_EXPECTED_CALL(OutprocessLoader_Get());
+#endif
 
     for (size_t i = 0; i < LOADERS_COUNT; i++)
     {
@@ -1311,6 +1315,9 @@ TEST_FUNCTION(ModuleLoader_GetDefaultLoaderForType_succeeds)
 #ifdef NODE_CORE_BINDING_ENABLED
         , DOTNETCORE
 #endif
+#ifdef OUTPROCESS_ENABLED
+        , OUTPROCESS
+#endif
     };
     for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++)
     {
@@ -1353,8 +1360,8 @@ TEST_FUNCTION(ModuleLoader_ParseType_returns_UNKNOWN_for_unknown_loader_type)
 TEST_FUNCTION(ModuleLoader_ParseType_succeeds)
 {
     // arrange
-    char* inputs[] = { "native", "node", "java", "dotnet", "dotnetcore" };
-    MODULE_LOADER_TYPE expected[] = { NATIVE, NODEJS, JAVA, DOTNET, DOTNETCORE };
+    char* inputs[] = { "native", "node", "java", "dotnet", "dotnetcore", "outprocess" };
+    MODULE_LOADER_TYPE expected[] = { NATIVE, NODEJS, JAVA, DOTNET, DOTNETCORE, OUTPROCESS };
 
     for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++)
     {
@@ -1370,8 +1377,8 @@ TEST_FUNCTION(ModuleLoader_ParseType_succeeds)
 TEST_FUNCTION(ModuleLoader_IsDefaultLoader_succeeds)
 {
     // arrange
-    char* inputs[] = { "native", "node", "java", "dotnet", "dotnetcore", "boo" };
-    bool expected[] = { true, true, true, true, true,  false };
+    char* inputs[] = { "native", "node", "java", "dotnet", "dotnetcore", "outprocess", "boo" };
+    bool expected[] = { true, true, true, true, true, true, false };
 
     for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++)
     {

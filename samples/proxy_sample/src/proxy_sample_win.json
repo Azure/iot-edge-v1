@@ -1,6 +1,18 @@
 {
   "modules": [
     {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    },
+    {
       "name": "out of process",
       "loader": {
         "name": "outprocess",
@@ -27,6 +39,10 @@
     {
       "source": "hello_world",
       "sink": "out of process"
+    },
+    {
+      "source": "out of process",
+      "sink": "logger"
     }
   ]
 }

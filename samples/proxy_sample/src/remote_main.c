@@ -5,6 +5,8 @@
 #include "proxy_gateway.h"
 #include "module.h"
 
+static BROKER_HANDLE theBrokerHandle;
+
 void* test_ParseConfigurationFromJson(const char* configuration)
 {
     printf("test_ParseConfigurationFromJson: %s\n", configuration);
@@ -17,6 +19,7 @@ void test_FreeConfiguration(void* configuration)
 MODULE_HANDLE test_Create(BROKER_HANDLE broker, const void* configuration)
 {
     printf("test_Create\n");
+	theBrokerHandle = broker;
     MODULE_HANDLE m = (MODULE_HANDLE)"remote module";
     return m;
 }
@@ -27,6 +30,7 @@ void test_Destroy(MODULE_HANDLE moduleHandle)
 void test_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     printf("test_Receive: %s, %p\n", (char *)moduleHandle, messageHandle);
+	Broker_Publish(theBrokerHandle, moduleHandle, messageHandle);
 }
 void test_Start(MODULE_HANDLE moduleHandle)
 {

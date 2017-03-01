@@ -132,6 +132,7 @@ ProxyGateway_Attach (
     } else if (NULL == (remote_module = (REMOTE_MODULE_HANDLE)calloc(1, sizeof(REMOTE_MODULE)))) {
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
     } else {
+		remote_module->message_socket = -1;
         static const size_t ENDPOINT_LENGTH_MAX = (sizeof("ipc://") + GATEWAY_CONNECTION_ID_MAX + sizeof(".ipc"));
 
         STRING_HANDLE control_channel_uri;
@@ -241,7 +242,7 @@ RemoteModule_DoWork (
         // Check for message on control channel
 		int receive_error = 0;
         bytes_received = nn_recv(remote_module->control_socket, &control_message, NN_MSG, NN_DONTWAIT);
-		receive_error = errno;
+		receive_error = nn_errno();
         if (0 > bytes_received) {
 			if (EAGAIN == receive_error) {
 				// no messages available at this time    
@@ -269,7 +270,14 @@ RemoteModule_DoWork (
                         ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Start(remote_module->module.module_handle);
                     }
                       break;
-                  case CONTROL_MESSAGE_TYPE_MODULE_DESTROY: ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Destroy(remote_module->module.module_handle); break;
+                  case CONTROL_MESSAGE_TYPE_MODULE_DESTROY: 
+				  {
+					  ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Destroy(remote_module->module.module_handle);
+					  remote_module->module.module_handle = NULL;
+					  nn_close(remote_module->message_socket);
+					  remote_module->message_socket = -1;
+					  break;
+				  }
                   default: LogError("ERROR: REMOTE_MODULE - Received unsupported message type! [%d]\n", structured_control_message->type); break;
                 }
                 ControlMessage_Destroy(structured_control_message);
@@ -280,31 +288,36 @@ RemoteModule_DoWork (
         // Check first message on each message channel
         void * module_message = NULL;
 
-		receive_error = 0;
-        bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
-		receive_error = errno;
-        if (bytes_received < 0)
+		if (0 < remote_module->message_socket)	
 		{
-			if (EAGAIN == receive_error) {
-				// no messages available at this time    
-			}
-			else
+			receive_error = 0;
+			bytes_received = nn_recv(remote_module->message_socket, &module_message, NN_MSG, NN_DONTWAIT);
+			receive_error = nn_errno();
+			if (bytes_received < 0)
 			{
-				LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
+				if (EAGAIN == receive_error) {
+					// no messages available at this time    
+				}
+				else
+				{
+					LogError("%s: Unexpected error received from the message channel!", __FUNCTION__);
+				}
 			}
-		}else {
-            MESSAGE_HANDLE structured_module_message;
+			else {
+				MESSAGE_HANDLE structured_module_message;
 
-            // Parse message body
-            if (NULL == (structured_module_message = Message_CreateFromByteArray((const unsigned char *)module_message, bytes_received))) {
-                LogError("%s: Unable to parse control message!", __FUNCTION__);
-            } else {
-                // Forward the gateway message
-                ((MODULE_API_1 *)remote_module->module.module_apis)->Module_Receive(remote_module->module.module_handle, structured_module_message);
-                Message_Destroy(structured_module_message);
-            }
-            (void)nn_freemsg(module_message);
-        }
+				// Parse message body
+				if (NULL == (structured_module_message = Message_CreateFromByteArray((unsigned char *)module_message, bytes_received))) {
+					LogError("%s: Unable to parse message!", __FUNCTION__);
+				}
+				else {
+					// Forward the gateway message
+					((MODULE_API_1 *)remote_module->module.module_apis)->Module_Receive(remote_module->module.module_handle, structured_module_message);
+					Message_Destroy(structured_module_message);
+				}
+				(void)nn_freemsg(module_message);
+			}
+		}
     }
 
     return;
@@ -451,7 +464,7 @@ Broker_Publish (
         else
         {
             /*Codes_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ]*/
-            buf_size = msg_size + sizeof(MODULE_HANDLE);
+            buf_size = msg_size;
             void* nn_msg = nn_allocmsg(buf_size, 0);
             if (nn_msg == NULL)
             {
@@ -461,11 +474,8 @@ Broker_Publish (
             }
             else
             {
-                /*Codes_SRS_BROKER_17_026: [ Broker_Publish shall copy source into the beginning of the nanomsg buffer. ]*/
                 unsigned char *nn_msg_bytes = (unsigned char *)nn_msg;
-                memcpy(nn_msg_bytes, &remote_module->module.module_handle, sizeof(MODULE_HANDLE));
                 /*Codes_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ]*/
-                nn_msg_bytes += sizeof(MODULE_HANDLE);
                 Message_ToByteArray(message, nn_msg_bytes, msg_size);
 
                 /*Codes_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ]*/
@@ -511,7 +521,7 @@ connect_to_message_channel (
     if (-1 == (remote_module->message_socket = nn_socket(AF_SP, channel_uri->uri_type))) {
         LogError("%s: Unable to create the gateway socket!", __FUNCTION__);
         result = __LINE__;
-    } else if (0 > (remote_module->message_endpoint = nn_connect(remote_module->message_socket, channel_uri->uri))) {
+    } else if (0 > (remote_module->message_endpoint = nn_bind(remote_module->message_socket, channel_uri->uri))) {
         LogError("%s: Unable to connect to the gateway message channel!", __FUNCTION__);
         result = __LINE__;
         (void)nn_close(remote_module->message_socket);
@@ -647,7 +657,7 @@ process_module_create_message (
     int result;
 
     // Check to see if create has already been called
-    if (0 != remote_module->message_socket) {
+    if (0 < remote_module->message_socket) {
         // do nothing, create has already been processed
         result = 0;
     } else if (1 < message->gateway_message_version) {
@@ -710,7 +720,7 @@ send_control_reply (
 		else
 		{
 			ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, message_size);
-			if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, NN_DONTWAIT))) {
+			if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, 0))) {
 				LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
 				result = __LINE__;
 			}

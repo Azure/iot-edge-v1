@@ -575,7 +575,7 @@ TEST_FUNCTION(Outprocess_Create_returns_null_with_null_arguments)
 TEST_FUNCTION(Outprocess_Create_success)
 {
 	// arrange
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -729,7 +729,7 @@ TEST_FUNCTION(Outprocess_Create_returns_null_wrong_message_status_response)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 1;
 
@@ -1796,7 +1796,7 @@ TEST_FUNCTION(Outprocess_Start_success)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -1829,7 +1829,7 @@ TEST_FUNCTION(Outprocess_Start_nn_send_fail)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -1866,7 +1866,7 @@ TEST_FUNCTION(Outprocess_Start_thread_create_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -1899,7 +1899,7 @@ TEST_FUNCTION(Outprocess_Start_Lock_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -1944,7 +1944,7 @@ TEST_FUNCTION(Outprocess_Destroy_success)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -1988,7 +1988,7 @@ TEST_FUNCTION(Outprocess_Destroy_send_lock_join_fails)
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
 	config.lifecycle_model = OUTPROCESS_LIFECYCLE_ASYNC;
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -2034,7 +2034,7 @@ TEST_FUNCTION(Outprocess_Destroy_destroy_message_alloc_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 
@@ -2079,7 +2079,7 @@ TEST_FUNCTION(Outprocess_Destroy_destroy_message_to_array_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY;
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
 	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
 	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
 

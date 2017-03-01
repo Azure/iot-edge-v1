@@ -253,7 +253,7 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
                         }
                     }
                 }
-                else if (messageType == CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY)
+                else if (messageType == CONTROL_MESSAGE_TYPE_MODULE_REPLY)
                 {
 					/*Codes_SRS_CONTROL_MESSAGE_17_020: [ If the total message size is not at least 9 bytes, then this function shall fail and return NULL. ]*/
                     if (size < BASE_CREATE_REPLY_SIZE)
@@ -404,7 +404,7 @@ int32_t ControlMessage_ToByteArray(CONTROL_MESSAGE * message, unsigned char* buf
             byteArraySize += create_message_get_size(message);
             result = 0;
         }
-        else if (message->type == CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY)
+        else if (message->type == CONTROL_MESSAGE_TYPE_MODULE_REPLY)
         {
             result = 0;
             byteArraySize += 1; /* status */
@@ -458,7 +458,7 @@ int32_t ControlMessage_ToByteArray(CONTROL_MESSAGE * message, unsigned char* buf
                 {
                     create_message_serialize((CONTROL_MESSAGE_MODULE_CREATE *)message, buf, currentPosition);
                 }
-                else if (message->type == CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY)
+                else if (message->type == CONTROL_MESSAGE_TYPE_MODULE_REPLY)
                 {
                     CONTROL_MESSAGE_MODULE_REPLY * reply_msg = 
                             (CONTROL_MESSAGE_MODULE_REPLY*)message;

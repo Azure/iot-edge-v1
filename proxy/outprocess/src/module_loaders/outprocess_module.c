@@ -75,7 +75,7 @@ int outprocessThread(void *param)
 			errno = 0;
 			/*Codes_SRS_OUTPROCESS_MODULE_17_038: [ This function shall read from the message channel for gateway messages from the module host. ]*/
 			nbytes = nn_recv(nn_fd, (void *)&buf, NN_MSG, 0);
-			int receive_error = errno;
+			int receive_error = nn_errno();
 			if (nbytes < 0)
 			{
 				if (receive_error != ETIMEDOUT)
@@ -113,42 +113,52 @@ static int connection_setup(OUTPROCESS_HANDLE_DATA* handleData, OUTPROCESS_MODUL
 	if (handleData->message_socket < 0)
 	{
 		result = handleData->message_socket;
-		LogError("message socket failed to create, result = %d, errno = %d", result, errno);
+		LogError("message socket failed to create, result = %d, errno = %d", result, nn_errno());
 	}
 	else
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_009: [ This function shall bind and connect the pair socket to the message_uri. ]*/
-		int message_connect_id = nn_connect(handleData->message_socket, STRING_c_str(config->message_uri));
-		if (message_connect_id < 0)
+		int message_bind_id = nn_connect(handleData->message_socket, STRING_c_str(config->message_uri));
+		if (message_bind_id < 0)
 		{
-			result = message_connect_id;
-			LogError("remote socket failed to bind to message URL, result = %d, errno = %d", result, errno);
+			result = message_bind_id;
+			LogError("remote socket failed to bind to message URL, result = %d, errno = %d", result, nn_errno());
 		}
 		else
 		{
-			/*
-			* Now, the control socket.
-			*/
-			/*Codes_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
-			handleData->control_socket = nn_socket(AF_SP, NN_PAIR);
-			if (handleData->control_socket < 0)
-			{
-				result = handleData->control_socket;
-				LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, errno);
-			}
-			else
-			{
-				/*Codes_SRS_OUTPROCESS_MODULE_17_011: [ This function shall connect the request/reply socket to the control_id. ]*/
-				int control_connect_id = nn_connect(handleData->control_socket, STRING_c_str(config->control_uri));
-				if (control_connect_id < 0)
+			/*Codes_SRS_OUTPROCESS_MODULE_17_009: [ This function shall bind and connect the pair socket to the message_uri. ]*/
+			//int message_connect_id = nn_connect(handleData->message_socket, STRING_c_str(config->message_uri));
+			//if (message_connect_id < 0)
+			//{
+			//	result = message_connect_id;
+			//	LogError("remote socket failed to connect to message URL, result = %d, errno = %d", result, nn_errno());
+			//}
+			//else
+			//{
+				/*
+				* Now, the control socket.
+				*/
+				/*Codes_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
+				handleData->control_socket = nn_socket(AF_SP, NN_PAIR);
+				if (handleData->control_socket < 0)
 				{
-					result = control_connect_id;
-					LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, errno);
+					result = handleData->control_socket;
+					LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
 				}
 				else
 				{
-					result = 0;
-				}
+					/*Codes_SRS_OUTPROCESS_MODULE_17_011: [ This function shall connect the request/reply socket to the control_id. ]*/
+					int control_connect_id = nn_connect(handleData->control_socket, STRING_c_str(config->control_uri));
+					if (control_connect_id < 0)
+					{
+						result = control_connect_id;
+						LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
+					}
+					else
+					{
+						result = 0;
+					}
+				//}
 			}
 		}
 	}
