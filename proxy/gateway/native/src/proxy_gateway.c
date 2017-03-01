@@ -127,36 +127,51 @@ ProxyGateway_Attach (
     } else if (NULL == (remote_module = (REMOTE_MODULE_HANDLE)calloc(1, sizeof(REMOTE_MODULE)))) {
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
     } else {
-		remote_module->message_socket = -1;
-        static const size_t ENDPOINT_LENGTH_MAX = (sizeof("ipc://") + GATEWAY_CONNECTION_ID_MAX + sizeof(".ipc"));
+        static const size_t ENDPOINT_DECORATION_SIZE = ((sizeof("ipc://") - 1) + (sizeof(".ipc") - 1) + (sizeof("\0") - 1));
 
-        STRING_HANDLE control_channel_uri;
+        const size_t endpoint_length_max = (GATEWAY_CONNECTION_ID_MAX + ENDPOINT_DECORATION_SIZE);
+        const size_t control_channel_uri_size = (strnlen(connection_id, endpoint_length_max) + ENDPOINT_DECORATION_SIZE);
 
-		// Transform the connection id into a nanomsg URI
-		control_channel_uri = STRING_construct_sprintf("%s%s%s", "ipc://", connection_id, ".ipc");
-        if (NULL == control_channel_uri) {
+        char * control_channel_uri;
+
+        // Transform the connection id into a nanomsg URI
+        if (NULL == (control_channel_uri = (char *)malloc(control_channel_uri_size))) {
             LogError("%s: Unable to allocate memory!", __FUNCTION__);
             free(remote_module);
             remote_module = NULL;
+        } else if (NULL == strcpy(control_channel_uri, "ipc://")) {
+            LogError("%s: Unable to compose channel uri prefix!", __FUNCTION__);
+            free(remote_module);
+            remote_module = NULL;
+        } else if (NULL == strncat(control_channel_uri, connection_id, GATEWAY_CONNECTION_ID_MAX + 1)) {
+            LogError("%s: Unable to compose channel uri body!", __FUNCTION__);
+            free(remote_module);
+            remote_module = NULL;
+        } else if (NULL == strcat(control_channel_uri, ".ipc")) {
+            LogError("%s: Unable to compose channel uri suffix!", __FUNCTION__);
+            free(remote_module);
+            remote_module = NULL;
         } else {
-
-
             // Create the socket
             if (-1 == (remote_module->control_socket = nn_socket(AF_SP, NN_PAIR))) {
                 LogError("%s: Unable to create the gateway socket!", __FUNCTION__);
                 free(remote_module);
                 remote_module = NULL;
             // Connect to the control channel URI
-            } else if ( 0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, STRING_c_str(control_channel_uri)))) {
+            } else if (0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, control_channel_uri))) {
                 LogError("%s: Unable to connect to the gateway control channel!", __FUNCTION__);
 				nn_close(remote_module->control_socket);
                 free(remote_module);
                 remote_module = NULL;
-			} else {
+            } else {
                 // Save the module API
                 remote_module->module.module_apis = module_apis;
+
+                // Initialize remaining fields
+                remote_module->message_socket = -1;
+                remote_module->message_endpoint = -1;
             }
-            STRING_delete(control_channel_uri);
+            free(control_channel_uri);
         }
     }
 
