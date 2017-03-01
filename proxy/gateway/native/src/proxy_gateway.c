@@ -246,7 +246,7 @@ RemoteModule_DoWork (
     if (NULL == remote_module) {
         LogError("%s: NULL parameter - remote_module!", __FUNCTION__);
     } else {
-        int bytes_received;
+        int32_t bytes_received;
         void * control_message = NULL;
 
         // Check for message on control channel
@@ -423,7 +423,7 @@ RemoteModule_StartWorkerThread (
         LogError("%s: Unable to create mutex!", __FUNCTION__);
         result = __LINE__;
 	// Start the message pump thread
-    } else if (THREADAPI_OK != ThreadAPI_Create(&(remote_module->message_thread->thread), worker_thread, remote_module)) {
+    } else if (THREADAPI_OK != ThreadAPI_Create(&remote_module->message_thread->thread, worker_thread, remote_module)) {
         LogError("%s: Unable to create worker thread!", __FUNCTION__);
         result = __LINE__;
     } else {
@@ -636,9 +636,7 @@ worker_thread (
         if (LOCK_ERROR == Unlock(remote_module->message_thread->mutex)) {
             LogError("%s: Failed to release mutex!", __FUNCTION__);
             result = __LINE__;
-        }
-		else
-		{
+        } else {
 			result = 0;
 		}
     }
@@ -664,7 +662,7 @@ process_module_create_message (
     int result;
 
     // Check to see if create has already been called
-    if (0 < remote_module->message_socket) {
+    if (NULL != remote_module->module.module_handle) {
         // do nothing, create has already been processed
         result = 0;
     } else if (1 < message->gateway_message_version) {
