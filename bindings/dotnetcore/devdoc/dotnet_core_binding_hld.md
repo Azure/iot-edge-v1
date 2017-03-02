@@ -5,34 +5,48 @@ Overview
 --------
 
 This document describes the high level design of the .NET Core binding mechanism used by Azure IoT Gateway SDK. 
-It describes how the .NET Core CLR is hosted in the gateway process's memory and how the interaction between the
-native and .NET Core Managed Modules will work.
 
 The existing binding implementation in the Gateway SDK for .NET targets the full .NET framework (desktop and server) on Windows only. 
 The binding discussed in this document relates to the cross platform open source .NET Core product that works on Windows, Linux and macOS.
 
-Hosting .NET CLR
-----------------
+There are 2 different scenarios. The first is when the gateway is native c gateway and we want to load a .NET Core module. The Second is 
+when gateway is a .NET Core Application and we want to load .NET Core modules. 
 
+For the native gateway this document describes how the .NET Core CLR is hosted in the gateway process's memory and how the interaction between the
+native and .NET Core Managed Modules will work.
+
+For the .NET Core Gateway this document describes how we use Implicit Interop to set delegates into .NET Core Binding so it comunicates between native and managed world. 
+
+Hosting .NET CLR (For native gateway)
+-------------------------------------
 In order to be able to host the CLR, we are going to use the following exports from .NET Core CLR:
+
 -coreclr_initialize;
+
 -coreclr_create_delegate;
+
 -coreclr_shutdown;
 
 Some documentation on how to host the .NET CLR can be found on: 
 - [.NET Core GitHub](https://github.com/dotnet/)  - Check sample `corerun` and `coreconsole` for both windows and linux.
 
-Design
-------
-![](images/overall-design.png)
+Design (Native Gateway)
+-----------------------
+![](images/overall-design-native-gateway.png)
+
+Design (Managed Gateway)
+----------------------------------------------
+![](images/overall-design-managed-gateway.png)
 
 .NET Core Module Host
 ---------------------
 The **.NET Core Module Host** is a C module that
 
-1. Creates a [.NET Core](https://github.com/dotnet/) CLR instance (If not created already, since we can only have one instance of the .NET Core CLR per process);
+1. Check if `Create`, `Receive`, `Destoy` and `Start` delegates are created. If it's created already it means that the current gateway is a managed gateway, so no need to host .NET CLR; 
 
-2. Creates delegates for .NET Module Calls (Create, destroy, receive, start);
+2. If it's not a managed gateway, creates a [.NET Core](https://github.com/dotnet/) CLR instance;
+
+   2.1 Creates delegates for .NET Module Calls (Create, destroy, receive, start);
 
 3. Brokers calls **from** the managed module to the message broker (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `Broker_Publish`);
 
@@ -74,9 +88,13 @@ The JSON configuration for [.NET Core](https://github.com/dotnet/)  Module will 
 When the **.NET Core Module Host**’s `Module_Create` function is invoked by the
 gateway process, it:
 
--   If a CLR instance has not already been initialized, creates a new CLR instance by calling `coreclr_initialize`. 
+-  Checks if delegates have been created. 
 
--   Creates [.NET Core](https://github.com/dotnet/)  Delegates for Create, Receive, Start and Destroy.
+- If not, it means this is a native gateway, then: 
+
+    -   If a CLR instance has not already been initialized, creates a new CLR instance by calling `coreclr_initialize`. 
+
+    -   Creates [.NET Core](https://github.com/dotnet/)  Delegates for Create, Receive, Start and Destroy.
 
 -   Calls Create Delegate, which will call the Create method on the user [.NET Core](https://github.com/dotnet/)  Module (Module that implemented `IGatewayModule`).
 
@@ -104,7 +122,7 @@ gateway, it:
 
 - Calls the `Destroy` delegate (which is going to call `Destroy` method implemented by the [.NET Core](https://github.com/dotnet/)  Module); 
 - Releases resources allocated;
-- Calls the `coreclr_shutdown` method;
+- Calls the `coreclr_shutdown` method (in case of native gateway);
 
 .NET Wrappers and objects
 -------------------------
@@ -118,11 +136,13 @@ For [.NET Core](https://github.com/dotnet/)  Modules the following wrappers will
 
 3. `IGatewayModule` - interface that has to be implemented by the [.NET Core](https://github.com/dotnet/)  Module; 
 
-4. `nativeDotNetHostWrapper` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the managed module implementer. It will be called by the `Broker` class when the user calls `Publish`.
+4. `BrokerInterop` - Uses DLLImport to marshal call to dotnetHost_PublishMessage. This will be transparent to the managed module implementer. It will be called by the `Broker` class when the user calls `Publish`.
 
-5. `NativeManagedGatewayInterop` - Holds all the instances of the .NET Core modules that have been loaded. Uses reflection to check if the module implements `IGatewayModule` and calls the module methods. 
+5. `NetCoreInterop` - Holds all the instances of the .NET Core modules that have been loaded. Uses reflection to check if the module implements `IGatewayModule` and calls the module methods. 
 
 6. `DotNetCoreModuleInstance` - This class holds an `IGatewayModule` object and `MethodInfo`s for `Receive`, `Destroy` and `Start`(if implemented). `nativeManageGatewayInterop` stores an instance of this class per loaded module. 
+
+7. `Gateway` - Wrapper around public gateway interface (e.g.: `Gateway_CreateFromJson`) so a managed gateway can be created.
 
 The high level design of these objects and interfaces is documented below:
 
@@ -212,11 +232,18 @@ The high level design of these objects and interfaces is documented below:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Flow Diagram
-------------
+Flow Diagram (Native Gateway)
+-----------------------------
 
 Following is the flow diagram of a lifecycle of the [.NET Core](https://github.com/dotnet/)  module: 
-![](images/flow_chart.png)
+![](images/flow_chart_native_gateway.png)
+
+Flow Diagram (Managed Gateway)
+------------------------------
+
+Following is the flow diagram of a lifecycle of the [.NET Core](https://github.com/dotnet/)  module: 
+![](images/flow_chart_managed_gateway.png)
+
 
 
 
