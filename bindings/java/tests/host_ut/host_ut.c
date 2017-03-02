@@ -20,6 +20,9 @@
 #include "umocktypes_stdint.h"
 #include "umock_c_prod.h"
 
+#define GATEWAY_EXPORT_H
+#define GATEWAY_EXPORT
+
 #define ENABLE_MOCKS
 
 #include "java_module_host_manager.h"
@@ -28,6 +31,7 @@
 #include "azure_c_shared_utility/crt_abstractions.h"
 #include "java_module_host.h"
 #include "java_module_host_common.h"
+#include "message.h"
 #include "module_access.h"
 
 #include <parson.h>
@@ -101,17 +105,16 @@ static JAVA_MODULE_HOST_CONFIG config =
 //=============================================================================
 
 //Message mocks
-MOCKABLE_FUNCTION(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size);
 MESSAGE_HANDLE my_Message_CreateFromByteArray(const unsigned char* source, int32_t size)
 {
     return (MESSAGE_HANDLE)malloc(1);
 }
-MOCKABLE_FUNCTION(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t, size);
+
 int32_t my_MessageToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size)
 {
     return 1;
 }
-MOCKABLE_FUNCTION(, void, Message_Destroy, MESSAGE_HANDLE, message);
+
 void my_Message_Destroy(MESSAGE_HANDLE message)
 {
     if (message != NULL)

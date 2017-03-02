@@ -33,13 +33,12 @@
 #include "gateway_export.h"
 
 #ifdef __cplusplus
-#include <cstdint>
-#include <cstddef>
-extern "C"
-{
+  #include <cstdint>
+  #include <cstddef>
+  extern "C" {
 #else
-#include <stdint.h>
-#include <stddef.h>
+  #include <stdint.h>
+  #include <stddef.h>
 #endif
 
 /** @brief  Struct representing a particular message. */
@@ -85,6 +84,8 @@ typedef struct MESSAGE_BUFFER_CONFIG_TAG
     MAP_HANDLE sourceProperties;
 }MESSAGE_BUFFER_CONFIG;
 
+#include "azure_c_shared_utility/umock_c_prod.h"
+
 /** @brief      Creates a new reference counted message from a #MESSAGE_CONFIG
  *              structure with the reference count initialized to 1.
  *
@@ -99,7 +100,7 @@ typedef struct MESSAGE_BUFFER_CONFIG_TAG
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              NULL upon failure.
  */
-GATEWAY_EXPORT MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG *, cfg);
 
 /** @brief      Creates a new reference counted message from a byte array
  *              containing the serialized form of a message.
@@ -113,7 +114,7 @@ GATEWAY_EXPORT MESSAGE_HANDLE Message_Create(const MESSAGE_CONFIG* cfg);
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              NULL upon failure.
  */
-GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* source, int32_t size);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char *, source, int32_t, size);
 
 /** @brief      Creates a byte array representation of a MESSAGE_HANDLE. 
  *
@@ -130,7 +131,7 @@ GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char* s
  *              size required for a full successful serialization. Returns a 
  *              negative value when an error occurs.
  */
-GATEWAY_EXPORT int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char *, buf, int32_t, size);
 
 /** @brief      Creates a new message from a @c CONSTBUFFER source and
  *              @c MAP_HANDLE.
@@ -147,7 +148,7 @@ GATEWAY_EXPORT int32_t Message_ToByteArray(MESSAGE_HANDLE messageHandle, unsigne
  *  @return     A non-NULL #MESSAGE_HANDLE for the newly created message, or
  *              @c NULL upon failure.
  */
-GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONFIG* cfg);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT MESSAGE_HANDLE, Message_CreateFromBuffer, const MESSAGE_BUFFER_CONFIG *, cfg);
 
 /** @brief      Creates a clone of the message.
  *
@@ -159,7 +160,7 @@ GATEWAY_EXPORT MESSAGE_HANDLE Message_CreateFromBuffer(const MESSAGE_BUFFER_CONF
  *  @return     A non-NULL #MESSAGE_HANDLE cloned from @c message, or @c NULL 
  *              upon failure.
  */
-GATEWAY_EXPORT MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT MESSAGE_HANDLE, Message_Clone, MESSAGE_HANDLE, message);
 
 /** @brief      Gets the properties of a message.
  *
@@ -173,7 +174,7 @@ GATEWAY_EXPORT MESSAGE_HANDLE Message_Clone(MESSAGE_HANDLE message);
  *              message, or @c NULL upon failure.
  *
  */
-GATEWAY_EXPORT CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT CONSTMAP_HANDLE, Message_GetProperties, MESSAGE_HANDLE, message);
 
 /** @brief      Gets the content of a message.
  *
@@ -185,7 +186,7 @@ GATEWAY_EXPORT CONSTMAP_HANDLE Message_GetProperties(MESSAGE_HANDLE message);
  *  @return     A non-NULL pointer to a @c CONSTBUFFER representing the content
  *              of the message, or @c NULL upon failure.
  */
-GATEWAY_EXPORT const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT const CONSTBUFFER *, Message_GetContent, MESSAGE_HANDLE, message);
 
 /** @brief      Gets the @c CONSTBUFFER handle that may be used to access the 
  *              message content.
@@ -198,16 +199,16 @@ GATEWAY_EXPORT const CONSTBUFFER* Message_GetContent(MESSAGE_HANDLE message);
  *  @return     A non-NULL @c CONSTBUFFER_HANDLE representing the message 
  *              content, or @c NULL upon failure.
  */
-GATEWAY_EXPORT CONSTBUFFER_HANDLE Message_GetContentHandle(MESSAGE_HANDLE message);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT CONSTBUFFER_HANDLE, Message_GetContentHandle, MESSAGE_HANDLE, message);
 
 /** @brief      Disposes of resources allocated by the message.
  *       
  *  @param      message     The #MESSAGE_HANDLE to be destroyed.
  */
-GATEWAY_EXPORT void Message_Destroy(MESSAGE_HANDLE message);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, Message_Destroy, MESSAGE_HANDLE, message);
 
 #ifdef __cplusplus
-}
+  }
 #else
 #endif
 
