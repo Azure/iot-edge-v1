@@ -15,7 +15,7 @@ ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-    ../../src/module_loaders/outprocess_module.c
+    ../../../proxy/outprocess/src/module_loaders/outprocess_module.c
     ./real_strings.c
 )
 

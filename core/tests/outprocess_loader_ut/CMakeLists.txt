@@ -12,7 +12,7 @@ ${theseTestsName}.c
 )
 
 set(${theseTestsName}_c_files
-    ../../src/module_loaders/outprocess_loader.c
+    ../../../proxy/outprocess/src/module_loaders/outprocess_loader.c
     ./real_strings.c
 )
 

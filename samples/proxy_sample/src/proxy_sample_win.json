@@ -18,8 +18,7 @@
         "name": "outprocess",
         "entrypoint": {
           "activation.type": "none",
-          "control.id": "outprocess_module_control",
-          "message.id": "outprocess_module_message"
+          "control.id": "outprocess_module_control"
         }
       },
       "args": "THIS IS THE OOP MODULE CONFIGURATION"
