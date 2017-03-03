@@ -9,12 +9,13 @@
 
 #include "module.h"
 #include "message.h"
+#include "message_queue.h"
 #include "control_message.h"
+#include "module_loaders/outprocess_module.h"
 #include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/threadapi.h"
-#include "module_loaders/outprocess_module.h"
 #include "azure_c_shared_utility/lock.h"
 
 typedef struct THREAD_CONTROL_TAG
@@ -31,14 +32,16 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 	LOCK_HANDLE handle_lock;
 	int message_socket;
 	int control_socket;
+	MESSAGE_QUEUE_HANDLE outgoing_messages;
 	STRING_HANDLE control_uri;
 	STRING_HANDLE message_uri;
 	STRING_HANDLE module_args;
 	OUTPROCESS_MODULE_LIFECYCLE lifecyle_model;
 	BROKER_HANDLE broker;
 
-	THREAD_CONTROL message_thread;
-	THREAD_CONTROL async_thread;
+	THREAD_CONTROL message_receive_thread;
+	THREAD_CONTROL message_send_thread;
+	THREAD_CONTROL async_create_thread;
 	THREAD_CONTROL control_thread;
 } OUTPROCESS_HANDLE_DATA;
 
@@ -74,19 +77,19 @@ int outprocessMessageThread(void *param)
 				break;
 			}
 
-			if (Lock(handleData->message_thread.thread_lock) != LOCK_OK)
+			if (Lock(handleData->message_receive_thread.thread_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock");
 				should_continue = 0;
 				break;
 			}
-			if (handleData->message_thread.thread_flag == THREAD_FLAG_STOP)
+			if (handleData->message_receive_thread.thread_flag == THREAD_FLAG_STOP)
 			{
 				should_continue = 0;
-				(void)Unlock(handleData->message_thread.thread_lock);
+				(void)Unlock(handleData->message_receive_thread.thread_lock);
 				break;
 			}
-			if (Unlock(handleData->message_thread.thread_lock) != LOCK_OK)
+			if (Unlock(handleData->message_receive_thread.thread_lock) != LOCK_OK)
 			{
 				should_continue = 0;
 				break;
@@ -116,8 +119,106 @@ int outprocessMessageThread(void *param)
 				}
 				nn_freemsg(buf);
 			}
-
+			ThreadAPI_Sleep(1);
 		}
+	}
+	return 0;
+}
+
+static int outprocessSendMsgThread(void * param)
+{
+	OUTPROCESS_HANDLE_DATA * handleData = (OUTPROCESS_HANDLE_DATA*)param;
+	if (handleData == NULL)
+	{
+		LogError("outprocess send message thread: parameter is NULL");
+	}
+	else
+	{
+		int should_continue = 1;
+
+		while (should_continue)
+		{
+			if (Lock(handleData->message_send_thread.thread_lock) != LOCK_OK)
+			{
+				LogError("unable to Lock");
+				should_continue = 0;
+				break;
+			}
+			if (handleData->message_send_thread.thread_flag == THREAD_FLAG_STOP)
+			{
+				should_continue = 0;
+				(void)Unlock(handleData->message_send_thread.thread_lock);
+				break;
+			}
+			if (Unlock(handleData->message_send_thread.thread_lock) != LOCK_OK)
+			{
+				should_continue = 0;
+				break;
+			}
+			MESSAGE_HANDLE messageHandle;
+			if (Lock(handleData->handle_lock) != LOCK_OK)
+			{
+				LogError("unable to Lock");
+				should_continue = 0;
+				break;
+			}
+			
+			if (MESSAGE_QUEUE_is_empty(handleData->outgoing_messages))
+			{
+				messageHandle = NULL;
+			}
+			else
+			{
+				messageHandle = MESSAGE_QUEUE_pop(handleData->outgoing_messages);
+				if (messageHandle == NULL)
+				{
+					LogError("bad condition: message handle in queue is NULL");
+					(void)Unlock(handleData->handle_lock);
+					should_continue = 0;
+					break;
+				}
+			}
+			if (Unlock(handleData->handle_lock) != LOCK_OK)
+			{
+				should_continue = 0;
+				break;
+			}
+
+			/* forward message to remote */
+			/*Codes_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
+			if (messageHandle != NULL)
+			{
+				int32_t msg_size = Message_ToByteArray(messageHandle, NULL, 0);
+				if (msg_size < 0)
+				{
+					LogError("unable to serialize outgoing message [%p]", messageHandle);
+				}
+				else
+				{
+					void* result = nn_allocmsg(msg_size, 0);
+					if (result == NULL)
+					{
+						LogError("unable to allocate buffer for outgoing message [%p]", messageHandle);
+					}
+					else
+					{
+						unsigned char *nn_msg_bytes = (unsigned char *)result;
+						Message_ToByteArray(messageHandle, nn_msg_bytes, msg_size);
+						/*Codes_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+						int nbytes = nn_send(handleData->message_socket, &result, NN_MSG, 0);
+						if (nbytes != msg_size)
+						{
+							LogError("unable to send buffer to remote for message [%p]", messageHandle);
+							/*Codes_SRS_OUTPROCESS_MODULE_17_025: [ This function shall free any resources created. ]*/
+							nn_freemsg(result);
+						}
+					}
+				}
+				// We are finally finished with this message
+				Message_Destroy(messageHandle);
+			}
+		}
+		ThreadAPI_Sleep(1);
 	}
 	return 0;
 }
@@ -607,115 +708,144 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 			}
 			else
 			{
-				if (connection_setup(module, config) < 0)
+				module->outgoing_messages = MESSAGE_QUEUE_create();
+				if (module->outgoing_messages == NULL)
 				{
-					/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-					LogError("unable to Lock_Init");
-					connection_teardown(module);
+					LogError("unable to create outgoing message queue");
 					Lock_Deinit(module->handle_lock);
 					free(module);
 					module = NULL;
 				}
 				else
 				{
-					THREAD_CONTROL default_thread =
+					if (connection_setup(module, config) < 0)
 					{
-						NULL,
-						NULL,
-						0
-					};
-					module->broker = broker;
-					module->message_thread = default_thread;
-					module->control_thread = default_thread;
-					module->async_thread = default_thread;
-					module->lifecyle_model = config->lifecycle_model;
-
-					if ((module->message_thread.thread_lock = Lock_Init()) == NULL)
-					{
+						/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+						LogError("unable to set up connections");
 						connection_teardown(module);
-						Lock_Deinit(module->handle_lock);
-						free(module);
-						module = NULL;
-					}
-					else if ((module->control_thread.thread_lock = Lock_Init()) == NULL)
-					{
-						connection_teardown(module);
-						Lock_Deinit(module->message_thread.thread_lock);
-						Lock_Deinit(module->handle_lock);
-						free(module);
-						module = NULL;
-					}
-					else if ((module->async_thread.thread_lock = Lock_Init()) == NULL)
-					{
-						connection_teardown(module);
-						Lock_Deinit(module->control_thread.thread_lock);
-						Lock_Deinit(module->message_thread.thread_lock);
-						Lock_Deinit(module->handle_lock);
-						free(module);
-						module = NULL;
-					}
-					else if (save_strings(module, config) != 0)
-					{
-						connection_teardown(module);
-						Lock_Deinit(module->async_thread.thread_lock);
-						Lock_Deinit(module->control_thread.thread_lock);
-						Lock_Deinit(module->message_thread.thread_lock);
+						MESSAGE_QUEUE_destroy(module->outgoing_messages);
 						Lock_Deinit(module->handle_lock);
 						free(module);
 						module = NULL;
 					}
 					else
 					{
-						/*Codes_SRS_OUTPROCESS_MODULE_17_014: [ This function shall wait for a Create Response on the control channel. ]*/
-						if (ThreadAPI_Create(&(module->async_thread.thread_handle), outprocessCreate, module) != THREADAPI_OK)
+						THREAD_CONTROL default_thread =
 						{
-							/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-							connection_teardown(module);
+							NULL,
+							NULL,
+							0
+						};
+						module->broker = broker;
+						module->message_receive_thread = default_thread;
+						module->message_send_thread = default_thread;
+						module->control_thread = default_thread;
+						module->async_create_thread = default_thread;
+						module->lifecyle_model = config->lifecycle_model;
 
-							LogError("failed to spawn a thread");
-							module->async_thread.thread_handle = NULL;
+						if ((module->message_receive_thread.thread_lock = Lock_Init()) == NULL)
+						{
 							connection_teardown(module);
-							delete_strings(module);
-							Lock_Deinit(module->async_thread.thread_lock);
+							MESSAGE_QUEUE_destroy(module->outgoing_messages);
+							Lock_Deinit(module->handle_lock);
+							free(module);
+							module = NULL;
+						}
+						else if ((module->control_thread.thread_lock = Lock_Init()) == NULL)
+						{
+							connection_teardown(module);
+							MESSAGE_QUEUE_destroy(module->outgoing_messages);
+							Lock_Deinit(module->message_receive_thread.thread_lock);
+							Lock_Deinit(module->handle_lock);
+							free(module);
+							module = NULL;
+						}
+						else if ((module->async_create_thread.thread_lock = Lock_Init()) == NULL)
+						{
+							connection_teardown(module);
+							MESSAGE_QUEUE_destroy(module->outgoing_messages);
 							Lock_Deinit(module->control_thread.thread_lock);
-							Lock_Deinit(module->message_thread.thread_lock);
+							Lock_Deinit(module->message_receive_thread.thread_lock);
+							Lock_Deinit(module->handle_lock);
+							free(module);
+							module = NULL;
+						}
+						else if ((module->message_send_thread.thread_lock = Lock_Init()) == NULL)
+						{
+							connection_teardown(module);
+							MESSAGE_QUEUE_destroy(module->outgoing_messages);
+							Lock_Deinit(module->control_thread.thread_lock);
+							Lock_Deinit(module->message_receive_thread.thread_lock);
+							Lock_Deinit(module->handle_lock);
+							free(module);
+							module = NULL;
+						}
+						else if (save_strings(module, config) != 0)
+						{
+							connection_teardown(module);
+							MESSAGE_QUEUE_destroy(module->outgoing_messages);
+							Lock_Deinit(module->async_create_thread.thread_lock);
+							Lock_Deinit(module->control_thread.thread_lock);
+							Lock_Deinit(module->message_receive_thread.thread_lock);
 							Lock_Deinit(module->handle_lock);
 							free(module);
 							module = NULL;
 						}
 						else
 						{
-							int thread_result = -1;
-							if (module->lifecyle_model == OUTPROCESS_LIFECYCLE_SYNC)
-							{
-								if (ThreadAPI_Join(module->async_thread.thread_handle, &thread_result) != THREADAPI_OK)
-								{
-									/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-									LogError("Async create thread failed result=[%d]", thread_result);
-									thread_result = -1;
-								}
-								else
-								{
-									/*Codes_SRS_OUTPROCESS_MODULE_17_015: [ This function shall expect a successful result from the Create Response to consider the module creation a success. ]*/
-									// async thread is done.
-									module->async_thread.thread_handle = NULL;
-								}
-							}
-							else
-							{
-								thread_result = 1;
-							}
-							if (thread_result < 0)
+							/*Codes_SRS_OUTPROCESS_MODULE_17_014: [ This function shall wait for a Create Response on the control channel. ]*/
+							if (ThreadAPI_Create(&(module->async_create_thread.thread_handle), outprocessCreate, module) != THREADAPI_OK)
 							{
 								/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
 								connection_teardown(module);
+
+								LogError("failed to spawn a thread");
+								module->async_create_thread.thread_handle = NULL;
+								connection_teardown(module);
 								delete_strings(module);
-								Lock_Deinit(module->async_thread.thread_lock);
+								MESSAGE_QUEUE_destroy(module->outgoing_messages);
+								Lock_Deinit(module->async_create_thread.thread_lock);
 								Lock_Deinit(module->control_thread.thread_lock);
-								Lock_Deinit(module->message_thread.thread_lock);
+								Lock_Deinit(module->message_receive_thread.thread_lock);
 								Lock_Deinit(module->handle_lock);
 								free(module);
 								module = NULL;
+							}
+							else
+							{
+								int thread_result = -1;
+								if (module->lifecyle_model == OUTPROCESS_LIFECYCLE_SYNC)
+								{
+									if (ThreadAPI_Join(module->async_create_thread.thread_handle, &thread_result) != THREADAPI_OK)
+									{
+										/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+										LogError("Async create thread failed result=[%d]", thread_result);
+										thread_result = -1;
+									}
+									else
+									{
+										/*Codes_SRS_OUTPROCESS_MODULE_17_015: [ This function shall expect a successful result from the Create Response to consider the module creation a success. ]*/
+										// async thread is done.
+										module->async_create_thread.thread_handle = NULL;
+									}
+								}
+								else
+								{
+									thread_result = 1;
+								}
+								if (thread_result < 0)
+								{
+									/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+									connection_teardown(module);
+									delete_strings(module);
+									MESSAGE_QUEUE_destroy(module->outgoing_messages);
+									Lock_Deinit(module->async_create_thread.thread_lock);
+									Lock_Deinit(module->control_thread.thread_lock);
+									Lock_Deinit(module->message_receive_thread.thread_lock);
+									Lock_Deinit(module->handle_lock);
+									free(module);
+									module = NULL;
+								}
 							}
 						}
 					}
@@ -724,6 +854,34 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 		}
 	}
 	return module;
+}
+
+static void shutdown_a_thread(THREAD_CONTROL * theThreadControl)
+{
+	int notUsed;
+	THREAD_HANDLE theCurrentThread;
+	/*Codes_SRS_OUTPROCESS_MODULE_17_027: [ This function shall ensure thread safety on execution. ]*/
+	if (Lock(theThreadControl->thread_lock) != LOCK_OK)
+	{
+		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+		LogError("not able to Lock, still setting the thread to finish");
+		theThreadControl->thread_flag = THREAD_FLAG_STOP;
+	}
+	else
+	{
+		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+		theThreadControl->thread_flag = THREAD_FLAG_STOP;
+		theCurrentThread = theThreadControl->thread_handle;
+		Unlock(theThreadControl->thread_lock);
+	}
+
+	/*Codes_SRS_OUTPROCESS_MODULE_17_033: [ This function shall wait for the messaging thread to complete. ]*/
+	if (theCurrentThread != NULL &&
+		ThreadAPI_Join(theCurrentThread, &notUsed) != THREADAPI_OK)
+	{
+		LogError("unable to ThreadAPI_Join message thread, still proceeding in _Destroy");
+	}
+	(void)Lock_Deinit(theThreadControl->thread_lock);
 }
 
 static void Outprocess_Destroy(MODULE_HANDLE moduleHandle)
@@ -770,70 +928,14 @@ static void Outprocess_Destroy(MODULE_HANDLE moduleHandle)
 		/*Codes_SRS_OUTPROCESS_MODULE_17_031: [ This function shall close the control channel socket. ]*/
 		connection_teardown(handleData);
 		/*then stop the thread*/
-		int notUsed;
-		THREAD_HANDLE theCurrentThread;
-		/*Codes_SRS_OUTPROCESS_MODULE_17_027: [ This function shall ensure thread safety on execution. ]*/
-		if (Lock(handleData->message_thread.thread_lock) != LOCK_OK)
-		{
-			/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
-			LogError("not able to Lock, still setting the thread to finish");
-			handleData->message_thread.thread_flag = THREAD_FLAG_STOP;
-		}
-		else
-		{
-			/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
-			handleData->message_thread.thread_flag = THREAD_FLAG_STOP;
-			theCurrentThread = handleData->message_thread.thread_handle;
-			Unlock(handleData->message_thread.thread_lock);
-		}
 
-		/*Codes_SRS_OUTPROCESS_MODULE_17_033: [ This function shall wait for the messaging thread to complete. ]*/
-		if (theCurrentThread != NULL &&
-			ThreadAPI_Join(theCurrentThread, &notUsed) != THREADAPI_OK)
-		{
-			LogError("unable to ThreadAPI_Join message thread, still proceeding in _Destroy");
-		}
-
+		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+		shutdown_a_thread(&(handleData->message_receive_thread));
+		shutdown_a_thread(&(handleData->message_send_thread));
 		/*Codes_SRS_OUTPROCESS_MODULE_17_031: [ This function shall close the control channel socket. ]*/
-		if (Lock(handleData->async_thread.thread_lock) != LOCK_OK)
-		{
-			LogError("not able to Lock, still setting the thread to finish");
-			handleData->async_thread.thread_flag = THREAD_FLAG_STOP;
-		}
-		else
-		{
-			handleData->async_thread.thread_flag = THREAD_FLAG_STOP;
-			theCurrentThread = handleData->async_thread.thread_handle;
-			Unlock(handleData->async_thread.thread_lock);
-		}
+		shutdown_a_thread(&(handleData->control_thread));
+		shutdown_a_thread(&(handleData->async_create_thread));
 
-		if (theCurrentThread != NULL &&
-			ThreadAPI_Join(theCurrentThread, &notUsed) != THREADAPI_OK)
-		{
-			LogError("unable to ThreadAPI_Join async create thread, still proceeding in _Destroy");
-		}
-
-		if (Lock(handleData->control_thread.thread_lock) != LOCK_OK)
-		{
-			LogError("not able to Lock, still setting the thread to finish");
-			handleData->control_thread.thread_flag = THREAD_FLAG_STOP;
-		}
-		else
-		{
-			handleData->control_thread.thread_flag = THREAD_FLAG_STOP;
-			theCurrentThread = handleData->control_thread.thread_handle;
-			Unlock(handleData->control_thread.thread_lock);
-		}
-
-		if (theCurrentThread != NULL &&
-			ThreadAPI_Join(theCurrentThread, &notUsed) != THREADAPI_OK)
-		{
-			LogError("unable to ThreadAPI_Join control thread, still proceeding in _Destroy");
-		}
-
-		(void)Lock_Deinit(handleData->message_thread.thread_lock);
-		(void)Lock_Deinit(handleData->async_thread.thread_lock);
-		(void)Lock_Deinit(handleData->control_thread.thread_lock);
 		/* Free remaining resources*/
 		delete_strings(handleData);
 		/*Codes_SRS_OUTPROCESS_MODULE_17_034: [ This function shall release all resources created by this module. ]*/
@@ -848,32 +950,25 @@ static void Outprocess_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 	/*Codes_SRS_OUTPROCESS_MODULE_17_022: [ If module or message_handle is NULL, this function shall do nothing. ]*/
 	if (handleData != NULL && messageHandle != NULL)
 	{
-		/* forward message to remote */
-		/*Codes_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
-		int32_t msg_size = Message_ToByteArray(messageHandle, NULL, 0);
-		if (msg_size < 0)
+		MESSAGE_HANDLE queued_message = Message_Clone(messageHandle);
+		if (queued_message == NULL)
 		{
-			LogError("unable to serialize received message [%p]", messageHandle);
+			LogError("unable to clone message");
 		}
 		else
 		{
-			void* result = nn_allocmsg(msg_size, 0);
-			if (result == NULL)
+			if (Lock(handleData->handle_lock) != LOCK_OK)
 			{
-				LogError("unable to allocate buffer for received message [%p]", messageHandle);
+				LogError("unable to Lock handle data");
 			}
 			else
 			{
-				unsigned char *nn_msg_bytes = (unsigned char *)result;
-				Message_ToByteArray(messageHandle, nn_msg_bytes, msg_size);
-				/*Codes_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-				int nbytes = nn_send(handleData->message_socket, &result, NN_MSG, 0);
-				if (nbytes != msg_size)
+				if (MESSAGE_QUEUE_push(handleData->outgoing_messages, queued_message) != 0)
 				{
-					LogError("unable to send buffer to remote for message [%p]", messageHandle);
-					/*Codes_SRS_OUTPROCESS_MODULE_17_025: [ This function shall free any resources created. ]*/
-					nn_freemsg(result);
+					LogError("unable to queue the message");
+					Message_Destroy(queued_message);
 				}
+				(void)Unlock(handleData->handle_lock);
 			}
 		}
 	}
@@ -887,10 +982,15 @@ static void Outprocess_Start(MODULE_HANDLE moduleHandle)
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_017: [ This function shall ensure thread safety on execution. ]*/
 		/*Codes_SRS_OUTPROCESS_MODULE_17_018: [ This function shall create a thread to handle receiving messages from module host. ]*/
-		if (ThreadAPI_Create(&(handleData->message_thread.thread_handle), outprocessMessageThread, handleData) != THREADAPI_OK)
+		if (ThreadAPI_Create(&(handleData->message_receive_thread.thread_handle), outprocessMessageThread, handleData) != THREADAPI_OK)
 		{
 			LogError("failed to spawn message handling thread");
-			handleData->message_thread.thread_handle = NULL;
+			handleData->message_receive_thread.thread_handle = NULL;
+		}
+		else if (ThreadAPI_Create(&(handleData->message_send_thread.thread_handle), outprocessSendMsgThread, handleData) != THREADAPI_OK)
+		{
+			LogError("failed to spawn outgoing message thread");
+			handleData->control_thread.thread_handle = NULL;
 		}
 		else if (ThreadAPI_Create(&(handleData->control_thread.thread_handle), outprocessControlThread, handleData) != THREADAPI_OK)
 		{

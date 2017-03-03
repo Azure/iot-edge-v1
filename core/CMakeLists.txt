@@ -60,6 +60,7 @@ endmacro (nn_check_lib)
 
 set(gateway_c_sources
     ./src/message.c
+    ./src/message_queue.c
     ./src/internal/event_system.c
     ./src/gateway_internal.c
     ./src/gateway.c
@@ -72,6 +73,7 @@ set(gateway_c_sources
 
 set(gateway_h_sources
     ./inc/message.h
+    ./inc/message_queue.h
     ./inc/broker.h
     ./inc/module.h
     ./inc/module_access.h
