@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Azure.IoT.Gateway
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.IoT.Gateway
 {
     /// <summary> Optional Start Interface to be implemented by the .NET Module </summary>
     public interface IGatewayModuleStart
