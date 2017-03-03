@@ -551,49 +551,49 @@ TEST_FUNCTION(attach_SCENARIO_negative_tests)
     umock_c_negative_tests_deinit();
 }
 
-/* Tests_SRS_PROXY_GATEWAY_027_017: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `RemoteModule_StartWorkerThread` shall do nothing and return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_018: [Prerequisite Check - If a work thread already exist for the given handle, then `RemoteModule_StartWorkerThread` shall do nothing and return zero] */
-/* Tests_SRS_PROXY_GATEWAY_027_019: [`RemoteModule_StartWorkerThread` shall allocate the memory required to support the worker thread] */
-/* Tests_SRS_PROXY_GATEWAY_027_020: [If memory allocation fails for the worker thread data, then `RemoteModule_StartWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_021: [`RemoteModule_StartWorkerThread` shall create a mutex by calling `LOCK_HANDLE Lock_Init(void)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_022: [If a mutex is unable to be created, then `RemoteModule_StartWorkerThread` shall free any previously allocated memory and return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_023: [`RemoteModule_StartWorkerThread` shall start a worker thread by calling `THREADAPI_RESULT ThreadAPI_Create(&THREAD_HANDLE threadHandle, THREAD_START_FUNC func, void * arg)` with an empty thread handle for `threadHandle`, a function that loops polling the messages for `func`, and `remote_module` for `arg`] */
-/* Tests_SRS_PROXY_GATEWAY_027_024: [If the worker thread failed to start, then `RemoteModule_StartWorkerThread` shall free any previously allocated memory and return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_025: [If no errors are encountered, then `RemoteModule_StartWorkerThread` shall return zero] */
+/* Tests_SRS_PROXY_GATEWAY_027_017: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `ProxyGateway_StartWorkerThread` shall do nothing and return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_018: [Prerequisite Check - If a work thread already exist for the given handle, then `ProxyGateway_StartWorkerThread` shall do nothing and return zero] */
+/* Tests_SRS_PROXY_GATEWAY_027_019: [`ProxyGateway_StartWorkerThread` shall allocate the memory required to support the worker thread] */
+/* Tests_SRS_PROXY_GATEWAY_027_020: [If memory allocation fails for the worker thread data, then `ProxyGateway_StartWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_021: [`ProxyGateway_StartWorkerThread` shall create a mutex by calling `LOCK_HANDLE Lock_Init(void)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_022: [If a mutex is unable to be created, then `ProxyGateway_StartWorkerThread` shall free any previously allocated memory and return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_023: [`ProxyGateway_StartWorkerThread` shall start a worker thread by calling `THREADAPI_RESULT ThreadAPI_Create(&THREAD_HANDLE threadHandle, THREAD_START_FUNC func, void * arg)` with an empty thread handle for `threadHandle`, a function that loops polling the messages for `func`, and `remote_module` for `arg`] */
+/* Tests_SRS_PROXY_GATEWAY_027_024: [If the worker thread failed to start, then `ProxyGateway_StartWorkerThread` shall free any previously allocated memory and return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_025: [If no errors are encountered, then `ProxyGateway_StartWorkerThread` shall return zero] */
 
-/* Tests_SRS_PROXY_GATEWAY_027_026: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `RemoteModule_DoWork` shall do nothing] */
-/* Tests_SRS_PROXY_GATEWAY_027_027: [Control Channel - `RemoteModule_DoWork` shall poll the gateway control channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with the control socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
-/* Tests_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available or an error occurred, then `RemoteModule_DoWork` shall abandon the control channel request] */
-/* Tests_SRS_PROXY_GATEWAY_027_029: [Control Channel - If a control message was received, then `RemoteModule_DoWork` will parse that message by calling `CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char * source, size_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
-/* Tests_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `RemoteModule_DoWork` shall free any previously allocated memory and abandon the control channel request] */
-/* Tests_SRS_PROXY_GATEWAY_027_031: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_CREATE, then `RemoteModule_DoWork` shall process the create message] */
-/* Tests_SRS_PROXY_GATEWAY_027_032: [Control Channel - If unable process the create message, `RemoteModule_DoWork` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_033: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_START and `Module_Start` was provided, then `RemoteModule_DoWork` shall call `void Module_Start(MODULE_HANDLE moduleHandle)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_034: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `RemoteModule_DoWork` shall call `void Module_Destroy(MODULE_HANDLE moduleHandle)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_035: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `RemoteModule_DoWork` shall disconnect from the message channel] */
-/* Tests_SRS_PROXY_GATEWAY_027_036: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the parsed control message by calling `void ControlMessage_Destroy(CONTROL_MESSAGE * message)` using the parsed control message as `message`] */
-/* Tests_SRS_PROXY_GATEWAY_027_037: [Control Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
-/* Tests_SRS_PROXY_GATEWAY_027_038: [Message Channel - `RemoteModule_DoWork` shall poll each gateway message channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with each message socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
-/* Tests_SRS_PROXY_GATEWAY_027_039: [Message Channel - If no message is available or an error occurred, then `RemoteModule_DoWork` shall abandon the message channel request] */
-/* Tests_SRS_PROXY_GATEWAY_027_040: [Message Channel - If a module message was received, then `RemoteModule_DoWork` will parse that message by calling `MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char * source, int32_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
-/* Tests_SRS_PROXY_GATEWAY_027_041: [Message Channel - If unable to parse the module message, then `RemoteModule_DoWork` shall free any previously allocated memory and abandon the message channel request] */
-/* Tests_SRS_PROXY_GATEWAY_027_042: [Message Channel - `RemoteModule_DoWork` shall pass the structured message to the module by calling `void Module_Receive(MODULE_HANDLE moduleHandle)` using the parsed message as `moduleHandle`] */
-/* Tests_SRS_PROXY_GATEWAY_027_043: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the parsed module message by calling `void Message_Destroy(MESSAGE_HANDLE * message)` using the parsed module message as `message`] */
-/* Tests_SRS_PROXY_GATEWAY_027_044: [Message Channel - `RemoteModule_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
+/* Tests_SRS_PROXY_GATEWAY_027_026: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `ProxyGateway_DoWork` shall do nothing] */
+/* Tests_SRS_PROXY_GATEWAY_027_027: [Control Channel - `ProxyGateway_DoWork` shall poll the gateway control channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with the control socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
+/* Tests_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available or an error occurred, then `ProxyGateway_DoWork` shall abandon the control channel request] */
+/* Tests_SRS_PROXY_GATEWAY_027_029: [Control Channel - If a control message was received, then `ProxyGateway_DoWork` will parse that message by calling `CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char * source, size_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
+/* Tests_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `ProxyGateway_DoWork` shall free any previously allocated memory and abandon the control channel request] */
+/* Tests_SRS_PROXY_GATEWAY_027_031: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_CREATE, then `ProxyGateway_DoWork` shall process the create message] */
+/* Tests_SRS_PROXY_GATEWAY_027_032: [Control Channel - If unable process the create message, `ProxyGateway_DoWork` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_033: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_START and `Module_Start` was provided, then `ProxyGateway_DoWork` shall call `void Module_Start(MODULE_HANDLE moduleHandle)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_034: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `ProxyGateway_DoWork` shall call `void Module_Destroy(MODULE_HANDLE moduleHandle)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_035: [Control Channel - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `ProxyGateway_DoWork` shall disconnect from the message channel] */
+/* Tests_SRS_PROXY_GATEWAY_027_036: [Control Channel - `ProxyGateway_DoWork` shall free the resources held by the parsed control message by calling `void ControlMessage_Destroy(CONTROL_MESSAGE * message)` using the parsed control message as `message`] */
+/* Tests_SRS_PROXY_GATEWAY_027_037: [Control Channel - `ProxyGateway_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
+/* Tests_SRS_PROXY_GATEWAY_027_038: [Message Channel - `ProxyGateway_DoWork` shall poll each gateway message channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with each message socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
+/* Tests_SRS_PROXY_GATEWAY_027_039: [Message Channel - If no message is available or an error occurred, then `ProxyGateway_DoWork` shall abandon the message channel request] */
+/* Tests_SRS_PROXY_GATEWAY_027_040: [Message Channel - If a module message was received, then `ProxyGateway_DoWork` will parse that message by calling `MESSAGE_HANDLE Message_CreateFromByteArray(const unsigned char * source, int32_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
+/* Tests_SRS_PROXY_GATEWAY_027_041: [Message Channel - If unable to parse the module message, then `ProxyGateway_DoWork` shall free any previously allocated memory and abandon the message channel request] */
+/* Tests_SRS_PROXY_GATEWAY_027_042: [Message Channel - `ProxyGateway_DoWork` shall pass the structured message to the module by calling `void Module_Receive(MODULE_HANDLE moduleHandle)` using the parsed message as `moduleHandle`] */
+/* Tests_SRS_PROXY_GATEWAY_027_043: [Message Channel - `ProxyGateway_DoWork` shall free the resources held by the parsed module message by calling `void Message_Destroy(MESSAGE_HANDLE * message)` using the parsed module message as `message`] */
+/* Tests_SRS_PROXY_GATEWAY_027_044: [Message Channel - `ProxyGateway_DoWork` shall free the resources held by the gateway message by calling `int nn_freemsg(void * msg)` with the resulting buffer from the previous call to `nn_recv`] */
 
-/* Tests_SRS_PROXY_GATEWAY_027_045: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_046: [Prerequisite Check - If a worker thread does not exist, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_047: [`RemoteModule_HaltWorkerThread` shall obtain the thread mutex in order to signal the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_048: [If unable to obtain the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_049: [`RemoteModule_HaltWorkerThread` shall release the thread mutex upon signalling by calling `LOCK_RESULT Unlock(LOCK_HANDLE handle)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_050: [If unable to release the mutex, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_051: [`RemoteModule_HaltWorkerThread` shall halt the thread by calling `THREADAPI_RESULT ThreadAPI_Join(THREAD_HANDLE handle, int * res)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_052: [If unable to join the thread, then `RemoteModule_HaltWorkerThread` shall return a non-zero value] */
-/* Tests_SRS_PROXY_GATEWAY_027_053: [`RemoteModule_HaltWorkerThread` shall free the thread mutex by calling `LOCK_RESULT Lock_Deinit(LOCK_HANDLE handle)`] */
-/* Tests_SRS_PROXY_GATEWAY_027_054: [If unable to free the thread mutex, then `RemoteModule_HaltWorkerThread` shall ignore the result and continue processing] */
-/* Tests_SRS_PROXY_GATEWAY_027_055: [`RemoteModule_HaltWorkerThread` shall free the memory allocated to the thread details] */
-/* Tests_SRS_PROXY_GATEWAY_027_056: [If an error is returned from the worker thread, then `RemoteModule_HaltWorkerThread` shall return the worker thread's error code] */
-/* Tests_SRS_PROXY_GATEWAY_027_057: [If no errors are encountered, then `RemoteModule_HaltWorkerThread` shall return zero] */
+/* Tests_SRS_PROXY_GATEWAY_027_045: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `ProxyGateway_HaltWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_046: [Prerequisite Check - If a worker thread does not exist, then `ProxyGateway_HaltWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_047: [`ProxyGateway_HaltWorkerThread` shall obtain the thread mutex in order to signal the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_048: [If unable to obtain the mutex, then `ProxyGateway_HaltWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_049: [`ProxyGateway_HaltWorkerThread` shall release the thread mutex upon signalling by calling `LOCK_RESULT Unlock(LOCK_HANDLE handle)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_050: [If unable to release the mutex, then `ProxyGateway_HaltWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_051: [`ProxyGateway_HaltWorkerThread` shall halt the thread by calling `THREADAPI_RESULT ThreadAPI_Join(THREAD_HANDLE handle, int * res)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_052: [If unable to join the thread, then `ProxyGateway_HaltWorkerThread` shall return a non-zero value] */
+/* Tests_SRS_PROXY_GATEWAY_027_053: [`ProxyGateway_HaltWorkerThread` shall free the thread mutex by calling `LOCK_RESULT Lock_Deinit(LOCK_HANDLE handle)`] */
+/* Tests_SRS_PROXY_GATEWAY_027_054: [If unable to free the thread mutex, then `ProxyGateway_HaltWorkerThread` shall ignore the result and continue processing] */
+/* Tests_SRS_PROXY_GATEWAY_027_055: [`ProxyGateway_HaltWorkerThread` shall free the memory allocated to the thread details] */
+/* Tests_SRS_PROXY_GATEWAY_027_056: [If an error is returned from the worker thread, then `ProxyGateway_HaltWorkerThread` shall return the worker thread's error code] */
+/* Tests_SRS_PROXY_GATEWAY_027_057: [If no errors are encountered, then `ProxyGateway_HaltWorkerThread` shall return zero] */
 
 /* Tests_SRS_PROXY_GATEWAY_027_058: [Prerequisite Check - If the `remote_module` parameter is `NULL`, then `ProxyGateway_Detach` shall do nothing] */
 /* Tests_SRS_PROXY_GATEWAY_027_059: [If the worker thread is active, then `ProxyGateway_Detach` shall attempt to halt the worker thread] */

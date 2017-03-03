@@ -19,9 +19,9 @@ typedef struct REMOTE_MODULE_TAG * REMOTE_MODULE_HANDLE;
 
 MOCKABLE_FUNCTION(, GATEWAY_EXPORT REMOTE_MODULE_HANDLE, ProxyGateway_Attach, const MODULE_API *, module_apis, const char *, connection_id);
 MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, ProxyGateway_Detach, REMOTE_MODULE_HANDLE, remote_module);
-MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, RemoteModule_DoWork, REMOTE_MODULE_HANDLE, remote_module);
-MOCKABLE_FUNCTION(, GATEWAY_EXPORT int, RemoteModule_HaltWorkerThread, REMOTE_MODULE_HANDLE, remote_module);
-MOCKABLE_FUNCTION(, GATEWAY_EXPORT int, RemoteModule_StartWorkerThread, REMOTE_MODULE_HANDLE, remote_module);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, ProxyGateway_DoWork, REMOTE_MODULE_HANDLE, remote_module);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT int, ProxyGateway_HaltWorkerThread, REMOTE_MODULE_HANDLE, remote_module);
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT int, ProxyGateway_StartWorkerThread, REMOTE_MODULE_HANDLE, remote_module);
 
 #ifdef __cplusplus
   }
