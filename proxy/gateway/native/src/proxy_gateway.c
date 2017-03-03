@@ -683,13 +683,13 @@ process_module_create_message (
 
 /* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall calculate the serialized message size by calling `size_t ControlMessage_ToByteArray(CONTROL MESSAGE * message, unsigned char * buf, size_t size)`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to calculate the serialized message size, `send_control_reply` shall return a non-zero value] */
-/* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` allocate the necessary space for the serialized message] */
+/* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` allocate the necessary space for the nano message, by calling `void * nn_allocmsg(size_t size, int type)` using the previously acquired message size for `size` and `0` for `type`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to allocate memory, `send_control_reply` shall return a non-zero value] */
 /* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall serialize a creation reply indicating the creation status by calling `size_t ControlMessage_ToByteArray(CONTROL MESSAGE * message, unsigned char * buf, size_t size)`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to serialize the creation message reply, `send_control_reply` shall return a non-zero value] */
 /* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall send the serialized message by calling `int nn_send(int s, const void * buf, size_t len, int flags)` using the serialized message as the `buf` parameter and the value returned from `ControlMessage_ToByteArray` as `len`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to send the serialized message, `send_control_reply` shall free the serialized message and return a non-zero value] */
-/* SRS_PROXY_GATEWAY_027_0xx: [`send_control_reply` shall free the serialized message] */
+/* SRS_PROXY_GATEWAY_027_0xx: [If unable to send the serialized message, `send_control_reply` shall release the nano message by calling `int nn_freemsg(void * msg)` using the previously acquired nano message pointer as `msg`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If no errors are encountered, `send_control_reply` shall return zero] */
 int
 send_control_reply (
@@ -711,19 +711,19 @@ send_control_reply (
         LogError("%s: Unable to calculate serialized message size!", __FUNCTION__);
         result = __LINE__;
     } else {
-        if (NULL == (message_buffer = malloc(message_size))) {
+        if (NULL == (message_buffer = nn_allocmsg(message_size, 0))) {
             LogError("%s: Unable to allocate message!", __FUNCTION__);
             result = __LINE__;
         } else if (0 > ControlMessage_ToByteArray((CONTROL_MESSAGE *)&reply, message_buffer, message_size)) {
             LogError("%s: Unable to serialize message!", __FUNCTION__);
             result = __LINE__;
-        } else if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, message_size, NN_DONTWAIT))) {
+        } else if (0 > (message_size = nn_send(remote_module->control_socket, message_buffer, NN_MSG, NN_DONTWAIT))) {
             LogError("%s: Unable to send message to gateway process!", __FUNCTION__);
             result = __LINE__;
+            nn_freemsg(message_buffer);
         } else {
             result = 0;
         }
-        free(message_buffer);
     }
     
     return result;
