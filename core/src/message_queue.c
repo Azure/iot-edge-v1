@@ -66,7 +66,7 @@ void MESSAGE_QUEUE_destroy(MESSAGE_QUEUE_HANDLE handle)
     {
 		MESSAGE_QUEUE_HANDLE_DATA * mq = (MESSAGE_QUEUE_HANDLE_DATA*)handle;
         MESSAGE_HANDLE message;
-        while((message = message_pop(mq)) == NULL)
+        while((message = message_pop(mq)) != NULL)
         {
             Message_Destroy(message);
         }
