@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.Azure.IoT.Gateway
 {
-    public class DotNetCoreReflectionLayer
+    internal class DotNetCoreReflectionLayer
     {
         virtual public Type GetType(string assemblyName, string entryType)
         {
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.IoT.Gateway
     ///    This class holds the static methods that are going to be called by the native .NET Core binding in order to create a module, receive message, destroy and start modules. 
     ///     It will use reflection to call the.NET Core managed module.
     /// </summary>
-    public class NetCoreInterop
+    internal class NetCoreInterop
     {
 
         private static NetCoreInteropInstance _netCoreInteropInstance = NetCoreInteropInstance.GetInstance();

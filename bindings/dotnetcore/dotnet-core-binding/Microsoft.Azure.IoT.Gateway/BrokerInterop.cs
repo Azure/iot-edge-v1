@@ -12,7 +12,7 @@ namespace Microsoft.Azure.IoT.Gateway
     /// <summary>
     ///     Wrapper Used for Native/Managed Interop.
     /// </summary>
-    public class BrokerInterop
+    internal class BrokerInterop
     {
         /// <summary>
         ///      Module_DotNetCoreHost wrapper for publishing a message.

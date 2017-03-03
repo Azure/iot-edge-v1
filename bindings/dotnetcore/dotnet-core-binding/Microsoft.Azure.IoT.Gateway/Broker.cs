@@ -25,7 +25,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// <param name="broker">A reference to an existing broker.</param>
         /// <param name="module">A reference to an existing module.</param>
         /// <param name="nativeWrapper">A Native DotNet Core Host Wrapper used for Mocking purposes on Unit Tests.</param>
-        public Broker(IntPtr broker, IntPtr module, BrokerInterop brokerInterop)
+        internal Broker(IntPtr broker, IntPtr module, BrokerInterop brokerInterop)
         {
             /* Codes_SRS_DOTNET_CORE_BROKER_04_001: [ If broker is <= 0, Broker constructor shall throw a new ArgumentException ] */
             if (broker == IntPtr.Zero)
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.IoT.Gateway
         /// </summary>
         /// <param name="broker">A reference to an existing broker.</param>
         /// <param name="module">A reference to an existing module.</param>
-        public Broker(IntPtr broker, IntPtr module) : this(broker, module, new BrokerInterop())
+        internal Broker(IntPtr broker, IntPtr module) : this(broker, module, new BrokerInterop())
         {
 
         }

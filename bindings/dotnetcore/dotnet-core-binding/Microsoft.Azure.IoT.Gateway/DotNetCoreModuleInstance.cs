@@ -9,7 +9,7 @@ namespace Microsoft.Azure.IoT.Gateway
     /// <summary>
     ///   Object that represents a .NET Core module instance.
     /// </summary>
-    public class DotNetCoreModuleInstance
+    internal class DotNetCoreModuleInstance
     {
         /// <summary>
         /// .NET Core module Instance.
