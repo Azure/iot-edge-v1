@@ -101,7 +101,7 @@ namespace Microsoft.Azure.IoT.Gateway
                     new Type[] { System.Type.GetType("Microsoft.Azure.IoT.Gateway.Broker"), System.Type.GetType("System.Byte[]") }
                     );
 
-                Microsoft.Azure.IoT.Gateway.Broker brokerObject = new Broker(broker, module);
+                Microsoft.Azure.IoT.Gateway.Broker brokerObject = new Broker(broker, module, new BrokerInterop());
 
                 /* Codes_SRS_DOTNET_CORE_NATIVE_MANAGED_GATEWAY_INTEROP_04_009: [ Create shall call Create method on client module. ] */
                 byte[] moduleConfiguration = configuration == null ? Encoding.UTF8.GetBytes("") : Encoding.UTF8.GetBytes(configuration);

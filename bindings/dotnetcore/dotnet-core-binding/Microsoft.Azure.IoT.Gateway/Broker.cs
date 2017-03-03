@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.IoT.Gateway
 {
+    public interface IBrokerInterop
+    {
+        bool PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message);
+    }
+
     /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
     public class Broker
     {
@@ -16,16 +21,16 @@ namespace Microsoft.Azure.IoT.Gateway
 
         private IntPtr moduleHandle;
 
-        private BrokerInterop brokerInterop;
+        private IBrokerInterop brokerInterop;
 
 #if !DOXYGEN_SHOULD_SKIP_THIS
         /// <summary>
-        ///   Constructor for a Broker that receives a reference to a broker, module and a brokerInterop. NativeWrapper is used for Unit Tests.
+        ///   Creates a managed proxy for the gateway's native broker.
         /// </summary>
-        /// <param name="broker">A reference to an existing broker.</param>
-        /// <param name="module">A reference to an existing module.</param>
-        /// <param name="nativeWrapper">A Native DotNet Core Host Wrapper used for Mocking purposes on Unit Tests.</param>
-        internal Broker(IntPtr broker, IntPtr module, BrokerInterop brokerInterop)
+        /// <param name="broker">A reference to the gateway's native broker.</param>
+        /// <param name="module">A reference to the module associated with this broker.</param>
+        /// <param name="brokerInterop">An object used to interop with the native broker.</param>
+        internal Broker(IntPtr broker, IntPtr module, IBrokerInterop brokerInterop)
         {
             /* Codes_SRS_DOTNET_CORE_BROKER_04_001: [ If broker is <= 0, Broker constructor shall throw a new ArgumentException ] */
             if (broker == IntPtr.Zero)
@@ -45,17 +50,6 @@ namespace Microsoft.Azure.IoT.Gateway
                 this.brokerInterop = brokerInterop;
             }
         }
-
-        /// <summary>
-        ///   Broker Default Contructor that received a long for reference to an existing broker and another long to a reference to a module.
-        /// </summary>
-        /// <param name="broker">A reference to an existing broker.</param>
-        /// <param name="module">A reference to an existing module.</param>
-        internal Broker(IntPtr broker, IntPtr module) : this(broker, module, new BrokerInterop())
-        {
-
-        }
-
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
         /// <summary>
