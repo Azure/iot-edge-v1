@@ -3,13 +3,13 @@
   "buildOptions": {
     "debugType": "portable"
   },
-    "dependencies": {
-        "System.Runtime.Serialization.Primitives": "4.1.1",
-        "xunit": "2.1.0",
-        "dotnet-test-xunit": "1.0.0-rc2-192208-24",
-        "Microsoft.Azure.IoT.Gateway": "1.0.0-*",
-        "Moq": "4.6.38-alpha"
-    },
+  "dependencies": {
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "xunit": "2.1.0",
+    "dotnet-test-xunit": "1.0.0-rc2-192208-24",
+    "Microsoft.Azure.Devices.Gateway": "1.0.0-*",
+    "Moq": "4.6.38-alpha"
+  },
   "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {

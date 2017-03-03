@@ -41,12 +41,12 @@ The [devbox setup](../../doc/devbox_setup.md) guide has more information on how 
 
 The `build_dotnet_core.cmd` script builds the .NET Core Modules in the solution located here (../bindings/dotnetcore/dotnet-core-binding/dotnet-core-binding.sln).
 Today the Solution has: 
-1. Microsoft.Azure.IoT.Gateway ==> DLL you shall reference on your module project.
+1. Microsoft.Azure.Devices.Gateway ==> DLL you shall reference on your module project.
 2. PrinterModule ==> .NET(C#) Core Module that output to the console content received by Sensor Module.
 3. Sensor Module ==> .NET(C#) Core Module that publishes Simulated Sensor data to the gateway.
 
 Building the solution you will have the following binaries: 
-1. Microsoft.Azure.IoT.Gateway.Test.dll.
+1. Microsoft.Azure.Devices.Gateway.Test.dll.
 2. SensorModule.dll.
 3. PrinterModule.dll.
 
@@ -57,7 +57,7 @@ Running the sample
 1. Open azure_iot_gateway_sdk solution and configure project `dotnet_core_module_sample` as a Startup Sample.
 2. Go to the Project Properties and change `Command Arguments` to point to dotnet_core_module_sample.json.
 3. Copy the following binaries to the folder: `build\samples\dotnet_core_module_sample\Debug`:
-    * Microsoft.Azure.IoT.Gateway.dll(and pdb if you want to debug).
+    * Microsoft.Azure.Devices.Gateway.dll(and pdb if you want to debug).
     * PrinterModule.dll.
     * SensorModule.dll.
 4. Change the configuration Debugger Type to Mixed (this way you will be able to set breakpoints on Managed code as well as Native Code).
@@ -114,7 +114,7 @@ Json Configuration
 Creating your own module
 ------------------------
 1. Create a .NET Core project (DLL) (Class library).
-2. Add Reference to Microsoft.Azure.IoT.Gateway DLL.
+2. Add Reference to Microsoft.Azure.Devices.Gateway DLL.
 3. On your class you shall implement `IGatewayModule`.
    See the Printer module as example:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
@@ -123,7 +123,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.IoT.Gateway;
+using Microsoft.Azure.Devices.Gateway;
 
 
 namespace PrinterModule

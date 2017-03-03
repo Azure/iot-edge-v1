@@ -1,12 +1,12 @@
 ﻿using System;
 using Xunit;
-using Microsoft.Azure.IoT.Gateway;
+using Microsoft.Azure.Devices.Gateway;
 using System.IO;
 using Moq;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.Azure.IoT.Gateway.Tests
+namespace Microsoft.Azure.Devices.Gateway.Tests
 {
     public class NetCoreInteropUnitTests
     {

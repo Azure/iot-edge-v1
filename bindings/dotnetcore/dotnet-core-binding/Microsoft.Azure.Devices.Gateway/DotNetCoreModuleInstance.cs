@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary>
     ///   Object that represents a .NET Core module instance.

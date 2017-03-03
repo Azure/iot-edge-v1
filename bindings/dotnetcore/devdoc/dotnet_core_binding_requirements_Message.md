@@ -4,14 +4,14 @@
 Overview
 --------
 
-This document specifies the requirements for the .NET Message which is part of Microsoft.Azure.IoT.Gateway namespace.
+This document specifies the requirements for the .NET Message which is part of Microsoft.Azure.Devices.Gateway namespace.
 An object of this class represents a message.
 More details can be found in the [high level design](./dotnet_core_binding_hld.md).
 
 Types
 -----
 ```C#
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary> Object that represents a message passed between modules. </summary>
     public class Message
@@ -56,7 +56,7 @@ public Message(byte[] msgInByteArray);
 public Message(string content, Dictionary<string, string> properties);
 public Message(byte[] contentInByteArray, Dictionary<string, string> properties);
 ```
-Creates a .NET Core Object of type Microsoft.Azure.IoT.Gateway.Message
+Creates a .NET Core Object of type Microsoft.Azure.Devices.Gateway.Message
 
 **SRS_DOTNET_CORE_MESSAGE_04_008: [** If any parameter is null, constructor shall throw a `ArgumentNullException` **]**
 

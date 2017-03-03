@@ -272,7 +272,7 @@ endif()
 set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/${CMAKE_BUILD_TYPE}/dotnet.dll CACHE INTERNAL "The location of dotnet.dll" FORCE)
 
 
-set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.IoT.Gateway/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/Microsoft.Azure.IoT.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.IoT.Gateway.dll" FORCE)
+set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/Microsoft.Azure.Devices.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.Devices.Gateway.dll" FORCE)
 
 set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/SensorModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll" FORCE)
 

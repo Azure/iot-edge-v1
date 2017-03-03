@@ -5,14 +5,14 @@ Overview
 --------
 
 
-This document specifies the requirements for the .NET Core Broker Class which is part of Microsoft.Azure.IoT.Gateway namespace. 
+This document specifies the requirements for the .NET Core Broker Class which is part of Microsoft.Azure.Devices.Gateway namespace. 
 An object of this class represents the message broker, to which messages will be published. 
 More details can be found in the [high level design](./dotnet_core_binding_hld.md).
 
 Types
 -----
 ```C#
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary> Object that represents the message broker, to which messsages will be published </summary>
     public class Broker
@@ -43,7 +43,7 @@ Broker Constructor
 ```C#
 public Broker(long broker, long module);
 ```
-Creates a .NET Core Object of type Microsoft.Azure.IoT.Gateway.Broker
+Creates a .NET Core Object of type Microsoft.Azure.Devices.Gateway.Broker
 
 **SRS_DOTNET_CORE_BROKER_04_001: [** If broker is <= 0, Broker constructor shall throw a new ArgumentException **]**
 

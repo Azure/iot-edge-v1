@@ -937,10 +937,10 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
     /* Tests_SRS_DOTNET_CORE_04_007: [ DotNetCore_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
     /* Tests_SRS_DOTNET_CORE_04_010: [ DotNetCore_Create shall load coreclr library, if not loaded yet. ] */
     /* Tests_SRS_DOTNET_CORE_04_011: [ DotNetCore_Create shall get address for 3 external methods coreclr_initialize, coreclr_shutdown and coreclr_create_delegate and save it to global reference for Dot Net Core binding. ] */
-    /* Tests_SRS_DOTNET_CORE_04_013: [DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create] */
-    /* Tests_SRS_DOTNET_CORE_04_021 : [DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive]*/
-    /* Tests_SRS_DOTNET_CORE_04_024 : [DotNetCore_Destroy shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy]*/
-    /* Tests_SRS_DOTNET_CORE_04_014: [ DotNetCore_Create shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+    /* Tests_SRS_DOTNET_CORE_04_013: [DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create] */
+    /* Tests_SRS_DOTNET_CORE_04_021 : [DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive]*/
+    /* Tests_SRS_DOTNET_CORE_04_024 : [DotNetCore_Destroy shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy]*/
+    /* Tests_SRS_DOTNET_CORE_04_014: [ DotNetCore_Create shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
     TEST_FUNCTION(DotNetCore_Create_succeed)
     {
         ///arrange
@@ -985,8 +985,8 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         MODULE_DESTROY(theAPIS)(result);
     }
 
-    /* Tests_SRS_DOTNET_CORE_004_016: [ DotNetCore_Start shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start ] */
-    /* Tests_SRS_DOTNET_CORE_004_017: [ DotNetCore_Start shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+    /* Tests_SRS_DOTNET_CORE_004_016: [ DotNetCore_Start shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start ] */
+    /* Tests_SRS_DOTNET_CORE_004_017: [ DotNetCore_Start shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
     TEST_FUNCTION(DotNetCore_Start_succeeds)
     {
         ///arrage
@@ -1074,7 +1074,7 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
     }
 
     /* Tests_SRS_DOTNET_CORE_04_020: [ DotNetCore_Receive shall call Message_ToByteArray to serialize message. ] */
-    /* Tests_SRS_DOTNET_CORE_04_022: [ DotNetCore_Receive shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+    /* Tests_SRS_DOTNET_CORE_04_022: [ DotNetCore_Receive shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
     TEST_FUNCTION(DotNetCore_Receive_succeed)
     {
         ///arrange
@@ -1130,7 +1130,7 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+    /* Tests_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
     /* Tests_SRS_DOTNET_CORE_04_038: [ DotNetCore_Destroy shall release all resources allocated by DotNetCore_Create. ] */
     /* Tests_SRS_DOTNET_CORE_04_039: [ DotNetCore_Destroy shall verify that there is no module and shall shutdown the dotnet core clr. ] */
     TEST_FUNCTION(DotNetCore_Destroy_with_2_modules_succeed)
@@ -1168,7 +1168,7 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         ///cleanup
     }
 
-    /* Tests_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+    /* Tests_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
     /* Tests_SRS_DOTNET_CORE_04_038: [ DotNetCore_Destroy shall release all resources allocated by DotNetCore_Create. ] */
     /* Tests_SRS_DOTNET_CORE_04_039: [ DotNetCore_Destroy shall verify that there is no module and shall shutdown the dotnet core clr. ] */
     TEST_FUNCTION(DotNetCore_Destroy_succeed)

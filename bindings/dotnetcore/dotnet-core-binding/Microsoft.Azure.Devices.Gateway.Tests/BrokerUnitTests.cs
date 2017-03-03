@@ -1,12 +1,12 @@
 ﻿using System;
 using Xunit;
-using Microsoft.Azure.IoT.Gateway;
+using Microsoft.Azure.Devices.Gateway;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 
-namespace Microsoft.Azure.IoT.Gateway.Tests
+namespace Microsoft.Azure.Devices.Gateway.Tests
 {
     public class BrokerUnitTests
     {

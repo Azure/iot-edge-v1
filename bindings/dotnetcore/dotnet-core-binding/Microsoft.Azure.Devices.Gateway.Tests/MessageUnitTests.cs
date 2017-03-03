@@ -1,9 +1,9 @@
 ﻿using System;
 using Xunit;
-using Microsoft.Azure.IoT.Gateway;
+using Microsoft.Azure.Devices.Gateway;
 using System.Collections;
 
-namespace Microsoft.Azure.IoT.Gateway.Test
+namespace Microsoft.Azure.Devices.Gateway.Test
 {
     public class MessageUnitTests
     {

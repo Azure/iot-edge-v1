@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     internal class DotNetCoreReflectionLayer
     {
@@ -98,17 +98,17 @@ namespace Microsoft.Azure.IoT.Gateway
                 MethodInfo createMethod = _reflectionLayer.GetMethod(
                     type,
                     "Create",
-                    new Type[] { System.Type.GetType("Microsoft.Azure.IoT.Gateway.Broker"), System.Type.GetType("System.Byte[]") }
+                    new Type[] { System.Type.GetType("Microsoft.Azure.Devices.Gateway.Broker"), System.Type.GetType("System.Byte[]") }
                     );
 
-                Microsoft.Azure.IoT.Gateway.Broker brokerObject = new Broker(broker, module, new BrokerInterop());
+                var brokerObject = new Broker(broker, module, new BrokerInterop());
 
                 /* Codes_SRS_DOTNET_CORE_NATIVE_MANAGED_GATEWAY_INTEROP_04_009: [ Create shall call Create method on client module. ] */
                 byte[] moduleConfiguration = configuration == null ? Encoding.UTF8.GetBytes("") : Encoding.UTF8.GetBytes(configuration);
                 _reflectionLayer.InvokeMethod(moduleInstance.gatewayModule, createMethod, new Object[] { brokerObject, moduleConfiguration });
 
                 /* Codes_SRS_DOTNET_CORE_NATIVE_MANAGED_GATEWAY_INTEROP_04_007: [ Create shall save delegates to Receive, Destroy and Start(if implemented) to DotNetCoreModuleInstance. ] */
-                moduleInstance.receiveMethodInfo = _reflectionLayer.GetMethod(type, "Receive", new Type[] { System.Type.GetType("Microsoft.Azure.IoT.Gateway.Message") });
+                moduleInstance.receiveMethodInfo = _reflectionLayer.GetMethod(type, "Receive", new Type[] { System.Type.GetType("Microsoft.Azure.Devices.Gateway.Message") });
                 moduleInstance.destroyMethodInfo = _reflectionLayer.GetMethod(type, "Destroy", new Type[] { });
                 moduleInstance.startMethodInfo = _reflectionLayer.GetMethod(type, "Start", new Type[] { });
 

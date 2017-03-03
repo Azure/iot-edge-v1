@@ -67,7 +67,7 @@ if not !errorlevel!==0 exit /b !errorlevel!
 rem -----------------------------------------------------------------------------
 rem -- run Unit Tests
 rem -----------------------------------------------------------------------------
-call dotnet test %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.IoT.Gateway.Tests
+call dotnet test %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway.Tests
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------

@@ -3,13 +3,8 @@
 
 using System;
 
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
-    public interface IBrokerInterop
-    {
-        bool PublishMessage(IntPtr broker, IntPtr sourceModule, byte[] message);
-    }
-
     /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
     public class Broker
     {

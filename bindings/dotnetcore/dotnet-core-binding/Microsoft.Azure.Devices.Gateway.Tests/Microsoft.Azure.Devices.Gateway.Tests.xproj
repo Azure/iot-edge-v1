@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>21eecc7d-5170-4a21-afa4-95a73c95a8c1</ProjectGuid>
-    <RootNamespace>Microsoft.Azure.IoT.Gateway.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Azure.Devices.Gateway.Tests</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>
