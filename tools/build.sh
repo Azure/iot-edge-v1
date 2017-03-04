@@ -133,7 +133,7 @@ fi
 
 if [[ $enable_dotnet_core_binding == ON ]]
 then
-    "$build_root"/tools/build_dotnet_core.sh
+    "$build_root"/tools/build_dotnet_core.sh --config $build_config
     [ $? -eq 0 ] || exit $?
 fi
 

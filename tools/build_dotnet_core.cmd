@@ -13,14 +13,13 @@ set build-root=%current-path%\..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
-rem -----------------------------------------------------------------------------
-rem -- parse script arguments
-rem -----------------------------------------------------------------------------
+rem ----------------------------------------------------------------------------
+rem -- parse arguments
+rem ----------------------------------------------------------------------------
 
-rem // default build options
-set build-clean=0
-set build-config=Debug
-set build-platform=x86
+set build-clean=
+set build-config=
+set build-runtime=
 
 :args-loop
 if "%1" equ "" goto args-done
@@ -31,19 +30,20 @@ if "%1" equ "--platform" goto arg-build-platform
 call :usage && exit /b 1
 
 :arg-build-clean
-set build-clean=1
+set "build-clean=--no-incremental"
 goto args-continue
 
 :arg-build-config
 shift
 if "%1" equ "" call :usage && exit /b 1
-set build-config=%1
+set "build-config=--configuration %1"
 goto args-continue
 
 :arg-build-platform
 shift
 if "%1" equ "" call :usage && exit /b 1
-set build-platform=%1
+if "%1" equ "x86" set "build-runtime=--runtime win-x86"
+if "%1" equ "x64" set "build-runtime=--runtime win-x64"
 goto args-continue
 
 :args-continue
@@ -52,50 +52,38 @@ goto args-loop
 
 :args-done
 
-rem -----------------------------------------------------------------------------
-rem -- dotnet restore
-rem -----------------------------------------------------------------------------
-call dotnet restore %build-root%\bindings\dotnetcore\dotnet-core-binding\
-call dotnet restore %build-root%\samples\dotnet_core_module_sample\modules\
+rem ----------------------------------------------------------------------------
+rem -- build
+rem ----------------------------------------------------------------------------
 
-if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\bindings\dotnetcore\dotnet-core-binding\dotnet-core-binding.sln" %build-config% %build-platform%
-    if not !errorlevel!==0 exit /b !errorlevel!
-)
-call :build-a-solution "%build-root%\bindings\dotnetcore\dotnet-core-binding\dotnet-core-binding.sln" %build-config% %build-platform%
+call dotnet restore ^
+    %build-root%\bindings\dotnetcore\dotnet-core-binding ^
+    %build-root%\samples\dotnet_core_module_sample\modules
+
 if not !errorlevel!==0 exit /b !errorlevel!
 
-if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\samples\dotnet_core_module_sample\modules\SampleModules.sln" %build-config% %build-platform%
-    if not !errorlevel!==0 exit /b !errorlevel!
-)
-call :build-a-solution "%build-root%\samples\dotnet_core_module_sample\modules\SampleModules.sln" %build-config% %build-platform%
+call dotnet build %build-clean% %build-config% %build-runtime% ^
+    %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway ^
+    %build-root%\bindings\dotnetcore\dotnet-core-binding\E2ETestModule ^
+    %build-root%\samples\dotnet_core_module_sample\modules\PrinterModule ^
+    %build-root%\samples\dotnet_core_module_sample\modules\SensorModule
+
 if not !errorlevel!==0 exit /b !errorlevel!
 
-rem -----------------------------------------------------------------------------
-rem -- run Unit Tests
-rem -----------------------------------------------------------------------------
-call dotnet test %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway.Tests
-if not !errorlevel!==0 exit /b !errorlevel!
+rem ----------------------------------------------------------------------------
+rem -- test
+rem ----------------------------------------------------------------------------
 
-rem -----------------------------------------------------------------------------
-rem -- done
-rem -----------------------------------------------------------------------------
+call dotnet test ^
+    %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway.Tests
+
+if not !errorlevel!==0 exit /b !errorlevel!
 
 goto :eof
 
-rem -----------------------------------------------------------------------------
-rem -- subroutines
-rem -----------------------------------------------------------------------------
-
-:clean-a-solution
-call :_run-msbuild "Clean" %1 %2 %3
-echo !ERRORLEVEL!
-goto :eof
-
-:build-a-solution
-call :_run-msbuild "Build" %1 %2 %3
-goto :eof
+rem ----------------------------------------------------------------------------
+rem -- helper routines
+rem ----------------------------------------------------------------------------
 
 :usage
 echo build_dotnet_core.cmd [options]
@@ -104,20 +92,3 @@ echo  -c, --clean           delete artifacts from previous build before building
 echo  --config ^<value^>      [Debug] build configuration (e.g. Debug, Release)
 echo  --platform ^<value^>    [x86] build platform (e.g. x86, x64, ...)
 goto :eof
-
-rem -----------------------------------------------------------------------------
-rem -- helper subroutines
-rem -----------------------------------------------------------------------------
-
-:_run-msbuild
-rem // optionally override configuration|platform
-setlocal EnableExtensions
-set build-target=
-if "%~1" neq "Build" set "build-target=/t:%~1"
-if "%~3" neq "" set build-config=%~3
-if "%~4" neq "" set build-platform=%~4
-
-msbuild /m %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" %2
-if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
-goto :eof
-
