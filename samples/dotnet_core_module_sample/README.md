@@ -39,27 +39,16 @@ tools\build.cmd --enable-dotnet-core-binding
 
 The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build the SDK.
 
-The `build_dotnet_core.cmd` script builds the .NET Core Modules in the solution located here (../bindings/dotnetcore/dotnet-core-binding/dotnet-core-binding.sln).
-Today the Solution has: 
-1. Microsoft.Azure.Devices.Gateway ==> DLL you shall reference on your module project.
-2. PrinterModule ==> .NET(C#) Core Module that output to the console content received by Sensor Module.
-3. Sensor Module ==> .NET(C#) Core Module that publishes Simulated Sensor data to the gateway.
-
+The `build_dotnet_core.cmd` script builds the .NET Core binding, and the sample sensor and printer modules.
 Building the solution you will have the following binaries: 
-1. Microsoft.Azure.Devices.Gateway.Test.dll.
-2. SensorModule.dll.
-3. PrinterModule.dll.
-
-Copy these binaries to the same folder you run your gateway. 
+1. Microsoft.Azure.Devices.Gateway.dll
+2. SensorModule.dll
+3. PrinterModule.dll
 
 Running the sample
 ------------------
 1. Open azure_iot_gateway_sdk solution and configure project `dotnet_core_module_sample` as a Startup Sample.
 2. Go to the Project Properties and change `Command Arguments` to point to dotnet_core_module_sample.json.
-3. Copy the following binaries to the folder: `build\samples\dotnet_core_module_sample\Debug`:
-    * Microsoft.Azure.Devices.Gateway.dll(and pdb if you want to debug).
-    * PrinterModule.dll.
-    * SensorModule.dll.
 4. Change the configuration Debugger Type to Mixed (this way you will be able to set breakpoints on Managed code as well as Native Code).
 5. Run.
 

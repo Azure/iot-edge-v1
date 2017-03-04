@@ -56,12 +56,20 @@ rem ----------------------------------------------------------------------------
 rem -- dotnet restore
 rem -----------------------------------------------------------------------------
 call dotnet restore %build-root%\bindings\dotnetcore\dotnet-core-binding\
+call dotnet restore %build-root%\samples\dotnet_core_module_sample\modules\
 
 if %build-clean%==1 (
     call :clean-a-solution "%build-root%\bindings\dotnetcore\dotnet-core-binding\dotnet-core-binding.sln" %build-config% %build-platform%
     if not !errorlevel!==0 exit /b !errorlevel!
 )
 call :build-a-solution "%build-root%\bindings\dotnetcore\dotnet-core-binding\dotnet-core-binding.sln" %build-config% %build-platform%
+if not !errorlevel!==0 exit /b !errorlevel!
+
+if %build-clean%==1 (
+    call :clean-a-solution "%build-root%\samples\dotnet_core_module_sample\modules\SampleModules.sln" %build-config% %build-platform%
+    if not !errorlevel!==0 exit /b !errorlevel!
+)
+call :build-a-solution "%build-root%\samples\dotnet_core_module_sample\modules\SampleModules.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------

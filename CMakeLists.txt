@@ -274,9 +274,9 @@ set(dotnet_host_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/bindings/dotnet/${CMAKE_
 
 set(dotnet_core_managed_binding_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/Microsoft.Azure.Devices.Gateway.dll CACHE INTERNAL "The location of the Microsoft.Azure.Devices.Gateway.dll" FORCE)
 
-set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/SensorModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll" FORCE)
+set(dotnet_core_sensor_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../samples/dotnet_core_module_sample/modules/SensorModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/SensorModule.dll CACHE INTERNAL "The location of the SensorModule.dll" FORCE)
 
-set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/PrinterModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll" FORCE)
+set(dotnet_core_printer_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../samples/dotnet_core_module_sample/modules/PrinterModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/PrinterModule.dll CACHE INTERNAL "The location of the PrinterModule.dll" FORCE)
 
 set(dotnet_core_e2etest_module_dll ${CMAKE_CURRENT_BINARY_DIR}/../bindings/dotnetcore/dotnet-core-binding/E2ETestModule/bin/${CMAKE_BUILD_TYPE}/netstandard1.6/E2ETestModule.dll CACHE INTERNAL "The location of the E2ETestModule.dll" FORCE)
 
