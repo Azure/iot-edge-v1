@@ -1,12 +1,12 @@
 ﻿using System;
 using Xunit;
-using Microsoft.Azure.IoT.Gateway;
+using Microsoft.Azure.Devices.Gateway;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 
-namespace Microsoft.Azure.IoT.Gateway.Tests
+namespace Microsoft.Azure.Devices.Gateway.Tests
 {
     public class BrokerUnitTests
     {
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             ///act
             try
             {
-                var brokerInstance = new Broker(invalidBroker, validSourceModule);
+                var brokerInstance = new Broker(invalidBroker, validSourceModule, new BrokerInterop());
             }
             catch (ArgumentOutOfRangeException e)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             ///act
             try
             {
-                var brokerInstance = new Broker(broker, sourceModule);
+                var brokerInstance = new Broker(broker, sourceModule, new BrokerInterop());
             }
             catch (ArgumentOutOfRangeException e)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             IntPtr sourceModule = (IntPtr)0x42;
 
             ///act
-            var brokerInstance = new Broker(broker, sourceModule);
+            var brokerInstance = new Broker(broker, sourceModule, new BrokerInterop());
 
             Assert.NotNull(brokerInstance);
 
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
             ///arrage
             IntPtr broker = (IntPtr)0x42;
             IntPtr sourceModule = (IntPtr)0x42;
-            var brokerInstance = new Broker(broker, sourceModule);
+            var brokerInstance = new Broker(broker, sourceModule, new BrokerInterop());
             Mock<Message> myMessageToPublish = new Mock<Message>(new byte[0], new Dictionary<string, string>());
 
             myMessageToPublish.Setup(t => t.ToByteArray()).Throws(new FormatException("Fake Exception."));
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.IoT.Gateway.Tests
 
         /* Tests_SRS_DOTNET_CORE_BROKER_04_006: [ If Module_DotNetHost_PublishMessage fails, Publish shall thrown an Application Exception with message saying that Broker Publish failed. ] */
         [Fact]
-        public void Broker_Publish_throws_when_myDotNetHostWrapper_fail()
+        public void Broker_Publish_throws_when_interop_fail()
         {
             ///arrage
             IntPtr broker = (IntPtr)0x42;

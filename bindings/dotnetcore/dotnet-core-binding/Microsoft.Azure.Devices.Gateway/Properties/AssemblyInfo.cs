@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Azure.IoT.Gateway")]
+[assembly: AssemblyProduct("Microsoft.Azure.Devices.Gateway")]
 [assembly: AssemblyTrademark("")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: InternalsVisibleTo("Microsoft.Azure.IoT.Gateway.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Gateway.Tests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

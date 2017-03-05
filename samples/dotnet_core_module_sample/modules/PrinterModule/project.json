@@ -3,8 +3,7 @@
 
   "dependencies": {
     "Microsoft.Azure.Devices.Gateway": "1.0.0-*",
-    "NETStandard.Library": "1.6.0",
-    "system.threading.thread": "4.0.0"
+    "NETStandard.Library": "1.6.0"
   },
 
   "frameworks": {

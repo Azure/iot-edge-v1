@@ -149,7 +149,7 @@ The high level design of these objects and interfaces is documented below:
 ### Message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
-    namespace Microsoft.Azure.IoT.Gateway
+    namespace Microsoft.Azure.Devices.Gateway
     {
         /// <summary> Object that represents a message passed between modules. </summary>
         public class Message
@@ -175,7 +175,7 @@ The high level design of these objects and interfaces is documented below:
 ### Broker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C#
     
-    namespace Microsoft.Azure.IoT.Gateway
+    namespace Microsoft.Azure.Devices.Gateway
     {
         /// <summary> Object that represents the message broker, to which messsages will be published. </summary>
         public class Broker

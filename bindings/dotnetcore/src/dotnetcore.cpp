@@ -23,7 +23,7 @@
 
 using namespace dotnetcore_module;
 
-#define AZUREIOTGATEWAYASSEMBLYNAME L"Microsoft.Azure.IoT.Gateway"
+#define AZUREIOTGATEWAYASSEMBLYNAME L"Microsoft.Azure.Devices.Gateway"
 
 
 typedef unsigned int(*PGatewayCreateDelegate)(long long broker, long long module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration);
@@ -162,12 +162,12 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                     int status = -1;
                                     try
                                     {
-                                        /* Codes_SRS_DOTNET_CORE_04_013: [ DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create ] */
+                                        /* Codes_SRS_DOTNET_CORE_04_013: [ DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create ] */
                                         status = m_ptr_coreclr_create_delegate(
                                             hostHandle,
                                             domainId,
-                                            "Microsoft.Azure.IoT.Gateway",
-                                            "Microsoft.Azure.IoT.Gateway.NetCoreInterop",
+                                            "Microsoft.Azure.Devices.Gateway",
+                                            "Microsoft.Azure.Devices.Gateway.NetCoreInterop",
                                             "Create",
                                             reinterpret_cast<void**>(&GatewayCreateDelegate)
                                         );
@@ -191,12 +191,12 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                         int status = -1;
                                         try
                                         {
-                                            /* Codes_SRS_DOTNET_CORE_04_021: [ DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive ] */
+                                            /* Codes_SRS_DOTNET_CORE_04_021: [ DotNetCore_Create shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive ] */
                                             status = m_ptr_coreclr_create_delegate(
                                                 hostHandle,
                                                 domainId,
-                                                "Microsoft.Azure.IoT.Gateway",
-                                                "Microsoft.Azure.IoT.Gateway.NetCoreInterop",
+                                                "Microsoft.Azure.Devices.Gateway",
+                                                "Microsoft.Azure.Devices.Gateway.NetCoreInterop",
                                                 "Receive",
                                                 reinterpret_cast<void**>(&GatewayReceiveDelegate)
                                             );
@@ -219,12 +219,12 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                         {
                                             try
                                             {
-                                                /* Codes_SRS_DOTNET_CORE_04_024: [ DotNetCore_Destroy shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy ] */
+                                                /* Codes_SRS_DOTNET_CORE_04_024: [ DotNetCore_Destroy shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy ] */
                                                 status = m_ptr_coreclr_create_delegate(
                                                     hostHandle,
                                                     domainId,
-                                                    "Microsoft.Azure.IoT.Gateway",
-                                                    "Microsoft.Azure.IoT.Gateway.NetCoreInterop",
+                                                    "Microsoft.Azure.Devices.Gateway",
+                                                    "Microsoft.Azure.Devices.Gateway.NetCoreInterop",
                                                     "Destroy",
                                                     reinterpret_cast<void**>(&GatewayDestroyDelegate)
                                                 );
@@ -273,7 +273,7 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                 {
                     try
                     {
-                        /* Codes_SRS_DOTNET_CORE_04_014: [ DotNetCore_Create shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+                        /* Codes_SRS_DOTNET_CORE_04_014: [ DotNetCore_Create shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
                         result->module_id = (*GatewayCreateDelegate)((long long)broker, (long long)result, dotNetCoreConfig->assemblyName, dotNetCoreConfig->entryType, dotNetCoreConfig->moduleArgs);
 
                         m_dotnet_core_modules_counter++;
@@ -332,7 +332,7 @@ static void DotNetCore_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
                     {
                         try
                         {
-                            /* Codes_SRS_DOTNET_CORE_04_022: [ DotNetCore_Receive shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+                            /* Codes_SRS_DOTNET_CORE_04_022: [ DotNetCore_Receive shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
                             (*GatewayReceiveDelegate)(buffer, size, result->module_id);
                         }
                         catch (const std::exception& msgErr)
@@ -369,7 +369,7 @@ static void DotNetCore_Destroy(MODULE_HANDLE module)
 
         try
         {
-            /* Codes_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+            /* Codes_SRS_DOTNET_CORE_04_025: [ DotNetCore_Destroy shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
             (*GatewayDestroyDelegate)(handleData->module_id);
         }
         catch (const std::exception& msgErr)
@@ -440,12 +440,12 @@ static void DotNetCore_Start(MODULE_HANDLE module)
 
         if (GatewayStartDelegate == NULL)
         {
-            /* Codes_SRS_DOTNET_CORE_004_016: [ DotNetCore_Start shall call coreclr_create_delegate to be able to call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start ] */
+            /* Codes_SRS_DOTNET_CORE_004_016: [ DotNetCore_Start shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start ] */
             status = m_ptr_coreclr_create_delegate(
                 hostHandle,
                 domainId,
-                "Microsoft.Azure.IoT.Gateway",
-                "Microsoft.Azure.IoT.Gateway.NetCoreInterop",
+                "Microsoft.Azure.Devices.Gateway",
+                "Microsoft.Azure.Devices.Gateway.NetCoreInterop",
                 "Start",
                 reinterpret_cast<void**>(&GatewayStartDelegate)
             );
@@ -455,7 +455,7 @@ static void DotNetCore_Start(MODULE_HANDLE module)
         {
             try
             {
-                /* Codes_SRS_DOTNET_CORE_004_017: [ DotNetCore_Start shall call Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start C# method, implemented on Microsoft.Azure.IoT.Gateway.dll. ] */
+                /* Codes_SRS_DOTNET_CORE_004_017: [ DotNetCore_Start shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
                 (*GatewayStartDelegate)(handleData->module_id);
             }
             catch (const std::exception& msgErr)

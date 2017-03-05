@@ -4,7 +4,7 @@
 Overview
 --------
 
-This document specifies the requirements for the .NET `NetCoreInterop` class which is part of `Microsoft.Azure.IoT.Gateway` namespace. 
+This document specifies the requirements for the .NET `NetCoreInterop` class which is part of `Microsoft.Azure.Devices.Gateway` namespace. 
 
 This class holds the static methods that are going to be called by the native .NET Core binding in order to create a module, receive messages, destroy and start modules. 
 It will use reflection to call the .NET Core managed module.
@@ -16,7 +16,7 @@ More details can be found in the [high level design](./dotnet_core_binding_hld.m
 Class interface
 ---------------
 ```C#
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary>
     ///    This class holds the static methods that are going to be called by the native .NET Core binding in order to create a module, receive message, destroy and start modules. 

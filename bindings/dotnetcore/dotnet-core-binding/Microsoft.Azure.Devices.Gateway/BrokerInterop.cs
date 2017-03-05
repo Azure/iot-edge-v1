@@ -2,17 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary>
     ///     Wrapper Used for Native/Managed Interop.
     /// </summary>
-    internal class BrokerInterop
+    public class BrokerInterop : IBrokerInterop
     {
         /// <summary>
         ///      Module_DotNetCoreHost wrapper for publishing a message.

@@ -74,13 +74,13 @@ pointer to a `DOTNET_CORE_HOST_CONFIG` object.
 
 **SRS_DOTNET_CORE_04_011: [** `DotNetCore_Create` shall get address for 3 external methods `coreclr_initialize`, `coreclr_shutdown` and `coreclr_create_delegate` and save it to global reference for Dot Net Core binding. **]**
 
-**SRS_DOTNET_CORE_04_013: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create` **]**
+**SRS_DOTNET_CORE_04_013: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create` **]**
 
-**SRS_DOTNET_CORE_04_021: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive` **]**
+**SRS_DOTNET_CORE_04_021: [** `DotNetCore_Create` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive` **]**
 
-**SRS_DOTNET_CORE_04_024: [** `DotNetCore_Destroy` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy` **]**
+**SRS_DOTNET_CORE_04_024: [** `DotNetCore_Destroy` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy` **]**
 
-**SRS_DOTNET_CORE_04_014: [** `DotNetCore_Create` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Create` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
+**SRS_DOTNET_CORE_04_014: [** `DotNetCore_Create` shall call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create` C# method, implemented on `Microsoft.Azure.Devices.Gateway.dll`. **]**
 
 
 DotNetCore_Start
@@ -91,9 +91,9 @@ void DotNetCore_Start(MODULE_HANDLE module);
 
 **SRS_DOTNET_CORE_004_015: [** `DotNetCore_Start` shall do nothing if `module` is NULL. **]**
 
-**SRS_DOTNET_CORE_004_016: [** `DotNetCore_Start` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start` **]**
+**SRS_DOTNET_CORE_004_016: [** `DotNetCore_Start` shall call `coreclr_create_delegate` to be able to call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start` **]**
 
-**SRS_DOTNET_CORE_004_017: [** `DotNetCore_Start` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Start` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
+**SRS_DOTNET_CORE_004_017: [** `DotNetCore_Start` shall call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start` C# method, implemented on `Microsoft.Azure.Devices.Gateway.dll`. **]**
 
 DotNetCore_Receive
 ------------------
@@ -106,7 +106,7 @@ void DotNetCore_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message);
 
 **SRS_DOTNET_CORE_04_020: [** `DotNetCore_Receive` shall call `Message_ToByteArray` to serialize `message`. **]**
 
-**SRS_DOTNET_CORE_04_022: [** `DotNetCore_Receive` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Receive` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
+**SRS_DOTNET_CORE_04_022: [** `DotNetCore_Receive` shall call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Receive` C# method, implemented on `Microsoft.Azure.Devices.Gateway.dll`. **]**
 
 DotNetCore_Destroy
 ------------------
@@ -119,7 +119,7 @@ void DotNetCore_Destroy(MODULE_HANDLE module);
 
 **SRS_DOTNET_CORE_04_039: [** `DotNetCore_Destroy` shall verify that there is no module and shall shutdown the dotnet core clr. **]**
 
-**SRS_DOTNET_CORE_04_025: [** `DotNetCore_Destroy` shall call `Microsoft.Azure.IoT.Gateway.GatewayDelegatesGateway.Delegates_Destroy` C# method, implemented on `Microsoft.Azure.IoT.Gateway.dll`. **]**
+**SRS_DOTNET_CORE_04_025: [** `DotNetCore_Destroy` shall call `Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Destroy` C# method, implemented on `Microsoft.Azure.Devices.Gateway.dll`. **]**
 
 Module_GetApi
 --------------

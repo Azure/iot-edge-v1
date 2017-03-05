@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace Microsoft.Azure.IoT.Gateway
+namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary>
     ///   Object that represents a .NET Core module instance.
