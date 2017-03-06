@@ -310,7 +310,6 @@ TEST_FUNCTION(MESSAGE_QUEUE_push_does_nothing_with_null_params)
 }
 
 /*Tests_SRS_MESSAGE_QUEUE_17_008: [ MESSAGE_QUEUE_push shall return zero on success. ]*/
-/*Tests_SRS_MESSAGE_QUEUE_17_010: [ A successful call to MESSAGE_QUEUE_push on an empty queue will cause the message queue to be non-empty (MESSAGE_QUEUE_is_empty shall return false). ]*/
 TEST_FUNCTION(MESSAGE_QUEUE_push_success)
 {
 	///arrange

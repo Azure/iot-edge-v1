@@ -591,7 +591,9 @@ TEST_FUNCTION(Outprocess_Create_returns_null_with_null_arguments)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_006: [ This function shall allocate memory for the MODULE_HANDLE. ]*/
-/*Tests_SRS_OUTPROCESS_MODULE_17_007: [ This function shall intialize a lock for thread management. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_007: [ This function shall intialize a lock for exclusive access to handle data. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_041: [ This function shall intitialize a lock for each thread for thread management. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_042: [ This function shall initialize a queue for outgoing gateway messages. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_008: [ This function shall create a pair socket for sending gateway messages to the module host. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_009: [ This function shall bind and connect the pair socket to the message_uri. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
@@ -2203,6 +2205,8 @@ TEST_FUNCTION(Outprocess_Start_does_nothing_with_null)
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_017: [ This function shall ensure thread safety on execution. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_018: [ This function shall create a thread to handle receiving messages from module host. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_043: [ This function shall create a thread to handle outgoing gateway messages to the module host. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_044: [ This function shall create a thread to handle receiving messages from module host. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_019: [ This function shall send a Start Message on the control channel. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
 TEST_FUNCTION(Outprocess_Start_success)
@@ -2404,6 +2408,10 @@ static void teardown_a_thread(bool needs_join, bool lock_fail)
 /*Tests_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_033: [ This function shall wait for the messaging thread to complete. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_034: [ This function shall release all resources created by this module. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_049: [ This function shall signal the outgoing gateway message thread to close. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_050: [ This function shall signal the control thread to close. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_051: [ This function shall wait for the outgoing gateway message thread to complete. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_052: [ This function shall wait for the control thread to complete. ]*/
 TEST_FUNCTION(Outprocess_Destroy_success)
 {
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2479,6 +2487,7 @@ TEST_FUNCTION(Outprocess_Destroy_success)
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_027: [ This function shall ensure thread safety on execution. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_048: [ There is a possibility the module host process is no longer operational, therefore sending the destroy the Destroy Message shall be a best effort attempt. ]*/
 TEST_FUNCTION(Outprocess_Destroy_send_lock_join_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2634,9 +2643,9 @@ TEST_FUNCTION(Outprocess_Receive_does_nothing_with_nothing)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-/*Tests_SRS_OUTPROCESS_MODULE_17_025: [ This function shall free any resources created. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_045: [ This function shall ensure thread safety for the module data. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_047: [ This function shall push the message onto the end of the outgoing gateway message queue. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_046: [ This function shall clone the message to ensure the message is kept allocated until forwarded to module host. ]*/
 TEST_FUNCTION(Outprocess_Receive_success)
 {
 	// arrange
@@ -2666,7 +2675,7 @@ TEST_FUNCTION(Outprocess_Receive_success)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_047: [ This function shall push the message onto the end of the outgoing gateway message queue. ]*/
 TEST_FUNCTION(Outprocess_Receive_push_queue_fails)
 {
 	// arrange
@@ -2696,7 +2705,7 @@ TEST_FUNCTION(Outprocess_Receive_push_queue_fails)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_047: [ This function shall push the message onto the end of the outgoing gateway message queue. ]*/
 TEST_FUNCTION(Outprocess_Receive_Lock_fails)
 {
 	// arrange
@@ -2724,7 +2733,7 @@ TEST_FUNCTION(Outprocess_Receive_Lock_fails)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_047: [ This function shall push the message onto the end of the outgoing gateway message queue. ]*/
 TEST_FUNCTION(Outprocess_Receive_Message_Clone_fails)
 {
 	// arrange
@@ -2751,7 +2760,7 @@ TEST_FUNCTION(Outprocess_Receive_Message_Clone_fails)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_does_nothing_with_nothing)
+TEST_FUNCTION(Outprocess_outgoing_thread_does_nothing_with_nothing)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -2772,7 +2781,13 @@ TEST_FUNCTION(Outprocess_Receive_thread_does_nothing_with_nothing)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_success)
+/*Tests_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_054: [ This function shall remove the oldest message from the outgoing gateway message queue. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_055: [ This function shall Destroy the message once successfully transmitted. ]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_025: [ This function shall free any resources created. ]*/
+TEST_FUNCTION(Outprocess_outgoing_thread_success)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2813,7 +2828,8 @@ TEST_FUNCTION(Outprocess_Receive_thread_success)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_nn_send_1st_unlock_fails)
+/*Tests_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
+TEST_FUNCTION(Outprocess_outgoing_thread_nn_send_1st_unlock_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2859,7 +2875,8 @@ TEST_FUNCTION(Outprocess_Receive_thread_nn_send_1st_unlock_fails)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_nn_alloc_2nd_lock_fails)
+/*Tests_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
+TEST_FUNCTION(Outprocess_outgoing_thread_nn_alloc_2nd_lock_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2901,7 +2918,8 @@ TEST_FUNCTION(Outprocess_Receive_thread_nn_alloc_2nd_lock_fails)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_serialize_2nd_unlock_fails)
+/*Tests_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
+TEST_FUNCTION(Outprocess_outgoing_thread_serialize_2nd_unlock_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2943,7 +2961,8 @@ TEST_FUNCTION(Outprocess_Receive_thread_serialize_2nd_unlock_fails)
 	cleanup_create_config(&config);
 }
 
-TEST_FUNCTION(Outprocess_Receive_thread_queue_has_null_msg_fails)
+/*Tests_SRS_OUTPROCESS_MODULE_17_054: [ This function shall remove the oldest message from the outgoing gateway message queue. ]*/
+TEST_FUNCTION(Outprocess_outgoing_thread_queue_has_null_msg_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2977,7 +2996,7 @@ TEST_FUNCTION(Outprocess_Receive_thread_queue_has_null_msg_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_037: [ This function shall receive the module handle data as the thread parameter. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_does_nothing_null_input)
+TEST_FUNCTION(Outprocess_incoming_thread_does_nothing_null_input)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -2999,7 +3018,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_does_nothing_null_input)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_ends_lock_fails)
+TEST_FUNCTION(Outprocess_incoming_thread_ends_lock_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -3023,7 +3042,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_lock_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock_fails)
+TEST_FUNCTION(Outprocess_incoming_thread_ends_unlock_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -3048,7 +3067,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_ends_lock2_fails)
+TEST_FUNCTION(Outprocess_incoming_thread_ends_lock2_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -3074,7 +3093,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_lock2_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock2_fails)
+TEST_FUNCTION(Outprocess_incoming_thread_ends_unlock2_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -3101,7 +3120,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock2_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_038: [ This function shall read from the message channel for gateway messages from the module host. ]*/
-TEST_FUNCTION(Outprocess_messaging_thread_ends_nn_recv_fails)
+TEST_FUNCTION(Outprocess_incoming_thread_ends_nn_recv_fails)
 {
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
@@ -3194,7 +3213,8 @@ TEST_FUNCTION(Outprocess_control_thread_does_nothing_with_nothing)
 	cleanup_create_config(&config);
 
 }
-
+/*Tests_SRS_OUTPROCESS_MODULE_17_056: [This thread shall ensure thread safety on the module data.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_057 : [This thread shall periodically attempt to receive a meesage from the module host process.]*/
 TEST_FUNCTION(Outprocess_control_thread_success)
 {
 	// arrange
@@ -3233,6 +3253,9 @@ TEST_FUNCTION(Outprocess_control_thread_success)
 	cleanup_create_config(&config);
 }
 
+/*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_success)
 {
 	// arrange
@@ -3294,7 +3317,6 @@ TEST_FUNCTION(Outprocess_control_thread_restart_success)
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
 		.SetReturn(LOCK_ERROR);
 
-
 	// act
 	//fourth thread created is control message thread
 	thread_func_to_call[4](thread_func_args[4]);
@@ -3307,6 +3329,9 @@ TEST_FUNCTION(Outprocess_control_thread_restart_success)
 	cleanup_create_config(&config);
 }
 
+/*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_control)
 {
 	// arrange
@@ -3393,6 +3418,9 @@ TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_control
 	cleanup_create_config(&config);
 }
 
+/*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_socket_fails)
 {
 	// arrange
@@ -3448,6 +3476,9 @@ TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_socket_
 	cleanup_create_config(&config);
 }
 
+/*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_connect_fails)
 {
 	// arrange
@@ -3506,6 +3537,9 @@ TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_connect
 	cleanup_create_config(&config);
 }
 
+/*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_2nd_lock_fails)
 {
 	// arrange

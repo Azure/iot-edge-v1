@@ -65,7 +65,6 @@ MESSAGE_QUEUE_HANDLE MESSAGE_QUEUE_create()
 
 void MESSAGE_QUEUE_destroy(MESSAGE_QUEUE_HANDLE handle)
 {
-    /* Codes_SRS_MESSAGE_QUEUE_10_009: [MESSAGE_QUEUE_destroy shall return if the given handle is NULL.] */
     if (handle == NULL)
     {
         /*Codes_SRS_MESSAGE_QUEUE_17_004: [ MESSAGE_QUEUE_destroy shall not perform any actions on a NULL message queue. ]*/
@@ -110,7 +109,6 @@ int MESSAGE_QUEUE_push(MESSAGE_QUEUE_HANDLE handle, MESSAGE_HANDLE element)
         {
             DList_InitializeListHead((PDLIST_ENTRY)temp);
             temp->message = element;
-            /*Codes_SRS_MESSAGE_QUEUE_17_010: [ A successful call to MESSAGE_QUEUE_push on an empty queue will cause the message queue to be non-empty (MESSAGE_QUEUE_is_empty shall return false). ]*/
             /*Codes_SRS_MESSAGE_QUEUE_17_011: [ Messages shall be pushed into the queue in a first-in-first-out order. ]*/
             DList_AppendTailList((PDLIST_ENTRY)&(handle->queue_head), (PDLIST_ENTRY)temp);
             /*Codes_SRS_MESSAGE_QUEUE_17_008: [ MESSAGE_QUEUE_push shall return zero on success. ]*/

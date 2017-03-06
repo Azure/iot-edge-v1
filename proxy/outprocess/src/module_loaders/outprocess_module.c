@@ -46,12 +46,11 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 } OUTPROCESS_HANDLE_DATA;
 
 // forward definitions
-static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
 static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 
 
-int outprocessMessageThread(void *param)
+int outprocessIncomingMessageThread(void *param)
 {
 	/*Codes_SRS_OUTPROCESS_MODULE_17_037: [ This function shall receive the module handle data as the thread parameter. ]*/
 	OUTPROCESS_HANDLE_DATA * handleData = (OUTPROCESS_HANDLE_DATA*)param;
@@ -79,6 +78,7 @@ int outprocessMessageThread(void *param)
 				break;
 			}
 
+			/*Codes_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
 			if (Lock(handleData->message_receive_thread.thread_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock");
@@ -127,7 +127,7 @@ int outprocessMessageThread(void *param)
 	return 0;
 }
 
-static int outprocessSendMsgThread(void * param)
+static int outprocessOutgoingMessagesThread(void * param)
 {
 	OUTPROCESS_HANDLE_DATA * handleData = (OUTPROCESS_HANDLE_DATA*)param;
 	if (handleData == NULL)
@@ -140,6 +140,7 @@ static int outprocessSendMsgThread(void * param)
 
 		while (should_continue)
 		{
+			/*Codes_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
 			if (Lock(handleData->message_send_thread.thread_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock");
@@ -158,6 +159,7 @@ static int outprocessSendMsgThread(void * param)
 				break;
 			}
 			MESSAGE_HANDLE messageHandle;
+			/*Codes_SRS_OUTPROCESS_MODULE_17_053: [ This thread shall ensure thread safety on the module data. ]*/
 			if (Lock(handleData->handle_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock");
@@ -171,6 +173,7 @@ static int outprocessSendMsgThread(void * param)
 			}
 			else
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_054: [ This function shall remove the oldest message from the outgoing gateway message queue. ]*/
 				messageHandle = MESSAGE_QUEUE_pop(handleData->outgoing_messages);
 				if (messageHandle == NULL)
 				{
@@ -187,9 +190,9 @@ static int outprocessSendMsgThread(void * param)
 			}
 
 			/* forward message to remote */
-			/*Codes_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
 			if (messageHandle != NULL)
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_023: [ This function shall serialize the message for transmission on the message channel. ]*/
 				int32_t msg_size = Message_ToByteArray(messageHandle, NULL, 0);
 				if (msg_size < 0)
 				{
@@ -217,6 +220,7 @@ static int outprocessSendMsgThread(void * param)
 					}
 				}
 				// We are finally finished with this message
+				/*Codes_SRS_OUTPROCESS_MODULE_17_055: [ This function shall Destroy the message once successfully transmitted. ]*/
 				Message_Destroy(messageHandle);
 			}
 			ThreadAPI_Sleep(1);
@@ -236,6 +240,7 @@ static int outprocessCreate(void *param)
 	}
 	else
 	{
+		/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
 		if (Lock(handleData->handle_lock) != LOCK_OK)
 		{
 			LogError("Unable to acquire handle data lock");
@@ -325,8 +330,7 @@ int outprocessControlThread(void *param)
 
 		while (should_continue)
 		{
-			/*Codes_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
-
+			/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
 			if (Lock(handleData->control_thread.thread_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock");
@@ -348,12 +352,14 @@ int outprocessControlThread(void *param)
 			if (needs_to_attach)
 			{
 				// our remote has detached.  Attempt to reattach.
+				/*Codes_SRS_OUTPROCESS_MODULE_17_059: [ If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process. ]*/
 				if (connection_reset_control(handleData) < 0)
 				{
 					LogError("attemping to reconnect to remote failed");
 				}
 				else
 				{
+					/*Codes_SRS_OUTPROCESS_MODULE_17_060: [ Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host. ]*/
 					if (outprocessCreate(handleData) < 0)
 					{
 						LogError("attempting to reattach to remote failed");
@@ -365,6 +371,7 @@ int outprocessControlThread(void *param)
 				}
 			}
 
+			/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
 			if (Lock(handleData->handle_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock handle data");
@@ -381,6 +388,7 @@ int outprocessControlThread(void *param)
 			int nbytes;
 			unsigned char *buf = NULL;
 			errno = 0;
+			/*Codes_SRS_OUTPROCESS_MODULE_17_057: [ This thread shall periodically attempt to receive a meesage from the module host process. ]*/
 			nbytes = nn_recv(nn_fd, (void *)&buf, NN_MSG, NN_DONTWAIT);
 			if (nbytes < 0)
 			{
@@ -394,11 +402,13 @@ int outprocessControlThread(void *param)
 				nn_freemsg(buf);
 				if (msg != NULL)
 				{
+					/*Codes_SRS_OUTPROCESS_MODULE_17_058: [ If a message has been received, it shall look for a Module Reply message. ]*/
 					if (msg->type == CONTROL_MESSAGE_TYPE_MODULE_REPLY)
 					{
 						CONTROL_MESSAGE_MODULE_REPLY * resp_msg = (CONTROL_MESSAGE_MODULE_REPLY*)msg;
 						if (resp_msg->status != 0)
 						{
+							/*Codes_SRS_OUTPROCESS_MODULE_17_059: [ If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process. ]*/
 							needs_to_attach = 1;
 						}
 					}
@@ -416,6 +426,7 @@ int outprocessControlThread(void *param)
 static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData)
 {
 	int result;
+	/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
 	if (Lock(handleData->handle_lock) != LOCK_OK)
 	{
 		result = -1;
@@ -450,6 +461,7 @@ static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData)
 			}
 			else
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
 				if (Lock(handleData->handle_lock) != LOCK_OK)
 				{
 					result = -1;
@@ -717,7 +729,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 		}
 		else
 		{
-			/*Codes_SRS_OUTPROCESS_MODULE_17_007: [ This function shall intialize a lock for thread management. ]*/
+			/*Codes_SRS_OUTPROCESS_MODULE_17_007: [ This function shall intialize a lock for exclusive access to handle data. ]*/
 			module->handle_lock = Lock_Init();
 			if (module->handle_lock == NULL)
 			{
@@ -728,6 +740,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 			}
 			else
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_042: [ This function shall initialize a queue for outgoing gateway messages. ]*/
 				module->outgoing_messages = MESSAGE_QUEUE_create();
 				if (module->outgoing_messages == NULL)
 				{
@@ -762,7 +775,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 						module->control_thread = default_thread;
 						module->async_create_thread = default_thread;
 						module->lifecyle_model = config->lifecycle_model;
-
+						/*Codes_SRS_OUTPROCESS_MODULE_17_041: [ This function shall intitialize a lock for each thread for thread management. ]*/
 						if ((module->message_receive_thread.thread_lock = Lock_Init()) == NULL)
 						{
 							connection_teardown(module);
@@ -887,6 +900,8 @@ static void shutdown_a_thread(THREAD_CONTROL * theThreadControl)
 	if (Lock(theThreadControl->thread_lock) != LOCK_OK)
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+		/*Codes_SRS_OUTPROCESS_MODULE_17_049: [ This function shall signal the outgoing gateway message thread to close. ]*/
+		/*Codes_SRS_OUTPROCESS_MODULE_17_050: [ This function shall signal the control thread to close. ]*/
 		LogError("not able to Lock, still setting the thread to finish");
 		theCurrentThread = theThreadControl->thread_handle;
 		theThreadControl->thread_flag = THREAD_FLAG_STOP;
@@ -894,17 +909,22 @@ static void shutdown_a_thread(THREAD_CONTROL * theThreadControl)
 	else
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
+		/*Codes_SRS_OUTPROCESS_MODULE_17_049: [ This function shall signal the outgoing gateway message thread to close. ]*/
+		/*Codes_SRS_OUTPROCESS_MODULE_17_050: [ This function shall signal the control thread to close. ]*/
 		theThreadControl->thread_flag = THREAD_FLAG_STOP;
 		theCurrentThread = theThreadControl->thread_handle;
 		(void)Unlock(theThreadControl->thread_lock);
 	}
 
 	/*Codes_SRS_OUTPROCESS_MODULE_17_033: [ This function shall wait for the messaging thread to complete. ]*/
+	/*Codes_SRS_OUTPROCESS_MODULE_17_051: [ This function shall wait for the outgoing gateway message thread to complete. ]*/
+	/*Codes_SRS_OUTPROCESS_MODULE_17_052: [ This function shall wait for the control thread to complete. ]*/
 	if (theCurrentThread != NULL &&
 		ThreadAPI_Join(theCurrentThread, &notUsed) != THREADAPI_OK)
 	{
 		LogError("unable to ThreadAPI_Join message thread, still proceeding in _Destroy");
 	}
+	/*Codes_SRS_OUTPROCESS_MODULE_17_034: [ This function shall release all resources created by this module. ]*/
 	(void)Lock_Deinit(theThreadControl->thread_lock);
 }
 
@@ -939,6 +959,7 @@ static void Outprocess_Destroy(MODULE_HANDLE moduleHandle)
 
 			if (sendBytes != messageSize)
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_048: [ There is a possibility the module host process is no longer operational, therefore sending the destroy the Destroy Message shall be a best effort attempt. ]*/
 				LogError("unable to send destroy control message [%p], continuing with module destroy", destroyMessage);
 				nn_freemsg(destroyMessage);
 			}
@@ -951,18 +972,19 @@ static void Outprocess_Destroy(MODULE_HANDLE moduleHandle)
 		/*Codes_SRS_OUTPROCESS_MODULE_17_030: [ This function shall close the message channel socket. ]*/
 		/*Codes_SRS_OUTPROCESS_MODULE_17_031: [ This function shall close the control channel socket. ]*/
 		connection_teardown(handleData);
-		/*then stop the thread*/
+		/* then stop the threads */
 
 		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
 		shutdown_a_thread(&(handleData->message_receive_thread));
+		/*Codes_SRS_OUTPROCESS_MODULE_17_049: [ This function shall signal the outgoing gateway message thread to close. ]*/
 		shutdown_a_thread(&(handleData->message_send_thread));
-		/*Codes_SRS_OUTPROCESS_MODULE_17_031: [ This function shall close the control channel socket. ]*/
+		/*Codes_SRS_OUTPROCESS_MODULE_17_050: [ This function shall signal the control thread to close. ]*/
 		shutdown_a_thread(&(handleData->control_thread));
 		shutdown_a_thread(&(handleData->async_create_thread));
 
-		/* Free remaining resources*/
-		delete_strings(handleData);
+		/* Free remaining resources */
 		/*Codes_SRS_OUTPROCESS_MODULE_17_034: [ This function shall release all resources created by this module. ]*/
+		delete_strings(handleData);
 		(void)Lock_Deinit(handleData->handle_lock);
 		free(handleData);
 	}
@@ -974,6 +996,7 @@ static void Outprocess_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 	/*Codes_SRS_OUTPROCESS_MODULE_17_022: [ If module or message_handle is NULL, this function shall do nothing. ]*/
 	if (handleData != NULL && messageHandle != NULL)
 	{
+		/*Codes_SRS_OUTPROCESS_MODULE_17_046: [ This function shall clone the message to ensure the message is kept allocated until forwarded to module host. ]*/
 		MESSAGE_HANDLE queued_message = Message_Clone(messageHandle);
 		if (queued_message == NULL)
 		{
@@ -981,6 +1004,7 @@ static void Outprocess_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 		}
 		else
 		{
+			/*Codes_SRS_OUTPROCESS_MODULE_17_045: [ This function shall ensure thread safety for the module data. ]*/
 			if (Lock(handleData->handle_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock handle data");
@@ -988,6 +1012,7 @@ static void Outprocess_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 			}
 			else
 			{
+				/*Codes_SRS_OUTPROCESS_MODULE_17_047: [ This function shall push the message onto the end of the outgoing gateway message queue. ]*/
 				if (MESSAGE_QUEUE_push(handleData->outgoing_messages, queued_message) != 0)
 				{
 					LogError("unable to queue the message");
@@ -1007,16 +1032,18 @@ static void Outprocess_Start(MODULE_HANDLE moduleHandle)
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_017: [ This function shall ensure thread safety on execution. ]*/
 		/*Codes_SRS_OUTPROCESS_MODULE_17_018: [ This function shall create a thread to handle receiving messages from module host. ]*/
-		if (ThreadAPI_Create(&(handleData->message_receive_thread.thread_handle), outprocessMessageThread, handleData) != THREADAPI_OK)
+		if (ThreadAPI_Create(&(handleData->message_receive_thread.thread_handle), outprocessIncomingMessageThread, handleData) != THREADAPI_OK)
 		{
 			LogError("failed to spawn message handling thread");
 			handleData->message_receive_thread.thread_handle = NULL;
 		}
-		else if (ThreadAPI_Create(&(handleData->message_send_thread.thread_handle), outprocessSendMsgThread, handleData) != THREADAPI_OK)
+		/*Codes_SRS_OUTPROCESS_MODULE_17_043: [ This function shall create a thread to handle outgoing gateway messages to the module host. ]*/
+		else if (ThreadAPI_Create(&(handleData->message_send_thread.thread_handle), outprocessOutgoingMessagesThread, handleData) != THREADAPI_OK)
 		{
 			LogError("failed to spawn outgoing message thread");
 			handleData->control_thread.thread_handle = NULL;
 		}
+		/*Codes_SRS_OUTPROCESS_MODULE_17_044: [ This function shall create a thread to handle receiving messages from module host. ]*/
 		else if (ThreadAPI_Create(&(handleData->control_thread.thread_handle), outprocessControlThread, handleData) != THREADAPI_OK)
 		{
 			LogError("failed to spawn control handling thread");
