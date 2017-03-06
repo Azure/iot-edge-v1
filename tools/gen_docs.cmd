@@ -28,28 +28,28 @@ call :checkExists jsdoc
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
-rem -- Generate C API docs
+rem -- Generate docs
 rem -----------------------------------------------------------------------------
-echo Generating C API docs
+
+echo Generating Gateway Core API docs
 call gen_cdocs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
-rem -----------------------------------------------------------------------------
-rem -- Generate .NET API docs
-rem -----------------------------------------------------------------------------
-echo Generating .NET API docs
+echo Generating .NET Module API docs
 call gen_dotnetdocs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
-rem -----------------------------------------------------------------------------
-rem -- Generate Java API docs
-rem -----------------------------------------------------------------------------
-echo Generating Java API docs
+echo Generating .NET Core Module API docs
+call gen_dotnetcoredocs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+
+echo Generating Java Module API docs
 call gen_javadocs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
-rem -----------------------------------------------------------------------------
-rem -- Generate Node.js API docs
-rem -----------------------------------------------------------------------------
-echo Generating Node.js API docs
+echo Generating Node.js Module API docs
 call gen_jsdocs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
 rem -- done

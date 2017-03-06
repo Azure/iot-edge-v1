@@ -9,7 +9,6 @@ set build-root=%~dp0..\..
 rem -----------------------------------------------------------------------------
 rem -- Generate Java binding docs
 rem -----------------------------------------------------------------------------
-echo Generating Java binding API docs...
 cd %build-root%\bindings\java\gateway-java-binding
 call mvn -q javadoc:javadoc
 if not !ERRORLEVEL!==0 (

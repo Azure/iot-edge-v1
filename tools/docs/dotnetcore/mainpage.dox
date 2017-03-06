@@ -1,0 +1,21 @@
+/*! \mainpage Microsoft Azure IoT Gateway SDK
+ *
+ * \section intro_sec Introduction
+ *
+ * This document describes the .NET Core binding mechanism used by the Azure IoT Gateway SDK. 
+ *
+ * \section features_sec Features
+ *
+ * - Provides an interface to be implemented by .NET Core modules
+ * - Provides to modules a Broker for publishing messages to the gateway
+ * - Hosts modules in the .NET CoreCLR
+ *
+ * \section tested_platforms_sec Tested platforms
+ *
+ * The .NET Core binding has been tested on the following platforms:
+ * - Windows 10
+ * - Ubuntu 14.04 LTS
+ * - Ubuntu 15.10
+ * - Ubuntu 16.04 LTS
+ *
+ */

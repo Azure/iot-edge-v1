@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+set -e
+
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 cd $build_root/tools/docs
 
@@ -32,19 +34,17 @@ checkExists javadoc
 checkExists jsdoc
 
 # -----------------------------------------------------------------------------
-# -- Generate C API docs
+# -- Generating docs
 # -----------------------------------------------------------------------------
-echo Generating C API docs
+
+echo Generating Gateway Core API docs
 ./gen_cdocs.sh
 
-# -----------------------------------------------------------------------------
-# -- Generate Java API docs
-# -----------------------------------------------------------------------------
-echo Generating C API docs
+echo Generating Java Module API docs
 ./gen_javadocs.sh
 
-# -----------------------------------------------------------------------------
-# -- Generate Node.js API docs
-# -----------------------------------------------------------------------------
-echo Generating Node.js API docs
+echo Generating Node.js Module API docs
 ./gen_jsdocs.sh
+
+echo Generating .NET Core Module API docs
+./gen_dotnetcoredocs.sh

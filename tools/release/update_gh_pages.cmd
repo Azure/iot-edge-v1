@@ -22,5 +22,6 @@ rem ---------------------------------------------------------------------------
 rem -- Put docs into temp directory
 rem ---------------------------------------------------------------------------
 call %build-root%\tools\gen_docs.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 echo robocopy /E "%build-root%doc\api_reference" "%gh_pages_dir%\api_reference"
 robocopy /E "%build-root%doc\api_reference" "%gh_pages_dir%\api_reference"
