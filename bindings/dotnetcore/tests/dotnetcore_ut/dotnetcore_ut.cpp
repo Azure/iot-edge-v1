@@ -38,6 +38,14 @@ typedef void(*PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
 typedef void(*PGatewayStartDelegate)(unsigned int moduleIdManaged);
 
 
+extern PGatewayCreateDelegate GatewayCreateDelegate;
+
+extern PGatewayReceiveDelegate GatewayReceiveDelegate;
+
+extern PGatewayDestroyDelegate GatewayDestroyDelegate;
+
+extern PGatewayStartDelegate GatewayStartDelegate;
+
 static size_t gMessageSize;
 static const unsigned char * gMessageSource;
 
@@ -408,6 +416,11 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
         calledReceiveMethod = false;
         calledDestroyMethod = false;
         calledStartMethod = false;
+
+        GatewayCreateDelegate = NULL;
+        GatewayReceiveDelegate = NULL;
+        GatewayDestroyDelegate = NULL;
+        GatewayStartDelegate = NULL;
 
         if (!MicroMockAcquireMutex(g_testByTest))
         {
@@ -1334,6 +1347,29 @@ BEGIN_TEST_SUITE(dotnetcore_ut)
 
         ///cleanup
     }
+
+
+    /* Tests_SRS_DOTNET_CORE_04_040: [Module_DotNetCoreHost_SetBindingDelegates shall just assign createAddress to GatewayCreateDelegate] */
+    /* Tests_SRS_DOTNET_CORE_04_041: [Module_DotNetCoreHost_SetBindingDelegates shall just assign receiveAddress to GatewayReceiveDelegate] */
+    /* Tests_SRS_DOTNET_CORE_04_042: [Module_DotNetCoreHost_SetBindingDelegates shall just assign destroyAddress to GatewayDestroyDelegate] */
+    /* Tests_SRS_DOTNET_CORE_04_043: [Module_DotNetCoreHost_SetBindingDelegates shall just assign startAddress to GatewayStartDelegate] */
+    TEST_FUNCTION(Module_DotNetCoreHost_SetBindingDelegates_setting_delegates_succeed)
+    {
+        ///arrange
+        CDOTNETCOREMocks mocks;
+
+        ///act
+        Module_DotNetCoreHost_SetBindingDelegates((intptr_t)0x42, (intptr_t)0x43, (intptr_t)0x44, (intptr_t)0x45);
+
+        ///assert
+        ASSERT_ARE_EQUAL(long, (long)GatewayCreateDelegate, 0x42);
+        ASSERT_ARE_EQUAL(long, (long)GatewayReceiveDelegate, 0x43);
+        ASSERT_ARE_EQUAL(long, (long)GatewayDestroyDelegate, 0x44);
+        ASSERT_ARE_EQUAL(long, (long)GatewayStartDelegate, 0x45);
+
+        ///cleanup
+    }
+
 
     /* Tests_SRS_DOTNET_CORE_04_026:: [ Module_GetApi shall return out the provided MODULES_API structure with required module's APIs functions. ] */
     TEST_FUNCTION(DotNetCore_Module_GetApi_returns_non_NULL)

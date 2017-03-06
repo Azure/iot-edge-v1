@@ -151,6 +151,23 @@ bool Module_DotNetCoreHost_PublishMessage(BROKER_HANDLE , MODULE_HANDLE sourceMo
 
 **SRS_DOTNET_CORE_04_034: [** If `Broker_Publish` succeeds `Module_DotNetCoreHost_PublishMessage` shall succeed. **]**
 
+
+Module_DotNetCoreHost_SetBindingDelegates
+-----------------------------------------
+```c
+void Module_DotNetCoreHost_SetBindingDelegates(intptr_t createAddress, intptr_t receiveAddress, intptr_t destroyAddress, intptr_t startAddress)
+```
+**SRS_DOTNET_CORE_04_040: [** `Module_DotNetCoreHost_SetBindingDelegates` shall just assign `createAddress` to `GatewayCreateDelegate` **]**
+
+**SRS_DOTNET_CORE_04_041: [** `Module_DotNetCoreHost_SetBindingDelegates` shall just assign `receiveAddress` to `GatewayReceiveDelegate` **]**
+
+**SRS_DOTNET_CORE_04_042: [** `Module_DotNetCoreHost_SetBindingDelegates` shall just assign `destroyAddress` to `GatewayDestroyDelegate` **]**
+
+**SRS_DOTNET_CORE_04_043: [** `Module_DotNetCoreHost_SetBindingDelegates` shall just assign `startAddress` to `GatewayStartDelegate` **]**
+
+
+
+
 DotNetCore_FreeConfiguration
 ----------------------------
 ```c
