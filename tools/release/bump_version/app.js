@@ -112,6 +112,9 @@ var TaskRunners = {
                 fs.readFile(filePath, 'utf-8', cb);
             },
             function(data, cb) {
+                // strip BOM, if it exists (readFile() doesn't do this automatically)
+                data = data.replace(/^\uFEFF/, '');
+
                 // replace the prop value
                 var obj = JSON.parse(data);
                 PropPaths.setValue(obj, propPath, replace_string);

@@ -1,11 +1,12 @@
 {
     "gateway": 
     {
-        "core" : "1.0.1"
+        "core" : "1.0.2"
     },
     "bindings" :
     {
-        "dotnet" : "1.0.0",
-        "java" : "1.0.0"
+        "dotnet" : "1.0.1",
+        "dotnetcore": "1.0.0",
+        "java" : "1.0.1"
     }
 }

@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(azure_iot_gateway_sdk)
 
-set(GATEWAY_VERSION 1.0.1 CACHE INTERNAL "")
+set(GATEWAY_VERSION 1.0.2 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

@@ -7,7 +7,6 @@ build_root=$(cd "$(dirname "$0")/../.." && pwd)
 # -----------------------------------------------------------------------------
 # -- Generate Java binding docs
 # -----------------------------------------------------------------------------
-echo Generating Java Device SDK docs... 
 cd $build_root/bindings/java/gateway-java-binding
 mvn -q javadoc:javadoc
 if [ $? -ne 0 ]

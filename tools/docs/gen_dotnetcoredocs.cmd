@@ -4,18 +4,17 @@
 @setlocal EnableExtensions EnableDelayedExpansion
 @echo off
 
-set build-root=%~dp0..\..
-cd %build-root%\tools\docs\c
+cd %build-root%\tools\docs\dotnetcore
 
 rem ---------------------------------------------------------------------------
 rem -- Check directory
 rem ---------------------------------------------------------------------------
-set docs_dir=%build-root%\doc\api_reference\c
+set docs_dir=%build-root%\doc\api_reference\dotnetcore
 if exist %docs_dir% rd /s /q %docs_dir%
 if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
 mkdir %docs_dir%
 
 rem ---------------------------------------------------------------------------
-rem -- Generate C API docs
+rem -- Generate .NET Core Module API docs
 rem ---------------------------------------------------------------------------
 doxygen
