@@ -4,7 +4,9 @@ MESSAGE QUEUE REQUIREMENTS
 Overview
 --------
 
-The message queue is a very simple queue intended to manage messages. The message queue is typed with MESSAGE_HANDLE because the destruction of the queue requires the destruction of the messages inside the queue.  **Unless the queue is destroyed, the user of this queue is expected to clone before pushing onto the queue, and is expected to destroy the message after popping the message off teh queue.**
+The message queue is a very simple queue intended to manage messages. The message queue is typed with MESSAGE_HANDLE because the destruction of the queue requires the destruction of the messages inside the queue. 
+
+**Unless the queue is destroyed, the user of this queue is expected to clone before pushing onto the queue, and is expected to destroy the message after popping the message off the queue.**
 
 References
 ----------
@@ -16,7 +18,7 @@ Exposed API
 
 ```c
 /* creation */
-MESSAGE_QUEUE_HANDLE MESSAGE_QUEUE_create());
+MESSAGE_QUEUE_HANDLE MESSAGE_QUEUE_create();
 /* destruction */
 void MESSAGE_QUEUE_destroy(MESSAGE_QUEUE_HANDLE handle);
 
@@ -74,8 +76,6 @@ Inserts a mesage handle into the message queue.
 **SRS_MESSAGE_QUEUE_17_008: [** MESSAGE\_QUEUE\_push shall return zero on success. **]**
 
 **SRS_MESSAGE_QUEUE_17_009: [** MESSAGE\_QUEUE\_push shall return a non-zero value if any system call fails. **]**
-
-**SRS_MESSAGE_QUEUE_17_010: [** A successful call to MESSAGE\_QUEUE\_push on an empty queue will cause the message queue to be non-empty (MESSAGE\_QUEUE\_is\_empty shall return false). **]**
 
 **SRS_MESSAGE_QUEUE_17_011: [** Messages shall be pushed into the queue in a first-in-first-out order. **]**
 

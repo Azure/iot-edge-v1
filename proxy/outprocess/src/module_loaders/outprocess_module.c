@@ -48,6 +48,7 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 // forward definitions
 static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
+static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 
 
 int outprocessMessageThread(void *param)
@@ -101,9 +102,9 @@ int outprocessMessageThread(void *param)
 			errno = 0;
 			/*Codes_SRS_OUTPROCESS_MODULE_17_038: [ This function shall read from the message channel for gateway messages from the module host. ]*/
 			nbytes = nn_recv(nn_fd, (void *)&buf, NN_MSG, 0);
-			int receive_error = nn_errno();
 			if (nbytes < 0)
 			{
+				int receive_error = nn_errno();
 				if (receive_error != ETIMEDOUT)
 					should_continue = 0;
 			}
@@ -218,8 +219,8 @@ static int outprocessSendMsgThread(void * param)
 				// We are finally finished with this message
 				Message_Destroy(messageHandle);
 			}
+			ThreadAPI_Sleep(1);
 		}
-		ThreadAPI_Sleep(1);
 	}
 	return 0;
 }
@@ -381,9 +382,9 @@ int outprocessControlThread(void *param)
 			unsigned char *buf = NULL;
 			errno = 0;
 			nbytes = nn_recv(nn_fd, (void *)&buf, NN_MSG, NN_DONTWAIT);
-			int receive_error = nn_errno();
 			if (nbytes < 0)
 			{
+				int receive_error = nn_errno();
 				if (receive_error != EAGAIN)
 					should_continue = 0;
 			}
@@ -421,32 +422,50 @@ static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData)
 	}
 	else
 	{
+		int control_socket = handleData->control_socket;
+		handleData->control_socket = -1;
+		(void)Unlock(handleData->handle_lock);
+
 		/*Codes_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
-		if (handleData->control_socket != -1)
+		if (control_socket >= 0)
 		{
-			handleData->control_socket = nn_socket(AF_SP, NN_PAIR);
+			(void)nn_close(control_socket);
 		}
-		if (handleData->control_socket < 0)
+		control_socket = nn_socket(AF_SP, NN_PAIR);
+		if (control_socket < 0)
 		{
-			result = handleData->control_socket;
+			result = control_socket;
 			LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
 		}
 		else
 		{
 			/*Codes_SRS_OUTPROCESS_MODULE_17_011: [ This function shall connect the request/reply socket to the control_id. ]*/
-			int control_connect_id = nn_connect(handleData->control_socket, STRING_c_str(handleData->control_uri));
+			int control_connect_id = nn_connect(control_socket, STRING_c_str(handleData->control_uri));
 			if (control_connect_id < 0)
 			{
 				result = control_connect_id;
 				LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
+				(void)nn_close(control_socket);
+				control_socket = -1;
 			}
 			else
 			{
-				result = 0;
+				if (Lock(handleData->handle_lock) != LOCK_OK)
+				{
+					result = -1;
+					(void)nn_close(control_socket);
+				}
+				else
+				{
+					// successfully reconnected
+					result = 0;
+					handleData->control_socket = control_socket;
+					(void)Unlock(handleData->handle_lock);
+				}
+
 			}
 		}
 	}
-	(void)Unlock(handleData->handle_lock);
 	return result;
 }
 
@@ -775,6 +794,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 						{
 							connection_teardown(module);
 							MESSAGE_QUEUE_destroy(module->outgoing_messages);
+							Lock_Deinit(module->async_create_thread.thread_lock);
 							Lock_Deinit(module->control_thread.thread_lock);
 							Lock_Deinit(module->message_receive_thread.thread_lock);
 							Lock_Deinit(module->handle_lock);
@@ -788,6 +808,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 							Lock_Deinit(module->async_create_thread.thread_lock);
 							Lock_Deinit(module->control_thread.thread_lock);
 							Lock_Deinit(module->message_receive_thread.thread_lock);
+							Lock_Deinit(module->message_send_thread.thread_lock);
 							Lock_Deinit(module->handle_lock);
 							free(module);
 							module = NULL;
@@ -798,7 +819,6 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 							if (ThreadAPI_Create(&(module->async_create_thread.thread_handle), outprocessCreate, module) != THREADAPI_OK)
 							{
 								/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-								connection_teardown(module);
 
 								LogError("failed to spawn a thread");
 								module->async_create_thread.thread_handle = NULL;
@@ -808,6 +828,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 								Lock_Deinit(module->async_create_thread.thread_lock);
 								Lock_Deinit(module->control_thread.thread_lock);
 								Lock_Deinit(module->message_receive_thread.thread_lock);
+								Lock_Deinit(module->message_send_thread.thread_lock);
 								Lock_Deinit(module->handle_lock);
 								free(module);
 								module = NULL;
@@ -827,8 +848,8 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 									{
 										/*Codes_SRS_OUTPROCESS_MODULE_17_015: [ This function shall expect a successful result from the Create Response to consider the module creation a success. ]*/
 										// async thread is done.
-										module->async_create_thread.thread_handle = NULL;
 									}
+									module->async_create_thread.thread_handle = NULL;
 								}
 								else
 								{
@@ -843,6 +864,7 @@ static MODULE_HANDLE Outprocess_Create(BROKER_HANDLE broker, const void* configu
 									Lock_Deinit(module->async_create_thread.thread_lock);
 									Lock_Deinit(module->control_thread.thread_lock);
 									Lock_Deinit(module->message_receive_thread.thread_lock);
+									Lock_Deinit(module->message_send_thread.thread_lock);
 									Lock_Deinit(module->handle_lock);
 									free(module);
 									module = NULL;
@@ -866,6 +888,7 @@ static void shutdown_a_thread(THREAD_CONTROL * theThreadControl)
 	{
 		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
 		LogError("not able to Lock, still setting the thread to finish");
+		theCurrentThread = theThreadControl->thread_handle;
 		theThreadControl->thread_flag = THREAD_FLAG_STOP;
 	}
 	else
@@ -873,7 +896,7 @@ static void shutdown_a_thread(THREAD_CONTROL * theThreadControl)
 		/*Codes_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
 		theThreadControl->thread_flag = THREAD_FLAG_STOP;
 		theCurrentThread = theThreadControl->thread_handle;
-		Unlock(theThreadControl->thread_lock);
+		(void)Unlock(theThreadControl->thread_lock);
 	}
 
 	/*Codes_SRS_OUTPROCESS_MODULE_17_033: [ This function shall wait for the messaging thread to complete. ]*/
@@ -961,6 +984,7 @@ static void Outprocess_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 			if (Lock(handleData->handle_lock) != LOCK_OK)
 			{
 				LogError("unable to Lock handle data");
+				Message_Destroy(queued_message);
 			}
 			else
 			{

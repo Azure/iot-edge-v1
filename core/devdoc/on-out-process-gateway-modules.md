@@ -59,7 +59,7 @@ Message passing from the gateway to an outprocess module will look like this:
 
 Inter-process communication between the gateway process and the process
 hosting the module will be managed using **nanomsg** 
-[request/reply](http://nanomsg.org/v1.0.0/nn_reqrep.7.html) sockets for 
+[Pair](http://nanomsg.org/v1.0.0/nn_pair.7.html) sockets for 
 control, and **nanomsg** [Pair](http://nanomsg.org/v1.0.0/nn_pair.7.html) 
 sockets for messaging. The gateway will create `NN_REQ` and `NN_PAIR` sockets 
 for each external process. The module host will create `NN_RESP` and `NN_PAIR` 
@@ -251,7 +251,7 @@ is to load the single gateway module in question and manage communication
 between the module and the gateway process. It is passed the control channel 
 identifier as an argument. The module host then proceeds to do the following:
 
-1. Create and open a control channel as a request/reply connection.
+1. Create and open a control channel as a pair connection.
 2. Wait for a _Create Module_ message.
 3. When a _Create Module_ message arrives,
 
@@ -350,7 +350,7 @@ Proxy/Module Host Control Communication Protocol
 
 <a name="control_communication" ></a>
 The proxy and the module host communicate via *messages* using *nanomsg*
-request/reply sockets. The different message types and how they work has been
+pair sockets. The different message types and how they work has been
 described below. The ordering of the message types given below corresponds
 roughly with the sequence in which these messages are sent and received. Each
 message packet is structured like so:
@@ -387,7 +387,7 @@ message packet is structured like so:
 
 
 
--   **Create Module Reply**
+-   **Module Reply**
 
     This message is sent by the module host in response to a *Create Module*
     request from the proxy. The *data* in the packet is a boolean status

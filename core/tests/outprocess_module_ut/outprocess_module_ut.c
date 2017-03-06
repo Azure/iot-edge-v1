@@ -58,6 +58,7 @@ void my_gballoc_free(void* ptr)
 #include "azure_c_shared_utility/lock.h"
 #include "broker.h"
 #include "module_loader.h"
+#include "message_queue.h"
 
 #undef ENABLE_MOCKS
 #include "control_message.h"
@@ -109,6 +110,10 @@ MOCK_FUNCTION_WITH_CODE(, int, nn_close, int, s)
 	my_gballoc_free(nn_socket_memory[s]);
 MOCK_FUNCTION_END(close_result)
 
+MOCK_FUNCTION_WITH_CODE(, int, nn_errno)
+int errno_result = 0;
+MOCK_FUNCTION_END(errno_result)
+
 MOCK_FUNCTION_WITH_CODE(, int, nn_bind, int, s, const char *, addr)
 	int bind_result = 0;
 	current_nn_bind_index++;
@@ -126,9 +131,12 @@ MOCK_FUNCTION_WITH_CODE(, int, nn_connect, int, s, const char *, addr)
 MOCK_FUNCTION_END(connect_result)
 
 static bool should_nn_send_fail = false;
+static int current_nn_send_index;
+static int when_shall_nn_send_fail;
 MOCK_FUNCTION_WITH_CODE(, int, nn_send, int, s, const void *, buf, size_t, len, int, flags)
 	int send_length = 0;
-	if (should_nn_send_fail)
+	current_nn_send_index++;
+	if (should_nn_send_fail || (current_nn_send_index == when_shall_nn_send_fail))
 	{
 		send_length = -1;
 	}
@@ -147,9 +155,12 @@ MOCK_FUNCTION_WITH_CODE(, int, nn_send, int, s, const void *, buf, size_t, len, 
 MOCK_FUNCTION_END(send_length)
 
 static bool should_nn_recv_fail = false;
+static int current_nn_recv_index;
+static int when_shall_nn_recv_fail;
 MOCK_FUNCTION_WITH_CODE(, int, nn_recv, int, s, void *, buf, size_t, len, int, flags)
 	int rcv_length;
-	if (should_nn_recv_fail)
+	current_nn_recv_index++;
+	if (should_nn_recv_fail || (current_nn_recv_index == when_shall_nn_recv_fail))
 	{
 		rcv_length = -1;
 	}
@@ -187,9 +198,9 @@ my_gballoc_free(msg);
 MOCK_FUNCTION_END(free_result)
 
 //Thread API mocks
-
-static THREAD_START_FUNC thread_func_to_call;
-static void* thread_func_args;
+#define NUMMOCKTHREADS 6
+static THREAD_START_FUNC thread_func_to_call[NUMMOCKTHREADS];
+static void* thread_func_args[NUMMOCKTHREADS];
 static size_t currentThreadAPI_Create_call;
 static size_t whenShallThreadAPI_Create_fail;
 
@@ -205,22 +216,27 @@ THREADAPI_RESULT myThreadAPI_Create(THREAD_HANDLE* threadHandle, THREAD_START_FU
 	else
 	{
 		*threadHandle = (THREAD_HANDLE*)my_gballoc_malloc(9);
-		thread_func_to_call = func;
-		thread_func_args = arg;
+		thread_func_to_call[currentThreadAPI_Create_call] = func;
+		thread_func_args[currentThreadAPI_Create_call] = arg;
 
 		result2 = THREADAPI_OK;
 	}
 	return result2;
 }
 
-static THREADAPI_RESULT thread_join_result;
-static bool call_thread_function_on_join;
+static THREADAPI_RESULT thread_join_result[NUMMOCKTHREADS];
+// set call_thread_function_on_join to the correct create instance above
+static int call_thread_function_on_join[NUMMOCKTHREADS];
+static size_t currentThreadAPI_join_call;
 THREADAPI_RESULT myThreadAPI_Join( THREAD_HANDLE threadHandle, int* res)
 {
+	currentThreadAPI_join_call++;
 	int function_result;
-	if (call_thread_function_on_join == true)
+	int thread_number = call_thread_function_on_join[currentThreadAPI_join_call];
+	if (call_thread_function_on_join[currentThreadAPI_join_call] > 0)
 	{
-		function_result = (*thread_func_to_call)(thread_func_args);
+		function_result = 
+			(*thread_func_to_call[thread_number])(thread_func_args[thread_number]);
 	}
 	else
 	{
@@ -231,7 +247,7 @@ THREADAPI_RESULT myThreadAPI_Join( THREAD_HANDLE threadHandle, int* res)
 		*res = function_result;
 	}
 	my_gballoc_free(threadHandle);
-	return thread_join_result;
+	return thread_join_result[currentThreadAPI_join_call];
 }
 
 /* Lock mocks
@@ -279,15 +295,9 @@ CONTROL_MESSAGE_MODULE_CREATE global_control_msg;
 static int default_serialized_size;
 
 MOCK_FUNCTION_WITH_CODE(, CONTROL_MESSAGE *, ControlMessage_CreateFromByteArray, const unsigned char*, source, size_t, size)
-	CONTROL_MESSAGE* cm1 = (CONTROL_MESSAGE*)my_gballoc_malloc(sizeof(CONTROL_MESSAGE_MODULE_CREATE));
-	if (cm1)
-	{
-		memcpy(cm1, &global_control_msg, sizeof(CONTROL_MESSAGE_MODULE_CREATE));
-	}
-MOCK_FUNCTION_END(cm1)
+MOCK_FUNCTION_END((CONTROL_MESSAGE*)&global_control_msg)
 
 MOCK_FUNCTION_WITH_CODE(, void, ControlMessage_Destroy, CONTROL_MESSAGE *, message)
-	my_gballoc_free(message);
 MOCK_FUNCTION_END()
 
 MOCK_FUNCTION_WITH_CODE(, int32_t, ControlMessage_ToByteArray, CONTROL_MESSAGE *, message, unsigned char*, buf, int32_t, size)
@@ -300,24 +310,31 @@ MOCK_FUNCTION_END(carray_size)
 static int default_message_size;
 
 MOCK_FUNCTION_WITH_CODE(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
-	MESSAGE_HANDLE m1 = (MESSAGE_HANDLE)my_gballoc_malloc(default_message_size);
+MESSAGE_HANDLE m1 = (MESSAGE_HANDLE)my_gballoc_malloc(default_message_size);
+uint8_t *counter = (uint8_t*)m1;
+*counter = 1;
 MOCK_FUNCTION_END(m1)
+
+MOCK_FUNCTION_WITH_CODE(, MESSAGE_HANDLE, Message_Clone, MESSAGE_HANDLE, msg)
+uint8_t *counter = (uint8_t*)msg;
+(*counter)++;
+MOCK_FUNCTION_END(msg)
 
 MOCK_FUNCTION_WITH_CODE(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
 MESSAGE_HANDLE m2 = (MESSAGE_HANDLE)my_gballoc_malloc(size);
+uint8_t *counter = (uint8_t*)m2;
+*counter = 1;
 MOCK_FUNCTION_END(m2)
 
 MOCK_FUNCTION_WITH_CODE(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t, size)
 int32_t array_size = default_serialized_size;
 MOCK_FUNCTION_END(array_size)
 
-MOCK_FUNCTION_WITH_CODE(, MESSAGE_HANDLE, Message_CreateFromBuffer, const MESSAGE_BUFFER_CONFIG*, cfg)
-MESSAGE_HANDLE m3 = (MESSAGE_HANDLE)my_gballoc_malloc(default_message_size);
-MOCK_FUNCTION_END(m3)
-
-
 MOCK_FUNCTION_WITH_CODE(, void, Message_Destroy, MESSAGE_HANDLE, message)
-my_gballoc_free(message);
+uint8_t *counter = (uint8_t*)message;
+--(*counter);
+if (*counter == 0)
+	my_gballoc_free(message);
 MOCK_FUNCTION_END()
 
 
@@ -335,11 +352,13 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	umock_c_init(on_umock_c_error);
 	umocktypes_charptr_register_types();
 	umocktypes_stdint_register_types();
+	umocktypes_bool_register_types();
 
 	REGISTER_UMOCK_ALIAS_TYPE(STRING_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(MODULE_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(BROKER_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_HANDLE, void*);
+	REGISTER_UMOCK_ALIAS_TYPE(MESSAGE_QUEUE_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(LOCK_HANDLE, void*);
 	REGISTER_UMOCK_ALIAS_TYPE(LOCK_RESULT, int);
 	REGISTER_UMOCK_ALIAS_TYPE(THREAD_HANDLE, void*);
@@ -368,6 +387,9 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
 	REGISTER_GLOBAL_MOCK_HOOK(Lock, my_Lock);
 	REGISTER_GLOBAL_MOCK_HOOK(Unlock, my_Unlock);
 	REGISTER_GLOBAL_MOCK_HOOK(Lock_Deinit, my_Lock_Deinit);
+
+	// message queue
+	REGISTER_GLOBAL_MOCK_RETURNS(MESSAGE_QUEUE_create, (MESSAGE_QUEUE_HANDLE)0x40, NULL);
 
 
 	Module_ParseConfigurationFromJson = Outprocess_Module_API_all.Module_ParseConfigurationFromJson;
@@ -399,6 +421,10 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
     malloc_count = 0;
 	should_nn_send_fail = false;
 	should_nn_recv_fail = false;
+	current_nn_send_index = 0;
+	when_shall_nn_send_fail = 0;
+	current_nn_recv_index = 0;
+	when_shall_nn_recv_fail = 0;
 
 	current_nn_socket_index = 0;
 	current_nn_bind_index = 0;
@@ -418,8 +444,14 @@ TEST_FUNCTION_INITIALIZE(TestMethodInitialize)
 
 	currentThreadAPI_Create_call = 0;
 	whenShallThreadAPI_Create_fail = 0;
-	thread_join_result = THREADAPI_OK;
-	call_thread_function_on_join = false;
+	currentThreadAPI_join_call = 0;
+	for (int t = 0; t < NUMMOCKTHREADS; t++)
+	{
+		thread_func_to_call[t] = NULL;
+		thread_func_args[t] = NULL;
+		thread_join_result[t] = THREADAPI_OK;
+		call_thread_function_on_join[t] = 0;
+	}
 
 	memset(&global_control_msg, 0, sizeof(CONTROL_MESSAGE_MODULE_CREATE));
 }
@@ -517,11 +549,8 @@ static void setup_create_connections(OUTPROCESS_MODULE_CONFIG* config)
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	// assuming the nanomsg mock starts socket at 1
-	STRICT_EXPECTED_CALL(nn_bind(1, real_message_uri));
-	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_connect(1, real_message_uri));
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_REQ));
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_connect(2, real_control_uri));
@@ -529,7 +558,6 @@ static void setup_create_connections(OUTPROCESS_MODULE_CONFIG* config)
 
 static void setup_create_create_message(OUTPROCESS_MODULE_CONFIG* config)
 {
-
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
@@ -586,21 +614,34 @@ TEST_FUNCTION(Outprocess_Create_success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
 
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+
 	setup_create_connections(&config);
+
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
 
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
-	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
@@ -635,18 +676,16 @@ TEST_FUNCTION(Outprocess_Create_success_async)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
-
-	setup_create_create_message(&config);
-
-	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
-		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
@@ -678,22 +717,30 @@ TEST_FUNCTION(Outprocess_Create_returns_null_wrong_message_type_response)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
-	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
@@ -702,14 +749,20 @@ TEST_FUNCTION(Outprocess_Create_returns_null_wrong_message_type_response)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
-
 
 	// act
 	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
@@ -738,22 +791,30 @@ TEST_FUNCTION(Outprocess_Create_returns_null_wrong_message_status_response)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
-	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
@@ -762,12 +823,18 @@ TEST_FUNCTION(Outprocess_Create_returns_null_wrong_message_status_response)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
-
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -795,36 +862,50 @@ TEST_FUNCTION(Outprocess_Create_returns_null_reponse_not_a_message)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
-	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	malloc_will_fail = true; // we malloc to create the byte array.
-	malloc_fail_count = 8;
 	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
-		.IgnoreArgument(1);
+		.IgnoreArgument(1)
+		.SetReturn(NULL);
 	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -851,32 +932,47 @@ TEST_FUNCTION(Outprocess_Create_returns_null_nn_recv_fails)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	call_thread_function_on_join = true;
-	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	malloc_will_fail = true; // mock calls malloc to create the message.
-	malloc_fail_count = 7;
+	malloc_will_fail = true; // we malloc to create the byte array.
+	malloc_fail_count = 11;
 	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -903,29 +999,36 @@ TEST_FUNCTION(Outprocess_Create_returns_null_thread_join_fails)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
-
-	setup_create_create_message(&config);
-
-	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
-		.IgnoreArgument(2);
-	call_thread_function_on_join = false;
-	thread_join_result = THREADAPI_ERROR;
+	//create thread
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 0;
+	thread_join_result[1] = THREADAPI_ERROR;
 	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -952,26 +1055,33 @@ TEST_FUNCTION(Outprocess_Create_returns_null_thread_create_fails)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
-
-	setup_create_create_message(&config);
-
-	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
-		.IgnoreArgument(2);
+	//create thread
 	whenShallThreadAPI_Create_fail = 1;
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -998,26 +1108,44 @@ TEST_FUNCTION(Outprocess_Create_returns_null_nn_send_fails)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	should_nn_send_fail = true;
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0))
 		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1044,12 +1172,25 @@ TEST_FUNCTION(Outprocess_Create_returns_null_nn_allocmsg_fails)
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
@@ -1063,14 +1204,21 @@ TEST_FUNCTION(Outprocess_Create_returns_null_nn_allocmsg_fails)
 	STRICT_EXPECTED_CALL(ControlMessage_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
 		.IgnoreArgument(1);
 	malloc_will_fail = true; // we malloc to create the message.
-	malloc_fail_count = 5;
-	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
+	malloc_fail_count = 10;
+	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1093,16 +1241,28 @@ TEST_FUNCTION(Outprocess_Create_returns_null_Message_ToByteArray_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
@@ -1114,14 +1274,21 @@ TEST_FUNCTION(Outprocess_Create_returns_null_Message_ToByteArray_fails)
 		.IgnoreAllArguments();
 
 	STRICT_EXPECTED_CALL(ControlMessage_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
-		.IgnoreArgument(1)
-		.SetReturn(-1);
+		.IgnoreArgument(1).SetReturn(-1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1144,16 +1311,27 @@ TEST_FUNCTION(Outprocess_Create_returns_null_badargs_null)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
@@ -1165,11 +1343,20 @@ TEST_FUNCTION(Outprocess_Create_returns_null_badargs_null)
 		.IgnoreAllArguments()
 		.SetReturn(NULL);
 
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1192,16 +1379,27 @@ TEST_FUNCTION(Outprocess_Create_returns_null_badargs_length)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
@@ -1213,11 +1411,20 @@ TEST_FUNCTION(Outprocess_Create_returns_null_badargs_length)
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1240,16 +1447,27 @@ TEST_FUNCTION(Outprocess_Create_returns_null_baduri_null)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1  ;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
@@ -1261,11 +1479,20 @@ TEST_FUNCTION(Outprocess_Create_returns_null_baduri_null)
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1288,16 +1515,27 @@ TEST_FUNCTION(Outprocess_Create_returns_null_baduri_length)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args));
+	//create thread
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	call_thread_function_on_join[1] = 1;
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	//join on the create thread.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments()
@@ -1309,11 +1547,20 @@ TEST_FUNCTION(Outprocess_Create_returns_null_baduri_length)
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1332,38 +1579,198 @@ TEST_FUNCTION(Outprocess_Create_returns_null_baduri_length)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+TEST_FUNCTION(Outprocess_Create_returns_null_send_lock_fail)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+	setup_create_connections(&config);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	malloc_will_fail = true;
+	malloc_fail_count = 8;
+	STRICT_EXPECTED_CALL(Lock_Init());
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
+
+	// assert
+
+	ASSERT_IS_NULL(result);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	cleanup_create_config(&config);
+}
+/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+TEST_FUNCTION(Outprocess_Create_returns_null_async_lock_fail)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+	setup_create_connections(&config);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	malloc_will_fail = true;
+	malloc_fail_count = 7;
+	STRICT_EXPECTED_CALL(Lock_Init());
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
+
+	// assert
+
+	ASSERT_IS_NULL(result);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	cleanup_create_config(&config);
+}
+/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+TEST_FUNCTION(Outprocess_Create_returns_null_control_lock_fail)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+	setup_create_connections(&config);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	malloc_will_fail = true;
+	malloc_fail_count = 6;
+	STRICT_EXPECTED_CALL(Lock_Init());
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
+
+	// assert
+
+	ASSERT_IS_NULL(result);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	cleanup_create_config(&config);
+}
+/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+TEST_FUNCTION(Outprocess_Create_returns_null_receive_lock_fail)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+	setup_create_connections(&config);
+	malloc_will_fail = true;
+	malloc_fail_count = 5;
+	STRICT_EXPECTED_CALL(Lock_Init());
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
+
+	// assert
+
+	ASSERT_IS_NULL(result);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
 TEST_FUNCTION(Outprocess_Create_returns_null_clone_args_fail)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	int test_result = 0;
 	test_result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, test_result);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
-	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
+	setup_create_connections(&config); 
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
 	STRICT_EXPECTED_CALL(STRING_clone(config.outprocess_module_args))
 		.SetFailReturn(NULL);
-	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
 
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	umock_c_negative_tests_snapshot();
 
-	umock_c_negative_tests_fail_call(12);
+	umock_c_negative_tests_fail_call(15);
 
 	// act
 	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
@@ -1386,25 +1793,35 @@ TEST_FUNCTION(Outprocess_Create_returns_null_clone_msg_uri_fails)
 	int test_result = 0;
 	test_result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, test_result);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
-
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
-	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri));
-	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG))
-		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(STRING_clone(config.message_uri)).SetFailReturn(NULL);
 
+	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	umock_c_negative_tests_snapshot();
 
-	umock_c_negative_tests_fail_call(11);
+	umock_c_negative_tests_fail_call(14);
+
 	// act
 	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
 
@@ -1426,22 +1843,33 @@ TEST_FUNCTION(Outprocess_Create_returns_null_clone_control_uri_fails)
 	int test_result = 0;
 	test_result = umock_c_negative_tests_init();
 	ASSERT_ARE_EQUAL(int, 0, test_result);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	setup_create_connections(&config);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri)).SetFailReturn(NULL);
 
-	STRICT_EXPECTED_CALL(STRING_clone(config.control_uri));
-
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	umock_c_negative_tests_snapshot();
 
-	umock_c_negative_tests_fail_call(10);
+	umock_c_negative_tests_fail_call(13);
+
 	// act
 	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
 
@@ -1461,24 +1889,27 @@ TEST_FUNCTION(Outprocess_Create_returns_null_control_connect_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
+	const char * real_message_uri = real_STRING_c_str(config.message_uri);
+	const char * real_control_uri = real_STRING_c_str(config.control_uri);
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
 	// assuming the nanomsg mock starts socket at 1
-	STRICT_EXPECTED_CALL(nn_bind(1, "message_uri"));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
-	STRICT_EXPECTED_CALL(nn_connect(1, "message_uri"));
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_REQ));
+	STRICT_EXPECTED_CALL(nn_connect(1, real_message_uri));
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.control_uri));
 	when_shall_nn_connect_fail = 2;
-	STRICT_EXPECTED_CALL(nn_connect(2, "control_uri"));
-
+	STRICT_EXPECTED_CALL(nn_connect(2, real_control_uri));
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1492,24 +1923,26 @@ TEST_FUNCTION(Outprocess_Create_returns_null_control_connect_fails)
 
 	// arrange
 	umock_c_reset_all_calls();
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
-	// the 3rd and 4th time socket is called....
-	const char * real_message_uri = real_STRING_c_str(config.message_uri);
-	STRICT_EXPECTED_CALL(nn_bind(3, real_message_uri));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
+	// assuming the nanomsg mock starts socket at 3
 	STRICT_EXPECTED_CALL(nn_connect(3, real_message_uri));
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_REQ));
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.control_uri)).SetReturn(NULL);
+	when_shall_nn_connect_fail = current_nn_connect_index + 2;
 	STRICT_EXPECTED_CALL(nn_connect(4, NULL));
+	STRICT_EXPECTED_CALL(nn_errno());
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(3));
 	STRICT_EXPECTED_CALL(nn_close(4));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1532,22 +1965,26 @@ TEST_FUNCTION(Outprocess_Create_returns_null_control_socket_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
+	const char * real_message_uri = real_STRING_c_str(config.message_uri);
+	const char * real_control_uri = real_STRING_c_str(config.control_uri);
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
 	// assuming the nanomsg mock starts socket at 1
-
-	STRICT_EXPECTED_CALL(nn_bind(1, "message_uri"));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
-	STRICT_EXPECTED_CALL(nn_connect(1, "message_uri"));
+	STRICT_EXPECTED_CALL(nn_connect(1, real_message_uri));
 	when_shall_nn_socket_fail = 2;
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_REQ));
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1569,20 +2006,25 @@ TEST_FUNCTION(Outprocess_Create_returns_null_message_connect_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
+	const char * real_message_uri = real_STRING_c_str(config.message_uri);
+	const char * real_control_uri = real_STRING_c_str(config.control_uri);
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
 	// assuming the nanomsg mock starts socket at 1
-	STRICT_EXPECTED_CALL(nn_bind(1, "message_uri"));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
 	when_shall_nn_connect_fail = 1;
-	STRICT_EXPECTED_CALL(nn_connect(1, "message_uri"));
+	STRICT_EXPECTED_CALL(nn_connect(1, real_message_uri));
 
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1596,79 +2038,23 @@ TEST_FUNCTION(Outprocess_Create_returns_null_message_connect_fails)
 
 	// arrange
 	umock_c_reset_all_calls();
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
-	// callign socket for the 2nd time during this test
-	STRICT_EXPECTED_CALL(nn_bind(2, real_STRING_c_str(config.message_uri)));
 	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri)).SetReturn(NULL);
+	// assuming the nanomsg mock starts socket at 1
+	when_shall_nn_connect_fail = 2;
 	STRICT_EXPECTED_CALL(nn_connect(2, NULL));
 
-
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(2));
-	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
-
-	// act
-	result = Module_Create((BROKER_HANDLE)0x42, &config);
-
-	// assert
-
-	ASSERT_IS_NULL(result);
-	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-	// ablution
-	cleanup_create_config(&config);
-
-}
-
-/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-TEST_FUNCTION(Outprocess_Create_returns_null_message_bind_fails)
-{
-	// arrange
-	OUTPROCESS_MODULE_CONFIG config;
-	setup_create_config(&config);
-
-	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(Lock_Init());
-
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri));
-	// assuming the nanomsg mock starts socket at 1
-	when_shall_nn_bind_fail = 1;
-	const char * real_bind_string = real_STRING_c_str(config.message_uri);
-	STRICT_EXPECTED_CALL(nn_bind(1, real_bind_string));
-
-	STRICT_EXPECTED_CALL(nn_close(1));
-	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
-
-	// act
-	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
-
-	// assert
-
-	ASSERT_IS_NULL(result);
-	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-	// arrange
-	umock_c_reset_all_calls();
-
-	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
-		.IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(Lock_Init());
-
-	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
-	STRICT_EXPECTED_CALL(STRING_c_str(config.message_uri)).SetReturn(NULL);
-	// calling socket for the 2nd time this test
-	STRICT_EXPECTED_CALL(nn_bind(2, NULL));
-
-	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
@@ -1691,14 +2077,44 @@ TEST_FUNCTION(Outprocess_Create_returns_null_message_socket_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
-
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn((MESSAGE_QUEUE_HANDLE)0x40);
 	when_shall_nn_socket_fail = 1;
-
 	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_destroy((MESSAGE_QUEUE_HANDLE)0x40));
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	MODULE_HANDLE result = Module_Create((BROKER_HANDLE)0x42, &config);
+
+	// assert
+
+	ASSERT_IS_NULL(result);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+TEST_FUNCTION(Outprocess_Create_returns_null_message_queue_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Init());
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_create())
+		.SetReturn(NULL);
 
 	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -1721,13 +2137,11 @@ TEST_FUNCTION(Outprocess_Create_returns_null_lock_init_fails)
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
-
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
-	//malloc_will_fail = true;
-	//malloc_fail_count = 2;
-	STRICT_EXPECTED_CALL(Lock_Init()).SetReturn(NULL);
-
+	malloc_will_fail = true;
+	malloc_fail_count = 2;
+	STRICT_EXPECTED_CALL(Lock_Init());
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	// act
@@ -1803,11 +2217,11 @@ TEST_FUNCTION(Outprocess_Start_success)
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	setup_start_or_destroy_message();
 	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
@@ -1836,11 +2250,11 @@ TEST_FUNCTION(Outprocess_Start_nn_send_fail)
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	setup_start_or_destroy_message();
 	should_nn_send_fail = true;
@@ -1861,7 +2275,7 @@ TEST_FUNCTION(Outprocess_Start_nn_send_fail)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
-TEST_FUNCTION(Outprocess_Start_thread_create_fails)
+TEST_FUNCTION(Outprocess_Start_thread3_create_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -1873,13 +2287,43 @@ TEST_FUNCTION(Outprocess_Start_thread_create_fails)
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
-		.IgnoreAllArguments();
-	currentThreadAPI_Create_call = 0;
-	whenShallThreadAPI_Create_fail = 1;
 	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
-	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG))
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	currentThreadAPI_Create_call = 0;
+	whenShallThreadAPI_Create_fail = 3;
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+
+	///act
+	Module_Start(module);
+
+	///assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	///ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+/*Tests_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
+TEST_FUNCTION(Outprocess_Start_thread2_create_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
+	currentThreadAPI_Create_call = 0;
+	whenShallThreadAPI_Create_fail = 2;
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 
 	///act
@@ -1894,7 +2338,7 @@ TEST_FUNCTION(Outprocess_Start_thread_create_fails)
 }
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
-TEST_FUNCTION(Outprocess_Start_Lock_fails)
+TEST_FUNCTION(Outprocess_Start_thread1_create_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -1906,9 +2350,10 @@ TEST_FUNCTION(Outprocess_Start_Lock_fails)
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG))
-		.IgnoreAllArguments()
-		.SetReturn(LOCK_ERROR);
+	currentThreadAPI_Create_call = 0;
+	whenShallThreadAPI_Create_fail = 1;
+	STRICT_EXPECTED_CALL(ThreadAPI_Create(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreAllArguments();
 
 	///act
 	Module_Start(module);
@@ -1931,6 +2376,25 @@ TEST_FUNCTION(Outprocess_Destroy_does_nothing_with_nothing)
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
+static void teardown_a_thread(bool needs_join, bool lock_fail)
+{
+	if (lock_fail)
+	{
+		STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+	}
+	else
+	{
+		STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	}
+	if (needs_join)
+	{
+		STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+	}	
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+}
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_027: [ This function shall ensure thread safety on execution. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_028: [ This function shall construct a Destroy Message. ]*/
@@ -1956,15 +2420,46 @@ TEST_FUNCTION(Outprocess_Destroy_success)
 
 	// arrange
 	setup_start_or_destroy_message();
-
-	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//thread_create order: async, msg_rec, msg_send, control
+	//thread join order: async, msg_rec, msg_send, control, async
+	call_thread_function_on_join[2] = 2;
+	call_thread_function_on_join[3] = 3;
+	call_thread_function_on_join[4] = 4;
+	//teardown_a_thread(true, false);
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
 		.IgnoreArgument(1)
 		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//teardown_a_thread(true, false);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//teardown_a_thread(true, false);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock_Deinit(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	teardown_a_thread(false, false); //async should be closed and NULL
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -1980,6 +2475,7 @@ TEST_FUNCTION(Outprocess_Destroy_success)
 	// ablution
 	cleanup_create_config(&config);
 }
+
 
 /*Tests_SRS_OUTPROCESS_MODULE_17_027: [ This function shall ensure thread safety on execution. ]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_032: [ This function shall signal the messaging thread to close. ]*/
@@ -2001,18 +2497,29 @@ TEST_FUNCTION(Outprocess_Destroy_send_lock_join_fails)
 	setup_start_or_destroy_message();
 
 	should_nn_send_fail = true;
-	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 1)).IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
-	thread_join_result = THREADAPI_ERROR;
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	thread_join_result[1] = THREADAPI_ERROR;
+	thread_join_result[2] = THREADAPI_ERROR;
+	thread_join_result[3] = THREADAPI_ERROR;
+	teardown_a_thread(true, true);
+	teardown_a_thread(true, true);
+	teardown_a_thread(true, true);
+	teardown_a_thread(true, true); //async won't be closed.
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -2044,20 +2551,20 @@ TEST_FUNCTION(Outprocess_Destroy_destroy_message_alloc_fails)
 	umock_c_reset_all_calls();
 
 	// arrange
+	STRICT_EXPECTED_CALL(ControlMessage_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
+		.IgnoreArgument(1);
 	malloc_will_fail = true;
 	malloc_fail_count = 1; //nn_allocmsg
 	malloc_count = 0;
-	STRICT_EXPECTED_CALL(ControlMessage_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
-		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
-
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2);
+	teardown_a_thread(true, false);
+	teardown_a_thread(true, false);
+	teardown_a_thread(true, false);
+	teardown_a_thread(false, false);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -2089,20 +2596,17 @@ TEST_FUNCTION(Outprocess_Destroy_destroy_message_to_array_fails)
 	umock_c_reset_all_calls();
 
 	// arrange
-	malloc_will_fail = true;
-	malloc_fail_count = 3; //nn_allocmsg
-	malloc_count = 0;
 	STRICT_EXPECTED_CALL(ControlMessage_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
 		.IgnoreArgument(1)
 		.SetReturn(-1);
-
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_close(1));
 	STRICT_EXPECTED_CALL(nn_close(2));
-	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2);
+	teardown_a_thread(true, false);
+	teardown_a_thread(true, false);
+	teardown_a_thread(true, false);
+	teardown_a_thread(false, false);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(STRING_delete(IGNORED_PTR_ARG)).IgnoreArgument(1);
@@ -2141,19 +2645,124 @@ TEST_FUNCTION(Outprocess_Receive_success)
 
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, NULL, 0)).IgnoreArgument(1);
-	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
-	STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, IGNORED_PTR_ARG, default_serialized_size))
-		.IgnoreArgument(1)
-		.IgnoreArgument(2);
-	STRICT_EXPECTED_CALL(nn_send(1, IGNORED_PTR_ARG, NN_MSG, 0))
-		.IgnoreArgument(2);
-
+	STRICT_EXPECTED_CALL(Message_Clone(msg));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_push(IGNORED_PTR_ARG, msg)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 
 	// act
-	Module_Receive(module, (MESSAGE_HANDLE)0x42);
+	Module_Receive(module, msg);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Message_Destroy(msg);
+	Message_Destroy(msg);
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+TEST_FUNCTION(Outprocess_Receive_push_queue_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Message_Clone(msg));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_push(IGNORED_PTR_ARG, msg)).IgnoreArgument(1).SetReturn(2620);
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	Module_Receive(module, msg);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Message_Destroy(msg);
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+TEST_FUNCTION(Outprocess_Receive_Lock_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Message_Clone(msg));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+
+	// act
+	Module_Receive(module, msg);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Message_Destroy(msg);
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
+TEST_FUNCTION(Outprocess_Receive_Message_Clone_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Message_Clone(msg)).SetReturn(NULL);
+
+	// act
+	Module_Receive(module, msg);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Message_Destroy(msg);
+	Message_Destroy(msg);
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_Receive_thread_does_nothing_with_nothing)
+{
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	// act
+	thread_func_to_call[3](NULL);
+
 
 	// assert 
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -2163,8 +2772,7 @@ TEST_FUNCTION(Outprocess_Receive_success)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-TEST_FUNCTION(Outprocess_Receive_send_fails)
+TEST_FUNCTION(Outprocess_Receive_thread_success)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2172,20 +2780,76 @@ TEST_FUNCTION(Outprocess_Receive_send_fails)
 
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, NULL, 0)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(false);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_pop(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(msg);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, NULL, 0));
 	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
-	STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, IGNORED_PTR_ARG, default_serialized_size))
-		.IgnoreArgument(1)
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, IGNORED_PTR_ARG, default_serialized_size))
+		.IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_send(1, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
+
+	// act
+	//third thread created is outgoing message thread
+	thread_func_to_call[3](thread_func_args[3]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_Receive_thread_nn_send_1st_unlock_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(false);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_pop(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(msg);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, NULL, 0));
+	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, IGNORED_PTR_ARG, default_serialized_size))
 		.IgnoreArgument(2);
 	should_nn_send_fail = true;
-	STRICT_EXPECTED_CALL(nn_send(1, IGNORED_PTR_ARG, NN_MSG, 0))
-		.IgnoreArgument(2);
+	current_nn_send_index = 0;
+	when_shall_nn_send_fail = 1;
+	STRICT_EXPECTED_CALL(nn_send(1, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
 
 	// act
-	Module_Receive(module, (MESSAGE_HANDLE)0x42);
+	//third thread created is outgoing message thread
+	thread_func_to_call[3](thread_func_args[3]);
 
 	// assert 
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -2195,8 +2859,7 @@ TEST_FUNCTION(Outprocess_Receive_send_fails)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-TEST_FUNCTION(Outprocess_Receive_allocmsg_fails)
+TEST_FUNCTION(Outprocess_Receive_thread_nn_alloc_2nd_lock_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2204,16 +2867,31 @@ TEST_FUNCTION(Outprocess_Receive_allocmsg_fails)
 
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
 	umock_c_reset_all_calls();
 
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(false);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_pop(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(msg);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, NULL, 0));
 	malloc_will_fail = true;
-	malloc_fail_count = 1;
-	malloc_count = 0;
-	STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, NULL, 0)).IgnoreArgument(1);
+	malloc_fail_count = malloc_count + 1;
 	STRICT_EXPECTED_CALL(nn_allocmsg(default_serialized_size, 0));
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
 
 	// act
-	Module_Receive(module, (MESSAGE_HANDLE)0x42);
+	//third thread created is outgoing message thread
+	thread_func_to_call[3](thread_func_args[3]);
 
 	// assert 
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -2223,8 +2901,7 @@ TEST_FUNCTION(Outprocess_Receive_allocmsg_fails)
 	cleanup_create_config(&config);
 }
 
-/*Tests_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-TEST_FUNCTION(Outprocess_Receive_Message_ToByteArray_fails)
+TEST_FUNCTION(Outprocess_Receive_thread_serialize_2nd_unlock_fails)
 {
 	// arrange
 	OUTPROCESS_MODULE_CONFIG config;
@@ -2232,19 +2909,69 @@ TEST_FUNCTION(Outprocess_Receive_Message_ToByteArray_fails)
 
 	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
 	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
 	umock_c_reset_all_calls();
 
-	STRICT_EXPECTED_CALL(Message_ToByteArray((MESSAGE_HANDLE)0x42, NULL, 0))
-		.IgnoreArgument(1)
-		.SetReturn(-1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(false);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_pop(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(msg);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Message_ToByteArray(msg, NULL, 0)).SetReturn(-1);
+	STRICT_EXPECTED_CALL(Message_Destroy(msg));
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(true);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
 
 	// act
-	Module_Receive(module, (MESSAGE_HANDLE)0x42);
+	//third thread created is outgoing message thread
+	thread_func_to_call[3](thread_func_args[3]);
 
 	// assert 
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
 	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_Receive_thread_queue_has_null_msg_fails)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	MESSAGE_HANDLE msg = Message_Create((const MESSAGE_CONFIG*)(0x42));
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_is_empty(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(false);
+	STRICT_EXPECTED_CALL(MESSAGE_QUEUE_pop(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(NULL);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	// act
+	//third thread created is outgoing message thread
+	thread_func_to_call[3](thread_func_args[3]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Message_Destroy(msg);
 	Module_Destroy(module);
 	cleanup_create_config(&config);
 }
@@ -2260,7 +2987,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_does_nothing_null_input)
 
 	umock_c_reset_all_calls();
 
-	int function_result = (*thread_func_to_call)(NULL);
+	int function_result = (*thread_func_to_call[2])(NULL);
 
 	// assert
 	ASSERT_ARE_EQUAL(int, function_result, 0);
@@ -2284,7 +3011,7 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_lock_fails)
 
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
 
-	int function_result = (*thread_func_to_call)(thread_func_args);
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
 
 	// assert
 	ASSERT_ARE_EQUAL(int, function_result, 0);
@@ -2309,7 +3036,60 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock_fails)
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
 
-	int function_result = (*thread_func_to_call)(thread_func_args);
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
+
+	// assert
+	ASSERT_ARE_EQUAL(int, function_result, 0);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
+TEST_FUNCTION(Outprocess_messaging_thread_ends_lock2_fails)
+{
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
+
+	// assert
+	ASSERT_ARE_EQUAL(int, function_result, 0);
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	// ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+/*Tests_SRS_OUTPROCESS_MODULE_17_036: [ This function shall ensure thread safety on execution. ]*/
+TEST_FUNCTION(Outprocess_messaging_thread_ends_unlock2_fails)
+{
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
 
 	// assert
 	ASSERT_ARE_EQUAL(int, function_result, 0);
@@ -2333,10 +3113,14 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_nn_recv_fails)
 
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	should_nn_recv_fail = true;
 	STRICT_EXPECTED_CALL(nn_recv(1, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_errno()).SetReturn(37);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
 
-	int function_result = (*thread_func_to_call)(thread_func_args);
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
 
 	// assert
 	ASSERT_ARE_EQUAL(int, function_result, 0);
@@ -2364,6 +3148,8 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_one_loop_then_fails)
 
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_recv(1, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
 	STRICT_EXPECTED_CALL(Message_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
 		.IgnoreAllArguments();
@@ -2371,15 +3157,461 @@ TEST_FUNCTION(Outprocess_messaging_thread_ends_one_loop_then_fails)
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1));
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
 
-	int function_result = (*thread_func_to_call)(thread_func_args);
+	int function_result = (*thread_func_to_call[2])(thread_func_args[2]);
 
 	// assert
 	ASSERT_ARE_EQUAL(int, function_result, 0);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
 	// ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_does_nothing_with_nothing)
+{
+	// arrange
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+
+	// act
+	//fourth thread created is control thread
+	thread_func_to_call[4](NULL);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+
+}
+
+TEST_FUNCTION(Outprocess_control_thread_success)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_restart_success)
+{
+	// arrange
+	CONTROL_MESSAGE_MODULE_REPLY remote_died =
+	{
+		{ CONTROL_MESSAGE_VERSION_CURRENT,  CONTROL_MESSAGE_TYPE_MODULE_REPLY },
+		(uint8_t)-1
+	};
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	//1st pass: status is bad
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	// 2nd pass:needs_to_attach is set.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG)).IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	// resend create message
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+		.IgnoreArgument(1).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+		.IgnoreArgument(1).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	//bail out
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
+
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_control)
+{
+	// arrange
+	CONTROL_MESSAGE_MODULE_REPLY remote_died =
+	{
+		{ CONTROL_MESSAGE_VERSION_CURRENT,  CONTROL_MESSAGE_TYPE_MODULE_REPLY },
+		(uint8_t)-1
+	};
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	//1st pass: status is bad
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	// 2nd pass:needs_to_attach is set, get bad message.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG)).IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	// resend create message
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	setup_create_create_message(&config);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+		.IgnoreArgument(1).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+		.IgnoreArgument(1).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, 8))
+		.IgnoreArgument(1).SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	when_shall_nn_recv_fail = current_nn_recv_index +3;
+	STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
+		.IgnoreArgument(1).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_errno()).SetReturn(EAGAIN);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	//3rd pass: reset_channel fails (needs attach is still 1)
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel gets called and we bail right after
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_socket_fails)
+{
+	// arrange
+	CONTROL_MESSAGE_MODULE_REPLY remote_died =
+	{
+		{ CONTROL_MESSAGE_VERSION_CURRENT,  CONTROL_MESSAGE_TYPE_MODULE_REPLY },
+		(uint8_t)-1
+	};
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	//1st pass: status is bad
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	// 2nd pass:needs_to_attach is set, control socket fails.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	when_shall_nn_socket_fail = 1 + current_nn_socket_index;
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	STRICT_EXPECTED_CALL(nn_errno());
+	//then just bail
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_connect_fails)
+{
+	// arrange
+	CONTROL_MESSAGE_MODULE_REPLY remote_died =
+	{
+		{ CONTROL_MESSAGE_VERSION_CURRENT,  CONTROL_MESSAGE_TYPE_MODULE_REPLY },
+		(uint8_t)-1
+	};
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	//1st pass: status is bad
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	// 2nd pass:needs_to_attach is set, control socket fails.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	when_shall_nn_connect_fail = current_nn_connect_index + 1;
+	STRICT_EXPECTED_CALL(nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG)).IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(nn_errno());
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	//then just bail
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_2nd_lock_fails)
+{
+	// arrange
+	CONTROL_MESSAGE_MODULE_REPLY remote_died =
+	{
+		{ CONTROL_MESSAGE_VERSION_CURRENT,  CONTROL_MESSAGE_TYPE_MODULE_REPLY },
+		(uint8_t)-1
+	};
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	//1st pass: status is bad
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((CONTROL_MESSAGE*)&remote_died);
+	STRICT_EXPECTED_CALL(nn_freemsg(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+	// 2nd pass:needs_to_attach is set, control socket fails.
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	//restart control channel
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_socket(AF_SP, NN_PAIR));
+	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(nn_connect(IGNORED_NUM_ARG, IGNORED_PTR_ARG)).IgnoreAllArguments();
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+	STRICT_EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).IgnoreArgument(1);
+	//then just bail
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+
+TEST_FUNCTION(OutProcess_async_thread_null_input)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	config.lifecycle_model = OUTPROCESS_LIFECYCLE_ASYNC;
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	// act
+	thread_func_to_call[1](NULL);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(OutProcess_async_thread_1st_lock_fails)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+	config.lifecycle_model = OUTPROCESS_LIFECYCLE_ASYNC;
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).
+		IgnoreArgument(1)
+		.SetReturn(LOCK_ERROR);
+
+	// act
+	thread_func_to_call[1](thread_func_args[1]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
 	Module_Destroy(module);
 	cleanup_create_config(&config);
 }

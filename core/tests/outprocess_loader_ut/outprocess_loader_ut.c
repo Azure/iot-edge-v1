@@ -797,8 +797,8 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_success_with_msg_u
 	//assert
 	ASSERT_IS_NOT_NULL(result);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->control_uri), "ipc://control_id");
-	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->message_uri), "ipc://message_id");
+	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->control_uri), "ipc://control_id.ipc");
+	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->message_uri), "ipc://message_id.ipc");
 	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->outprocess_module_args), STRING_c_str(mc));
 
 	//cleanup

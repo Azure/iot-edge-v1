@@ -71,7 +71,7 @@ typedef enum CONTROL_MESSAGE_TYPE_TAG
 {
     CONTROL_MESSAGE_TYPE_ERROR,
     CONTROL_MESSAGE_TYPE_MODULE_CREATE,
-    CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY,
+    CONTROL_MESSAGE_TYPE_MODULE_REPLY,
     CONTROL_MESSAGE_TYPE_MODULE_START,
     CONTROL_MESSAGE_TYPE_MODULE_DESTROY
 }CONTROL_MESSAGE_TYPE;
@@ -153,12 +153,11 @@ The structure of the serialized message will look like:
 +---------------------------+  --+                      --+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create message reply
---------------------
+Module reply
+------------
 
-This message is sent by the module host process to indicate whether the module
-creation was successful or not. The message `type` field will have the value
-`CONTROL_MESSAGE_TYPE_MODULE_CREATE_REPLY` and the body of the message is a 
+This message is sent by the module host process to indicate the status of a module. The message `type` field will have the value
+`CONTROL_MESSAGE_TYPE_MODULE_REPLY` and the body of the message is a 
 single unsigned 8-bit value, with 0 indicating success and any non-zero value 
 indicating failure. Here’s what the struct looks like:
 

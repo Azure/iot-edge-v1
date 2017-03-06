@@ -23,6 +23,7 @@ typedef struct MESSAGE_QUEUE_TAG* MESSAGE_QUEUE_HANDLE;
 
 /* creation */
 MOCKABLE_FUNCTION(, MESSAGE_QUEUE_HANDLE, MESSAGE_QUEUE_create);
+
 /* destruction */
 MOCKABLE_FUNCTION(, void, MESSAGE_QUEUE_destroy, MESSAGE_QUEUE_HANDLE, handle);
 
