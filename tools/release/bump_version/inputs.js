@@ -19,7 +19,7 @@ module.exports = [
         }
     },
     ///////////////////////////////////////////////////
-    // Azure IoT Gateway SDK - DotNET binding
+    // .NET Framework binding
     ///////////////////////////////////////////////////
     {
         "taskType": "regexReplaceTask",
@@ -70,7 +70,24 @@ module.exports = [
         }
     },
     ///////////////////////////////////////////////////
-    // Azure IoT Gateway SDK - Java binding
+    // .NET Core binding
+    ///////////////////////////////////////////////////
+    {
+        "taskType": "jsonReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/project.json",
+        "search": "version",
+        "replaceString": "bindings.dotnetcore"
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "tools/docs/dotnetcore/Doxyfile",
+        "search": "(PROJECT\\_NUMBER)([ ]+\\= )(.*)",
+        "replaceString": function(versions) {
+            return '$1' + '$2' + versions.bindings.dotnetcore;
+        }
+    },
+    ///////////////////////////////////////////////////
+    // Java binding
     ///////////////////////////////////////////////////    
     {
         "taskType": "xmlReplaceTask",
