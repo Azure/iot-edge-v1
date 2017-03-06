@@ -30,6 +30,8 @@ MODULE_EXPORT const MODULE_API* Module_GetApi(MODULE_API_VERSION gatewayApiVersi
 
 MODULE_EXPORT bool Module_DotNetCoreHost_PublishMessage(BROKER_HANDLE broker, MODULE_HANDLE sourceModule, const unsigned char* message, int32_t size);
 
+MODULE_EXPORT void Module_DotNetCoreHost_SetBindingDelegates(intptr_t createAddress, intptr_t receiveAddress, intptr_t destroyAddress, intptr_t startAddress);
+
 #ifdef __cplusplus
 }
 #endif

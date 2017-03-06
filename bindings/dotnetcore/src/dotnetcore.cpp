@@ -34,13 +34,13 @@ typedef void(*PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
 
 typedef void(*PGatewayStartDelegate)(unsigned int moduleIdManaged);
 
-static PGatewayCreateDelegate GatewayCreateDelegate;
+PGatewayCreateDelegate GatewayCreateDelegate = NULL;
 
-static PGatewayReceiveDelegate GatewayReceiveDelegate;
+PGatewayReceiveDelegate GatewayReceiveDelegate = NULL;
 
-static PGatewayDestroyDelegate GatewayDestroyDelegate;
+PGatewayDestroyDelegate GatewayDestroyDelegate = NULL;
 
-static PGatewayStartDelegate GatewayStartDelegate;
+PGatewayStartDelegate GatewayStartDelegate = NULL;
 
 
 static DYNAMIC_LIBRARY_HANDLE hCoreCLRModule = NULL;
@@ -106,7 +106,7 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
         else
         {
             /* Codes_SRS_DOTNET_CORE_04_010: [ DotNetCore_Create shall load coreclr library, if not loaded yet. ] */
-            if (hCoreCLRModule == NULL)
+            if (hCoreCLRModule == NULL && GatewayCreateDelegate == NULL)
             {
                 hCoreCLRModule = DynamicLibrary_LoadLibrary(dotNetCoreConfig->clrOptions->coreClrPath);
 
@@ -183,6 +183,7 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                     {
                                         DynamicLibrary_UnloadLibrary(hCoreCLRModule);
                                         hCoreCLRModule = NULL;
+                                        GatewayCreateDelegate = NULL;
                                         /* Codes_SRS_DOTNET_CORE_04_006: [ DotNetCore_Create shall return NULL if an underlying API call fails. ] */
                                         LogError("Failed to create Create Delegate.");
                                     }
@@ -212,6 +213,8 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                         {
                                             DynamicLibrary_UnloadLibrary(hCoreCLRModule);
                                             hCoreCLRModule = NULL;
+                                            GatewayCreateDelegate = NULL;
+                                            GatewayReceiveDelegate = NULL;
                                             /* Codes_SRS_DOTNET_CORE_04_006: [ DotNetCore_Create shall return NULL if an underlying API call fails. ] */
                                             LogError("Failed to create Receive Delegate.");
                                         }
@@ -240,6 +243,9 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                                             {
                                                 DynamicLibrary_UnloadLibrary(hCoreCLRModule);
                                                 hCoreCLRModule = NULL;
+                                                GatewayCreateDelegate = NULL;
+                                                GatewayDestroyDelegate = NULL;
+                                                GatewayReceiveDelegate = NULL;
                                                 /* Codes_SRS_DOTNET_CORE_04_006: [ DotNetCore_Create shall return NULL if an underlying API call fails. ] */
                                                 LogError("Failed to create Destroy Delegate.");
                                             }
@@ -254,7 +260,7 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
 
             //if hcoreCLRModule is still NULL, then is failed to initialize. 
             /* Codes_SRS_DOTNET_CORE_04_006: [ DotNetCore_Create shall return NULL if an underlying API call fails. ] */
-            if (hCoreCLRModule != NULL)
+            if (hCoreCLRModule != NULL || GatewayCreateDelegate != NULL)
             {
                 /* Codes_SRS_DOTNET_CORE_04_007: [ DotNetCore_Create shall return a non-NULL MODULE_HANDLE when successful. ] */
                 try
@@ -382,7 +388,7 @@ static void DotNetCore_Destroy(MODULE_HANDLE module)
         delete(handleData);
         m_dotnet_core_modules_counter--;
 
-        if (m_dotnet_core_modules_counter == 0)
+        if (m_dotnet_core_modules_counter == 0 && hCoreCLRModule != NULL)
         {
             /* Codes_SRS_DOTNET_CORE_04_039: [ DotNetCore_Destroy shall verify that there is no module and shall shutdown the dotnet core clr. ] */
             m_ptr_coreclr_shutdown(hostHandle, domainId); //Can't call Unload CoreCLR otherwise CLR will crash. 
@@ -429,6 +435,18 @@ MODULE_EXPORT bool Module_DotNetCoreHost_PublishMessage(BROKER_HANDLE broker, MO
     return returnValue;
 }
 
+
+MODULE_EXPORT void Module_DotNetCoreHost_SetBindingDelegates(intptr_t createAddress, intptr_t receiveAddress, intptr_t destroyAddress, intptr_t startAddress)
+{
+    /* Codes_SRS_DOTNET_CORE_04_040: [ Module_DotNetCoreHost_SetBindingDelegates shall just assign createAddress to GatewayCreateDelegate ] */
+    GatewayCreateDelegate = (PGatewayCreateDelegate)createAddress;
+    /* Codes_SRS_DOTNET_CORE_04_041: [ Module_DotNetCoreHost_SetBindingDelegates shall just assign receiveAddress to GatewayReceiveDelegate ] */
+    GatewayReceiveDelegate = (PGatewayReceiveDelegate)receiveAddress;
+    /* Codes_SRS_DOTNET_CORE_04_042: [ Module_DotNetCoreHost_SetBindingDelegates shall just assign destroyAddress to GatewayDestroyDelegate ] */
+    GatewayDestroyDelegate = (PGatewayDestroyDelegate)destroyAddress;
+    /* Codes_SRS_DOTNET_CORE_04_043: [ Module_DotNetCoreHost_SetBindingDelegates shall just assign startAddress to GatewayStartDelegate ] */
+    GatewayStartDelegate = (PGatewayStartDelegate)startAddress;
+}
 static void DotNetCore_Start(MODULE_HANDLE module)
 {
     /*Codes_SRS_DOTNET_CORE_004_015: [ DotNetCore_Start shall do nothing if module is NULL. ] */
@@ -438,7 +456,7 @@ static void DotNetCore_Start(MODULE_HANDLE module)
             
         int status = -1;
 
-        if (GatewayStartDelegate == NULL)
+        if (GatewayStartDelegate == NULL && hCoreCLRModule != NULL)
         {
             /* Codes_SRS_DOTNET_CORE_004_016: [ DotNetCore_Start shall call coreclr_create_delegate to be able to call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Start ] */
             status = m_ptr_coreclr_create_delegate(
@@ -449,6 +467,11 @@ static void DotNetCore_Start(MODULE_HANDLE module)
                 "Start",
                 reinterpret_cast<void**>(&GatewayStartDelegate)
             );
+        }
+        else
+        {
+            //If there is already a Start Delegate, set status to 0 so we can call it.
+            status = 0;
         }
 
         if(status == 0)
