@@ -3563,6 +3563,98 @@ TEST_FUNCTION(Outprocess_control_thread_restart_fails_bad_msg_then_reset_2nd_loc
 	cleanup_create_config(&config);
 }
 
+TEST_FUNCTION(Outprocess_control_thread_dies_on_1st_unlock)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_dies_on_2nd_unlock)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1).SetReturn(LOCK_ERROR);
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
+
+TEST_FUNCTION(Outprocess_control_thread_dies_nn_recv_unexpected_error)
+{
+	// arrange
+	global_control_msg.base.type = CONTROL_MESSAGE_TYPE_MODULE_REPLY;
+	global_control_msg.base.version = CONTROL_MESSAGE_VERSION_CURRENT;
+	((CONTROL_MESSAGE_MODULE_REPLY*)&global_control_msg)->status = 0;
+	OUTPROCESS_MODULE_CONFIG config;
+	setup_create_config(&config);
+
+	MODULE_HANDLE module = Module_Create((BROKER_HANDLE)0x42, &config);
+	Module_Start(module);
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	STRICT_EXPECTED_CALL(Unlock(IGNORED_PTR_ARG)).IgnoreArgument(1);
+	should_nn_recv_fail = true;
+	when_shall_nn_recv_fail = current_nn_recv_index +1;
+	STRICT_EXPECTED_CALL(nn_recv(2, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT)).IgnoreArgument(2);
+	STRICT_EXPECTED_CALL(nn_errno()).SetReturn(100);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(250));
+
+	// act
+	//fourth thread created is control message thread
+	thread_func_to_call[4](thread_func_args[4]);
+
+	// assert 
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//ablution
+	Module_Destroy(module);
+	cleanup_create_config(&config);
+}
 
 TEST_FUNCTION(OutProcess_async_thread_null_input)
 {
