@@ -46,6 +46,7 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 } OUTPROCESS_HANDLE_DATA;
 
 // forward definitions
+static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
 
 

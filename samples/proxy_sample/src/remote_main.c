@@ -66,9 +66,12 @@ int main(int argc, char** argv)
         {
             printf("failed to attach remote module from JSON\n");
         }
+        else if (0 != ProxyGateway_StartWorkerThread(remote_module))
+        {
+            printf("failed to start the worker thread\n");
+        }
         else
         {
-            (void)RemoteModule_StartWorkerThread(remote_module);
             printf("remote module successfully created\n");
             printf("remote module shall run until ENTER is pressed\n");
             (void)getchar();
