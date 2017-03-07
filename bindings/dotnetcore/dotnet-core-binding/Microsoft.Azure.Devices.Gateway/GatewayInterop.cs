@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Gateway
     /// <summary>
     ///  Wrapper for Azure IoT Gateway SDK. 
     /// </summary>
-    public class Gateway
+    static public class GatewayInterop
     {
         [DllImport(
             "gateway",
