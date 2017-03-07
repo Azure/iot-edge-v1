@@ -137,7 +137,7 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			position,
 			&current_parsed,
 			&(create_msg->uri.uri_size),
-			&(create_msg->uri.uri)) != 0)
+			(unsigned char**)&(create_msg->uri.uri)) != 0)
 		{
 			LogError("unable to parse a uri");
 			result = __LINE__;
