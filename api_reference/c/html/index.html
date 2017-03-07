@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.1</span>
+   &#160;<span id="projectnumber">1.0.2</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -70,12 +70,15 @@ Introduction</h1>
 <h1><a class="anchor" id="features_sec"></a>
 Features</h1>
 <ul>
-<li>Provides a message broker with dynamically loadable modules</li>
-<li>Utility to load modules using a JSON configuration file</li>
-<li>BLE module (Linux only) supporting reading, writing and polling based on GATT characteristics</li>
-<li>IoTHub module supporting multiplexing device connections to Azure IoTHub.</li>
-<li>Is written in ANSI C (C99) to maximize code portability.</li>
-<li>Bindings for Java, C#, and Node.js modules.</li>
+<li>Enables units of logic called "modules" to communicate with each other via a common broker.</li>
+<li>Modules, and communication "links" between them, are described in a JSON configuration file.</li>
+<li>Modules included with the SDK:<ul>
+<li>BLE module supports reading, writing, and polling based on GATT characteristics (Linux only).</li>
+<li>IoT Hub module supports multiplexing device telemetry over a single connection to Azure IoT Hub.</li>
+</ul>
+</li>
+<li>Written in ANSI C (C99) to maximize code portability.</li>
+<li>Modules can be written in C, C# (.NET Core and .NET Framework), Java, and Node.js.</li>
 </ul>
 <h1><a class="anchor" id="tested_platforms_sec"></a>
 Tested platforms</h1>

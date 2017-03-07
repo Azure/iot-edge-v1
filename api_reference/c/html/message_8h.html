@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Microsoft Azure IoT Gateway SDK
-   &#160;<span id="projectnumber">1.0.1</span>
+   &#160;<span id="projectnumber">1.0.2</span>
    </div>
    <div id="projectbrief">The Microsoft Azure IoT Gateway SDK contains the infrastructure and modules to create IoT gateway solutions.</div>
   </td>
@@ -82,6 +82,7 @@ $(function() {
 <code>#include &quot;gateway_export.h&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &quot;azure_c_shared_utility/umock_c_prod.h&quot;</code><br />
 </div>
 <p><a href="message_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -111,33 +112,33 @@ typedef struct <a class="el" href="struct_m_e_s_s_a_g_e___b_u_f_f_e_r___c_o_n_f_
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a92af3bd1bb4507a75155708b1a98950c"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a92af3bd1bb4507a75155708b1a98950c">Message_Create</a> (const <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47">MESSAGE_CONFIG</a> *cfg)</td></tr>
-<tr class="memdesc:a92af3bd1bb4507a75155708b1a98950c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure with the reference count initialized to 1.  <a href="#a92af3bd1bb4507a75155708b1a98950c">More...</a><br /></td></tr>
-<tr class="separator:a92af3bd1bb4507a75155708b1a98950c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35d93f5695e8b36a5b0afb83261fd4e2"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a35d93f5695e8b36a5b0afb83261fd4e2">Message_CreateFromByteArray</a> (const unsigned char *source, int32_t size)</td></tr>
-<tr class="memdesc:a35d93f5695e8b36a5b0afb83261fd4e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a byte array containing the serialized form of a message.  <a href="#a35d93f5695e8b36a5b0afb83261fd4e2">More...</a><br /></td></tr>
-<tr class="separator:a35d93f5695e8b36a5b0afb83261fd4e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a716a8f0220d43e95af5ac46cbc4e861c"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a716a8f0220d43e95af5ac46cbc4e861c">Message_ToByteArray</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> messageHandle, unsigned char *buf, int32_t size)</td></tr>
-<tr class="memdesc:a716a8f0220d43e95af5ac46cbc4e861c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a byte array representation of a MESSAGE_HANDLE.  <a href="#a716a8f0220d43e95af5ac46cbc4e861c">More...</a><br /></td></tr>
-<tr class="separator:a716a8f0220d43e95af5ac46cbc4e861c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a183f7520681d1bf79ac96a1c7f838315"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a183f7520681d1bf79ac96a1c7f838315">Message_CreateFromBuffer</a> (const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *cfg)</td></tr>
-<tr class="memdesc:a183f7520681d1bf79ac96a1c7f838315"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>.  <a href="#a183f7520681d1bf79ac96a1c7f838315">More...</a><br /></td></tr>
-<tr class="separator:a183f7520681d1bf79ac96a1c7f838315"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8093e53d031f96eab7ed29b35ba39551"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a8093e53d031f96eab7ed29b35ba39551">Message_Clone</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> message)</td></tr>
-<tr class="memdesc:a8093e53d031f96eab7ed29b35ba39551"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a clone of the message.  <a href="#a8093e53d031f96eab7ed29b35ba39551">More...</a><br /></td></tr>
-<tr class="separator:a8093e53d031f96eab7ed29b35ba39551"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a856e7a911ccaee4bcd14667cd34bc55c"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT CONSTMAP_HANDLE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a856e7a911ccaee4bcd14667cd34bc55c">Message_GetProperties</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> message)</td></tr>
-<tr class="memdesc:a856e7a911ccaee4bcd14667cd34bc55c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the properties of a message.  <a href="#a856e7a911ccaee4bcd14667cd34bc55c">More...</a><br /></td></tr>
-<tr class="separator:a856e7a911ccaee4bcd14667cd34bc55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a954770a792bf010570ab79c57d7ce5a4"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT const CONSTBUFFER *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a954770a792bf010570ab79c57d7ce5a4">Message_GetContent</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> message)</td></tr>
-<tr class="memdesc:a954770a792bf010570ab79c57d7ce5a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the content of a message.  <a href="#a954770a792bf010570ab79c57d7ce5a4">More...</a><br /></td></tr>
-<tr class="separator:a954770a792bf010570ab79c57d7ce5a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf9968834ff749f0376759c20d860ba2"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT CONSTBUFFER_HANDLE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#abf9968834ff749f0376759c20d860ba2">Message_GetContentHandle</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> message)</td></tr>
-<tr class="memdesc:abf9968834ff749f0376759c20d860ba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the <code>CONSTBUFFER</code> handle that may be used to access the message content.  <a href="#abf9968834ff749f0376759c20d860ba2">More...</a><br /></td></tr>
-<tr class="separator:abf9968834ff749f0376759c20d860ba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af63cd99be212af896fbcdf8935eddf5d"><td class="memItemLeft" align="right" valign="top">GATEWAY_EXPORT void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#af63cd99be212af896fbcdf8935eddf5d">Message_Destroy</a> (<a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> message)</td></tr>
-<tr class="memdesc:af63cd99be212af896fbcdf8935eddf5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disposes of resources allocated by the message.  <a href="#af63cd99be212af896fbcdf8935eddf5d">More...</a><br /></td></tr>
-<tr class="separator:af63cd99be212af896fbcdf8935eddf5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb425a8f017bfcd56438a0e8f7089673"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#abb425a8f017bfcd56438a0e8f7089673">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, Message_Create, const <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47">MESSAGE_CONFIG</a> *, cfg)</td></tr>
+<tr class="memdesc:abb425a8f017bfcd56438a0e8f7089673"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure with the reference count initialized to 1.  <a href="#abb425a8f017bfcd56438a0e8f7089673">More...</a><br /></td></tr>
+<tr class="separator:abb425a8f017bfcd56438a0e8f7089673"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99eb5c328365de62b42107f8627b8650"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a99eb5c328365de62b42107f8627b8650">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, Message_CreateFromByteArray, const unsigned char *, source, int32_t, size)</td></tr>
+<tr class="memdesc:a99eb5c328365de62b42107f8627b8650"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new reference counted message from a byte array containing the serialized form of a message.  <a href="#a99eb5c328365de62b42107f8627b8650">More...</a><br /></td></tr>
+<tr class="separator:a99eb5c328365de62b42107f8627b8650"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cef109c7eadd94622f4c1a026f33163"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a8cef109c7eadd94622f4c1a026f33163">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT int32_t, Message_ToByteArray, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, messageHandle, unsigned char *, buf, int32_t, size)</td></tr>
+<tr class="memdesc:a8cef109c7eadd94622f4c1a026f33163"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a byte array representation of a MESSAGE_HANDLE.  <a href="#a8cef109c7eadd94622f4c1a026f33163">More...</a><br /></td></tr>
+<tr class="separator:a8cef109c7eadd94622f4c1a026f33163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada9f3be9232ff92215847af9c5d0f159"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#ada9f3be9232ff92215847af9c5d0f159">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, Message_CreateFromBuffer, const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *, cfg)</td></tr>
+<tr class="memdesc:ada9f3be9232ff92215847af9c5d0f159"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>.  <a href="#ada9f3be9232ff92215847af9c5d0f159">More...</a><br /></td></tr>
+<tr class="separator:ada9f3be9232ff92215847af9c5d0f159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07d7a769e43f574d6f4aff77fddfc810"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a07d7a769e43f574d6f4aff77fddfc810">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, Message_Clone, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, message)</td></tr>
+<tr class="memdesc:a07d7a769e43f574d6f4aff77fddfc810"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a clone of the message.  <a href="#a07d7a769e43f574d6f4aff77fddfc810">More...</a><br /></td></tr>
+<tr class="separator:a07d7a769e43f574d6f4aff77fddfc810"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08f67962e663b4ae5aae7cb8d8a3fd0c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a08f67962e663b4ae5aae7cb8d8a3fd0c">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT CONSTMAP_HANDLE, Message_GetProperties, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, message)</td></tr>
+<tr class="memdesc:a08f67962e663b4ae5aae7cb8d8a3fd0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the properties of a message.  <a href="#a08f67962e663b4ae5aae7cb8d8a3fd0c">More...</a><br /></td></tr>
+<tr class="separator:a08f67962e663b4ae5aae7cb8d8a3fd0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81f52f306b1e697c84895738168038a1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a81f52f306b1e697c84895738168038a1">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT const CONSTBUFFER *, Message_GetContent, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, message)</td></tr>
+<tr class="memdesc:a81f52f306b1e697c84895738168038a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the content of a message.  <a href="#a81f52f306b1e697c84895738168038a1">More...</a><br /></td></tr>
+<tr class="separator:a81f52f306b1e697c84895738168038a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a705fa5c81f8492d478653fafb1a5f857"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#a705fa5c81f8492d478653fafb1a5f857">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT CONSTBUFFER_HANDLE, Message_GetContentHandle, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, message)</td></tr>
+<tr class="memdesc:a705fa5c81f8492d478653fafb1a5f857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the <code>CONSTBUFFER</code> handle that may be used to access the message content.  <a href="#a705fa5c81f8492d478653fafb1a5f857">More...</a><br /></td></tr>
+<tr class="separator:a705fa5c81f8492d478653fafb1a5f857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae854e23d2756bd910f9db8929ee907ba"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="message_8h.html#ae854e23d2756bd910f9db8929ee907ba">MOCKABLE_FUNCTION</a> (, GATEWAY_EXPORT void, Message_Destroy, <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>, message)</td></tr>
+<tr class="memdesc:ae854e23d2756bd910f9db8929ee907ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disposes of resources allocated by the message.  <a href="#ae854e23d2756bd910f9db8929ee907ba">More...</a><br /></td></tr>
+<tr class="separator:ae854e23d2756bd910f9db8929ee907ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Defines structures and function prototypes for creating, inspecting and disposing of messages published to the message broker. </p>
@@ -145,48 +146,42 @@ Functions</h2></td></tr>
 <li>Properties represented as key/value pairs where both the key and value are strings</li>
 <li>The content of the message which is simply a memory buffer (a <code>BUFFER_HANDLE</code>)</li>
 </ul>
-<p>This header provides functions that enable the creation, inspection and destruction of messages. A message is represented via a <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> which is an opaque reference to a message instance. Messages are immutable and reference counted; their lifetime is managed via the <a class="el" href="message_8h.html#a8093e53d031f96eab7ed29b35ba39551" title="Creates a clone of the message. ">Message_Clone</a> and <a class="el" href="message_8h.html#af63cd99be212af896fbcdf8935eddf5d" title="Disposes of resources allocated by the message. ">Message_Destroy</a> APIs which atomically increment and decrement the reference count respectively. <a class="el" href="message_8h.html#af63cd99be212af896fbcdf8935eddf5d" title="Disposes of resources allocated by the message. ">Message_Destroy</a> deallocates the message completely when the reference count becomes zero. </p>
+<p>This header provides functions that enable the creation, inspection and destruction of messages. A message is represented via a <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> which is an opaque reference to a message instance. Messages are immutable and reference counted; their lifetime is managed via the #Message_Clone and #Message_Destroy APIs which atomically increment and decrement the reference count respectively. #Message_Destroy deallocates the message completely when the reference count becomes zero. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a8093e53d031f96eab7ed29b35ba39551"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8093e53d031f96eab7ed29b35ba39551">&sect;&nbsp;</a></span>Message_Clone()</h2>
+<a id="abb425a8f017bfcd56438a0e8f7089673"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb425a8f017bfcd56438a0e8f7089673">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[1/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> Message_Clone </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
-          <td></td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>MESSAGE_HANDLE</em>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Creates a clone of the message. </p>
-<p>Since messages are immutable, this function only increments the inner reference count.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> that will be cloned.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> cloned from <code>message</code>, or <code>NULL</code> upon failure. </dd></dl>
-
-</div>
-</div>
-<a id="a92af3bd1bb4507a75155708b1a98950c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92af3bd1bb4507a75155708b1a98950c">&sect;&nbsp;</a></span>Message_Create()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> Message_Create </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47">MESSAGE_CONFIG</a> *&#160;</td>
-          <td class="paramname"><em>cfg</em></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Message_Create&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47">MESSAGE_CONFIG</a> *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">cfg&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -203,51 +198,47 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a183f7520681d1bf79ac96a1c7f838315"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a183f7520681d1bf79ac96a1c7f838315">&sect;&nbsp;</a></span>Message_CreateFromBuffer()</h2>
+<a id="a99eb5c328365de62b42107f8627b8650"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99eb5c328365de62b42107f8627b8650">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[2/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> Message_CreateFromBuffer </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *&#160;</td>
-          <td class="paramname"><em>cfg</em></td><td>)</td>
-          <td></td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>MESSAGE_HANDLE</em>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>. </p>
-<p>This function will create a new message its own <code>CONSTBUFFER</code> and <code>ConstMap</code> with copies of the <code>source</code> and <code>sourceProperties</code> contained within the <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure parameter. The message will be created with the reference count initialized to 1. It is the responsibility of the Message to dispose of these resources.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">cfg</td><td>Pointer to a <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3" title="Struct defining the Message buffer configuration. ">MESSAGE_BUFFER_CONFIG</a> structure.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> for the newly created message, or <code>NULL</code> upon failure. </dd></dl>
-
-</div>
-</div>
-<a id="a35d93f5695e8b36a5b0afb83261fd4e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a35d93f5695e8b36a5b0afb83261fd4e2">&sect;&nbsp;</a></span>Message_CreateFromByteArray()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a> Message_CreateFromByteArray </td>
-          <td>(</td>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Message_CreateFromByteArray&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const unsigned char *&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">source&#160;</td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -270,100 +261,216 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="af63cd99be212af896fbcdf8935eddf5d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af63cd99be212af896fbcdf8935eddf5d">&sect;&nbsp;</a></span>Message_Destroy()</h2>
+<a id="a8cef109c7eadd94622f4c1a026f33163"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cef109c7eadd94622f4c1a026f33163">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[3/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT void Message_Destroy </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>int32_t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Message_ToByteArray&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">messageHandle&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">buf&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Disposes of resources allocated by the message. </p>
+<p>Creates a byte array representation of a MESSAGE_HANDLE. </p>
+<p>The byte array created can be used with function #Message_CreateFromByteArray to reproduce the message. If buffer is not set, this function will return the serialization size.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> to be destroyed. </td></tr>
+    <tr><td class="paramname">messageHandle</td><td>A <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a>. Must not be NULL. </td></tr>
+    <tr><td class="paramname">buf</td><td>A pointer to a byte array in memory, or NULL. </td></tr>
+    <tr><td class="paramname">size</td><td>An int32_t that specifies the size of buf.</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>An int32_t that specifies the size of the serialized message written when "buf" is not NULL. If "buf" is NULL, returns the size required for a full successful serialization. Returns a negative value when an error occurs. </dd></dl>
 
 </div>
 </div>
-<a id="a954770a792bf010570ab79c57d7ce5a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a954770a792bf010570ab79c57d7ce5a4">&sect;&nbsp;</a></span>Message_GetContent()</h2>
+<a id="ada9f3be9232ff92215847af9c5d0f159"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada9f3be9232ff92215847af9c5d0f159">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[4/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT const CONSTBUFFER* Message_GetContent </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>MESSAGE_HANDLE</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Message_CreateFromBuffer&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3">MESSAGE_BUFFER_CONFIG</a> *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">cfg&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the content of a message. </p>
-<p>The returned <code>CONSTBUFFER</code> need not be freed by the caller.</p>
+<p>Creates a new message from a <code>CONSTBUFFER</code> source and <code>MAP_HANDLE</code>. </p>
+<p>This function will create a new message its own <code>CONSTBUFFER</code> and <code>ConstMap</code> with copies of the <code>source</code> and <code>sourceProperties</code> contained within the <a class="el" href="message_8h.html#a75d30d1b9ce8e2290979b53b39b8fa47" title="Struct defining the Message configuration; messages are constructed using this structure. ">MESSAGE_CONFIG</a> structure parameter. The message will be created with the reference count initialized to 1. It is the responsibility of the Message to dispose of these resources.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> from which the content will be fetched.</td></tr>
+    <tr><td class="paramname">cfg</td><td>Pointer to a <a class="el" href="message_8h.html#a45ba28c45fb903cdf49a8d394364a9f3" title="Struct defining the Message buffer configuration. ">MESSAGE_BUFFER_CONFIG</a> structure.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A non-NULL pointer to a <code>CONSTBUFFER</code> representing the content of the message, or <code>NULL</code> upon failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> for the newly created message, or <code>NULL</code> upon failure. </dd></dl>
 
 </div>
 </div>
-<a id="abf9968834ff749f0376759c20d860ba2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf9968834ff749f0376759c20d860ba2">&sect;&nbsp;</a></span>Message_GetContentHandle()</h2>
+<a id="a07d7a769e43f574d6f4aff77fddfc810"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07d7a769e43f574d6f4aff77fddfc810">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[5/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT CONSTBUFFER_HANDLE Message_GetContentHandle </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>MESSAGE_HANDLE</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Message_Clone&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">message&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the <code>CONSTBUFFER</code> handle that may be used to access the message content. </p>
-<p>This handle must be destroyed when no longer needed.</p>
+<p>Creates a clone of the message. </p>
+<p>Since messages are immutable, this function only increments the inner reference count.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> from which the content will be fetched.</td></tr>
+    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> that will be cloned.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A non-NULL <code>CONSTBUFFER_HANDLE</code> representing the message content, or <code>NULL</code> upon failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> cloned from <code>message</code>, or <code>NULL</code> upon failure. </dd></dl>
 
 </div>
 </div>
-<a id="a856e7a911ccaee4bcd14667cd34bc55c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a856e7a911ccaee4bcd14667cd34bc55c">&sect;&nbsp;</a></span>Message_GetProperties()</h2>
+<a id="a08f67962e663b4ae5aae7cb8d8a3fd0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08f67962e663b4ae5aae7cb8d8a3fd0c">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[6/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT CONSTMAP_HANDLE Message_GetProperties </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>CONSTMAP_HANDLE</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Message_GetProperties&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">message&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -380,29 +487,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a716a8f0220d43e95af5ac46cbc4e861c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a716a8f0220d43e95af5ac46cbc4e861c">&sect;&nbsp;</a></span>Message_ToByteArray()</h2>
+<a id="a81f52f306b1e697c84895738168038a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81f52f306b1e697c84895738168038a1">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[7/9]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GATEWAY_EXPORT int32_t Message_ToByteArray </td>
+          <td class="memname">MOCKABLE_FUNCTION </td>
           <td>(</td>
+          <td class="paramtype">GATEWAY_EXPORT const CONSTBUFFER *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Message_GetContent&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
-          <td class="paramname"><em>messageHandle</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned char *&#160;</td>
-          <td class="paramname"><em>buf</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
+          <td class="paramtype">message&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -412,17 +525,113 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Creates a byte array representation of a MESSAGE_HANDLE. </p>
-<p>The byte array created can be used with function <a class="el" href="message_8h.html#a35d93f5695e8b36a5b0afb83261fd4e2" title="Creates a new reference counted message from a byte array containing the serialized form of a message...">Message_CreateFromByteArray</a> to reproduce the message. If buffer is not set, this function will return the serialization size.</p>
+<p>Gets the content of a message. </p>
+<p>The returned <code>CONSTBUFFER</code> need not be freed by the caller.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">messageHandle</td><td>A <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a>. Must not be NULL. </td></tr>
-    <tr><td class="paramname">buf</td><td>A pointer to a byte array in memory, or NULL. </td></tr>
-    <tr><td class="paramname">size</td><td>An int32_t that specifies the size of buf.</td></tr>
+    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> from which the content will be fetched.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>An int32_t that specifies the size of the serialized message written when "buf" is not NULL. If "buf" is NULL, returns the size required for a full successful serialization. Returns a negative value when an error occurs. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL pointer to a <code>CONSTBUFFER</code> representing the content of the message, or <code>NULL</code> upon failure. </dd></dl>
+
+</div>
+</div>
+<a id="a705fa5c81f8492d478653fafb1a5f857"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a705fa5c81f8492d478653fafb1a5f857">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[8/9]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MOCKABLE_FUNCTION </td>
+          <td>(</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>CONSTBUFFER_HANDLE</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Message_GetContentHandle&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">message&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the <code>CONSTBUFFER</code> handle that may be used to access the message content. </p>
+<p>This handle must be destroyed when no longer needed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> from which the content will be fetched.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A non-NULL <code>CONSTBUFFER_HANDLE</code> representing the message content, or <code>NULL</code> upon failure. </dd></dl>
+
+</div>
+</div>
+<a id="ae854e23d2756bd910f9db8929ee907ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae854e23d2756bd910f9db8929ee907ba">&sect;&nbsp;</a></span>MOCKABLE_FUNCTION() <span class="overload">[9/9]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MOCKABLE_FUNCTION </td>
+          <td>(</td>
+          <td class="paramtype">GATEWAY_EXPORT&#160;</td>
+          <td class="paramname"><em>void</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Message_Destroy&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb">MESSAGE_HANDLE</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">message&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Disposes of resources allocated by the message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>The <a class="el" href="message_8h.html#afeeb1804b3fafb21f39e2e03b80ee6cb" title="Struct representing a particular message. ">MESSAGE_HANDLE</a> to be destroyed. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
