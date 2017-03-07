@@ -196,6 +196,21 @@ namespace Microsoft.Azure.Devices.Gateway
     /// </summary>
     internal class NetCoreInterop
     {
+        private delegate uint CreateDelegate(IntPtr broker, IntPtr module, string assemblyName, string entryType, string configuration);
+
+        private delegate void ReceiveDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] messageAsArray, ulong size, uint moduleID);
+
+        private delegate void DestroyDelegate(uint moduleID);
+
+        private delegate void StartDelegate(uint moduleID);
+
+        [DllImport("dotnetcore",
+            CharSet = CharSet.Ansi,
+            EntryPoint = "Module_DotNetCoreHost_SetBindingDelegates",
+            CallingConvention = CallingConvention.Cdecl
+        )]
+        private static extern void InitializeDelegatesOnNative(IntPtr createAddress, IntPtr receiveAddress, IntPtr destroyAddress, IntPtr startAddress);
+
 
         private static NetCoreInteropInstance _netCoreInteropInstance = NetCoreInteropInstance.GetInstance();
 
@@ -246,6 +261,19 @@ namespace Microsoft.Azure.Devices.Gateway
         public static void Start(uint moduleID)
         {
             _netCoreInteropInstance.Start(moduleID);
+        }
+
+        internal static void InitializeDelegates()
+        {
+            CreateDelegate delCreate = new CreateDelegate(Create);
+            ReceiveDelegate delReceive = new ReceiveDelegate(Receive);
+            DestroyDelegate delDestroy = new DestroyDelegate(Destroy);
+            StartDelegate delStart = new StartDelegate(Start);
+
+            InitializeDelegatesOnNative(Marshal.GetFunctionPointerForDelegate(delCreate),
+                                        Marshal.GetFunctionPointerForDelegate(delReceive),
+                                        Marshal.GetFunctionPointerForDelegate(delDestroy),
+                                        Marshal.GetFunctionPointerForDelegate(delStart));
         }
     }
 }
