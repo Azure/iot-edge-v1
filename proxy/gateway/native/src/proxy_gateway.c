@@ -331,7 +331,7 @@ ProxyGateway_HaltWorkerThread (
         LogError("%s: Unable to acquire mutex!", __FUNCTION__);
         result = __LINE__;
     } else {
-        int thread_exit_result;
+        int thread_exit_result = -1;
         // Signal the message thread
         remote_module->message_thread->halt = true;
         
