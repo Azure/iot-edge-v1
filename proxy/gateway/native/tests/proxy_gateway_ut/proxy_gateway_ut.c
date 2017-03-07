@@ -84,6 +84,11 @@ non_mocked_free(
 #define MOCK_MODULE (MODULE_HANDLE)0x09171979
 #define MOCK_REMOTE_MODULE (REMOTE_MODULE_HANDLE)0x19790917
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 extern
 int
 connect_to_message_channel (
@@ -124,6 +129,9 @@ worker_thread (
     void * thread_arg
 );
 
+#ifdef __cplusplus
+}
+#endif
 static
 char *
 umockvalue_stringify_CONTROL_MESSAGE (
@@ -283,7 +291,7 @@ umockvalue_copy_CONTROL_MESSAGE (
     } else {
         switch ((*source_)->type) {
           case CONTROL_MESSAGE_TYPE_MODULE_CREATE:
-            if (NULL == ((CONTROL_MESSAGE_MODULE_CREATE *)*destination_ = (CONTROL_MESSAGE_MODULE_CREATE *)non_mocked_malloc(sizeof(CONTROL_MESSAGE_MODULE_CREATE)))) {
+            if (NULL == ((CONTROL_MESSAGE *)*destination_ = (CONTROL_MESSAGE *)non_mocked_malloc(sizeof(CONTROL_MESSAGE_MODULE_CREATE)))) {
                 result = __LINE__;
             } else {
                 CONTROL_MESSAGE_MODULE_CREATE * destination = (CONTROL_MESSAGE_MODULE_CREATE *)*destination_;
@@ -309,7 +317,7 @@ umockvalue_copy_CONTROL_MESSAGE (
             }
             break;
           case CONTROL_MESSAGE_TYPE_MODULE_REPLY:
-            if (NULL == ((CONTROL_MESSAGE_MODULE_REPLY *)*destination_ = (CONTROL_MESSAGE_MODULE_REPLY *)non_mocked_malloc(sizeof(CONTROL_MESSAGE_MODULE_REPLY)))) {
+            if (NULL == ((CONTROL_MESSAGE *)*destination_ = (CONTROL_MESSAGE *)non_mocked_malloc(sizeof(CONTROL_MESSAGE_MODULE_REPLY)))) {
                 result = __LINE__;
             } else {
                 CONTROL_MESSAGE_MODULE_REPLY * destination = (CONTROL_MESSAGE_MODULE_REPLY *)*destination_;
