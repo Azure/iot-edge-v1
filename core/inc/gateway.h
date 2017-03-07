@@ -14,7 +14,7 @@
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/vector.h"
 
-#include "nanomsg\nn.h"
+#include "nanomsg/nn.h"
 
 #include "module.h"
 #include "module_loader.h"
