@@ -376,7 +376,7 @@ int32_t ControlMessage_ToByteArray(CONTROL_MESSAGE * message, unsigned char* buf
     if (message == NULL) 
     {
 		/*Codes_SRS_CONTROL_MESSAGE_17_031: [ If message is NULL, then this function shall return -1. ]*/
-		LogError("invalid (NULL) message parameter detected", message, size);
+		LogError("invalid (NULL) message parameter detected buffer=[%p], size=[%d]", message, size);
         result = -1;
     }
     else if (

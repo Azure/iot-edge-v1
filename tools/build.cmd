@@ -30,7 +30,7 @@ set CMAKE_enable_dotnet_binding=OFF
 set CMAKE_enable_dotnet_core_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
-set enable_native_remote_modules=ON
+set enable_native_remote_modules=OFF
 set CMAKE_enable_ble_module=ON
 set use_xplat_uuid=OFF
 set dependency_install_prefix="-Ddependency_install_prefix=%local-install%"

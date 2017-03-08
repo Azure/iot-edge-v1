@@ -15,7 +15,7 @@ run_valgrind=0
 enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
-enable_native_remote_modules=ON
+enable_native_remote_modules=OFF
 toolchainfile=
 enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
