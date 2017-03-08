@@ -410,9 +410,9 @@ ProxyGateway_StartWorkerThread (
 }
 
 
-/*Codes_SRS_BROKER_17_022: [ N/A - Broker_Publish shall Lock the modules lock. ]*/
-/*Codes_SRS_BROKER_17_023: [ N/A - Broker_Publish shall Unlock the modules lock. ]*/
-/*Codes_SRS_BROKER_17_026: [ N/A - Broker_Publish shall copy source into the beginning of the nanomsg buffer. ]*/
+/* Codes_SRS_BROKER_17_022: [ N/A - Broker_Publish shall Lock the modules lock. ] */
+/* Codes_SRS_BROKER_17_023: [ N/A - Broker_Publish shall Unlock the modules lock. ] */
+/* Codes_SRS_BROKER_17_026: [ N/A - Broker_Publish shall copy source into the beginning of the nanomsg buffer. ] */
 BROKER_RESULT
 Broker_Publish (
     BROKER_HANDLE broker,
@@ -423,7 +423,7 @@ Broker_Publish (
     REMOTE_MODULE_HANDLE remote_module = (REMOTE_MODULE_HANDLE)broker;
     BROKER_RESULT result;
 
-    /*Codes_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.]*/
+    /* Codes_SRS_BROKER_13_030: [If broker or message is NULL the function shall return BROKER_INVALIDARG.] */
     if (broker == NULL || message == NULL)
     {
         result = BROKER_INVALIDARG;
@@ -434,41 +434,41 @@ Broker_Publish (
         // Send message_ to nanomsg
         int32_t msg_size;
         int32_t buf_size;
-        /*Codes_SRS_BROKER_17_007: [ Broker_Publish shall clone the message. ]*/
+        /* Codes_SRS_BROKER_17_007: [ Broker_Publish shall clone the message. ] */
         MESSAGE_HANDLE msg = Message_Clone(message);
-        /*Codes_SRS_BROKER_17_008: [ Broker_Publish shall serialize the message. ]*/
+        /* Codes_SRS_BROKER_17_008: [ Broker_Publish shall serialize the message. ] */
         msg_size = Message_ToByteArray(message, NULL, 0);
         if (msg_size < 0)
         {
-            /*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
+            /* Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
             LogError("unable to serialize a message [%p]", msg);
             Message_Destroy(msg);
             result = BROKER_ERROR;
         }
         else
         {
-            /*Codes_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ]*/
+            /* Codes_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ] */
             buf_size = msg_size;
             void* nn_msg = nn_allocmsg(buf_size, 0);
             if (nn_msg == NULL)
             {
-                /*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
+                /* Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
                 LogError("unable to serialize a message [%p]", msg);
                 result = BROKER_ERROR;
             }
             else
             {
                 unsigned char *nn_msg_bytes = (unsigned char *)nn_msg;
-                /*Codes_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ]*/
+                /* Codes_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ] */
                 Message_ToByteArray(message, nn_msg_bytes, msg_size);
 
-                /*Codes_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ]*/
+                /* Codes_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ] */
                 int nbytes = nn_send(remote_module->message_socket, &nn_msg, NN_MSG, 0);
                 if (nbytes != buf_size)
                 {
-                    /*Codes_SRS_BROKER_13_053: [This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise.]*/
+                    /* Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
                     LogError("unable to send a message [%p]", msg);
-                    /*Codes_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ]*/
+                    /* Codes_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ] */
                     nn_freemsg(nn_msg);
                     result = BROKER_ERROR;
                 }
@@ -477,14 +477,14 @@ Broker_Publish (
                     result = BROKER_OK;
                 }
             }
-            /*Codes_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ]*/
+            /* Codes_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ] */
             Message_Destroy(msg);
-            /*Codes_SRS_BROKER_17_011: [ Broker_Publish shall free the serialized message data. ]*/
+            /* Codes_SRS_BROKER_17_011: [ Broker_Publish shall free the serialized message data. ] */
         }
 
     }
 
-    /*Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ]*/
+    /* Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
     return result;
 }
 

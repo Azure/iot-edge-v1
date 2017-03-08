@@ -17,9 +17,9 @@
 // Test framework #includes
 #include "testrunnerswitcher.h"
 #include "umock_c.h"
+#include "umocktypes_bool.h"
 #include "umocktypes_charptr.h"
 #include "umocktypes_stdint.h"
-#include "umocktypes_bool.h"
 #include "umock_c_negative_tests.h"
 
 #define disableNegativeTest(x) (negative_tests_to_skip |= ((uint64_t)1 << (x)))
@@ -558,6 +558,7 @@ TEST_SUITE_INITIALIZE(suite_init)
     ASSERT_ARE_EQUAL(int, 0, result);
     result = umocktypes_stdint_register_types();
     ASSERT_ARE_EQUAL(int, 0, result);
+
     umocktypes_bool_register_types();
 
 	REGISTER_UMOCK_ALIAS_TYPE(BROKER_HANDLE, void *);
@@ -2462,6 +2463,84 @@ TEST_FUNCTION(send_control_reply_SCENARIO_negative_tests)
     ProxyGateway_Detach(remote_module);
     umock_c_negative_tests_deinit();
 }
+
+/* Tests_SRS_BROKER_17_007: [ Broker_Publish shall clone the message. ] */
+/* Tests_SRS_BROKER_17_008: [ Broker_Publish shall serialize the message. ] */
+/* Tests_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ] */
+/* Tests_SRS_BROKER_17_011: [ Broker_Publish shall free the serialized message data. ] */
+/* Tests_SRS_BROKER_17_012: [ Broker_Publish shall free the message. ] */
+/* Tests_SRS_BROKER_17_022: [ N/A - Broker_Publish shall Lock the modules lock. ] */
+/* Tests_SRS_BROKER_17_023: [ N/A - Broker_Publish shall Unlock the modules lock. ] */
+/* Tests_SRS_BROKER_17_025: [ Broker_Publish shall allocate a nanomsg buffer the size of the serialized message + sizeof(MODULE_HANDLE). ] */
+/* Tests_SRS_BROKER_17_026: [ N/A - Broker_Publish shall copy source into the beginning of the nanomsg buffer. ] */
+/* Tests_SRS_BROKER_17_027: [ Broker_Publish shall serialize the message into the remainder of the nanomsg buffer. ] */
+/* Tests_SRS_BROKER_13_030: [ If broker or message is NULL the function shall return BROKER_INVALIDARG. ] */
+/* Tests_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
+TEST_FUNCTION(publish_SCENARIO_create_message_success)
+{
+    // Arrange
+    CONTROL_MESSAGE_MODULE_CREATE CREATE_MESSAGE = {
+        {
+            CONTROL_MESSAGE_VERSION_CURRENT,
+            CONTROL_MESSAGE_TYPE_MODULE_CREATE
+        },
+        GATEWAY_MESSAGE_VERSION_CURRENT,
+        {
+            sizeof("ipc://message_channel"),
+            NN_PAIR,
+            "ipc://message_channel"
+        },
+        sizeof("json_encoded_remote_module_parameters"),
+        "json_encoded_remote_module_parameters"
+    };
+    static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
+    static const int32_t NN_MESSAGE_SIZE = 1979;
+    static const CONTROL_MESSAGE_MODULE_REPLY REPLY = {
+        {
+            CONTROL_MESSAGE_VERSION_1,
+            CONTROL_MESSAGE_TYPE_MODULE_REPLY
+        },
+        0
+    };
+
+    REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
+    ASSERT_IS_NOT_NULL(remote_module);
+
+    // Expected call listing
+    umock_c_reset_all_calls();
+    STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
+        .CopyOutArgumentBuffer(2, &NN_MESSAGE_BUFFER, sizeof(void *))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(NN_MESSAGE_SIZE);
+    STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray((const unsigned char *)NN_MESSAGE_BUFFER, IGNORED_NUM_ARG))
+        .IgnoreArgument(2)
+        .SetReturn((CONTROL_MESSAGE *)&CREATE_MESSAGE);
+    expected_calls_process_module_create_message(remote_module, &CREATE_MESSAGE, &REPLY);
+    STRICT_EXPECTED_CALL(ControlMessage_Destroy((CONTROL_MESSAGE *)&CREATE_MESSAGE));
+    STRICT_EXPECTED_CALL(nn_freemsg((void *)NN_MESSAGE_BUFFER));
+    STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
+        .CopyOutArgumentBuffer(2, &NN_MESSAGE_BUFFER, sizeof(void *))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(NN_MESSAGE_SIZE);
+    STRICT_EXPECTED_CALL(Message_CreateFromByteArray((const unsigned char *)NN_MESSAGE_BUFFER, IGNORED_NUM_ARG))
+        .IgnoreArgument(2)
+        .SetReturn((MESSAGE_HANDLE)&CREATE_MESSAGE);
+    STRICT_EXPECTED_CALL(mock_receive(MOCK_MODULE, (MESSAGE_HANDLE)&CREATE_MESSAGE));
+    STRICT_EXPECTED_CALL(Message_Destroy((MESSAGE_HANDLE)&CREATE_MESSAGE));
+    STRICT_EXPECTED_CALL(nn_freemsg((void *)NN_MESSAGE_BUFFER));
+
+    // Act
+    ProxyGateway_DoWork(remote_module);
+
+    // Assert
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    // Cleanup
+    ProxyGateway_Detach(remote_module);
+}
+
 
 /* SRS_PROXY_GATEWAY_027_0xx: [`worker_thread` shall obtain the thread mutex in order to initialize the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to obtain the mutex, then `worker_thread` shall return a non-zero value] */
