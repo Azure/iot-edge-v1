@@ -558,7 +558,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessa
         else
         {
             /*Codes_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
-            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, length, arr);
+            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, (jsize)length, arr);
             jthrowable exception = JNIFunc(env, ExceptionOccurred);
             if (exception)
             {
@@ -569,7 +569,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessa
             else
             {
                 /*Codes_SRS_JAVA_MODULE_HOST_14_026: [This function shall use the serialized message in a call to Message_Create.]*/
-                MESSAGE_HANDLE message = Message_CreateFromByteArray(arr, length);
+                MESSAGE_HANDLE message = Message_CreateFromByteArray(arr, (int32_t)length);
 
                 if (message == NULL)
                 {
@@ -692,7 +692,7 @@ static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_stri
             options_count += (jvm_options->library_path != NULL ? 1 : 0);
             options_count += (jvm_options->debug == true ? 3 : 0);
             options_count += (jvm_options->verbose == true ? 1 : 0);
-            options_count += VECTOR_size(jvm_options->additional_options);
+            options_count += (int)VECTOR_size(jvm_options->additional_options);
 
             /*Codes_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided.]*/
             (*jvm_args).options = options_count == 0 ? NULL : (JavaVMOption*)malloc(sizeof(JavaVMOption)*options_count);
