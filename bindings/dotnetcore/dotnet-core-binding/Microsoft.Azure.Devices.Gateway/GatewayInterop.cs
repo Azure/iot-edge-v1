@@ -20,47 +20,6 @@ namespace Microsoft.Azure.Devices.Gateway
         /// <summary>
         ///   Creates a gateway using a JSON configuration file as inputwhich describes each module.
         ///   Each module described in the configuration must support Module_CreateFromJson.
-        ///   
-        ///     Sample JSON configuration file:
-        /// 
-        ///               {
-        ///                   "modules" :
-        ///                   [
-        ///                       {
-        ///                            "name": "sensor",
-        ///                            "loader": {
-        ///                                "name": "dotnet",
-        ///                                "entrypoint": {
-        ///                                    "class.name": "Microsoft.Azure.Gateway.SensorModule",
-        ///                                    "assembly.path": "./bin/Microsoft.Azure.Gateway.Modules.dll"
-        ///                                }
-        ///                             },
-        ///                            "args" : {
-        ///                                "power.level": 5
-        ///                            }
-        ///                        },
-        ///                        {
-        ///                            "name": "logger",
-        ///                            "loader": {
-        ///                                "name": "native",
-        ///                                "entrypoint": {
-        ///                                    "module.path": "./bin/liblogger.so"
-        ///                                }
-        ///                            },
-        ///                            "args": {
-        ///                                "filename": "/var/logs/gateway-log.json"
-        ///                            }
-        ///                        }
-        ///                   ],
-        ///                   "links":
-        ///                   [
-        ///                       {
-        ///                           "source": "sensor",
-        ///                           "sink": "logger"
-        ///                       }
-        ///                   ]
-        ///              }
-        ///
         /// </summary>
         /// <param name="file_path">Path to the JSON configuration file for this gateway.</param>
         /// <returns>A non-NULL #GATEWAY_HANDLE that can be used to manage the gateway or @c NULL on failure.</returns>
