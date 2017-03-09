@@ -41,6 +41,9 @@
   #include <stddef.h>
 #endif
 
+#define GATEWAY_MESSAGE_VERSION_1           0x01
+#define GATEWAY_MESSAGE_VERSION_CURRENT     GATEWAY_MESSAGE_VERSION_1
+
 /** @brief  Struct representing a particular message. */
 typedef struct MESSAGE_HANDLE_DATA_TAG* MESSAGE_HANDLE;
 

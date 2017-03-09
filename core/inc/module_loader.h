@@ -104,7 +104,8 @@ typedef struct MODULE_LOADER_API_TAG
     JAVA,       \
     DOTNET,     \
     DOTNETCORE, \
-    NODEJS     
+    NODEJS,     \
+    OUTPROCESS     
 
 /**
  * @brief Enumeration listing all supported module loaders

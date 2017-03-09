@@ -36,7 +36,7 @@ Loader Configuration
 
 A loader is defined by the following attributes:
 
--   **Type**: Can be *native*, *java*, *node* or *dotnet*
+-   **Type**: Can be *native*, *outprocess*, *java*, *node*, *dotnet* or *dotnetcore*
 
 -   **Name**: A string that can be used to reference a given loader
 
@@ -93,12 +93,18 @@ referenced using the following loader names:
 -   `native`: This implements loading of native modules - that is, plain C
     modules.
 
+-   `outprocess`: This implements out of process modules - that is, modules
+    running in a different process on the same system.
+
 -   `java`: This implements loading of modules implemented using the Java
     programming language and compiled to JAR files.
 
 -   `node`: This implements loading of modules implemented using Node.js.
 
 -   `dotnet`: This implements loading of modules implemented using a .NET
+    language and compiled as a .NET assembly.
+
+-   `dotnetcore`: This implements loading of modules implemented using a .NET Core
     language and compiled as a .NET assembly.
 
 It is legal to completely omit specifying the `loaders` array in which case the
@@ -197,8 +203,16 @@ MODULE_LOADER* module_loaders[] = {
     , DotnetBindingLoader_Get()
     #endif
 
+    #ifdef DOTNET_CORE_BINDING_ENABLED
+    , DotnetCoreLoader_Get()
+    #endif
+
     #ifdef NODE_BINDING_ENABLED
     , NodeBindingLoader_Get()
+    #endif
+
+    #ifdef OUTPROCESS_ENABLED
+    , OutprocessLoader_Get()
     #endif
 };
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -227,6 +241,8 @@ work is given below:
 ### Loading Modules
 
 The process of loading a given gateway module is described below:
+
+![Loading Module Sequence](./media/module_loader_create.png)
 
 1.  When initializing the gateway from JSON, it first attempts to parse the
     module’s entrypoint data by calling the loader’s `ParseEntryPointFromJson`

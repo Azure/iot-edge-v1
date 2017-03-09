@@ -24,6 +24,9 @@ if(${enable_nodejs_binding})
     add_subdirectory(nodejs_simple_sample)
 endif()
 
+if (${enable_native_remote_modules})
+    add_subdirectory(proxy_sample)
+endif()
 
 if(${enable_ble_module} AND LINUX)
     add_subdirectory(ble_gateway)
