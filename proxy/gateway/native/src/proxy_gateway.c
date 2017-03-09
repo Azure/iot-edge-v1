@@ -229,20 +229,21 @@ ProxyGateway_DoWork (
 
         /* Codes_SRS_PROXY_GATEWAY_027_027: [Control Channel - `ProxyGateway_DoWork` shall poll the gateway control channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with the control socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags`] */
         if (0 > (bytes_received = nn_recv(remote_module->control_socket, &control_message, NN_MSG, NN_DONTWAIT))) {
-            /* Codes_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available or an error occurred, then `ProxyGateway_DoWork` shall abandon the control channel request] */
             if (EAGAIN == nn_errno()) {
-                // no messages available at this time
+                /* Codes_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available, then `ProxyGateway_DoWork` shall abandon the control channel request] */
             } else {
+                /* Codes_SRS_PROXY_GATEWAY_027_066: [Control Channel - If an error occurred when polling the gateway, then `ProxyGateway_DoWork` shall signal the gateway abandon the control channel request] */
                 LogError("%s: Unexpected error received from the control channel!", __FUNCTION__);
+                (void)send_control_reply(remote_module, (uint8_t)REMOTE_MODULE_GATEWAY_CONNECTION_ERROR);
             }
-        /* Codes_SRS_PROXY_GATEWAY_027_029: [Control Channel - If a control message was received, then `ProxyGateway_DoWork` will parse that message by calling `CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char * source, size_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
         } else {
             CONTROL_MESSAGE * structured_control_message;
 
-            // Parse message body
+            /* Codes_SRS_PROXY_GATEWAY_027_029: [Control Channel - If a control message was received, then `ProxyGateway_DoWork` will parse that message by calling `CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char * source, size_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size`] */
             if (NULL == (structured_control_message = ControlMessage_CreateFromByteArray((const unsigned char *)control_message, bytes_received))) {
-                /* Codes_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `ProxyGateway_DoWork` shall free any previously allocated memory and abandon the control channel request] */
+                /* Codes_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `ProxyGateway_DoWork` shall signal the gateway, free any previously allocated memory and abandon the control channel request] */
                 LogError("%s: Unable to parse control message!", __FUNCTION__);
+                (void)send_control_reply(remote_module, (uint8_t)REMOTE_MODULE_GATEWAY_CONNECTION_ERROR);
             } else {
                 // Route control channel messages to appropriate functions
                 switch (structured_control_message->type) {

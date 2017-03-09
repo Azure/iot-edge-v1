@@ -109,9 +109,10 @@ ProxyGateway_DoWork (
 
 **SRS_PROXY_GATEWAY_027_026: [** *Prerequisite Check* - If the `remote_module` parameter is `NULL`, then `ProxyGateway_DoWork` shall do nothing] */
 **SRS_PROXY_GATEWAY_027_027: [** *Control Channel* - `ProxyGateway_DoWork` shall poll the gateway control channel by calling `int nn_recv(int s, void * buf, size_t len, int flags)` with the control socket for `s`, `NULL` for `buf`, `NN_MSG` for `len` and NN_DONTWAIT for `flags` **]**  
-**SRS_PROXY_GATEWAY_027_028: [** *Control Channel* - If no message is available or an error occurred, then `ProxyGateway_DoWork` shall abandon the control channel request **]**  
+**SRS_PROXY_GATEWAY_027_028: [** *Control Channel* - If no message is available, then `ProxyGateway_DoWork` shall abandon the control channel request **]**  
+**SRS_PROXY_GATEWAY_027_066: [** *Control Channel* - If an error occurred when polling the gateway, then `ProxyGateway_DoWork` shall signal the gateway abandon the control channel request **]**  
 **SRS_PROXY_GATEWAY_027_029: [** *Control Channel* - If a control message was received, then `ProxyGateway_DoWork` will parse that message by calling `CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char * source, size_t size)` with the buffer received from `nn_recv` as `source` and return value from `nn_recv` as `size` **]**  
-**SRS_PROXY_GATEWAY_027_030: [** *Control Channel* - If unable to parse the control message, then `ProxyGateway_DoWork` shall free any previously allocated memory and abandon the control channel request **]**  
+**SRS_PROXY_GATEWAY_027_030: [** *Control Channel* - If unable to parse the control message, then `ProxyGateway_DoWork` shall signal the gateway, free any previously allocated memory and abandon the control channel request **]**  
 **SRS_PROXY_GATEWAY_027_031: [** *Control Channel* - If the message type is CONTROL_MESSAGE_TYPE_MODULE_CREATE, then `ProxyGateway_DoWork` shall process the create message **]**  
 **SRS_PROXY_GATEWAY_027_032: [** *Control Channel* - If the message type is CONTROL_MESSAGE_TYPE_MODULE_START and `Module_Start` was provided, then `ProxyGateway_DoWork` shall call `void Module_Start(MODULE_HANDLE moduleHandle)` **]**  
 **SRS_PROXY_GATEWAY_027_033: [** *Control Channel* - If the message type is CONTROL_MESSAGE_TYPE_MODULE_DESTROY, then `ProxyGateway_DoWork` shall call `void Module_Destroy(MODULE_HANDLE moduleHandle)` **]**  
@@ -172,7 +173,7 @@ ProxyGateway_StartWorkerThread (
 );
 ```
 
-**SRS_PROXY_GATEWAY_027_017: [** *Prerequisite Check* - If the `remote_module` parameter is `NULL`, then `ProxyGateway_StartWorkerThread` shall do nothing and return a non-zero value **]**  
+**SRS_PROXY_GATEWAY_027_017: [** *Prerequisite Check* - If the `remote_module` parameter is `NULL`, then `ProxyGateway_StartWorkerThread` shall return a non-zero value **]**  
 **SRS_PROXY_GATEWAY_027_018: [** *Prerequisite Check* - If a worker thread already exist for the given handle, then `ProxyGateway_StartWorkerThread` shall do nothing and return zero **]**  
 **SRS_PROXY_GATEWAY_027_019: [** `ProxyGateway_StartWorkerThread` shall allocate the memory required to support the worker thread **]**  
 **SRS_PROXY_GATEWAY_027_020: [** If memory allocation fails for the worker thread data, then `ProxyGateway_StartWorkerThread` shall return a non-zero value **]**  

@@ -1263,7 +1263,7 @@ TEST_FUNCTION(doWork_SCENARIO_destroy_message_success)
     ProxyGateway_Detach(remote_module);
 }
 
-/* Tests_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available or an error occurred, then `ProxyGateway_DoWork` shall abandon the control channel request] */
+/* Codes_SRS_PROXY_GATEWAY_027_028: [Control Channel - If no message is available, then `ProxyGateway_DoWork` shall abandon the control channel request] */
 TEST_FUNCTION(doWork_SCENARIO_control_message_not_available)
 {
     // Arrange
@@ -1294,10 +1294,56 @@ TEST_FUNCTION(doWork_SCENARIO_control_message_not_available)
     ProxyGateway_Detach(remote_module);
 }
 
-/* Tests_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `ProxyGateway_DoWork` shall free any previously allocated memory and abandon the control channel request] */
+/* Codes_SRS_PROXY_GATEWAY_027_066: [Control Channel - If an error occurred when polling the gateway, then `ProxyGateway_DoWork` shall signal the gateway abandon the control channel request] */
+TEST_FUNCTION(doWork_SCENARIO_control_message_error)
+{
+    // Arrange
+    static const CONTROL_MESSAGE_MODULE_REPLY REPLY = {
+        {
+            CONTROL_MESSAGE_VERSION_1,
+            CONTROL_MESSAGE_TYPE_MODULE_REPLY
+        },
+        1
+    };
+    static const MESSAGE_HANDLE GATEWAY_MESSAGE = (MESSAGE_HANDLE)0x17091979;
+    static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
+    static const int32_t NN_MESSAGE_SIZE = 1979;
+
+    REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
+    ASSERT_IS_NOT_NULL(remote_module);
+
+    // Expected call listing
+    umock_c_reset_all_calls();
+    STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
+        .CopyOutArgumentBuffer(2, &NN_MESSAGE_BUFFER, sizeof(void *))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(-1);
+    STRICT_EXPECTED_CALL(nn_errno())
+        .SetReturn(ETERM);
+    expected_calls_send_control_reply(&REPLY);
+
+    // Act
+    ProxyGateway_DoWork(remote_module);
+
+    // Assert
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    // Cleanup
+    ProxyGateway_Detach(remote_module);
+}
+
+/* Tests_SRS_PROXY_GATEWAY_027_030: [Control Channel - If unable to parse the control message, then `ProxyGateway_DoWork` shall signal the gateway, free any previously allocated memory and abandon the control channel request] */
 TEST_FUNCTION(doWork_SCENARIO_control_message_bad_parse)
 {
     // Arrange
+    static const CONTROL_MESSAGE_MODULE_REPLY REPLY = {
+        {
+            CONTROL_MESSAGE_VERSION_1,
+            CONTROL_MESSAGE_TYPE_MODULE_REPLY
+        },
+        1
+    };
     static const MESSAGE_HANDLE GATEWAY_MESSAGE = (MESSAGE_HANDLE)0x17091979;
     static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
     static const int32_t NN_MESSAGE_SIZE = 1979;
@@ -1315,6 +1361,7 @@ TEST_FUNCTION(doWork_SCENARIO_control_message_bad_parse)
     STRICT_EXPECTED_CALL(ControlMessage_CreateFromByteArray((const unsigned char *)NN_MESSAGE_BUFFER, IGNORED_NUM_ARG))
         .IgnoreArgument(2)
         .SetReturn(NULL);
+    expected_calls_send_control_reply(&REPLY);
     STRICT_EXPECTED_CALL(nn_freemsg((void *)NN_MESSAGE_BUFFER));
 
     // Act
