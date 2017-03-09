@@ -31,34 +31,51 @@ do
     fi
 done
 
-if [ $build_config == 0 ]
+if [ "$build_config" = "0" ]
 then
     build_config=
-elif [ $build_config == 1 ]
+elif [ "$build_config" == "1" ]
 then
     exit 1
 fi
 
-# ------------------------------------------------------------------------------
-# build
-# ------------------------------------------------------------------------------
+binding_path="$build_root\bindings\dotnetcore\dotnet-core-binding"
+sample_modules_path="$build_root\samples\dotnet_core_module_sample\modules"
 
-dotnet restore \
-    $build_root/bindings/dotnetcore/dotnet-core-binding \
-    $build_root/samples/dotnet_core_module_sample/modules
-[ $? -eq 0 ] || exit $?
+projects_to_build="
+$binding_path\Microsoft.Azure.Devices.Gateway\Microsoft.Azure.Devices.Gateway.csproj
+$binding_path\E2ETestModule\E2ETestModule.csproj
+$sample_modules_path\PrinterModule\PrinterModule.csproj
+$sample_modules_path\SensorModule\SensorModule.csproj"
 
-dotnet build $build_config \
-    $build_root/bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway \
-    $build_root/bindings/dotnetcore/dotnet-core-binding/E2ETestModule \
-    $build_root/samples/dotnet_core_module_sample/modules/PrinterModule \
-    $build_root/samples/dotnet_core_module_sample/modules/SensorModule
-[ $? -eq 0 ] || exit $?
+projects_to_test="$binding_path\Microsoft.Azure.Devices.Gateway.Tests\Microsoft.Azure.Devices.Gateway.Tests.csproj"
 
 # ------------------------------------------------------------------------------
-# test
+# -- restore
 # ------------------------------------------------------------------------------
 
-dotnet test $build_root/bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway.Tests
-[ $? -eq 0 ] || exit $?
+for project in $projects_to_build $projects_to_test
+do
+    dotnet restore $project
+    [ $? -eq 0 ] || exit $?
+done
 
+# ------------------------------------------------------------------------------
+# -- build
+# ------------------------------------------------------------------------------
+
+for project in $projects_to_build
+do
+    dotnet build $build_config $project
+    [ $? -eq 0 ] || exit $?
+done
+
+# ------------------------------------------------------------------------------
+# -- test
+# ------------------------------------------------------------------------------
+
+for project in $projects_to_test
+do
+    dotnet test $project
+    [ $? -eq 0 ] || exit $?
+done

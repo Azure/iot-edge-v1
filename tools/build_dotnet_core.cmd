@@ -52,32 +52,44 @@ goto args-loop
 
 :args-done
 
+set binding-path="%build-root%\bindings\dotnetcore\dotnet-core-binding"
+set sample-modules-path="%build-root%\samples\dotnet_core_module_sample\modules"
+
+set projects-to-build=^
+    "%binding-path%\Microsoft.Azure.Devices.Gateway\Microsoft.Azure.Devices.Gateway.csproj" ^
+    "%binding-path%\E2ETestModule\E2ETestModule.csproj" ^
+    "%sample-modules-path%\PrinterModule\PrinterModule.csproj" ^
+    "%sample-modules-path%\SensorModule\SensorModule.csproj"
+
+set projects-to-test=^
+    "%binding-path%\Microsoft.Azure.Devices.Gateway.Tests\Microsoft.Azure.Devices.Gateway.Tests.csproj"
+
+rem ----------------------------------------------------------------------------
+rem -- restore
+rem ----------------------------------------------------------------------------
+
+for %%i in (%projects-to-build% %projects-to-test%) do (
+    call dotnet restore %build-runtime% %%i
+    if not !errorlevel!==0 exit /b !errorlevel!
+)
+
 rem ----------------------------------------------------------------------------
 rem -- build
 rem ----------------------------------------------------------------------------
 
-call dotnet restore ^
-    %build-root%\bindings\dotnetcore\dotnet-core-binding ^
-    %build-root%\samples\dotnet_core_module_sample\modules
-
-if not !errorlevel!==0 exit /b !errorlevel!
-
-call dotnet build %build-clean% %build-config% %build-runtime% ^
-    %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway ^
-    %build-root%\bindings\dotnetcore\dotnet-core-binding\E2ETestModule ^
-    %build-root%\samples\dotnet_core_module_sample\modules\PrinterModule ^
-    %build-root%\samples\dotnet_core_module_sample\modules\SensorModule
-
-if not !errorlevel!==0 exit /b !errorlevel!
+for %%i in (%projects-to-build%) do (
+    call dotnet build %build-clean% %build-config% %build-runtime% %%i
+    if not !errorlevel!==0 exit /b !errorlevel!
+)
 
 rem ----------------------------------------------------------------------------
 rem -- test
 rem ----------------------------------------------------------------------------
 
-call dotnet test ^
-    %build-root%\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway.Tests
-
-if not !errorlevel!==0 exit /b !errorlevel!
+for %%i in (%projects-to-test%) do (
+    call dotnet test %%i
+    if not !errorlevel!==0 exit /b !errorlevel!
+)
 
 goto :eof
 

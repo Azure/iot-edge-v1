@@ -81,13 +81,11 @@ goto args-continue
 
 :arg-enable-dotnet-binding
 set CMAKE_enable_dotnet_binding=ON
-call %current-path%\build_dotnet.cmd --config %build-config% --platform %build-platform-dotnet%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
 :arg-enable-dotnet-core-binding
 set CMAKE_enable_dotnet_core_binding=ON
-call %current-path%\build_dotnet_core.cmd --config %build-config% --platform %build-platform-dotnet%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto args-continue
 
@@ -118,6 +116,18 @@ shift
 goto args-loop
 
 :args-done
+
+rem -----------------------------------------------------------------------------
+rem -- run .NET Scripts
+rem -----------------------------------------------------------------------------
+
+if %CMAKE_enable_dotnet_core_binding% == ON (
+call %current-path%\build_dotnet_core.cmd --config %build-config% --platform %build-platform-dotnet%
+)
+
+if %CMAKE_enable_dotnet_binding% == ON (
+call %current-path%\build_dotnet.cmd --config %build-config% --platform %build-platform-dotnet%
+)
 
 rem -----------------------------------------------------------------------------
 rem -- build with CMAKE and run tests
