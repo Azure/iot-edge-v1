@@ -578,7 +578,7 @@ bool ModuleLoader_IsDefaultLoader(const char* name)
     /*Codes_SRS_MODULE_LOADER_13_061: [ ModuleLoader_IsDefaultLoader shall return true if name is the name of a default module loader and false otherwise. The default module loader names are 'native', 'node', 'java' , 'dotnet' and 'dotnetcore'. ]*/
     return strcmp(name, DYNAMIC_LOADER_NAME) == 0
            ||
-           strcmp(name, OUTPROCESS_LOADER_NAME) == 0
+           strcmp(name, "outprocess") == 0
            ||
            strcmp(name, "node") == 0
            ||

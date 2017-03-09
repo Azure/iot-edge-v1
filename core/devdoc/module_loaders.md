@@ -36,7 +36,7 @@ Loader Configuration
 
 A loader is defined by the following attributes:
 
--   **Type**: Can be *native*, *outprocess*, *java*, *node* or *dotnet*
+-   **Type**: Can be *native*, *outprocess*, *java*, *node*, *dotnet* or *dotnetcore*
 
 -   **Name**: A string that can be used to reference a given loader
 
@@ -102,6 +102,9 @@ referenced using the following loader names:
 -   `node`: This implements loading of modules implemented using Node.js.
 
 -   `dotnet`: This implements loading of modules implemented using a .NET
+    language and compiled as a .NET assembly.
+
+-   `dotnetcore`: This implements loading of modules implemented using a .NET Core
     language and compiled as a .NET assembly.
 
 It is legal to completely omit specifying the `loaders` array in which case the
@@ -198,6 +201,10 @@ MODULE_LOADER* module_loaders[] = {
 
     #ifdef DOTNET_BINDING_ENABLED
     , DotnetBindingLoader_Get()
+    #endif
+
+    #ifdef DOTNET_CORE_BINDING_ENABLED
+    , DotnetCoreLoader_Get()
     #endif
 
     #ifdef NODE_BINDING_ENABLED

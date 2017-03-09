@@ -39,12 +39,12 @@ else()
     set_source_files_properties(./src/proxy_sample_lin.json PROPERTIES HEADER_FILE_ONLY ON)
 endif()
 
-add_executable(proxy_sample_main ${proxy_sample_main_sources})
+add_executable(proxy_sample ${proxy_sample_main_sources})
 
-target_link_libraries(proxy_sample_main gateway nanomsg)
-linkSharedUtil(proxy_sample_main)
-install_broker(proxy_sample_main ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
-copy_gateway_dll(proxy_sample_main ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+target_link_libraries(proxy_sample gateway nanomsg)
+linkSharedUtil(proxy_sample)
+install_broker(proxy_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
+copy_gateway_dll(proxy_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) )
 
 add_sample_to_solution(proxy_sample_remote)
-add_sample_to_solution(proxy_sample_main)
+add_sample_to_solution(proxy_sample)

@@ -7,49 +7,49 @@
 
 static BROKER_HANDLE theBrokerHandle;
 
-void* test_ParseConfigurationFromJson(const char* configuration)
+void* RemoteSample_ParseConfigurationFromJson(const char* configuration)
 {
-    printf("test_ParseConfigurationFromJson: %s\n", configuration);
+    printf("Remote Module ParseConfigurationFromJson: %s\n", configuration);
     return (void*)configuration;
 }
-void test_FreeConfiguration(void* configuration)
+void RemoteSample_FreeConfiguration(void* configuration)
 {
-    printf("test_FreeConfiguration: %s\n", (char *)configuration);
+    printf("Remote Module FreeConfiguration: %s\n", (char *)configuration);
 }
-MODULE_HANDLE test_Create(BROKER_HANDLE broker, const void* configuration)
+MODULE_HANDLE RemoteSample_Create(BROKER_HANDLE broker, const void* configuration)
 {
-    printf("test_Create\n");
+    printf("Remote Module Create\n");
 	theBrokerHandle = broker;
     MODULE_HANDLE m = (MODULE_HANDLE)"remote module";
     return m;
 }
-void test_Destroy(MODULE_HANDLE moduleHandle)
+void RemoteSample_Destroy(MODULE_HANDLE moduleHandle)
 {
-    printf("test_Destroy: %s\n", (char *)moduleHandle);
+    printf("Remote Module Destroy: %s\n", (char *)moduleHandle);
 }
-void test_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
+void RemoteSample_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
-    printf("test_Receive: %s, %p\n", (char *)moduleHandle, messageHandle);
+    printf("Remote Module Receive: %s, %p\n", (char *)moduleHandle, messageHandle);
 	Broker_Publish(theBrokerHandle, moduleHandle, messageHandle);
 }
-void test_Start(MODULE_HANDLE moduleHandle)
+void RemoteSample_Start(MODULE_HANDLE moduleHandle)
 {
-    printf("test_Start: %s\n", (char *)moduleHandle);
+    printf("Remote Module Start: %s\n", (char *)moduleHandle);
 }
  
-const MODULE_API_1 oopModule =
+const MODULE_API_1 remoteModuleApi =
 {
 	{MODULE_API_VERSION_1},
 
-	test_ParseConfigurationFromJson,
-	test_FreeConfiguration,
-	test_Create,
-	test_Destroy,
-	test_Receive,
-	test_Start
+	RemoteSample_ParseConfigurationFromJson,
+	RemoteSample_FreeConfiguration,
+	RemoteSample_Create,
+	RemoteSample_Destroy,
+	RemoteSample_Receive,
+	RemoteSample_Start
 };
 
-const MODULE_API * pOopModule = (const MODULE_API *)&oopModule;
+const MODULE_API * pRemoteModuleApi = (const MODULE_API *)&remoteModuleApi;
 
 
 int main(int argc, char** argv)
@@ -57,12 +57,12 @@ int main(int argc, char** argv)
     REMOTE_MODULE_HANDLE remote_module;
     if (argc != 2)
     {
-        printf("usage: proxy_sample_sample control_channel_id\n");
+        printf("usage: proxy_sample_remote control_channel_id\n");
         printf("where control_channel_id is the name of the control channel (used in URI).\n");
     }
     else
     {
-        if ((remote_module = ProxyGateway_Attach(pOopModule, argv[1])) == NULL)
+        if ((remote_module = ProxyGateway_Attach(pRemoteModuleApi, argv[1])) == NULL)
         {
             printf("failed to attach remote module from JSON\n");
         }

@@ -9,7 +9,7 @@ this makes for great performance it is also at the cost of execution isolation
 between modules, i.e., one misbehaving module can potentially affect the
 behavior of other modules or the gateway itself. This document seeks to propose
 a design for implementing gateway modules that are hosted in external processes.
-These processes will run intially on the same device that the gateway is 
+These processes will run initially on the same device that the gateway is 
 running on, with the option of extending this behavior to remote devices.
 
 The outprocess module is applicable for a customer that already has device 
@@ -35,7 +35,8 @@ Design Non-goals
 
 It is possible that an outprocess module, due to implementation issues (aka 
 bugs), becomes unstable and precipitates a process hang or termination. The 
-scope of this document does not cover these recovery scenarios. It is assumed that mechanisms external to the gateway will be used for this purpose at this 
+scope of this document does not cover these recovery scenarios. It is assumed 
+that mechanisms external to the gateway will be used for this purpose at this 
 time.
 
 Design Overview
@@ -209,7 +210,7 @@ The proxy module’s configuration will include the following information:
         expectation is that out-of-band measures will be adopted to ensure that
         the out-proc module will be activated.
 
-    -   **Fork:** An activation type of **Fork** means that the proxy module
+    -   **Fork:** (upcoming) An activation type of **Fork** means that the proxy module
         will attempt to fork the hosting process when the module is initialized.
         The proxy will wait for a fixed duration in order to let the outprocess
         process complete initialization and start listening on it’s `NN_RESP`
@@ -220,12 +221,12 @@ The proxy module’s configuration will include the following information:
             question
         -   *Arguments*: array of command line arguments, if any.
 
-    -   **Service:** This activation type indicates that the module host is a
+    -   **Service:** (not yet available) This activation type indicates that the module host is a
         service and the proxy is expected to *start* the service during
         initialization. The configuration might indicate whether this is an
-        *upstart* or *systemd* or a Windows system service.
+        *upstart*, *systemd* or a Windows system service.
 
-    -   **Container:** This activation type indicates that the out-proc module
+    -   **Container:** (not yet available) This activation type indicates that the out-proc module
         is hosted in a Docker container and needs to be started during
         initialization.
 
@@ -246,33 +247,42 @@ established communication will commence as explained later in this document.
 Module Host
 -----------
 
-The module host is a function whose primary responsibility 
+The module host is a proxy gateway whose primary responsibility 
 is to load the single gateway module in question and manage communication 
 between the module and the gateway process. It is passed the control channel 
 identifier as an argument. The module host then proceeds to do the following:
 
 1. Create and open a control channel as a pair connection.
-2. Wait for a _Create Module_ message.
-3. When a _Create Module_ message arrives,
 
-        1. Read the args from the _Create Module_ message.
-        2. Create the module host broker.
-        3. Create the module using the args from the _Create Module_ message.
-        4. Add module to the module host broker.
-        5. Send a response with success or failure.
+2. Wait for a *Create Module* message.
 
-4. Wait for a _Module Start_ message.
-5. When a _Module Start_ message arrives, 
+3. When a *Create Module* message arrives,
 
-        1. call `Module_Start`, if defined.
+    1. Read the args from the *Create Module* message.
 
-6. Wait for a _Module Destroy_ message.
-7. If a _Module Destroy_ message arrives,
+    2. Create the module host broker.
 
-        1. Remove module from module host broker.
-        2. Destroy module.
+    3. Create the module using the args from the *Create Module* message.
 
-Once the module host has received a _Module Destroy_ message, the module host execution is complete.
+    4. Add module to the module host broker.
+
+    5. Send a response with success or failure.
+
+4. Wait for a *Module Start* message.
+
+5. When a *Module Start* message arrives, 
+
+    1. call `Module_Start`, if defined.
+
+6. Wait for a *Module Destroy* message.
+
+7. If a *Module Destroy* message arrives,
+
+    1. Remove module from module host broker.
+
+    2. Destroy module.
+
+Once the module host has received a *Module Destroy* message, the module host execution is complete.
 
 The gateway will provide a native module host which will execute the entire lifecycle of the module as described above, and return once the module fails or is destroyed. This function may be the main execution loop of a process, or spawned in a thread of a larger application.
 
@@ -414,23 +424,6 @@ message packet is structured like so:
     reply is expected to be sent by the module host. The module host is expected
     to invoke `Module_Destroy` on the module and quit the process.
 
-Open Questions
---------------
-
-1.  If the module host process unexpectedly terminates, the proxy does not
-    currently attempt to restart it. Should we include this ability in the
-    design?
-
-2.  If the gateway process unexpectedly terminates, there could be orphan module
-    host processes lying around. Should we handle this case?
-
-3.  What would be a good timeout for the proxy when it is sitting around waiting
-    for the module host to get its act together? If there is a timeout or a
-    connection failure, should the proxy retry the connection? If yes, how many
-    times? Should it implement exponential back-off?
-
-5.  The message serialization format is expected to be cross-platform. Is this
-    actually the case? Has this been tested?
 
 Alternate Approach - Reusing Broker’s Nanomsg Socket
 ----------------------------------------------------
