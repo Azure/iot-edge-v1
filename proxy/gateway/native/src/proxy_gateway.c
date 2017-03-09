@@ -197,6 +197,7 @@ ProxyGateway_Detach (
 
         /* Codes_SRS_PROXY_GATEWAY_027_061: [`ProxyGateway_Detach` shall attempt to notify the Azure IoT Gateway of the detachment] */
         (void)send_control_reply(remote_module, (uint8_t)REMOTE_MODULE_DETACH);
+		ThreadAPI_Sleep(1000);
 
         /* Codes_SRS_PROXY_GATEWAY_027_062: [`ProxyGateway_Detach` shall disconnect from the Azure IoT Gateway message channels] */
         disconnect_from_message_channel(remote_module);

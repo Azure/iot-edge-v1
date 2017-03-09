@@ -1817,6 +1817,7 @@ TEST_FUNCTION(detach_SCENARIO_halt_not_called)
     EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG));
 
     expected_calls_send_control_reply((CONTROL_MESSAGE_MODULE_REPLY *)&REPLY);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1000));
     expected_calls_disconnect_from_message_channel();
     EXPECTED_CALL(nn_shutdown(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
     EXPECTED_CALL(nn_close(IGNORED_NUM_ARG));
@@ -1855,6 +1856,7 @@ TEST_FUNCTION(detach_SCENARIO_success)
     // Expected call listing
     umock_c_reset_all_calls();
     expected_calls_send_control_reply((CONTROL_MESSAGE_MODULE_REPLY *)&REPLY);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1000));
     expected_calls_disconnect_from_message_channel();
     EXPECTED_CALL(nn_shutdown(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
     EXPECTED_CALL(nn_close(IGNORED_NUM_ARG));
@@ -1903,6 +1905,7 @@ TEST_FUNCTION(detach_SCENARIO_unable_to_halt_thread)
     EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG));
 
     expected_calls_send_control_reply((CONTROL_MESSAGE_MODULE_REPLY *)&REPLY);
+	STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1000));
     expected_calls_disconnect_from_message_channel();
     EXPECTED_CALL(nn_shutdown(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
     EXPECTED_CALL(nn_close(IGNORED_NUM_ARG));

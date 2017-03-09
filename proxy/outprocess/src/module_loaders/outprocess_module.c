@@ -47,7 +47,6 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 
 // forward definitions
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
-static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData);
 
 
 int outprocessIncomingMessageThread(void *param)
@@ -249,68 +248,103 @@ static int outprocessCreate(void *param)
 		else
 		{
 			int control_fd = handleData->control_socket;
-
-			int32_t creationMessageSize = 0;
-			void * creationMessage = construct_create_message(handleData, &creationMessageSize);
+			
 			(void)Unlock(handleData->handle_lock);
-			if (creationMessage == NULL)
-			{
-				/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-				LogError("Unable to create create control message");
-				thread_return = -1;
-			}
-			else
-			{
-				/*Codes_SRS_OUTPROCESS_MODULE_17_013: [ This function shall send the Create Message on the control channel. ]*/
-				int sendBytes = nn_send(control_fd, &creationMessage, NN_MSG, 0);
-				if (sendBytes != creationMessageSize)
+			int should_continue = 1;
+
+			do {
+				int32_t creationMessageSize = 0;
+
+				void * creationMessage = construct_create_message(handleData, &creationMessageSize);
+				if (creationMessage == NULL)
 				{
 					/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
-					LogError("unable to send create message [%p]", creationMessage);
-					nn_freemsg(creationMessage);
+					LogError("Unable to create create control message");
+					should_continue = 0;
 					thread_return = -1;
 				}
 				else
 				{
-					unsigned char *buf = NULL;
-					int recvBytes = nn_recv(control_fd, (void *)&buf, NN_MSG, 0);
-					if (recvBytes < 0)
+					/*Codes_SRS_OUTPROCESS_MODULE_17_013: [ This function shall send the Create Message on the control channel. ]*/
+					int default_wait = 250; /* 250 ms */
+					size_t default_wait_size = sizeof(default_wait);
+					if (nn_setsockopt(control_fd, NN_SOL_SOCKET, NN_RCVTIMEO, &default_wait, default_wait_size) < 0)
 					{
+						LogError("Unable to set a receive timeout.");
+						nn_freemsg(creationMessage); /* won't get to send that message we just created */
+						should_continue = 0;
 						thread_return = -1;
 					}
 					else
 					{
-						CONTROL_MESSAGE * msg = ControlMessage_CreateFromByteArray((const unsigned char*)buf, recvBytes);
-						nn_freemsg(buf);
-						if (msg == NULL)
+						int sendBytes = nn_send(control_fd, &creationMessage, NN_MSG, NN_DONTWAIT);
+						if (sendBytes != creationMessageSize)
 						{
-							thread_return = -1;
-						}
-						else
-						{
-							if (msg->type != CONTROL_MESSAGE_TYPE_MODULE_REPLY)
+							int send_err = nn_errno();
+							nn_freemsg(creationMessage);
+							if (send_err != EAGAIN)
 							{
+								/*Codes_SRS_OUTPROCESS_MODULE_17_016: [ If any step in the creation fails, this function shall deallocate all resources and return NULL. ]*/
+								LogError("unable to send create message [%p]", creationMessage);
+								should_continue = 0;
 								thread_return = -1;
 							}
 							else
 							{
-								CONTROL_MESSAGE_MODULE_REPLY * resp_msg = (CONTROL_MESSAGE_MODULE_REPLY*)msg;
-								if (resp_msg->status != 0)
+								ThreadAPI_Sleep((unsigned int)default_wait);
+							}
+						}
+						else
+						{
+							unsigned char *buf = NULL;
+							/* This receive should time out if no one sends a response. */
+							int recvBytes = nn_recv(control_fd, (void *)&buf, NN_MSG, 0);
+							if (recvBytes < 0)
+							{
+								int recv_error = nn_errno();
+								if (recv_error != EAGAIN)
+								{
+									LogError("unexpected error on control channel receive: %d", recv_error);
+									should_continue = 0;
+									thread_return = -1;
+								}
+							}
+							else
+							{
+								should_continue = 0; /* Only continue until we receive a message */
+								CONTROL_MESSAGE * msg = ControlMessage_CreateFromByteArray((const unsigned char*)buf, recvBytes);
+								nn_freemsg(buf);
+								if (msg == NULL)
 								{
 									thread_return = -1;
 								}
 								else
 								{
-									/*Codes_SRS_OUTPROCESS_MODULE_17_015: [ This function shall expect a successful result from the Create Response to consider the module creation a success. ]*/
-									// complete success!
-									thread_return = 1;
+									if (msg->type != CONTROL_MESSAGE_TYPE_MODULE_REPLY)
+									{
+										thread_return = -1;
+									}
+									else
+									{
+										CONTROL_MESSAGE_MODULE_REPLY * resp_msg = (CONTROL_MESSAGE_MODULE_REPLY*)msg;
+										if (resp_msg->status != 0)
+										{
+											thread_return = -1;
+										}
+										else
+										{
+											/*Codes_SRS_OUTPROCESS_MODULE_17_015: [ This function shall expect a successful result from the Create Response to consider the module creation a success. ]*/
+											// complete success!
+											thread_return = 1;
+										}
+									}
+									ControlMessage_Destroy(msg);
 								}
 							}
-							ControlMessage_Destroy(msg);
 						}
-					}
+					} 
 				}
-			}
+			} while (should_continue == 1);
 		}
 	}
 	return thread_return;
@@ -353,21 +387,15 @@ int outprocessControlThread(void *param)
 			{
 				// our remote has detached.  Attempt to reattach.
 				/*Codes_SRS_OUTPROCESS_MODULE_17_059: [ If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process. ]*/
-				if (connection_reset_control(handleData) < 0)
+
+				/*Codes_SRS_OUTPROCESS_MODULE_17_060: [ Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host. ]*/
+				if (outprocessCreate(handleData) < 0)
 				{
-					LogError("attemping to reconnect to remote failed");
+					LogError("attempting to reattach to remote failed");
 				}
 				else
 				{
-					/*Codes_SRS_OUTPROCESS_MODULE_17_060: [ Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host. ]*/
-					if (outprocessCreate(handleData) < 0)
-					{
-						LogError("attempting to reattach to remote failed");
-					}
-					else
-					{
-						needs_to_attach = 0;
-					}
+					needs_to_attach = 0;
 				}
 			}
 
@@ -423,63 +451,6 @@ int outprocessControlThread(void *param)
 
 /* Connection related functions
 */
-static int connection_reset_control(OUTPROCESS_HANDLE_DATA* handleData)
-{
-	int result;
-	/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
-	if (Lock(handleData->handle_lock) != LOCK_OK)
-	{
-		result = -1;
-	}
-	else
-	{
-		int control_socket = handleData->control_socket;
-		handleData->control_socket = -1;
-		(void)Unlock(handleData->handle_lock);
-
-		/*Codes_SRS_OUTPROCESS_MODULE_17_010: [ This function shall create a request/reply socket for sending control messages to the module host. ]*/
-		if (control_socket >= 0)
-		{
-			(void)nn_close(control_socket);
-		}
-		control_socket = nn_socket(AF_SP, NN_PAIR);
-		if (control_socket < 0)
-		{
-			result = control_socket;
-			LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
-		}
-		else
-		{
-			/*Codes_SRS_OUTPROCESS_MODULE_17_011: [ This function shall connect the request/reply socket to the control_id. ]*/
-			int control_connect_id = nn_connect(control_socket, STRING_c_str(handleData->control_uri));
-			if (control_connect_id < 0)
-			{
-				result = control_connect_id;
-				LogError("remote socket failed to connect to control URL, result = %d, errno = %d", result, nn_errno());
-				(void)nn_close(control_socket);
-				control_socket = -1;
-			}
-			else
-			{
-				/*Codes_SRS_OUTPROCESS_MODULE_17_056: [ This thread shall ensure thread safety on the module data. ]*/
-				if (Lock(handleData->handle_lock) != LOCK_OK)
-				{
-					result = -1;
-					(void)nn_close(control_socket);
-				}
-				else
-				{
-					// successfully reconnected
-					result = 0;
-					handleData->control_socket = control_socket;
-					(void)Unlock(handleData->handle_lock);
-				}
-
-			}
-		}
-	}
-	return result;
-}
 
 static int connection_setup(OUTPROCESS_HANDLE_DATA* handleData, OUTPROCESS_MODULE_CONFIG * config)
 {
