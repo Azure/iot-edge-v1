@@ -15,7 +15,7 @@ run_valgrind=0
 enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
-enable_native_remote_modules=OFF
+enable_native_remote_modules=ON
 toolchainfile=
 enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
@@ -35,8 +35,8 @@ usage ()
     echo "                                (JAVA_HOME must be defined in your environment)"
     echo " --enable-nodejs-binding        Build Node.js binding"
     echo "                                (NODE_INCLUDE, NODE_LIB must be defined)"
-    echo " --enable-native-remote-modules Build the infrastructure required"
-    echo "                                to support native remote modules"
+    echo " --disable-native-remote-modules Do not build the infrastructure"
+    echo "                                required to support native remote modules"
     echo " --rebuild-deps                 Force rebuild of dependencies"
     echo " --run-e2e-tests                Build/run end-to-end tests"
     echo " --run-unittests                Build/run unit tests"
@@ -83,7 +83,7 @@ process_args ()
               "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
-              "--enable-native-remote-modules" ) enable_native_remote_modules=ON;;
+              "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
               "--system-deps-path" ) dependency_install_prefix=;;
