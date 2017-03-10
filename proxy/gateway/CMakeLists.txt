@@ -6,3 +6,7 @@ cmake_minimum_required(VERSION 2.8.12)
 if(${enable_native_remote_modules})
     add_subdirectory(native)
 endif()
+
+if(${enable_java_remote_modules})
+    add_subdirectory(java)
+endif()

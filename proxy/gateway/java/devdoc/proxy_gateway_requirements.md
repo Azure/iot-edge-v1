@@ -26,7 +26,7 @@ public ProxyGateway(ModuleConfiguration config);
 ```
 **SRS_JAVA_PROXY_GATEWAY_24_001: [** If `config` is `null` the constructor shall throw an IllegalArgumentException. **]**
 
-**SRS_JAVA_PROXY_GATEWAY_24_002: [** The constructor shall save `config` into member field. **]**
+**SRS_JAVA_PROXY_GATEWAY_24_002: [** The constructor shall save `config` for later use. **]**
 
 ## attach
 

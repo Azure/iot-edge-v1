@@ -16,6 +16,7 @@ enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
 enable_native_remote_modules=ON
+enable_java_remote_modules=OFF
 toolchainfile=
 enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
@@ -37,6 +38,8 @@ usage ()
     echo "                                (NODE_INCLUDE, NODE_LIB must be defined)"
     echo " --disable-native-remote-modules Do not build the infrastructure"
     echo "                                required to support native remote modules"
+    echo " --enable-java-remote-modules   Build Java Remote Module SDK"
+    echo "                                (JAVA_HOME must be defined in your environment)"
     echo " --rebuild-deps                 Force rebuild of dependencies"
     echo " --run-e2e-tests                Build/run end-to-end tests"
     echo " --run-unittests                Build/run unit tests"
@@ -84,6 +87,7 @@ process_args ()
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
+              "--enable-java-remote-modules" ) enable_java_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
               "--system-deps-path" ) dependency_install_prefix=;;
@@ -135,6 +139,18 @@ then
     [ $? -eq 0 ] || exit $?
 fi
 
+if [[ $enable_java_remote_modules == ON ]]
+then 
+    if [[ $enable_java_binding == OFF ]]
+    then
+        "$build_root"/tools/build_java.sh
+        [ $? -eq 0 ] || exit $?
+    fi
+
+     "$build_root"/tools/build_java_oop.sh
+    [ $? -eq 0 ] || exit $?
+fi
+
 if [[ $enable_dotnet_core_binding == ON ]]
 then
     "$build_root"/tools/build_dotnet_core.sh --config $build_config
@@ -161,6 +177,7 @@ cmake $toolchainfile \
       -Denable_dotnet_core_binding:BOOL=$enable_dotnet_core_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
       -Denable_native_remote_modules:BOOL=$enable_native_remote_modules \
+      -Denable_java_remote_modules:BOOL=$enable_java_remote_modules \
       -Denable_ble_module:BOOL=$enable_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \
       -Dbuild_cores=$CORES \

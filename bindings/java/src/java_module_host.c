@@ -50,6 +50,7 @@ typedef signed char jbyte;
 
 #include <stdio.h>
 #include "broker_proxy.h"
+#include "local_broker_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
 #include "azure_c_shared_utility/xlogging.h"
@@ -533,6 +534,11 @@ static void JavaModuleHost_FreeConfiguration(void* configuration)
         /*Codes_SRS_JAVA_MODULE_HOST_14_058: [ This function shall free the configuration. ]*/
         free((char*)configuration);
     }
+}
+
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_LocalBroker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
+{
+    return Java_com_microsoft_azure_gateway_core_Broker_publishMessage(env, jBroker, broker_address, module_address, serialized_message);
 }
 
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)

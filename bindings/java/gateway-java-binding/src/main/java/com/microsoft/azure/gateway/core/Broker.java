@@ -10,46 +10,38 @@ import java.io.IOException;
 
 public class Broker {
 
-    //Loads the native library
-    static {
-        System.loadLibrary("java_module_host");
+    private long brokerAddr;
+    private LocalBroker localBroker;
+
+    protected Broker() {
     }
 
-    //Private Native Methods
-    /**
-     * Native Broker_Publish function. When this method is called, it will call into the native Broker_Publish
-     * function to publish the provided {@link Message} to the native Broker.
-     *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_broker_requirements.md" target="_top">Message broker documentation</a>
-     *
-     * @param brokerAddr The address of the pointer to the native Broker.
-     * @param moduleAddr The address of the pointer to the native module.
-     * @param message The serialized {@link Message} to be published.
-     * @return 0 on success, non-zero otherwise.
-     */
-    private native int publishMessage(long brokerAddr, long moduleAddr, byte[] message);
+    public Broker(long addr) {
+        this.brokerAddr = addr;
 
-    private long _brokerAddr;
-
-    public Broker(long addr){
-        this._brokerAddr = addr;
+        this.localBroker = new LocalBroker();
     }
 
     /**
      * Publishes the {@link Message} to the {@link Broker}.
      *
-     * @see <a href="https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_broker_requirements.md" target="_top">Message broker documentation</a>
+     * @see <a href=
+     *      "https://github.com/Azure/azure-iot-gateway-sdk/blob/master/core/devdoc/message_broker_requirements.md"
+     *      target="_top">Message broker documentation</a>
      *
-     * @param moduleAddr The address of the pointer to the native module.
-     * @param message The serialized {@link Message} to be published.
+     * @param moduleAddr
+     *            The address of the pointer to the native module.
+     * @param message
+     *            The serialized {@link Message} to be published.
      * @return 0 on success, non-zero otherwise.
-     * @throws IOException If the {@link Message} cannot be serialized.
+     * @throws IOException
+     *             If the {@link Message} cannot be serialized.
      */
     public int publishMessage(Message message, long moduleAddr) throws IOException {
-        return this.publishMessage(this._brokerAddr, moduleAddr, message.toByteArray());
+        return this.localBroker.publishMessage(this.brokerAddr, moduleAddr, message.toByteArray());
     }
 
-    public long getAddress(){
-        return this._brokerAddr;
+    public long getAddress() {
+        return this.brokerAddr;
     }
 }
