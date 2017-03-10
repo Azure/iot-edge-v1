@@ -40,10 +40,6 @@ REM -- C --
 cd %build-root%\tools
 set "PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin\server;%PATH%;%NODE_LIB%"
 
-REM -- Build first dotnet binding for End2End Test.
-call build_dotnet.cmd %*
-if errorlevel 1 goto :reset-java
-
 call build.cmd --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-dotnet-core-binding --enable-java-binding %*
 if errorlevel 1 goto :reset-java
 cd %build-root%

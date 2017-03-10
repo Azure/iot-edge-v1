@@ -22,7 +22,6 @@ rem ----------------------------------------------------------------------------
 rem // default build options
 set build-config=Debug
 set build-platform=Win32
-set build-platform-dotnet=x86
 set rebuild_deps=OFF
 set CMAKE_run_unittests=OFF
 set CMAKE_run_e2e_tests=OFF
@@ -63,10 +62,6 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
-set build-platform-dotnet=%1
-if "%1" neq "Win32" goto args-continue
-rem Correct "Win32" to "x86" for .NET builds
-set build-platform-dotnet=x86
 goto args-continue
 
 :arg-rebuild-deps
