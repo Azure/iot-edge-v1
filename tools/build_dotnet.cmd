@@ -85,8 +85,14 @@ if not !errorlevel!==0 exit /b !errorlevel!
 
 rem ------------------
 rem -- run unit tests
+
+if %build-config% equ Release_Delay_Sign (
+Echo.
+Echo Build configuration is Release_Delay_Sign, skipping unit tests.
+) else (
 call  vstest.console "%build-root%\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway.Test\bin\%build-platform%\%build-config%\Microsoft.Azure.IoT.Gateway.Test.dll" /Platform:%build-platform% /inIsolation
 if not !errorlevel!==0 exit /b !errorlevel!
+)
 rem ------------------
 
 rem -----------------------------------------------------------------------------
@@ -112,7 +118,7 @@ goto :eof
 echo build.cmd [options]
 echo options:
 echo  -c, --clean           delete artifacts from previous build before building
-echo  --config ^<value^>      [Debug] build configuration (e.g. Debug, Release)
+echo  --config ^<value^>      [Debug] build configuration (e.g. Debug, Release, Release_Delay_Sign)
 echo  --platform ^<value^>    [x86] build platform (e.g. x86, x64, ...)
 goto :eof
 
