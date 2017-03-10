@@ -132,7 +132,7 @@ call %current-path%\build_dotnet_core.cmd --config %build-config%
 )
 
 if %CMAKE_enable_dotnet_binding% == ON (
-call %current-path%\build_dotnet.cmd --config %build-config% --platform %build-platform-dotnet%
+call %current-path%\build_dotnet.cmd --config %build-config%
 )
 
 rem -----------------------------------------------------------------------------
