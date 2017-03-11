@@ -80,8 +80,7 @@ Example how the loader should be configured in Gateway for out of process module
         "name" : "outprocess"
         "entrypoint" : {
             "activation.type" : "none",
-            "control.identifier" : "outprocess_module_control_unique_id",
-            "message.identifier" : "outprocess_module_message_unique_id",
+            "control.id" : "outprocess_module_control_unique_id"
         }
     }
     "args" : {...}

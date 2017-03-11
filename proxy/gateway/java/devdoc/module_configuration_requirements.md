@@ -49,7 +49,7 @@ public Class<? extends IGatewayModule> getModuleClass()
 ```
 **SRS_MODULE_CONFIGURATION_24_004: [** It shall return the module class. **]**
 
-## getModuleClass
+## getVersion
 ```java
 public byte getVersion();
 ```
