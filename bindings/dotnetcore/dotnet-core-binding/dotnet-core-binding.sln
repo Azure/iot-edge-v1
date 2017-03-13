@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrinterModule", "..\..\..\s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SensorModule", "..\..\..\samples\dotnet_core_module_sample\modules\SensorModule\SensorModule.csproj", "{F31FEDE0-2FE1-4F06-B200-B317D569C9D2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet_core_managed_gateway", "..\..\..\samples\dotnet_core_managed_gateway\dotnet_core_managed_gateway.csproj", "{1E933424-450E-4E68-B312-52D4AC175175}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{F31FEDE0-2FE1-4F06-B200-B317D569C9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F31FEDE0-2FE1-4F06-B200-B317D569C9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F31FEDE0-2FE1-4F06-B200-B317D569C9D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E933424-450E-4E68-B312-52D4AC175175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E933424-450E-4E68-B312-52D4AC175175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E933424-450E-4E68-B312-52D4AC175175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E933424-450E-4E68-B312-52D4AC175175}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
