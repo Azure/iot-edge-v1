@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\bindings\dotnetcore\dotnet-core-binding\Microsoft.Azure.Devices.Gateway\Microsoft.Azure.Devices.Gateway.csproj" />
+    <ProjectReference Include="..\dotnet_core_module_sample\modules\PrinterModule\PrinterModule.csproj" />
+    <ProjectReference Include="..\dotnet_core_module_sample\modules\SensorModule\SensorModule.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="dotnet_core_module_sample_win.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

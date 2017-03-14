@@ -44,13 +44,15 @@ goto args-loop
 :args-done
 
 set binding-path="%build-root%\bindings\dotnetcore\dotnet-core-binding"
-set sample-modules-path="%build-root%\samples\dotnet_core_module_sample\modules"
+set samples-path="%build-root%\samples"
+set sample-modules-path="%samples-path%\dotnet_core_module_sample\modules"
 
 set projects-to-build=^
     "%binding-path%\Microsoft.Azure.Devices.Gateway\Microsoft.Azure.Devices.Gateway.csproj" ^
     "%binding-path%\E2ETestModule\E2ETestModule.csproj" ^
     "%sample-modules-path%\PrinterModule\PrinterModule.csproj" ^
-    "%sample-modules-path%\SensorModule\SensorModule.csproj"
+    "%sample-modules-path%\SensorModule\SensorModule.csproj" ^
+    "%samples-path%\dotnet_core_managed_gateway\dotnet_core_managed_gateway.csproj"
 
 set projects-to-test=^
     "%binding-path%\Microsoft.Azure.Devices.Gateway.Tests\Microsoft.Azure.Devices.Gateway.Tests.csproj"

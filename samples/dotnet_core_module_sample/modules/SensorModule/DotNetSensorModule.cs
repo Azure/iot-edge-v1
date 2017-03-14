@@ -15,6 +15,10 @@ namespace SensorModule
         private Broker broker;
         private string configuration;
 
+        private Thread oThread;
+
+        private bool quitThread = false;
+
         public void Create(Broker broker, byte[] configuration)
         {
 
@@ -25,13 +29,15 @@ namespace SensorModule
 
         public void Start()
         {
-            Thread oThread = new Thread(new ThreadStart(this.threadBody));
+            oThread = new Thread(new ThreadStart(this.threadBody));
             // Start the thread
             oThread.Start();
         }
 
         public void Destroy()
         {
+            quitThread = true;
+            oThread.Join();
         }
 
         public void Receive(Message received_message)
@@ -44,7 +50,7 @@ namespace SensorModule
             Random r = new Random();
             int n = r.Next();
 
-            while (true)
+            while (!quitThread)
             {
                 Dictionary<string, string> thisIsMyProperty = new Dictionary<string, string>();
                 thisIsMyProperty.Add("source", "sensor");

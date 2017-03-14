@@ -1,5 +1,5 @@
-.NET Core Sample for Windows Desktop
-====================================
+.NET Core Sample
+================
 
 Overview
 --------
@@ -15,20 +15,12 @@ The sample contains:
 Other resources:
 - Hello World [sample](../hello_world/README.md)
 - [Devbox setup](../../doc/devbox_setup.md)
-- [.NET Core binding High Level Design](../../bindings/dotnetcore/devdoc/dotnet_core_binding_hld.md)
-- [.Net Core Framework Installer](https://www.microsoft.com/net/download/core)
-- [How to install .Net Core Framework for Ubuntu 14.04, 16.04, 16.10 & Linux Mint 17 (64 bit)](https://www.microsoft.com/net/core#linuxubuntu)
+- [.NET Core Installation Guide](https://www.microsoft.com/net/core)
 
 Prerequisites
 --------------
-1. Setup your Windows development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
-2. Make sure you have .NET Core Framework installed. Our current version of the binding was tested and loads modules written in .NET version v1.0.1.
-
-How does the data flow through the Gateway
-------------------------------------------
-You can find the diagram for Receiving a message and publishing a message on this flow chart:
-
-![](../../bindings/dotnetcore/devdoc/images/flow_chart_native_gateway.png)
+1. Setup your development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
+2. Make sure you have .NET Core Framework installed. Our current version of the binding was tested and loads modules written in .NET **Core** v1.1.1.
 
 Building the sample
 -------------------
