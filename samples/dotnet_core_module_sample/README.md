@@ -15,13 +15,12 @@ The sample contains:
 Other resources:
 - Hello World [sample](../hello_world/README.md)
 - [Devbox setup](../../doc/devbox_setup.md)
-- [.Net Core Framework Installer](https://www.microsoft.com/net/download/core)
+- [.NET Core Installation Guide](https://www.microsoft.com/net/core)
 
 Prerequisites
 --------------
 1. Setup your development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
 2. Make sure you have .NET Core Framework installed. Our current version of the binding was tested and loads modules written in .NET **Core** v1.1.1.
-
 
 Building the sample
 -------------------
