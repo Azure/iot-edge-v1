@@ -229,6 +229,10 @@ public:
         STRING_HANDLE result2 = (STRING_HANDLE)malloc(4);
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
+	MOCK_STATIC_METHOD_2(, STRING_HANDLE, STRING_construct_n, const char*, psz, size_t, n)
+		STRING_HANDLE result3 = (STRING_HANDLE)malloc(n+1);
+	MOCK_METHOD_END(STRING_HANDLE, result3)
+
     MOCK_STATIC_METHOD_1(, void, STRING_delete, STRING_HANDLE, s)
         free(s);
     MOCK_VOID_METHOD_END()
@@ -317,6 +321,7 @@ DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, gballoc_free, void*, ptr);
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , int, mallocAndStrcpy_s, char**, destination, const char*, source);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , STRING_HANDLE, STRING_construct, const char*, s);
+DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , STRING_HANDLE, STRING_construct_n, const char*, psz, size_t, n);
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CLoggerMocks, , void, STRING_delete, STRING_HANDLE, s);
 DECLARE_GLOBAL_MOCK_METHOD_2(CLoggerMocks, , int, STRING_concat, STRING_HANDLE, s1, const char*, s2);
@@ -1351,6 +1356,93 @@ BEGIN_TEST_SUITE(logger_ut)
         Logger_Destroy(moduleHandle);
 
     }
+	/*Tests_SRS_LOGGER_02_011: [Logger_Receive shall write in the fout FILE the following information in JSON format:]*/
+	/*Tests_SRS_LOGGER_02_013: [Logger_Receive shall return.]*/
+	TEST_FUNCTION(Logger_Receive_happy_path_empty_content)
+	{
+		///arrange
+		CLoggerMocks mocks;
+		auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
+		mocks.ResetAllCalls();
+		mocks_ResetAllCounters();
+		const CONSTBUFFER empty_content = {
+			NULL,
+			0
+		};
+
+		STRICT_EXPECTED_CALL(mocks, gb_time(NULL)); /*this is getting the time*/
+
+		STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+			.IgnoreArgument(1)
+			.IgnoreArgument(2)
+			.IgnoreArgument(4);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(validMessageHandle)); /*this is getting the properties from the message*/
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)) /*this is getting the properties in a writeable map, because ConstMap doesn't have ToJSON*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Map_ToJSON(IGNORED_PTR_ARG)) /*this is getting a STRING_HANDLE that is the MAP as JSON*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetContent(validMessageHandle)).SetReturn(&empty_content); /*this is getting the content*/
+
+		STRICT_EXPECTED_CALL(mocks, STRING_construct_n("", 0));
+		STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, STRING_construct(",{\"time\":\"")); /*this is the actual JSON object building*/
+		STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, STRING_concat(IGNORED_PTR_ARG, IGNORED_PTR_ARG)) /*this is adding the real time to the json*/
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, STRING_concat(IGNORED_PTR_ARG, "\",\"properties\":")) /*this is adding the "properties":" string*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, STRING_concat_with_STRING(IGNORED_PTR_ARG, IGNORED_PTR_ARG)) /*this is adding the result of MapToJSON*/
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, STRING_concat(IGNORED_PTR_ARG, ",\"content\":\"")) /*this is adding the ,"content":"*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, STRING_concat_with_STRING(IGNORED_PTR_ARG, IGNORED_PTR_ARG)) /*this is adding the result of base64_encode*/
+			.IgnoreArgument(1)
+			.IgnoreArgument(2);
+		STRICT_EXPECTED_CALL(mocks, STRING_concat(IGNORED_PTR_ARG, "\"}]")) /*this closes the JSON*/
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG)) /*this is harvesting the const char* of the json string*/
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, gb_fseek(IGNORED_PTR_ARG, -1, SEEK_END)) /*this is rewinding the file by 1 character*/
+			.IgnoreArgument(1);
+
+		/*here a call to fprintf happens({
+		"time":"timeAsPrinted by ctime",
+		"content": "Log started"
+		},"
+		it is captured by a weak verification in ASSERT*/
+
+		///act
+		Logger_Receive(moduleHandle, validMessageHandle);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+		ASSERT_ARE_EQUAL(size_t, 1, CURRENT_API_CALL(gb_fprintf));
+
+		///cleanup
+		Logger_Destroy(moduleHandle);
+
+	}
 
     /*Tests_SRS_LOGGER_02_012: [If producing the JSON format or writing it to the file fails, then Logger_Receive shall fail and return.]*/
     TEST_FUNCTION(Logger_Receive_fails_when_fprintf_fails)
@@ -2018,6 +2110,53 @@ BEGIN_TEST_SUITE(logger_ut)
         Logger_Destroy(moduleHandle);
 
     }
+
+	/*Tests_SRS_LOGGER_02_012: [If producing the JSON format or writing it to the file fails, then Logger_Receive shall fail and return.]*/
+	TEST_FUNCTION(Logger_Receive_fails_when_content_is_null)
+	{
+		///arrange
+		CLoggerMocks mocks;
+		auto moduleHandle = Logger_Create(validBrokerHandle, &validConfig);
+		mocks.ResetAllCalls();
+		mocks_ResetAllCounters();
+
+		STRICT_EXPECTED_CALL(mocks, gb_time(NULL)); /*this is getting the time*/
+
+		STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+			.IgnoreArgument(1)
+			.IgnoreArgument(2)
+			.IgnoreArgument(4);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetProperties(validMessageHandle)); /*this is getting the properties from the message*/
+		STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, ConstMap_CloneWriteable(IGNORED_PTR_ARG)) /*this is getting the properties in a writeable map, because ConstMap doesn't have ToJSON*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Map_ToJSON(IGNORED_PTR_ARG)) /*this is getting a STRING_HANDLE that is the MAP as JSON*/
+			.IgnoreArgument(1);
+		STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+			.IgnoreArgument(1);
+
+		STRICT_EXPECTED_CALL(mocks, Message_GetContent(validMessageHandle)).SetFailReturn((const CONSTBUFFER *)NULL); /*this is getting the content*/
+
+		///act
+		Logger_Receive(moduleHandle, validMessageHandle);
+
+		///assert
+		mocks.AssertActualAndExpectedCalls();
+		ASSERT_ARE_EQUAL(size_t, 0, CURRENT_API_CALL(gb_fprintf));
+
+		///cleanup
+		Logger_Destroy(moduleHandle);
+
+	}
 
     /*Tests_SRS_LOGGER_02_012: [If producing the JSON format or writing it to the file fails, then Logger_Receive shall fail and return.]*/
     TEST_FUNCTION(Logger_Receive_fails_when_Map_ToJSON_fails)

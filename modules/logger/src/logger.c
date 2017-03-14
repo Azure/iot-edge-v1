@@ -446,7 +446,24 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                         {
                             /*getting the base64 encode of the message*/
                             const CONSTBUFFER * content = Message_GetContent(messageHandle); /*by contract, this is never NULL*/
-                            STRING_HANDLE contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
+							STRING_HANDLE contentAsJSON;
+							if (content == NULL)
+							{
+								contentAsJSON = NULL;
+							}
+							else
+							{
+								if (content->buffer == NULL)
+								{
+									contentAsJSON = STRING_construct_n("", 0);
+								}
+								else
+								{
+									contentAsJSON = Base64_Encode_Bytes(content->buffer, content->size);
+								}
+							}
+
+							/* NULL value here will be an error.*/
                             if (contentAsJSON == NULL)
                             {
                                 LogError("unable to Base64_Encode_Bytes");

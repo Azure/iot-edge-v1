@@ -2291,4 +2291,135 @@ TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path)
     MODULE_DESTROY(apis)(moduleInfo);
 }
 
+/* Tests_SRS_AZUREFUNCTIONS_04_012: [ azure_functions_Receive shall get the message content by calling Message_GetContent, if it fails it shall fail and return. ] */
+TEST_FUNCTION(AZURE_FUNCTIONS_Receive_happy_path_empty_content)
+{
+	// arrange
+	const MODULE_API* apis = Module_GetApi(MODULE_API_VERSION_1);
+
+	CONSTBUFFER buffer = { NULL, 0 };
+
+	AZURE_FUNCTIONS_CONFIG config;
+	config.relativePath = (STRING_HANDLE)0x42;
+	config.hostAddress = (STRING_HANDLE)0x42;
+	config.securityKey = (STRING_HANDLE)0x42;
+
+	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
+		.IgnoreArgument(1);
+
+	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(AZURE_FUNCTIONS_CONFIG)));
+
+	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)IGNORED_PTR_ARG))
+		.IgnoreArgument(1)
+		.SetReturn((STRING_HANDLE)0x42);
+
+	MODULE_HANDLE moduleInfo = MODULE_CREATE(apis)((BROKER_HANDLE)0x42, &config);
+
+	umock_c_reset_all_calls();
+
+	STRICT_EXPECTED_CALL(Message_GetContent((MESSAGE_HANDLE)0x42))
+		.SetReturn(&buffer);
+
+	STRICT_EXPECTED_CALL(STRING_construct_n(IGNORED_PTR_ARG, 0))
+		.IgnoreArgument(1).SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_construct(IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_concat((STRING_HANDLE)0x42, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.SetReturn(0);
+
+	STRICT_EXPECTED_CALL(STRING_concat_with_STRING((STRING_HANDLE)0x42, (STRING_HANDLE)0x42))
+		.SetReturn(0);
+
+	STRICT_EXPECTED_CALL(STRING_concat((STRING_HANDLE)0x42, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.SetReturn(0);
+
+	STRICT_EXPECTED_CALL(STRING_c_str((STRING_HANDLE)0x42))
+		.SetReturn("AnyContent42");
+
+	STRICT_EXPECTED_CALL(HTTPAPIEX_Create(IGNORED_PTR_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((HTTPAPIEX_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(BUFFER_new())
+		.SetReturn((BUFFER_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_clone((STRING_HANDLE)0x42))
+		.SetReturn((STRING_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_concat((STRING_HANDLE)0x42, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.SetReturn(0);
+
+	STRICT_EXPECTED_CALL(HTTPHeaders_Alloc())
+		.SetReturn((HTTP_HEADERS_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(HTTPHeaders_AddHeaderNameValuePair((HTTP_HEADERS_HANDLE)0x42, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetReturn(HTTP_HEADERS_OK);
+
+	STRICT_EXPECTED_CALL(STRING_c_str((STRING_HANDLE)0x42))
+		.SetReturn("AnyContent42");
+
+	STRICT_EXPECTED_CALL(HTTPHeaders_AddHeaderNameValuePair((HTTP_HEADERS_HANDLE)0x42, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+		.IgnoreArgument(2)
+		.IgnoreArgument(3)
+		.SetReturn(HTTP_HEADERS_OK);
+
+
+	STRICT_EXPECTED_CALL(STRING_length((STRING_HANDLE)0x42))
+		.SetReturn(42);
+
+	STRICT_EXPECTED_CALL(STRING_c_str((STRING_HANDLE)0x42))
+		.SetReturn("AnyContent42");
+
+	STRICT_EXPECTED_CALL(BUFFER_create(IGNORED_PTR_ARG, IGNORED_NUM_ARG))
+		.IgnoreAllArguments()
+		.SetReturn((BUFFER_HANDLE)0x42);
+
+	STRICT_EXPECTED_CALL(STRING_c_str((STRING_HANDLE)0x42))
+		.SetReturn("AnyContent42");
+
+	STRICT_EXPECTED_CALL(HTTPAPIEX_ExecuteRequest((HTTPAPIEX_HANDLE)0x42, HTTPAPI_REQUEST_POST, IGNORED_PTR_ARG, (HTTP_HEADERS_HANDLE)0x42, (BUFFER_HANDLE)0x42, IGNORED_PTR_ARG, NULL, (BUFFER_HANDLE)0x42))
+		.IgnoreArgument(3)
+		.IgnoreArgument(6)
+		.SetReturn(HTTPAPIEX_OK);
+
+	STRICT_EXPECTED_CALL(BUFFER_delete((BUFFER_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(HTTPHeaders_Free((HTTP_HEADERS_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(BUFFER_delete((BUFFER_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(HTTPAPIEX_Destroy((HTTPAPIEX_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
+
+	STRICT_EXPECTED_CALL(STRING_delete((STRING_HANDLE)0x42));
+
+	//act
+	MODULE_RECEIVE(apis)(moduleInfo, (MESSAGE_HANDLE)0x42);
+
+	//assert
+	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+	//cleanup 
+	MODULE_DESTROY(apis)(moduleInfo);
+}
+
 END_TEST_SUITE(azure_functions_ut)
