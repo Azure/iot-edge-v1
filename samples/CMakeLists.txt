@@ -26,6 +26,7 @@ endif()
 
 if (${enable_native_remote_modules})
     add_subdirectory(proxy_sample)
+    add_subdirectory(native_module_host_sample)
 endif()
 
 if(${enable_ble_module} AND LINUX)

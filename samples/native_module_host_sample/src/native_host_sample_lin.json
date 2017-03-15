@@ -1,0 +1,41 @@
+{
+  "modules": [
+    {
+      "name": "out of process logger",
+      "loader": {
+        "name": "outprocess",
+        "entrypoint": {
+          "activation.type": "none",
+          "control.id": "outprocess_module_control"
+        }
+      },
+      "args": {
+        "outprocess.loader" : {
+          "name": "native",
+          "entrypoint": {
+             "module.path": "../../modules/logger/liblogger.so"
+          }
+        },
+        "module.arguments" : {
+          "filename": "log.txt"
+        }
+      }
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "../../modules/hello_world/libhello_world.so"
+        }
+      },
+      "args": null
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "out of process logger"
+    }
+  ]
+}

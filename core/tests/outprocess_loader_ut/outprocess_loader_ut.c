@@ -74,6 +74,7 @@ MOCKABLE_FUNCTION(, void, json_free_serialized_string, char*, string);
 MOCKABLE_FUNCTION(, char*, json_serialize_to_string, const JSON_Value*, value);
 MOCKABLE_FUNCTION(, JSON_Value*, json_object_get_value, const JSON_Object*, object, const char*, name);
 MOCKABLE_FUNCTION(, const char*, json_object_get_string, const JSON_Object*, object, const char*, name);
+MOCKABLE_FUNCTION(, double, json_object_get_number, const JSON_Object*, object, const char*, name);
 MOCKABLE_FUNCTION(, JSON_Object*, json_value_get_object, const JSON_Value *, value);
 MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, value);
 
@@ -126,6 +127,9 @@ MOCK_FUNCTION_WITH_CODE(, const char*, json_object_get_string, const JSON_Object
         str = "hello_world";
     }
 MOCK_FUNCTION_END(str)
+
+MOCK_FUNCTION_WITH_CODE(, double, json_object_get_number, const JSON_Object*, object, const char*, name)
+MOCK_FUNCTION_END(0);
 
 MOCK_FUNCTION_WITH_CODE(, JSON_Value*, json_object_get_value, const JSON_Object*, object, const char*, name)
     JSON_Value* value = NULL;
@@ -607,6 +611,7 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_m
 }
 
 /*Tests_SRS_OUTPROCESS_LOADER_17_021: [ This function shall return NULL if any calls fails. ]*/
+/*Tests_SRS_OUTPROCESS_LOADER_17_044: [ If "timeout" is set, the remote_message_wait shall be set to this value, else it will be set to a default of 1000 ms. ]*/
 TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_urlencoding_fails)
 {
     // arrange
@@ -624,6 +629,8 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_u
 	STRICT_EXPECTED_CALL(json_object_get_string((JSON_Object*)0x43, "message.id"))
 		.SetReturn(NULL);
 	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(OUTPROCESS_LOADER_ENTRYPOINT)));
+	STRICT_EXPECTED_CALL(json_object_get_number((JSON_Object*)0x43, "timeout"))
+		.SetReturn(0);
 	STRICT_EXPECTED_CALL(URL_EncodeString(control_id))
 		.SetReturn(NULL);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
@@ -642,6 +649,8 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_u
 /*Tests_SRS_OUTPROCESS_LOADER_17_017: [ This function shall assign the entrypoint activation_type to NONE. ]*/
 /*Tests_SRS_OUTPROCESS_LOADER_17_018: [ This function shall assign the entrypoint control_id to the string value of "control.id" in json. ]*/
 /*Tests_SRS_OUTPROCESS_LOADER_17_019: [ This function shall assign the entrypoint message_id to the string value of "message.id" in json, NULL if not present. ]*/
+/*Tests_SRS_OUTPROCESS_LOADER_17_043: [ This function shall read the "timeout" value. ]*/
+/*Tests_SRS_OUTPROCESS_LOADER_17_044: [ If "timeout" is set, the remote_message_wait shall be set to this value, else it will be set to a default of 1000 ms. ]*/
 /*Tests_SRS_OUTPROCESS_LOADER_17_022: [ This function shall return a valid pointer to an OUTPROCESS_LOADER_ENTRYPOINT on success. ]*/
 TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_succeeds)
 {
@@ -660,6 +669,8 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_succeeds)
 	STRICT_EXPECTED_CALL(json_object_get_string((JSON_Object*)0x43, "message.id"))
 		.SetReturn(NULL);
 	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(OUTPROCESS_LOADER_ENTRYPOINT)));
+	STRICT_EXPECTED_CALL(json_object_get_number((JSON_Object*)0x43, "timeout"))
+		.SetReturn(2000);
 	STRICT_EXPECTED_CALL(URL_EncodeString(control_id));
 	STRICT_EXPECTED_CALL(URL_EncodeString(NULL));
 
@@ -746,7 +757,7 @@ TEST_FUNCTION(OutprocessModuleLoader_FreeConfiguration_does_nothing)
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/*Tests_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if loader, entrypoint, control_id, or module_configuration is NULL. ]*/
+/*Tests_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if entrypoint, control_id, or module_configuration is NULL. ]*/
 TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_null_entrypoint)
 {
     // act
@@ -757,7 +768,7 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_nu
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-/*Tests_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if loader, entrypoint, control_id, or module_configuration is NULL. ]*/
+/*Tests_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if entrypoint, control_id, or module_configuration is NULL. ]*/
 TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_null_config)
 {
 	// act

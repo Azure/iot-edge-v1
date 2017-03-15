@@ -229,6 +229,24 @@ function(copy_gateway_dll whatIsBuilding whatIsBuildingLocation)
   endif()
 endfunction(copy_gateway_dll)
 
+set(preinstall_native_module_host_dll ${CMAKE_CURRENT_BINARY_DIR}/proxy/modules/native_module_host/$(Configuration)/native_module_host.dll)
+
+function(copy_module_host_dll whatIsBuilding whatIsBuildingLocation)
+  if(WIN32)
+    add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${preinstall_native_module_host_dll}
+          ${whatIsBuildingLocation})
+    if(EXISTS "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll")
+        add_custom_command(TARGET ${whatIsBuilding} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll"
+          ${whatIsBuildingLocation})
+    endif()
+
+  endif()
+endfunction(copy_module_host_dll)
+
 function(copy_iothub_client_dll whatIsBuilding whatIsBuildingLocation)
   if(WIN32)
     if(EXISTS "${azure_iot_sdks_DIR}/../bin/iothub_client.dll")
