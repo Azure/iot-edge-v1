@@ -50,7 +50,7 @@ class IotHubWriterModule
 
     receive(message) {
         if(this.connected) {
-            var m = new Message(message.content ? message.content.buffer : []);
+            var m = new Message(JSON.stringify(message.content));
             if(message.properties) {
                 for(var prop in message.properties) {
                     m.properties.add(prop, message.properties[prop]);
