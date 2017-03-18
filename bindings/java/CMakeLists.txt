@@ -65,6 +65,17 @@ elseif(LINUX)
     set(java_libs
         $ENV{JAVA_HOME}/jre/lib/${JDK_ARCH}/server/libjvm.so
     )
+elseif(APPLE)
+    set(java_include_dirs
+        $ENV{JAVA_HOME}/include 
+        $ENV{JAVA_HOME}/include/darwin
+    )
+    set(java_link_dirs
+        $ENV{JAVA_HOME}/jre/lib/server
+    )
+    set(java_libs
+        $ENV{JAVA_HOME}/jre/lib/server/libjvm.dylib
+    )
 endif()
 
 set(LIBS ${java_libs} gateway)

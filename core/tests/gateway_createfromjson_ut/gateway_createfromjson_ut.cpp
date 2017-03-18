@@ -91,7 +91,7 @@ public:
 
     MOCK_STATIC_METHOD_2(, JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index)
         JSON_Object* object = NULL;
-        if (arr != NULL && index >= 0)
+        if (arr != NULL)
         {
             object = (JSON_Object*)0x42;
         }

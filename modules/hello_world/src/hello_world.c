@@ -40,7 +40,7 @@ int helloWorldThread(void *param)
         else
         {
             msgConfig.size = strlen(HELLOWORLD_MESSAGE);
-            msgConfig.source = HELLOWORLD_MESSAGE;
+            msgConfig.source = (unsigned char*)HELLOWORLD_MESSAGE;
     
             msgConfig.sourceProperties = propertiesMap;
 
@@ -82,9 +82,7 @@ int helloWorldThread(void *param)
 static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configuration)
 {
     HELLOWORLD_HANDLE_DATA* result;
-    if (
-        (broker == NULL) /*configuration is not used*/
-        )
+    if (broker == NULL) /*configuration is not used*/
     {
         LogError("invalid arg broker=%p", broker);
         result = NULL;

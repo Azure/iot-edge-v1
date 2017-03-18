@@ -1147,7 +1147,7 @@ BEGIN_TEST_SUITE(gwmessage_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_MESSAGE_02_020: [Otherwise, Message_Destroy shall decrement the internal ref count of the message.] 
+    /*Tests_SRS_MESSAGE_02_020: [Otherwise, Message_Destroy shall decrement the internal ref count of the message.]*/
     /*Tests_SRS_MESSAGE_02_021: [If the ref count is zero then the allocated resources are freed.]*/
     /*Tests_SRS_MESSAGE_17_002: [Message_Destroy shall destroy the CONSTMAP properties.]*/
     /*Tests_SRS_MESSAGE_17_005: [Message_Destroy shall destroy the CONSTBUFFER.]*/

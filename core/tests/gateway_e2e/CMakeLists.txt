@@ -17,7 +17,7 @@ ${theseTestsName}.cpp
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
     set(modules_c_file ./module_config_windows.c)
-elseif(LINUX)
+elseif(UNIX) # LINUX OR APPLE
     set(modules_c_file ./module_config_linux.c)
 endif()
 

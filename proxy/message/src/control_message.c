@@ -19,7 +19,7 @@ DEFINE_ENUM_STRINGS(CONTROL_MESSAGE_TYPE, CONTROL_MESSAGE_TYPE_VALUES);
 #define BASE_CREATE_SIZE (BASE_MESSAGE_SIZE+10)
 #define BASE_CREATE_REPLY_SIZE (BASE_MESSAGE_SIZE+1)
 
-static int parse_int32_t(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, int32_t* value)
+static int parse_uint32_t(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, uint32_t* value)
 {
     int result;
     if (position + 4 > sourceSize)
@@ -41,12 +41,12 @@ static int parse_int32_t(const unsigned char* source, size_t sourceSize, size_t 
     return result;
 }
 
-static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, int32_t *size, unsigned char** value)
+static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, uint32_t *size, char** value)
 {
     int result;
-    int32_t chunk_size;
+    uint32_t chunk_size;
     int32_t current_parsed;
-    result = parse_int32_t(source, sourceSize, position, &current_parsed, &chunk_size);
+    result = parse_uint32_t(source, sourceSize, position, &current_parsed, &chunk_size);
     if (result == 0)
     {
         position += current_parsed;
@@ -68,7 +68,7 @@ static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, si
 			else
 			{
 				/* allocate 1 more for null-termination */
-				*value = (unsigned char *)malloc(chunk_size);
+				*value = (char *)malloc(chunk_size);
 				if (*value == NULL)
 				{
 					LogError("unable to allocate memory chunk");
@@ -137,7 +137,7 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			position,
 			&current_parsed,
 			&(create_msg->uri.uri_size),
-			(unsigned char**)&(create_msg->uri.uri)) != 0)
+			&(create_msg->uri.uri)) != 0)
 		{
 			LogError("unable to parse a uri");
 			result = __LINE__;
@@ -163,7 +163,7 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			position,
 			&current_parsed,
 			&(create_msg->args_size),
-			(unsigned char**)&(create_msg->args)) != 0)
+			&(create_msg->args)) != 0)
 		{
 			LogError("unable to parse a module args");
 			result = __LINE__;
@@ -211,9 +211,9 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
 			/*Codes_SRS_CONTROL_MESSAGE_17_005: [ This function shall read the version, type and size from the byte stream. ]*/
             uint8_t messageVersion = (uint8_t)source[currentPosition++];
 			uint8_t messageType = (uint8_t)source[currentPosition++];
-			int32_t messageSize;
+			uint32_t messageSize;
 			/* we already know buffer is at least BASE_MESSAGE_SIZE - this will always return OK */
-			(void)parse_int32_t(source, size, currentPosition, &parsed, &messageSize);
+			(void)parse_uint32_t(source, size, currentPosition, &parsed, &messageSize);
             currentPosition += parsed;
 			/*Codes_SRS_CONTROL_MESSAGE_17_006: [ If the size embedded in the message is not the same as size parameter then this function shall fail and return NULL. ]*/
             if (messageSize != size)
@@ -376,7 +376,7 @@ int32_t ControlMessage_ToByteArray(CONTROL_MESSAGE * message, unsigned char* buf
     if (message == NULL) 
     {
 		/*Codes_SRS_CONTROL_MESSAGE_17_031: [ If message is NULL, then this function shall return -1. ]*/
-		LogError("invalid (NULL) message parameter detected", message, size);
+		LogError("invalid (NULL) message parameter detected buffer=[%p], size=[%d]", message, size);
         result = -1;
     }
     else if (

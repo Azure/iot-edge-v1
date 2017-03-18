@@ -134,6 +134,10 @@ endif()
 if(LINUX)
   set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
   set (CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+elseif(APPLE)
+  # Warnings as errors
+  set (CMAKE_C_FLAGS "-Werror ${CMAKE_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "-Werror ${CMAKE_CXX_FLAGS}")
 endif()
 
 function(add_module_to_solution undecoratedModuleName)
@@ -197,9 +201,7 @@ endfunction(linkSharedUtil)
 include_directories(./deps/parson)
 
 function(link_broker whatIsBuilding)
-
-target_link_libraries(${whatIsBuilding} nanomsg ${NN_REQUIRED_LIBRARIES})
-
+  target_link_libraries(${whatIsBuilding} nanomsg ${NN_REQUIRED_LIBRARIES})
 endfunction(link_broker)
 
 function(install_broker whatIsBuilding whatIsBuildingLocation)
@@ -225,8 +227,6 @@ function(copy_gateway_dll whatIsBuilding whatIsBuildingLocation)
           "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll"
           ${whatIsBuildingLocation})
     endif()
-
-
   endif()
 endfunction(copy_gateway_dll)
 

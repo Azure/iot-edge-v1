@@ -393,7 +393,8 @@ static void AzureFunctions_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE me
                                             {
 
                                                 //Add here the content on the body.
-                                                BUFFER_HANDLE postContent = BUFFER_create(STRING_c_str(jsonToBeAppended), STRING_length(jsonToBeAppended));
+                                                size_t appendLength = STRING_length(jsonToBeAppended);
+                                                BUFFER_HANDLE postContent = BUFFER_create((const unsigned char*)STRING_c_str(jsonToBeAppended), appendLength);
 
                                                 if (postContent == NULL)
                                                 {

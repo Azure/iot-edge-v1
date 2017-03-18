@@ -418,7 +418,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
                     else
                     {
                         /*Codes_SRS_JAVA_MODULE_HOST_14_044: [This function shall set the contents of the jbyteArray to the serialized_message.]*/
-                        JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, serialized_message);
+                        JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, (jbyte*)serialized_message);
                         jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
                         if (exception)
                         {
@@ -564,7 +564,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessa
         else
         {
             /*Codes_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
-            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, (jsize)length, arr);
+            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, (jsize)length, (jbyte*)arr);
             jthrowable exception = JNIFunc(env, ExceptionOccurred);
             if (exception)
             {

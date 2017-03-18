@@ -431,7 +431,7 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
     MOCK_STATIC_METHOD_2(, void*, VECTOR_element, const VECTOR_HANDLE, handle, size_t, index)
         currentVectorElement_call++;
         void * result1;
-        if (currentVectorElement_call = whenShallVectorElement_fail)
+        if (currentVectorElement_call == whenShallVectorElement_fail)
         {
             result1 = NULL;
         }

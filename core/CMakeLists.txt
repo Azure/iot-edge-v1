@@ -5,7 +5,12 @@ cmake_minimum_required(VERSION 2.8.12)
 if(POLICY CMP0054)
     cmake_policy(SET CMP0054 OLD)
 endif()
-cmake_policy(SET CMP0022 NEW)
+if(POLICY CMP0022)
+    cmake_policy(SET CMP0022 NEW)
+endif()
+if(POLICY CMP0042)
+    cmake_policy(SET CMP0042 NEW)
+endif()
 
 add_subdirectory(deps)
 
@@ -16,19 +21,19 @@ set(GW_SRC ${CMAKE_CURRENT_LIST_DIR}/src CACHE INTERNAL "Needs to be included fo
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
     include_directories(${GW_INC}/windows )
-elseif(LINUX)
+elseif(UNIX) # LINUX or APPLE
     include_directories(${GW_INC}/linux)
 endif()
 
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
     set(dynamic_library_c_file ./adapters/dynamic_library_windows.c ./adapters/gb_library_windows.c)
-elseif(LINUX)
+elseif(UNIX) # LINUX or APPLE
     set(dynamic_library_c_file ./adapters/dynamic_library_linux.c ./adapters/gb_library_linux.c )
 endif()
 
 #setting specific libraries to be loaded based on OS (for example, Linux needs "-ldl", windows does not)
-if(LINUX)
+if(UNIX) # LINUX or APPLE
     set(dynamic_loader_library dl)
 endif()
 
@@ -228,9 +233,17 @@ if(NOT ${use_xplat_uuid})
     else()
         find_package(PkgConfig REQUIRED)
         pkg_search_module(UUID REQUIRED uuid)
-        target_link_libraries(gateway ${UUID_LIBRARIES})
-        target_link_libraries(gateway_static ${UUID_LIBRARIES})
-        target_link_libraries(module_host_static ${UUID_LIBRARIES})
+        link_directories(${UUID_LIBRARY_DIRS})
+
+        if(APPLE)
+            target_link_libraries(gateway -L${UUID_LIBRARY_DIRS} ${UUID_LIBRARIES})
+            target_link_libraries(gateway_static -L${UUID_LIBRARY_DIRS} ${UUID_LIBRARIES})
+            target_link_libraries(module_host_static -L${UUID_LIBRARY_DIRS} ${UUID_LIBRARIES})
+        elseif(LINUX)
+            target_link_libraries(gateway ${UUID_LIBRARIES})
+            target_link_libraries(gateway_static ${UUID_LIBRARIES})
+            target_link_libraries(module_host_static ${UUID_LIBRARIES})
+        endif()
     endif()
 endif()
 

@@ -884,10 +884,10 @@ TEST_FUNCTION(attach_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if ( skipNegativeTest(i) ) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 
@@ -1014,10 +1014,10 @@ TEST_FUNCTION(startWorkerThread_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if (skipNegativeTest(i)) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 
@@ -2033,10 +2033,10 @@ TEST_FUNCTION(connect_to_message_channel_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if (skipNegativeTest(i)) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 
@@ -2200,10 +2200,10 @@ TEST_FUNCTION(invoke_add_module_procedure_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if (skipNegativeTest(i)) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 
@@ -2409,10 +2409,10 @@ TEST_FUNCTION(process_module_create_message_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if (skipNegativeTest(i)) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 
@@ -2495,10 +2495,10 @@ TEST_FUNCTION(send_control_reply_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, negative_test_index, umock_c_negative_tests_call_count());
     for (size_t i = 0; i < umock_c_negative_tests_call_count(); ++i) {
         if (skipNegativeTest(i)) {
-            printf("%s: Skipping negative tests: %d\n", __FUNCTION__, i);
+            printf("%s: Skipping negative tests: %zx\n", __FUNCTION__, i);
             continue;
         }
-        printf("%s: Running negative tests: %d\n", __FUNCTION__, i);
+        printf("%s: Running negative tests: %zx\n", __FUNCTION__, i);
         umock_c_negative_tests_reset();
         umock_c_negative_tests_fail_call(i);
 

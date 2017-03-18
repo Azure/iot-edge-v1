@@ -36,7 +36,8 @@ function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDi
         endif()
 
         #Create the build directory to run cmake, and run cmake
-        #generate comand
+
+        #generate command
         set(CMD cmake)
         foreach(arg ${ARGN})
             set(CMD ${CMD} ${arg})
@@ -139,7 +140,7 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
                 set(CMD ${CMD} -DCMAKE_INSTALL_PREFIX=${dependency_install_prefix})
             endif()
             if(CMAKE_TOOLCHAIN_FILE)
-                set( CMD ${CMD} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+                set(CMD ${CMD} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
             endif()
             set(CMD ${CMD} ../)
 

@@ -142,7 +142,7 @@ MOCK_FUNCTION_END(arr)
 
 MOCK_FUNCTION_WITH_CODE(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index)
     JSON_Value* val = NULL;
-    if (arr != NULL && index >= 0)
+    if (arr != NULL && index != 0)
     {
         val = (JSON_Value*)0x42;
     }

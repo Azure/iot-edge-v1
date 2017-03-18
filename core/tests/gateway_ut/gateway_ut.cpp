@@ -119,7 +119,7 @@ public:
     MOCK_STATIC_METHOD_0(, BROKER_HANDLE, Broker_Create)
     BROKER_HANDLE result1;
     currentBroker_Create_call++;
-    if (whenShallBroker_Create_fail >= 0 && whenShallBroker_Create_fail == currentBroker_Create_call)
+    if (whenShallBroker_Create_fail == currentBroker_Create_call)
     {
         result1 = NULL;
     }
@@ -173,7 +173,7 @@ public:
     MOCK_STATIC_METHOD_2(, MODULE_LIBRARY_HANDLE, DynamicModuleLoader_Load, const struct MODULE_LOADER_TAG*, loader, const void*, entrypoint)
         currentModuleLoader_Load_call++;
         MODULE_LIBRARY_HANDLE handle = NULL;
-        if (whenShallModuleLoader_Load_fail >= 0 && whenShallModuleLoader_Load_fail != currentModuleLoader_Load_call)
+        if (whenShallModuleLoader_Load_fail != currentModuleLoader_Load_call)
         {
             handle = (MODULE_LIBRARY_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1);
         }
