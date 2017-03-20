@@ -20,10 +20,14 @@ extern "C"
 
 #define DOTNET_CORE_LOADER_NAME            "dotnetcore"
 
-#if WIN32
+#ifdef _WIN64
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
 #define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\coreclr.dll"
 #define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\"
+#elif WIN32
+#define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\coreclr.dll"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\"
 #else
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "libdotnetcore.so"
 #define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.1/libcoreclr.so"

@@ -7,7 +7,15 @@
 #include "broker.h"
 #include "module.h"
 
-typedef int(*coreclr_initialize_ptr)(const char* exePath,
+#ifdef _WIN64
+#define DOTNET_CORE_CALLING_CONVENTION
+#elif WIN32
+#define DOTNET_CORE_CALLING_CONVENTION __stdcall
+#else
+#define DOTNET_CORE_CALLING_CONVENTION
+#endif
+
+typedef int(DOTNET_CORE_CALLING_CONVENTION *coreclr_initialize_ptr)(const char* exePath,
     const char* appDomainFriendlyName,
     int propertyCount,
     const char** propertyKeys,
@@ -16,12 +24,12 @@ typedef int(*coreclr_initialize_ptr)(const char* exePath,
     unsigned int* domainId);
 
 
-typedef int(*coreclr_shutdown_ptr)(
+typedef int(DOTNET_CORE_CALLING_CONVENTION *coreclr_shutdown_ptr)(
     void* hostHandle,
     unsigned int domainId);
 
 
-typedef int(*coreclr_create_delegate_ptr)(void* hostHandle,
+typedef int(DOTNET_CORE_CALLING_CONVENTION *coreclr_create_delegate_ptr)(void* hostHandle,
     unsigned int domainId,
     const char* entryPointAssemblyName,
     const char* entryPointTypeName,
