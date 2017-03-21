@@ -139,11 +139,16 @@ rem ----------------------------------------------------------------------------
 
 if %CMAKE_enable_dotnet_core_binding% == ON (
 call %current-path%\build_dotnet_core.cmd --config %build-config%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
+
+
 
 if %CMAKE_enable_dotnet_binding% == ON (
 call %current-path%\build_dotnet.cmd --config %build-config%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
+
 
 rem -----------------------------------------------------------------------------
 rem -- build with CMAKE and run tests
