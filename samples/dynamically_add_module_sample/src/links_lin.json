@@ -1,0 +1,8 @@
+{
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "logger"
+    }
+  ]
+}

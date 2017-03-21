@@ -46,6 +46,17 @@ DEFINE_ENUM(GATEWAY_ADD_LINK_RESULT, GATEWAY_ADD_LINK_RESULT_VALUES);
  */
 DEFINE_ENUM(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
 
+#define GATEWAY_UPDATE_FROM_JSON_RESULT_VALUES \
+    GATEWAY_UPDATE_FROM_JSON_SUCCESS, \
+    GATEWAY_UPDATE_FROM_JSON_ERROR, \
+    GATEWAY_UPDATE_FROM_JSON_INVALID_ARG, \
+    GATEWAY_UPDATE_FROM_JSON_MEMORY
+
+/** @brief      Enumeration describing the result of ::Gateway_UpdateFromJson.
+*/
+DEFINE_ENUM(GATEWAY_UPDATE_FROM_JSON_RESULT, GATEWAY_UPDATE_FROM_JSON_RESULT_VALUES);
+
+
 /** @brief      Struct representing a single link for a gateway. */
 typedef struct GATEWAY_LINK_ENTRY_TAG
 {
@@ -152,6 +163,19 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
  *              gateway or @c NULL on failure.
  */
 GATEWAY_EXPORT GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
+
+
+
+/** @brief      Updates a gateway using a JSON configuration  string as input
+ *              which describes each module. 
+ *
+ *  @param      gw          Pointer to a #GATEWAY_HANDLE from which to remove
+ *                          the module.
+ *  @param      json_content A JSON string with a list of Loaders, Modules and/or Links.
+ *
+ *  @return     A GATEWAY_UPDATE_FROM_JSON_RESULT with the operation result.
+ */
+GATEWAY_EXPORT GATEWAY_UPDATE_FROM_JSON_RESULT Gateway_UpdateFromJson(GATEWAY_HANDLE gw, const char* json_content);
 
 /** @brief      Creates a new gateway using the provided #GATEWAY_PROPERTIES.
  *

@@ -7,6 +7,7 @@ add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
 add_subdirectory(experimental/events_sample)
 add_subdirectory(azure_functions_sample)
+add_subdirectory(dynamically_add_module_sample)
 
 if(${enable_dotnet_binding})
     add_subdirectory(dotnet_binding_sample)
