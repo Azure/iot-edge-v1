@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.microsoft.azure.gateway.core.Broker;
 import com.microsoft.azure.gateway.remote.ProxyGateway.MessageListener;
 
-import mockit.Deencapsulation;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -82,6 +81,11 @@ public class ProxyGatewayTest {
 
         final ProxyGateway proxy = new ProxyGateway(config);
 
+        new Expectations(ProxyGateway.class) {
+            {
+                proxy.startListening();
+            }
+        };
         new Expectations() {
             {
                 controlEndpoint.connect();
@@ -108,36 +112,14 @@ public class ProxyGatewayTest {
 
         final ProxyGateway proxy = new ProxyGateway(config);
 
+        new Expectations(ProxyGateway.class) {
+            {
+                proxy.startListening();
+            }
+        };
         new Expectations() {
             {
                 controlEndpoint.connect();
-            }
-        };
-
-        proxy.attach();
-
-        new Verifications() {
-            {
-                controlEndpoint.connect();
-                times = 1;
-            }
-        };
-
-        assertNotNull(proxy.getExecutor());
-        assertTrue(proxy.isAttached());
-    }
-    
-    // Tests_SRS_JAVA_PROXY_GATEWAY_24_005: [ It shall start executing the periodic task of listening for messages from the Gateway. ]
-    @Test(expected = ConnectionException.class)
-    public void attachShouldStartExecutor(@Mocked final NanomsgCommunicationEndpoint controlEndpoint)
-            throws ConnectionException, MessageDeserializationException {
-
-        final ProxyGateway proxy = new ProxyGateway(config);
-
-        new Expectations() {
-            {
-                controlEndpoint.connect();
-                result = new ConnectionException();
             }
         };
 
@@ -231,7 +213,7 @@ public class ProxyGatewayTest {
 
                 controlEndpoint.connect();
                 controlEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
@@ -277,13 +259,13 @@ public class ProxyGatewayTest {
 
                 controlEndpoint.connect();
                 controlEndpoint.receiveMessage();
-                returns(createMessage);
+                result = createMessage;
                 controlEndpoint.sendMessageNoWait((byte[]) any);
                 result = true;
 
                 dataEndpoint.connect();
                 dataEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
@@ -337,13 +319,13 @@ public class ProxyGatewayTest {
 
                 controlEndpoint.connect();
                 controlEndpoint.receiveMessage();
-                returns(createMessage);
+                result = createMessage;
                 controlEndpoint.sendMessageNoWait((byte[]) any);
                 result = true;
 
                 dataEndpoint.connect();
                 dataEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
@@ -399,7 +381,7 @@ public class ProxyGatewayTest {
 
                 dataEndpoint.connect();
                 dataEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
@@ -757,7 +739,7 @@ public class ProxyGatewayTest {
 
                 controlEndpoint.connect();
                 controlEndpoint.receiveMessage();
-                returns(createMessage);
+                result = createMessage;
                 controlEndpoint.sendMessageNoWait((byte[]) any);
                 result = false;
 
@@ -765,7 +747,7 @@ public class ProxyGatewayTest {
 
                 dataEndpoint.connect();
                 dataEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
@@ -828,12 +810,12 @@ public class ProxyGatewayTest {
 
                 dataEndpoint.connect();
                 dataEndpoint.receiveMessage();
-                returns(null);
+                result = null;
             }
         };
 
         proxy.attach();
-        MessageListener messageListener = Deencapsulation.getField(proxy, "receiveMessageListener");
+        MessageListener messageListener = proxy.getReceiveMessageListener();
         messageListener.executeControlMessage();
         messageListener.executeDataMessage();
 
@@ -876,12 +858,12 @@ public class ProxyGatewayTest {
                 new NanomsgCommunicationEndpoint(config.getIdentifier(), (CommunicationControlStrategy) any);
                 result = controlEndpoint;
                 controlEndpoint.receiveMessage();
-                returns(startMessage);
+                result = startMessage;
             }
         };
 
         proxy.attach();
-        MessageListener messageListener = Deencapsulation.getField(proxy, "receiveMessageListener");
+        MessageListener messageListener = proxy.getReceiveMessageListener();
         messageListener.executeControlMessage();
         messageListener.executeDataMessage();
 
@@ -924,7 +906,7 @@ public class ProxyGatewayTest {
 
         proxy.attach();
 
-        MessageListener messageListener = Deencapsulation.getField(proxy, "receiveMessageListener");
+        MessageListener messageListener = proxy.getReceiveMessageListener();
         messageListener.executeControlMessage();
         messageListener.executeDataMessage();
 
@@ -972,12 +954,12 @@ public class ProxyGatewayTest {
                 new NanomsgCommunicationEndpoint(config.getIdentifier(), (CommunicationControlStrategy) any);
                 result = controlEndpoint;
                 controlEndpoint.receiveMessage();
-                returns(destroyMessage);
+                result = destroyMessage;
             }
         };
 
         proxy.attach();
-        MessageListener messageListener = Deencapsulation.getField(proxy, "receiveMessageListener");
+        MessageListener messageListener = proxy.getReceiveMessageListener();
         messageListener.executeControlMessage();
         messageListener.executeDataMessage();
 
@@ -1095,7 +1077,8 @@ public class ProxyGatewayTest {
 
                 controlEndpoint.connect();
                 controlEndpoint.receiveMessage();
-                returns(createMessage, startMessage, null);
+                ControlMessage nullMessage = null;
+                returns(createMessage, startMessage, nullMessage);
                 controlEndpoint.sendMessageNoWait((byte[]) any);
                 result = true;
 

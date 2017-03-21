@@ -3,8 +3,10 @@
 - [Setup Dev Box](java_devbox_setup.md)
 - [Create Project](#createproject)
 - [Sample Java Gateway](#sampleguide)
+- [Sample out of process module](#oopsampleguide)
 
-<a name="createproject">
+<a name="createproject"/>
+
 ## Create Your Project
 
 As mentioned in the Dev Box Setup guide, we recommend you create your modules as a Maven project. Doing this will make it easy to manage all dependencies and package your jar for easy inclusion in your gateway.
@@ -159,7 +161,8 @@ Creating a Java module is easy:
   "jvm_options" section, if the classpath differs across configuration, creation will fail.
 
 
-<a name="sampleguide">
+<a name="sampleguide"/>
+
 ## Java Module Sample Gateway
 
 Running the sample gateway containing Java modules only requires a few steps:
@@ -204,3 +207,64 @@ On windows:
 On linux:
   - ```cd {project_root}/build/samples/java_sample```
   - ```./java_sample ../../../samples/java_sample/src/java_sample_lin.json```
+
+<a name="oopsampleguide"/>
+
+## Java Out of Process Module Sample
+
+Running the out of process sample gateway containing a Java module only requires a few steps:
+
+1. Building the Java module
+2. Compiling the project
+3. Running the sample
+
+### Building the Java modules
+
+To build the out of process module first build the Printer module and then the RemotePrinter:
+
+Navigate to {project_root}/samples/java_sample/java_modules/Printer and run: ```mvn clean install```
+
+Navigate to {project_root}/samples/java_sample/java_modules/RemotePrinter and run: ```mvn clean install```
+
+### Compiling the project
+If the project is not already built, either run the build script with the ```--enable-java-remote-modules``` flag, or use cmake and your platform build commands separately.
+
+If using the build script:
+
+  - ```tools/build.[sh|cmd]  --enable-java-remote-modules```
+
+If using cmake and msbuild or make:
+  - Create a new directory from the root of the repository called 'build'
+  - ```cd build```
+  - ```cmake -Denable_java_remote_modules=ON ../```
+  - If your JDK arch is different to ***amd64*** (e.g. i386) you can specify an arch using the ```JDK_ARCH``` variable in your ```cmake``` command:
+  - ```-DJDK_ARCH={jdk_arch}```
+  - If using msbuild on Windows: ```msbuild /m /p:Configuration=[Debug | Release] /p:Platform=Win32 azure_iot_gateway_sdk.sln```
+  - If using make on Linux: ```make```
+
+### Running the samples
+
+#### Running the Gateway:
+
+To run the out of process module sample, two processes have to be started: the gateway and the module sample. Follow the steps on starting the proxy_sample to start the gateway that communicates with the out of process module: [Start gateway](../proxy_sample/README.md)
+
+#### Running the out of process module:
+
+The communication between the out of process module and the gateway is done through nanomsg. Java out of process module uses a JNI binding to the nanomsg native library. That's why is necessary to set `java.library.path` to java_nanomsg.dll | libjava_nanomsg.so (which contains the JNI binding) and nanomsg.dll | libnanomsg.so.
+
+On windows:
+
+  - ```cd {project_root}\samples\java_sample\java_modules\RemotePrinter\```
+  - ```java -cp  target\*;target\lib\* -Djava.library.path=..\..\..\..\install-deps\bin;..\..\..\..\build\proxy\gateway\java\Debug com.microsoft.azure.gateway.sample.RemotePrinterSample outprocess_module_control```
+  
+Alternatively, the path to native libraries can be added to PATH environment variable.
+
+On linux:
+
+  - ```cd {project_root}/build/samples/proxy_sample```
+  - ```cp ../../../samples/java_sample/java_modules/Remo tePrinter/target/sample-printer-module-remote-1.1.0.jar . ```
+  - ```java -cp  sample-printer-module-remote-1.1.0.jar:../../../samples/java_sample/java_modules/RemotePrinter/target/lib/* -Djava.library.path=../../proxy/gateway/java:../../../deps/nanomsg/build/ com.microsoft.azure.gateway.sample.RemotePrinterSample outprocess_module_control```
+  
+Alternatively, the path to native libraries can be added to LD_LIBRARY_PATH environment variable.
+
+**Note**: On Linux, the gateway and the out of process module have to be started from the same working directory, that's why the second command is to copy the sample-printer-module-remote-1.1.0.jar to the proxy_sample folder
