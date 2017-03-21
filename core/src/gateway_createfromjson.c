@@ -7,8 +7,10 @@
 #include "azure_c_shared_utility/macro_utils.h"
 #include "gateway.h"
 #include "parson.h"
+#include "experimental/event_system.h"
 
 #include "module_loaders/dynamic_loader.h"
+#include "gateway_internal.h"
 
 #define MODULES_KEY "modules"
 #define LOADERS_KEY "loaders"
@@ -65,7 +67,7 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
                 {
                     properties->gateway_modules = NULL;
                     properties->gateway_links = NULL;
-                    if (parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS)
+                    if ((parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS) && properties->gateway_modules != NULL && properties->gateway_links != NULL)
                     {
                         /*Codes_SRS_GATEWAY_JSON_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
                         /*Codes_SRS_GATEWAY_JSON_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
@@ -128,6 +130,252 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 
     return gw;
 }
+
+static void rollbackModules(GATEWAY_HANDLE gw, VECTOR_HANDLE modules_added_successfully)
+{
+    size_t success_modules_entries_count = VECTOR_size(modules_added_successfully);
+    if (success_modules_entries_count > 0)
+    {
+        for (size_t properties_index = 0; properties_index < success_modules_entries_count; ++properties_index)
+        {
+            GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(modules_added_successfully, properties_index);
+            if (Gateway_RemoveModuleByName(gw, entry->module_name) != 0)
+            {
+                LogError("Failed to remove module %s up failure.", entry->module_name);
+            }
+        }
+    }
+}
+
+GATEWAY_UPDATE_FROM_JSON_RESULT Gateway_UpdateFromJson(GATEWAY_HANDLE gw, const char* json_content)
+{
+    GATEWAY_UPDATE_FROM_JSON_RESULT result;
+    /* Codes_SRS_GATEWAY_JSON_04_004: [ If gw is NULL the function shall return GATEWAY_UPDATE_FROM_JSON_ERROR. ] */
+    if (gw == NULL)
+    {
+        LogError("Gw handle can't be NULL.");
+        result = GATEWAY_UPDATE_FROM_JSON_INVALID_ARG;
+    }
+    /* Codes_SRS_GATEWAY_JSON_04_003: [ If json_content is NULL the function shall return GATEWAY_UPDATE_FROM_JSON_ERROR. ] */
+    else if (json_content == NULL)
+    {
+        LogError("json_content can't be NULL.");
+        result = GATEWAY_UPDATE_FROM_JSON_INVALID_ARG;
+    }
+    else
+    {
+        /* Codes_SRS_GATEWAY_JSON_04_005: [ The function shall use parson to parse the JSON string to a parson JSON_Value structure. ] */
+        JSON_Value *root_value = json_parse_string(json_content);
+        
+        if (root_value == NULL)
+        {
+            /* Codes_SRS_GATEWAY_JSON_04_006: [ The function shall return GATEWAY_UPDATE_FROM_JSON_ERROR if the JSON content could not be parsed to a JSON_Value. ] */
+            LogError("Input file [%s] could not be read.", json_content);
+            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+        }
+        else
+        {
+            GATEWAY_PROPERTIES *properties = (GATEWAY_PROPERTIES*)malloc(sizeof(GATEWAY_PROPERTIES));
+            if (properties == NULL)
+            {
+                /* Codes_SRS_GATEWAY_JSON_04_008: [ This function shall return GATEWAY_UPDATE_FROM_JSON_ERROR upon any memory allocation failure. ] */
+                LogError("Failed to allocate GATEWAY_PROPERTIES.");
+                result = GATEWAY_UPDATE_FROM_JSON_MEMORY;
+            }
+            else
+            {
+                properties->gateway_modules = NULL;
+                properties->gateway_links = NULL;
+                /* Codes_SRS_GATEWAY_JSON_04_007: [ The function shall traverse the JSON_Value object to initialize a GATEWAY_PROPERTIES instance. ] */
+                /* Codes_SRS_GATEWAY_JSON_04_011: [ The function shall be able to add just `modules`, just `links` or both. ] */
+                if (parse_json_internal(properties, root_value) != PARSE_JSON_SUCCESS)
+                {
+                    /* Codes_SRS_GATEWAY_JSON_04_010: [ The function shall return GATEWAY_UPDATE_FROM_JSON_ERROR if the JSON_Value contains incomplete information. ] */
+                    LogError("Failed to create properties structure from JSON configuration.");
+                    result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                }
+                else
+                {
+                    
+                    VECTOR_HANDLE modules_added_successfully = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+                    if (modules_added_successfully == NULL)
+                    {
+                        LogError("Failed to create Vector for successfully added modules.");
+                        result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                    }
+                    else
+                    {
+                        VECTOR_HANDLE links_added_successfully = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
+                        if (links_added_successfully == NULL)
+                        {
+                            LogError("Failed to create Vector for successfully added links.");
+                            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                        }
+                        else
+                        {
+                            if (properties->gateway_modules != NULL)
+                            {
+                                size_t entries_count = VECTOR_size(properties->gateway_modules);
+                                if (entries_count > 0)
+                                {
+                                    //Add the first module, if successful add others
+                                    GATEWAY_MODULES_ENTRY* entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, 0);
+                                    MODULE_HANDLE module = gateway_addmodule_internal(gw, entry, true);
+
+                                    if (module != NULL)
+                                    {
+                                        if (VECTOR_push_back(modules_added_successfully, entry, 1) != 0)
+                                        {
+                                            LogError("Failed to save successfully added module.");
+                                            if (Gateway_RemoveModuleByName(gw, entry->module_name) != 0)
+                                            {
+                                                LogError("Failed to remove module %s upon failure.", entry->module_name);
+                                            }
+                                            module = NULL;
+                                            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                    }
+
+                                    //Continue adding modules until all are added or one fails
+                                    for (size_t properties_index = 1; properties_index < entries_count && module != NULL; ++properties_index)
+                                    {
+                                        entry = (GATEWAY_MODULES_ENTRY*)VECTOR_element(properties->gateway_modules, properties_index);
+                                        module = gateway_addmodule_internal(gw, entry, true);
+
+                                        if (module != NULL)
+                                        {
+                                            if (VECTOR_push_back(modules_added_successfully, entry, 1) != 0)
+                                            {
+                                                LogError("Failed to save successfully added module.");
+                                                if (Gateway_RemoveModuleByName(gw, entry->module_name) != 0)
+                                                {
+                                                    LogError("Failed to remove module %s up failure.", entry->module_name);
+                                                }
+                                                module = NULL;
+                                                result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                        }
+                                    }
+
+                                    if (module == NULL)
+                                    {
+                                        //Clean up modules.
+                                        /* Codes_SRS_GATEWAY_JSON_04_009: [ The function shall be able to roll back previous operation if any module or link fails to be added. ] */
+                                        rollbackModules(gw, modules_added_successfully);
+                                    }
+                                    else
+                                    {
+                                        //Notify Event System.
+                                        GATEWAY_HANDLE_DATA* gateway = (GATEWAY_HANDLE_DATA*)gw;
+                                        EventSystem_ReportEvent(gateway->event_system, gateway, GATEWAY_MODULE_LIST_CHANGED);
+                                        result = GATEWAY_UPDATE_FROM_JSON_SUCCESS;
+                                    }
+                                }
+                                else
+                                {
+                                    result = GATEWAY_UPDATE_FROM_JSON_SUCCESS;
+                                }
+                            }
+                            else
+                            {
+                                result = GATEWAY_UPDATE_FROM_JSON_SUCCESS;
+                            }
+
+
+                            if (result == 0 && properties->gateway_links != NULL)
+                            {
+                                size_t entries_count = VECTOR_size(properties->gateway_links);
+
+                                if (entries_count > 0)
+                                {
+                                    //Add the first link, if successfull add others
+                                    GATEWAY_LINK_ENTRY* entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, 0);
+                                    bool linkAdded = gateway_addlink_internal(gw, entry);
+
+                                    if (linkAdded)
+                                    {
+                                        if (VECTOR_push_back(links_added_successfully, entry, 1) != 0)
+                                        {
+                                            LogError("Failed to save successfully added link.");
+                                            Gateway_RemoveLink(gw, entry);
+                                            linkAdded = false;
+                                            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                    }
+
+
+                                    //Continue adding links until all are added or one fails
+                                    for (size_t links_index = 1; links_index < entries_count && linkAdded; ++links_index)
+                                    {
+                                        entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(properties->gateway_links, links_index);
+                                        linkAdded = gateway_addlink_internal(gw, entry);
+                                        if (linkAdded)
+                                        {
+                                            if (VECTOR_push_back(links_added_successfully, entry, 1) != 0)
+                                            {
+                                                LogError("Failed to save successfully added link.");
+                                                Gateway_RemoveLink(gw, entry);
+                                                linkAdded = false;
+                                                result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            result = GATEWAY_UPDATE_FROM_JSON_ERROR;
+                                        }
+                                    }
+
+                                    if (!linkAdded)
+                                    {
+
+                                        size_t success_link_entries_count = VECTOR_size(links_added_successfully);
+
+                                        //Clean up links. Have to clean up links first before removing modules.
+                                        /* Codes_SRS_GATEWAY_JSON_04_009: [ The function shall be able to roll back previous operation if any module or link fails to be added. ] */
+                                        if (success_link_entries_count > 0)
+                                        {
+                                            for (size_t properties_index = 0; properties_index < success_link_entries_count; ++properties_index)
+                                            {
+                                                GATEWAY_LINK_ENTRY* entry = (GATEWAY_LINK_ENTRY*)VECTOR_element(links_added_successfully, properties_index);
+                                                Gateway_RemoveLink(gw, entry);
+                                            }
+                                        }
+
+                                        //Clean up modules.
+                                        /* Codes_SRS_GATEWAY_JSON_04_009: [ The function shall be able to roll back previous operation if any module or link fails to be added. ] */
+                                        rollbackModules(gw, modules_added_successfully);
+
+                                        LogError("Unable to add link from '%s' to '%s'.Rolling back Update Operation.", entry->module_source, entry->module_sink);
+                                    }
+                                }
+                            }
+                            VECTOR_destroy(links_added_successfully);
+                        }
+                        VECTOR_destroy(modules_added_successfully);
+                    }
+                }
+                destroy_properties_internal(properties);
+                free(properties);
+            }
+            json_value_free(root_value);
+        }
+    }
+
+    return result;
+}
+
 
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties)
 {
@@ -214,70 +462,87 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
             JSON_Array *modules_array = json_object_get_array(json_document, MODULES_KEY);
             JSON_Array *links_array = json_object_get_array(json_document, LINKS_KEY);
 
-            if (modules_array != NULL && links_array != NULL)
+            if (modules_array != NULL || links_array != NULL)
             {
-                out_properties->gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
-                if (out_properties->gateway_modules != NULL)
+                if (modules_array != NULL)
                 {
-                    /*Codes_SRS_GATEWAY_JSON_17_008: [ The function shall parse the "modules" JSON array for each module entry. ]*/
-                    JSON_Object *module;
-                    size_t module_count = json_array_get_count(modules_array);
-                    result = PARSE_JSON_SUCCESS;
-
-                    for (size_t module_index = 0; module_index < module_count; ++module_index)
+                    out_properties->gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
+                    if (out_properties->gateway_modules != NULL)
                     {
-                        module = json_array_get_object(modules_array, module_index);
+                        /*Codes_SRS_GATEWAY_JSON_17_008: [ The function shall parse the "modules" JSON array for each module entry. ]*/
+                        JSON_Object *module;
+                        size_t module_count = json_array_get_count(modules_array);
+                        result = PARSE_JSON_SUCCESS;
+                        for (size_t module_index = 0; module_index < module_count; ++module_index)
+                        {
+                            module = json_array_get_object(modules_array, module_index);
 
-                        /*Codes_SRS_GATEWAY_JSON_17_009: [ For each module, the function shall call the loader's ParseEntrypointFromJson function to parse the entrypoint JSON. ]*/
-                        JSON_Object* loader_args = json_object_get_object(module, LOADER_KEY);
-                        GATEWAY_MODULE_LOADER_INFO loader_info;
-                        if (parse_loader(loader_args, &loader_info) != PARSE_JSON_SUCCESS)
-                        {
-                            result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
-                            LogError("Failed to parse loader configuration.");
-                            break;
-                        }
-                        else
-                        {
-                            const char* module_name = json_object_get_string(module, MODULE_NAME_KEY);
-                            if (module_name != NULL)
+                            /*Codes_SRS_GATEWAY_JSON_17_009: [ For each module, the function shall call the loader's ParseEntrypointFromJson function to parse the entrypoint JSON. ]*/
+                            JSON_Object* loader_args = json_object_get_object(module, LOADER_KEY);
+                            GATEWAY_MODULE_LOADER_INFO loader_info;
+                            if (parse_loader(loader_args, &loader_info) != PARSE_JSON_SUCCESS)
                             {
-                                /*Codes_SRS_GATEWAY_JSON_14_005: [The function shall set the value of const void* module_properties in the GATEWAY_PROPERTIES instance to a char* representing the serialized args value for the particular module.]*/
-                                JSON_Value *args = json_object_get_value(module, ARG_KEY);
-                                char* args_str = json_serialize_to_string(args);
-
-                                GATEWAY_MODULES_ENTRY entry = {
-                                    module_name,
-                                    loader_info,
-                                    args_str
-                                };
-
-                                /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
-                                if (VECTOR_push_back(out_properties->gateway_modules, &entry, 1) == 0)
+                                result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
+                                LogError("Failed to parse loader configuration.");
+                                break;
+                            }
+                            else
+                            {
+                                const char* module_name = json_object_get_string(module, MODULE_NAME_KEY);
+                                if (module_name != NULL)
                                 {
-                                    result = PARSE_JSON_SUCCESS;
+                                    /*Codes_SRS_GATEWAY_JSON_14_005: [The function shall set the value of const void* module_properties in the GATEWAY_PROPERTIES instance to a char* representing the serialized args value for the particular module.]*/
+                                    JSON_Value *args = json_object_get_value(module, ARG_KEY);
+                                    char* args_str = json_serialize_to_string(args);
+
+                                    GATEWAY_MODULES_ENTRY entry = {
+                                        module_name,
+                                        loader_info,
+                                        args_str
+                                    };
+
+                                    /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
+                                    if (VECTOR_push_back(out_properties->gateway_modules, &entry, 1) == 0)
+                                    {
+                                        result = PARSE_JSON_SUCCESS;
+                                    }
+                                    else
+                                    {
+                                        loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
+                                        json_free_serialized_string(args_str);
+                                        result = PARSE_JSON_VECTOR_FAILURE;
+                                        LogError("Failed to push data into properties vector.");
+                                        break;
+                                    }
                                 }
+                                /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
                                 else
                                 {
                                     loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
-                                    json_free_serialized_string(args_str);
-                                    result = PARSE_JSON_VECTOR_FAILURE;
-                                    LogError("Failed to push data into properties vector.");
+                                    result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
+                                    LogError("\"module name\" or \"module path\" in input JSON configuration is missing or misconfigured.");
                                     break;
                                 }
                             }
-                            /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
-                            else
-                            {
-                                loader_info.loader->api->FreeEntrypoint(loader_info.loader, loader_info.entrypoint);
-                                result = PARSE_JSON_MISSING_OR_MISCONFIGURED_CONFIG;
-                                LogError("\"module name\" or \"module path\" in input JSON configuration is missing or misconfigured.");
-                                break;
-                            }
                         }
-                    }
 
-                    if (result == PARSE_JSON_SUCCESS)
+                    }
+                    /* Codes_SRS_GATEWAY_JSON_14_008: [ This function shall return NULL upon any memory allocation failure. ] */
+                    else
+                    {
+                        result = PARSE_JSON_VECTOR_FAILURE;
+                        LogError("Failed to create properties vector. ");
+                    }
+                }
+                else
+                {
+                    result = PARSE_JSON_SUCCESS;
+                    out_properties->gateway_modules = NULL;
+                }
+
+                if (result == PARSE_JSON_SUCCESS)
+                {
+                    if (links_array != NULL)
                     {
                         /* Codes_SRS_GATEWAY_JSON_04_001: [ The function shall create a Vector to Store all links to this gateway. ] */
                         out_properties->gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));
@@ -326,12 +591,14 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                             LogError("Failed to create links vector. ");
                         }
                     }
+                    else
+                    {
+                        out_properties->gateway_links = NULL;
+                    }
                 }
-                /* Codes_SRS_GATEWAY_JSON_14_008: [ This function shall return NULL upon any memory allocation failure. ] */
                 else
                 {
-                    result = PARSE_JSON_VECTOR_FAILURE;
-                    LogError("Failed to create properties vector. ");
+                    out_properties->gateway_links = NULL;
                 }
             }
             /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
@@ -341,6 +608,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                 LogError("JSON Configuration file is configured incorrectly or some other error occurred while parsing.");
             }
         }
+        /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
         else
         {
             result = PARSE_JSON_MISCONFIGURED_OR_OTHER;
