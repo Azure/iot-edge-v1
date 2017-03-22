@@ -193,6 +193,8 @@ Outprocess control management thread
 
 **SRS_OUTPROCESS_MODULE_17_060: [** Once the control channel has been restarted, it shall follow the same process in `Outprocess_Create` to send a _Create Message_ to the module host. **]**
 
+**SRS_OUTPROCESS_MODULE_24_061**: [** Once the control channel has been restarted and Create Message was sent, it shall send a Start Message to the module host. **]**
+
 
 Outprocess_FreeConfiguration
 ----------------------------

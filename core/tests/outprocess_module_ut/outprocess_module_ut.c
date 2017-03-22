@@ -3486,6 +3486,7 @@ TEST_FUNCTION(Outprocess_control_thread_success)
 /*Tests_SRS_OUTPROCESS_MODULE_17_058 : [If a message has been received, it shall look for a Module Reply message.]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_059 : [If a Module Reply message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process.]*/
 /*Tests_SRS_OUTPROCESS_MODULE_17_060 : [Once the control channel has been restarted, it shall follow the same process in Outprocess_Create to send a Create Message to the module host.]*/
+/*Tests_SRS_OUTPROCESS_MODULE_24_061: [ Once the control channel has been restarted and Create Message was sent, it shall send a Start Message to the module host. ]*/
 TEST_FUNCTION(Outprocess_control_thread_restart_success)
 {
 	// arrange
@@ -3536,6 +3537,8 @@ TEST_FUNCTION(Outprocess_control_thread_restart_success)
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(ControlMessage_Destroy(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
+    setup_start_or_destroy_message();
+    STRICT_EXPECTED_CALL(nn_send(2, IGNORED_PTR_ARG, NN_MSG, 0)).IgnoreArgument(2);
 	//bail out
 	STRICT_EXPECTED_CALL(Lock(IGNORED_PTR_ARG)).IgnoreArgument(1)
 		.SetReturn(LOCK_ERROR);

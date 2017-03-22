@@ -48,6 +48,7 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 
 // forward definitions
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
+static void send_start_message(OUTPROCESS_HANDLE_DATA* handleData);
 
 
 int outprocessIncomingMessageThread(void *param)
@@ -395,6 +396,8 @@ int outprocessControlThread(void *param)
 				}
 				else
 				{
+                    /*Codes_SRS_OUTPROCESS_MODULE_24_061: [ Once the control channel has been restarted and Create Message was sent, it shall send a Start Message to the module host. ]*/
+                    send_start_message(handleData);
 					needs_to_attach = 0;
 				}
 			}
@@ -612,6 +615,20 @@ static void * construct_destroy_message(OUTPROCESS_HANDLE_DATA* handleData, int3
 	};
 	result = serialize_control_message(&destroy_msg, destroyMessageSize);
 	return result;
+}
+
+static void send_start_message(OUTPROCESS_HANDLE_DATA* handleData)
+{
+    int32_t startMessageSize = 0;
+    void * startmessage = construct_start_message(handleData, &startMessageSize);
+    /*Codes_SRS_OUTPROCESS_MODULE_17_019: [ This function shall send a Start Message on the control channel. ]*/
+    int nBytes = nn_send(handleData->control_socket, &startmessage, NN_MSG, 0);
+    if (nBytes != startMessageSize)
+    {
+        /*Codes_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
+        LogError("unable to send start message [%p]", startmessage);
+        nn_freemsg(startmessage);
+    }
 }
 
 /*Codes_SRS_OUTPROCESS_MODULE_17_001: [ This function shall return NULL if configuration is NULL ]*/
@@ -1024,16 +1041,7 @@ static void Outprocess_Start(MODULE_HANDLE moduleHandle)
 		}
 		else
 		{
-			int32_t startMessageSize = 0;
-			void * startmessage = construct_start_message(handleData, &startMessageSize);
-			/*Codes_SRS_OUTPROCESS_MODULE_17_019: [ This function shall send a Start Message on the control channel. ]*/
-			int sendBytes = nn_send(handleData->control_socket, &startmessage, NN_MSG, 0);
-			if (sendBytes != startMessageSize)
-			{
-				/*Codes_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/
-				LogError("unable to send start message [%p]", startmessage);
-				nn_freemsg(startmessage);
-			}
+            send_start_message(handleData);
 		}
 	}
 }
