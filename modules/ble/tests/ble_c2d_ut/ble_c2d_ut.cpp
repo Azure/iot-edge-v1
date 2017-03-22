@@ -95,7 +95,7 @@ namespace BASEIMPLEMENTATION
 #undef Lock_Init
 #undef Lock_Deinit
 
-#include <stddef.h>   /* size_t */    
+#include <stddef.h>   /* size_t */
 
     /* Types and enums */
     typedef struct json_object_t JSON_Object;
@@ -193,6 +193,16 @@ namespace BASEIMPLEMENTATION
                                                                                            /* Functions to get available names */
     size_t        json_object_get_count(const JSON_Object *object);
     const char  * json_object_get_name(const JSON_Object *object, size_t index);
+    JSON_Value  * json_object_get_value_at(const JSON_Object *object, size_t index);
+    JSON_Value  * json_object_get_wrapping_value(const JSON_Object *object);
+
+    /* Functions to check if object has a value with a specific name. Returned value is 1 if object has
+    * a value and 0 if it doesn't. dothas functions behave exactly like dotget functions. */
+    int json_object_has_value(const JSON_Object *object, const char *name);
+    int json_object_has_value_of_type(const JSON_Object *object, const char *name, JSON_Value_Type type);
+
+    int json_object_dothas_value(const JSON_Object *object, const char *name);
+    int json_object_dothas_value_of_type(const JSON_Object *object, const char *name, JSON_Value_Type type);
 
     /* Creates new name-value pair or frees and replaces old value with a new one.
     * json_object_set_value does not copy passed value so it shouldn't be freed afterwards. */
@@ -229,6 +239,7 @@ namespace BASEIMPLEMENTATION
     double        json_array_get_number(const JSON_Array *array, size_t index); /* returns 0 on fail */
     int           json_array_get_boolean(const JSON_Array *array, size_t index); /* returns -1 on fail */
     size_t        json_array_get_count(const JSON_Array *array);
+    JSON_Value  * json_array_get_wrapping_value(const JSON_Array *array);
 
     /* Frees and removes value at given index, does nothing and returns JSONFailure if index doesn't exist.
     * Order of values in array may change during execution.  */
@@ -272,6 +283,7 @@ namespace BASEIMPLEMENTATION
     const char  *   json_value_get_string(const JSON_Value *value);
     double          json_value_get_number(const JSON_Value *value);
     int             json_value_get_boolean(const JSON_Value *value);
+    JSON_Value  *   json_value_get_parent(const JSON_Value *value);
 
     /* Same as above, but shorter */
     JSON_Value_Type json_type(const JSON_Value *value);
@@ -282,6 +294,7 @@ namespace BASEIMPLEMENTATION
     int             json_boolean(const JSON_Value *value);
 
 #define parson_parson_h
+
 #ifdef _CRT_SECURE_NO_WARNINGS
 #undef _CRT_SECURE_NO_WARNINGS
 #include "parson.c"
@@ -296,7 +309,7 @@ namespace BASEIMPLEMENTATION
 };
 
 #undef parson_parson_h
-#include "parson.h"
+#include <parson.h>
 
 TYPED_MOCK_CLASS(CBLEC2DMocks, CGlobalMock)
 {
