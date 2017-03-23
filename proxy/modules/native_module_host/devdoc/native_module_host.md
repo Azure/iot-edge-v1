@@ -104,7 +104,7 @@ MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(OOP_MODULE_HOST)(MODULE_API
 References
 ----------
 
-[On out process gateway modules](on-out-process-gateway-modules.md)
+[Outprocess High-Level Design](outprocess_hld.md)
 
 
 Module\_GetApi

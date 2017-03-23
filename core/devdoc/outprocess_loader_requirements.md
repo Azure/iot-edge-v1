@@ -8,7 +8,7 @@ The out of process (outprocess) module loader implements loading of gateway modu
 
 ## References
 [Module loader design](./module_loaders.md)
-[Out of Process Module HLD](./on-out-process-gateway-modules.md)
+[Out of Process Module HLD](./outprocess_hld.md)
 [Out of Process Module requirements](./outprocess_module_requirements.md)
 
 ## Exposed API
