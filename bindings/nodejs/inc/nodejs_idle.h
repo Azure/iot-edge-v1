@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #ifndef NODEJS_IDLE_H
@@ -19,6 +19,8 @@ namespace nodejs_module
     private:
         std::queue<std::function<void()>> m_callbacks;
         Lock m_lock;
+        bool m_initialized;
+        uv_async_t m_uv_async;
 
         /**
          * Private constructor to enforce singleton instance.
@@ -35,6 +37,18 @@ namespace nodejs_module
         static NodeJSIdle* Get();
 
         /**
+         * Has object been initialized?
+         */
+        bool IsInitialized() const;
+
+        /**
+         * Initialize the object by registering the libuv
+         * async callback.
+         */
+        bool Initialize();
+        void DeInitialize();
+
+        /**
          * Object lock/unlock methods.
          */
         void AcquireLock() const;
@@ -49,7 +63,7 @@ namespace nodejs_module
         /**
          * Idle callback function called from Node's event loop.
          */
-        static void OnIdle(v8::Isolate* isolate);
+        static void OnIdle(uv_async_t* handle);
 
     private:
         void InvokeCallbacks();
@@ -60,6 +74,15 @@ namespace nodejs_module
     {
         LockGuard<NodeJSIdle> lock_guard{ *this };
         m_callbacks.push(callback);
+
+        // signal that the async function should be called on libuv's
+        // thread; libuv's doc says that multiple calls to this function
+        // will get coalesced if they occur before the call is actually
+        // made; so it's safe to call this multiple times
+        if (uv_is_active(reinterpret_cast<uv_handle_t*>(&m_uv_async)))
+        {
+            uv_async_send(&m_uv_async);
+        }
     }
 };
 
