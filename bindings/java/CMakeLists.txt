@@ -3,6 +3,10 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
+if(POLICY CMP0042)
+    cmake_policy(SET CMP0042 NEW)
+endif()
+
 # Check if the environment variable JAVA_HOME exists
 if(
     (NOT (DEFINED ENV{JAVA_HOME}))
@@ -86,7 +90,7 @@ include_directories(${java_include_dirs})
 link_directories(${java_link_dirs})
 
 #this builds the java_module_host dynamic library
-add_library(java_module_host MODULE ${java_module_host_headers} ${java_module_host_sources})
+add_library(java_module_host SHARED ${java_module_host_headers} ${java_module_host_sources})
 target_link_libraries(java_module_host ${LIBS})
 
 #this build the java_module_host static library
