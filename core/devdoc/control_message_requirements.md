@@ -11,7 +11,7 @@ both the C structures and the corresponding serialized structure is given in
 
 ## References
 
-[On out process gateway modules](on-out-process-gateway-modules.md)
+[On out process gateway modules](outprocess_hld.md)
 
 [Control messages in out process modules](out-process-control-messages.md)
 

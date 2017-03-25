@@ -98,7 +98,7 @@ Create message
 
 The *create* message is sent by the gateway to the module host process to
 indicate that the remote module should be loaded and instantiated. The [high
-level design document](./on-out-process-gateway-modules.md) specifies what this
+level design document](./outprocess_hld.md) specifies what this
 message should be composed of. The `type` field will have the value
 `CONTROL_MESSAGE_TYPE_MODULE_CREATE` and the body of the message will be a struct that
 looks like this (as specified in the high level design document):

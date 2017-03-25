@@ -4,7 +4,7 @@ Binding for Out of Process Azure IoT Gateway Modules
 Overview
 --------
 
-This document specifies the requirements for the gateway module that manages a module running out of process.  The module communicates to the remote module via the inter-process transport mechanism.  The [high level design](../../core/devdoc/on-out-process-gateway-modules.md) will provide an overview on how this module communicates to the module host process.
+This document specifies the requirements for the gateway module that manages a module running out of process.  The module communicates to the remote module via the inter-process transport mechanism.  The [high level design](../../core/devdoc/outprocess_hld.md) will provide an overview on how this module communicates to the module host process.
 
 Types
 -----
@@ -32,7 +32,7 @@ extern const MODULE_API_1 Outprocess_Module_API_all =
 
 ## References
 
-[On out process gateway modules](on-out-process-gateway-modules.md)
+[On out process gateway modules](outprocess_hld.md)
 
 [Control messages in out process modules](out-process-control-messages.md)
 
