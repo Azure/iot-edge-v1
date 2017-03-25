@@ -1,8 +1,8 @@
-#Azure IoT Gateway SDK - native module host example
+# Azure IoT Gateway SDK - native module host example
 
 This document provides an overview of the out of process module [code](./src) which allows a native gateway module to run in a separate process.
 
-##Concepts
+## Concepts
 
 This is an extension on the [out of process module example](../proxy_sample/README.md), the native module host allows a user to take an existing gateway module (including bindings) and run it in an external process. For details, please read the [outprocess high level design](../../core/devdoc/outprocess_hld.md).
 
@@ -13,9 +13,9 @@ The two processes must establish a control channel to communicate gateway events
 
 ![](../../core/devdoc/media/outprocess-gateway-modules.png)
 
-##How to run the sample
+## How to run the sample
 
-###Linux
+### Linux
 
 The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run
 "native\_gateway" in one and "native\_host\_sample" in the other.
@@ -34,7 +34,7 @@ cd build/samples/proxy_sample
 ./native_host_sample outprocess_module_control
 ```
 
-###Windows
+### Windows
 
 Start two command prompts, navigate to the `build\samples\native_host_sample` directory in each and run "native\_gateway" in one and "native\_host\_sample" in the other.
 
@@ -54,7 +54,7 @@ Debug\native_host_sample.exe outprocess_module_control
 
 You may also run the executables simultaneously by opening up the solution file, opening the properties for the top level solution, select "Multiple startup projects", and choose "native\_gateway" in one and "native\_host\_sample" to start.
 
-## Example Gateway configuration.
+## Example Gateway configuration
 
 This sample gateway has three modules, the "Hello World" module, which periodically generates a message, the "out of process" module which configures the gateway for communication to the "native\_host\_sample" process, and a "logger" module to record any messages returning from the out of process module.
 
