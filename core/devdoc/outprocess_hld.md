@@ -4,7 +4,7 @@ Azure IoT Gateway Remote Modules
 Introduction
 ------------
 
-All modules in the gateway are hosted within the gateway process today. While this makes for great performance it is also at the cost of execution isolation between modules, i.e., one misbehaving module can potentially affect the behavior of other modules or the gateway itself. This document seeks to propose a design for implementing gateway modules that are hosted in externally.
+All modules in the gateway are hosted within the gateway process today. While this makes for great performance it is also at the cost of execution isolation between modules, i.e., one misbehaving module can potentially affect the behavior of other modules or the gateway itself. This document specifies how to host gateway modules outside the gateway process.
 
 The remote module is applicable for a customer that has device telemetry and control in another process, and wants to send that telemetry data to the gateway with a minimum of new code.
 
@@ -57,7 +57,7 @@ Remote Module Composition
 ### Proxy Module
 
 
-The first piece of the puzzle is a gateway module (i.e., it implements `MODULE_API`) we shall call the *proxy* module. The job of the proxy module is to ensure the remote module is appears to be no different than an module running in the Gateway process.
+The first piece of the puzzle is a gateway module (i.e., it implements `MODULE_API`) we shall call the *proxy* module. The job of the proxy module is to ensure the remote module is appears to be no different than an module running in the Gateway process. In order to communicate with the remote module host, the proxy module will create a *nanomsg* `NN_PAIR` socket and listen for gateway messages on it. It will also create an `NN_PAIR` socket and connect to the control channel.
 
 This is a brief description of the repsonsibilies of the proxy module.
 
@@ -136,7 +136,7 @@ An example of proxy module configuration with activation.type "launch" :
                     "..." ,
                     "<available to remote module as argv[n]>"
                 ],
-                "grace.period.s" : 2.25
+                "grace.period.ms" : 2250
             }
         }
     }
@@ -195,18 +195,13 @@ The proxy module’s configuration will include the following information:
 
       An array of command line arguments, if any.
 
-    - **grace.period.s**
+    - **grace.period.ms**
 
-      An optional grace period (in seconds) to be observed before killing the process after the `Module_Destroy` message has been sent. If no time is specified, the default value will be 3.0 seconds.
+      An optional grace period (in milliseconds) to be observed before killing the process after the `Module_Destroy` message has been sent. If no time is specified, the default value will be 3000 milliseconds.
 
 - **args**
 
     This the module configuration JSON to be passed to the `Module_ParseConfigurationFromJson` function of the `MODULE_API`. This information will be transmitted to the remote module host via the control channel.
-
-The proxy module will create a *nanomsg* `NN_PAIR` socket and listen for 
-gateway messages on it. It will also create an `NN_REQ` socket and connect to 
-the control channel. Once a connection with the module host process has been 
-established communication will commence as explained later in this document.
 
 ### Remote Module Host (a.k.a. Proxy Gateway)
 
@@ -234,7 +229,7 @@ The remote module host does the following:
 
 7. If a *Module Destroy* message arrives, the call `Module_Destroy` on the module.
 
-> *NOTE: If the module's loader activation type was configured as `launch`, then the remote module host will have `grace.period.s` seconds to complete its execution upon receiving the *Module Destroy* message, before it will be killed.
+> *NOTE: If the module's loader activation type was configured as `launch`, then the remote module host will have `grace.period.ms` milliseconds to complete its execution upon receiving the *Module Destroy* message, before it will be killed.
 
 
 #### Message Brokering
