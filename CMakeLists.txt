@@ -57,6 +57,9 @@ else()
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
+# apps need to be able to load native_module_host
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/proxy/modules/native_module_host/)
+
 # tests and samples should use pre-install path to gateway.so
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/core/)
 
