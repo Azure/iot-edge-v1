@@ -237,7 +237,7 @@ bluez_device_org_freedesktop_dbus_introspectable_interface_info (void)
  * Returns: The last property id.
  */
 guint
-bluez_device_org_freedesktop_dbus_introspectable_override_properties (GObjectClass *klass, guint property_id_begin)
+bluez_device_org_freedesktop_dbus_introspectable_override_properties (GObjectClass *klass G_GNUC_UNUSED, guint property_id_begin)
 {
   return property_id_begin - 1;
 }
@@ -399,7 +399,7 @@ _out:
  */
 void
 bluez_device_org_freedesktop_dbus_introspectable_complete_introspect (
-    bluezdeviceOrgFreedesktopDBusIntrospectable *object,
+    bluezdeviceOrgFreedesktopDBusIntrospectable *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     const gchar *xml)
 {
@@ -449,17 +449,17 @@ bluez_device_org_freedesktop_dbus_introspectable_proxy_finalize (GObject *object
 }
 
 static void
-bluez_device_org_freedesktop_dbus_introspectable_proxy_get_property (GObject      *object,
-  guint         prop_id,
-  GValue       *value,
+bluez_device_org_freedesktop_dbus_introspectable_proxy_get_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  GValue       *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
 
 static void
-bluez_device_org_freedesktop_dbus_introspectable_proxy_set_property (GObject      *object,
-  guint         prop_id,
-  const GValue *value,
+bluez_device_org_freedesktop_dbus_introspectable_proxy_set_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  const GValue *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
@@ -567,7 +567,7 @@ bluez_device_org_freedesktop_dbus_introspectable_proxy_class_init (bluezdeviceOr
 }
 
 static void
-bluez_device_org_freedesktop_dbus_introspectable_proxy_iface_init (bluezdeviceOrgFreedesktopDBusIntrospectableIface *iface)
+bluez_device_org_freedesktop_dbus_introspectable_proxy_iface_init (bluezdeviceOrgFreedesktopDBusIntrospectableIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -959,7 +959,7 @@ out:
 }
 
 static void
-bluez_device_org_freedesktop_dbus_introspectable_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton)
+bluez_device_org_freedesktop_dbus_introspectable_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton G_GNUC_UNUSED)
 {
 }
 
@@ -1020,7 +1020,7 @@ bluez_device_org_freedesktop_dbus_introspectable_skeleton_class_init (bluezdevic
 }
 
 static void
-bluez_device_org_freedesktop_dbus_introspectable_skeleton_iface_init (bluezdeviceOrgFreedesktopDBusIntrospectableIface *iface)
+bluez_device_org_freedesktop_dbus_introspectable_skeleton_iface_init (bluezdeviceOrgFreedesktopDBusIntrospectableIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -3227,7 +3227,7 @@ _out:
  */
 void
 bluez_device__complete_disconnect (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3245,7 +3245,7 @@ bluez_device__complete_disconnect (
  */
 void
 bluez_device__complete_connect (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3263,7 +3263,7 @@ bluez_device__complete_connect (
  */
 void
 bluez_device__complete_connect_profile (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3281,7 +3281,7 @@ bluez_device__complete_connect_profile (
  */
 void
 bluez_device__complete_disconnect_profile (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3299,7 +3299,7 @@ bluez_device__complete_disconnect_profile (
  */
 void
 bluez_device__complete_pair (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3317,7 +3317,7 @@ bluez_device__complete_pair (
  */
 void
 bluez_device__complete_cancel_pairing (
-    bluezdevice *object,
+    bluezdevice *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -5001,7 +5001,7 @@ bluez_device_org_freedesktop_dbus_properties_interface_info (void)
  * Returns: The last property id.
  */
 guint
-bluez_device_org_freedesktop_dbus_properties_override_properties (GObjectClass *klass, guint property_id_begin)
+bluez_device_org_freedesktop_dbus_properties_override_properties (GObjectClass *klass G_GNUC_UNUSED, guint property_id_begin)
 {
   return property_id_begin - 1;
 }
@@ -5483,7 +5483,7 @@ _out:
  */
 void
 bluez_device_org_freedesktop_dbus_properties_complete_get (
-    bluezdeviceOrgFreedesktopDBusProperties *object,
+    bluezdeviceOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     GVariant *value)
 {
@@ -5503,7 +5503,7 @@ bluez_device_org_freedesktop_dbus_properties_complete_get (
  */
 void
 bluez_device_org_freedesktop_dbus_properties_complete_set (
-    bluezdeviceOrgFreedesktopDBusProperties *object,
+    bluezdeviceOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -5522,7 +5522,7 @@ bluez_device_org_freedesktop_dbus_properties_complete_set (
  */
 void
 bluez_device_org_freedesktop_dbus_properties_complete_get_all (
-    bluezdeviceOrgFreedesktopDBusProperties *object,
+    bluezdeviceOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     GVariant *properties)
 {
@@ -5572,17 +5572,17 @@ bluez_device_org_freedesktop_dbus_properties_proxy_finalize (GObject *object)
 }
 
 static void
-bluez_device_org_freedesktop_dbus_properties_proxy_get_property (GObject      *object,
-  guint         prop_id,
-  GValue       *value,
+bluez_device_org_freedesktop_dbus_properties_proxy_get_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  GValue       *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
 
 static void
-bluez_device_org_freedesktop_dbus_properties_proxy_set_property (GObject      *object,
-  guint         prop_id,
-  const GValue *value,
+bluez_device_org_freedesktop_dbus_properties_proxy_set_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  const GValue *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
@@ -5690,7 +5690,7 @@ bluez_device_org_freedesktop_dbus_properties_proxy_class_init (bluezdeviceOrgFre
 }
 
 static void
-bluez_device_org_freedesktop_dbus_properties_proxy_iface_init (bluezdeviceOrgFreedesktopDBusPropertiesIface *iface)
+bluez_device_org_freedesktop_dbus_properties_proxy_iface_init (bluezdeviceOrgFreedesktopDBusPropertiesIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -6082,7 +6082,7 @@ out:
 }
 
 static void
-bluez_device_org_freedesktop_dbus_properties_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton)
+bluez_device_org_freedesktop_dbus_properties_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton G_GNUC_UNUSED)
 {
 }
 

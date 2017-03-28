@@ -56,6 +56,7 @@ endfunction(includeHttp)
 
 #nanomsg lib check macro (temporary)
 macro (nn_check_lib LIB SYM DEF)
+    message(STATUS "nn_check_lib:: ${LIB} ${SYM} "" ${DEF}")
     check_library_exists (${LIB} ${SYM} "" ${DEF})
     if (${DEF})
         add_definitions (-D${DEF}=1)

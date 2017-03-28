@@ -18,6 +18,7 @@ void RemoteSample_FreeConfiguration(void* configuration)
 }
 MODULE_HANDLE RemoteSample_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)configuration;
     printf("Remote Module Create\n");
 	theBrokerHandle = broker;
     MODULE_HANDLE m = (MODULE_HANDLE)"remote module";

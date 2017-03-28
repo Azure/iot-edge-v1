@@ -2494,8 +2494,6 @@ BEGIN_TEST_SUITE(bleio_seq_ut)
             { 500 }
         };
 
-        const char* fake_char_id = STRING_c_str(instruction2.characteristic_uuid);
-
         // cause BLEIO_gatt_read_char_by_uuid to succeed
         BLEIO_gatt_read_char_by_uuid_results.result = BLEIO_GATT_OK;
         BLEIO_gatt_read_char_by_uuid_results.buffer = (const unsigned char*)"data";
@@ -3209,8 +3207,6 @@ BEGIN_TEST_SUITE(bleio_seq_ut)
             { .buffer = BUFFER_create((const unsigned char*)"data", 4) }
         };
 
-        const char* fake_char_id = STRING_c_str(instruction2.characteristic_uuid);
-
         mocks.ResetAllCalls();
 
         STRICT_EXPECTED_CALL(mocks, STRING_length(instruction2.characteristic_uuid));
@@ -3259,8 +3255,6 @@ BEGIN_TEST_SUITE(bleio_seq_ut)
             NULL,
             { .buffer = BUFFER_create((const unsigned char*)"data", 4) }
         };
-
-        const char* fake_char_id = STRING_c_str(instruction2.characteristic_uuid);
 
         mocks.ResetAllCalls();
 

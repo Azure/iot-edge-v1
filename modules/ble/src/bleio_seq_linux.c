@@ -18,6 +18,14 @@
 
 static bool validate_instructions(VECTOR_HANDLE instructions);
 
+
+// BLEIO_SEQ_HANDLE_DATA is a reference counted object. This is so because
+// at any given point in time there could be numerous asynchronous I/O
+// operations in progress. If the user calls BLEIO_Seq_Destroy while there
+// are still outstanding I/O requests, we want to keep the handle data
+// alive till all of them complete.
+DEFINE_REFCOUNT_TYPE(BLEIO_SEQ_HANDLE_DATA);
+
 BLEIO_SEQ_HANDLE BLEIO_Seq_Create(
     BLEIO_GATT_HANDLE bleio_gatt_handle,
     VECTOR_HANDLE instructions,
@@ -147,6 +155,16 @@ static bool validate_instructions(VECTOR_HANDLE instructions)
     }
 
     return result;
+}
+
+void inc_ref_handle(BLEIO_SEQ_HANDLE_DATA* handle_data)
+{
+    INC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+}
+
+void dec_ref_handle_only(BLEIO_SEQ_HANDLE_DATA* handle_data)
+{
+    DEC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
 }
 
 void dec_ref_handle(BLEIO_SEQ_HANDLE_DATA* handle_data)
@@ -341,6 +359,8 @@ static void on_instruction_complete(
     BLEIO_SEQ_INSTRUCTION* instruction
 )
 {
+    (void)bleio_seq_handle;
+
     // free the characteristic UUID
     STRING_delete(instruction->characteristic_uuid);
 

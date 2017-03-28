@@ -174,6 +174,8 @@ static void create_characteristic(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)previous_result;
+    (void)callback_context;
     READ_CONTEXT* context = (READ_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     bluez_characteristic__proxy_new(
         context->handle_data->bus,
@@ -192,6 +194,7 @@ static gpointer create_characteristic_finish(
     GError** error
 )
 {
+    (void)async_seq_handle;
     return bluez_characteristic__proxy_new_finish(result, error);
 }
 
@@ -202,6 +205,7 @@ static void read_characteristic(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)callback_context;
     READ_CONTEXT* context = (READ_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->characteristic = (bluezcharacteristic*)previous_result;
 

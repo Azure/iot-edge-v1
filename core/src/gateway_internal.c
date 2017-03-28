@@ -36,8 +36,6 @@ static bool link_name_both_find(const void* link_void, const void* name_void)
 
 static bool check_if_link_exists(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_ENTRY* link_entry)
 {
-    bool exists = false;
-
     LINK_DATA* link_data = (LINK_DATA*)VECTOR_find_if(gateway_handle->links, link_data_find, link_entry);
 
     return link_data == NULL ? false : true;
@@ -330,8 +328,6 @@ void gateway_destroy_internal(GATEWAY_HANDLE gw)
 
 bool checkIfModuleExists(GATEWAY_HANDLE_DATA* gateway_handle, const char* module_name)
 {
-    bool exists = false;
-
     MODULE_DATA** module_data = (MODULE_DATA**)VECTOR_find_if(gateway_handle->modules, module_name_find, module_name);
 
     return module_data == NULL ? false : true;
