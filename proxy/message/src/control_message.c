@@ -41,7 +41,7 @@ static int parse_uint32_t(const unsigned char* source, size_t sourceSize, size_t
     return result;
 }
 
-static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, uint32_t *size, char** value)
+static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, size_t position, int32_t *parsed, uint32_t *size, unsigned char** value)
 {
     int result;
     uint32_t chunk_size;
@@ -113,6 +113,8 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 {
     int result;
     int32_t current_parsed; /*reused in all parsings*/
+    (void)parsed;
+
 	init_create_message_contents(create_msg); /* initialize to NULL for easy cleanup */
     /* 
 	 * Parse the number of uris
@@ -216,7 +218,7 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
 			(void)parse_uint32_t(source, size, currentPosition, &parsed, &messageSize);
             currentPosition += parsed;
 			/*Codes_SRS_CONTROL_MESSAGE_17_006: [ If the size embedded in the message is not the same as size parameter then this function shall fail and return NULL. ]*/
-            if (messageSize != size)
+            if ((messageSize < 0) || ((size_t)messageSize != size))
             {
                 LogError("message size is inconsistent");
                 result = NULL;

@@ -11,8 +11,6 @@
 #include <sstream>
 
 #include "uv.h"
-#include "v8.h"
-#include "node.h"
 
 #include "testrunnerswitcher.h"
 #include "micromock.h"

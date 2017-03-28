@@ -294,10 +294,6 @@ static void NativeModuleHost_Destroy(MODULE_HANDLE moduleHandle)
         MODULE_HOST* module_host = (MODULE_HOST*)moduleHandle;
         if (module_host->module != NULL)
         {
-            MODULE module;
-            module.module_apis = NULL;
-            module.module_handle = module_host->module;
-
             const MODULE_LOADER* module_loader = module_host->module_loader;
             MODULE_LIBRARY_HANDLE module_library = module_host->module_library_handle;
 

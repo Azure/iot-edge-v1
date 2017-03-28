@@ -594,6 +594,7 @@ static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_
 static void* construct_start_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * startMessageSize)
 {
 	void * result;
+	(void)handleData;
 
 	CONTROL_MESSAGE start_msg =
 	{
@@ -607,6 +608,7 @@ static void* construct_start_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t
 static void * construct_destroy_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * destroyMessageSize)
 {
 	void * result;
+	(void)handleData;
 
 	CONTROL_MESSAGE destroy_msg =
 	{

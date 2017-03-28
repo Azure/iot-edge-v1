@@ -127,6 +127,7 @@ static TEST_MUTEX_HANDLE g_dllByDll;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 

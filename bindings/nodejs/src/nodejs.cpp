@@ -20,7 +20,13 @@
 #endif
 
 #include "uv.h"
-#include "v8.h"
+
+#include "nodejs_common.h"
+#include "nodejs.h"
+#include "nodejs_utils.h"
+#include "nodejs_idle.h"
+#include "modules_manager.h"
+
 #include "node.h"
 
 #include "azure_c_shared_utility/map.h"
@@ -37,12 +43,6 @@
 #include "message.h"
 #include "broker.h"
 #include "messageproperties.h"
-
-#include "nodejs_common.h"
-#include "nodejs.h"
-#include "nodejs_utils.h"
-#include "nodejs_idle.h"
-#include "modules_manager.h"
 
 #define DESTROY_WAIT_TIME_IN_SECS   (5)
 
@@ -236,6 +236,7 @@ static bool validate_prop(
     TValidator validator
 )
 {
+    (void)context;
     bool result;
     auto prop_key = v8::String::NewFromUtf8(isolate, prop_name);
     if (prop_key.IsEmpty() == true)
@@ -452,6 +453,7 @@ static std::pair<bool, unsigned char*> copy_contents(
     size_t* psize
 )
 {
+    (void)context;
     std::pair<bool, unsigned char*> result;
 
     *psize = 0;
@@ -840,6 +842,8 @@ static bool create_gateway_host(v8::Isolate* isolate, v8::Local<v8::Context> con
     // This function is always called from a libuv thread - so we are guaranteed to
     // be thread-safe. The gateway host object should be setup only once - the first
     // time that a node module is created. We track this via a static bool.
+    (void)isolate;
+    (void)context;
     static bool gateway_host_created = false;
     bool result;
 
@@ -960,6 +964,7 @@ static v8::Local<v8::Uint8Array> copy_contents_to_object(
     const CONSTBUFFER* content
 )
 {
+    (void)context;
     // this object does not have ownership of the buffer
     auto array_buffer = v8::ArrayBuffer::New(isolate, (void *)content->buffer, content->size);
 

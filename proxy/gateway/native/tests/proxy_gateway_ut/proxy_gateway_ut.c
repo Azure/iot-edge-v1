@@ -660,8 +660,6 @@ TEST_FUNCTION(attach_SCENARIO_incompatible_module_apis)
 TEST_FUNCTION(attach_SCENARIO_module_apis_NULL_create)
 {
     // Arrange
-    static const int COMMAND_SOCKET = 1979;
-    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
     static const MODULE_API_1 MODULE_APIS = {
         { MODULE_API_VERSION_1 },
         mock_parseConfigurationFromJson,
@@ -691,8 +689,6 @@ TEST_FUNCTION(attach_SCENARIO_module_apis_NULL_create)
 TEST_FUNCTION(attach_SCENARIO_module_apis_NULL_destroy)
 {
     // Arrange
-    static const int COMMAND_SOCKET = 1979;
-    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
     static const MODULE_API_1 MODULE_APIS = {
         { MODULE_API_VERSION_1 },
         mock_parseConfigurationFromJson,
@@ -722,8 +718,6 @@ TEST_FUNCTION(attach_SCENARIO_module_apis_NULL_destroy)
 TEST_FUNCTION(attach_SCENARIO_module_apis_NULL_receive)
 {
     // Arrange
-    static const int COMMAND_SOCKET = 1979;
-    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
     static const MODULE_API_1 MODULE_APIS = {
         { MODULE_API_VERSION_1 },
         mock_parseConfigurationFromJson,
@@ -847,15 +841,6 @@ TEST_FUNCTION(attach_SCENARIO_negative_tests)
     static const int COMMAND_ENDPOINT = 917;
     static const int COMMAND_SOCKET = 1979;
     static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
-    const MODULE_API_1 module_apis = {
-        { MODULE_API_VERSION_1 },
-        mock_parseConfigurationFromJson,
-        mock_freeConfiguration,
-        mock_create,
-        mock_destroy,
-        mock_receive,
-        mock_start
-    };
 
     REMOTE_MODULE_HANDLE remote_module;
 
@@ -1267,9 +1252,7 @@ TEST_FUNCTION(doWork_SCENARIO_destroy_message_success)
 TEST_FUNCTION(doWork_SCENARIO_control_message_not_available)
 {
     // Arrange
-    static const MESSAGE_HANDLE GATEWAY_MESSAGE = (MESSAGE_HANDLE)0x17091979;
     static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
-    static const int32_t NN_MESSAGE_SIZE = 1979;
 
     REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
     ASSERT_IS_NOT_NULL(remote_module);
@@ -1305,9 +1288,7 @@ TEST_FUNCTION(doWork_SCENARIO_control_message_error)
         },
         1
     };
-    static const MESSAGE_HANDLE GATEWAY_MESSAGE = (MESSAGE_HANDLE)0x17091979;
     static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
-    static const int32_t NN_MESSAGE_SIZE = 1979;
 
     REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
     ASSERT_IS_NOT_NULL(remote_module);
@@ -1344,7 +1325,6 @@ TEST_FUNCTION(doWork_SCENARIO_control_message_bad_parse)
         },
         1
     };
-    static const MESSAGE_HANDLE GATEWAY_MESSAGE = (MESSAGE_HANDLE)0x17091979;
     static const void * NN_MESSAGE_BUFFER = (void *)0xEBADF00D;
     static const int32_t NN_MESSAGE_SIZE = 1979;
 
@@ -1648,7 +1628,6 @@ TEST_FUNCTION(haltWorkerThread_SCENARIO_can_not_obtain_mutex)
 {
     // Arrange
     int result;
-    int thread_exit_result = 0;
 
     REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
     ASSERT_IS_NOT_NULL(remote_module);
@@ -1682,7 +1661,6 @@ TEST_FUNCTION(haltWorkerThread_SCENARIO_can_not_release_mutex)
 {
     // Arrange
     int result;
-    int thread_exit_result = 0;
 
     REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
     ASSERT_IS_NOT_NULL(remote_module);
@@ -1931,7 +1909,6 @@ TEST_FUNCTION(detach_SCENARIO_unable_to_halt_thread)
     };
 
     int result;
-    int thread_exit_result = 0;
 
     REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
     ASSERT_IS_NOT_NULL(remote_module);

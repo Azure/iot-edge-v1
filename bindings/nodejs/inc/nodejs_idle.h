@@ -8,7 +8,14 @@
 #include <functional>
 
 #include "uv.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include "v8.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #include "lock.h"
 

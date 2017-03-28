@@ -107,11 +107,16 @@ static JAVA_MODULE_HOST_CONFIG config =
 //Message mocks
 MESSAGE_HANDLE my_Message_CreateFromByteArray(const unsigned char* source, int32_t size)
 {
+    (void)source;
+    (void)size;
     return (MESSAGE_HANDLE)malloc(1);
 }
 
 int32_t my_MessageToByteArray(MESSAGE_HANDLE messageHandle, unsigned char* buf, int32_t size)
 {
+    (void)messageHandle;
+    (void)buf;
+    (void)size;
     return 1;
 }
 
@@ -131,36 +136,52 @@ MOCKABLE_FUNCTION(, BROKER_RESULT, Broker_Publish, BROKER_HANDLE, broker, MODULE
 MOCKABLE_FUNCTION(JNICALL, jclass, FindClass, JNIEnv*, env, const char*, name);
 jclass my_FindClass(JNIEnv* env, const char* name)
 {
+    (void)env;
+    (void)name;
     return (jclass)0x42;
 }
 
 MOCKABLE_FUNCTION(JNICALL, jclass, GetObjectClass, JNIEnv*, env, jobject, obj);
 jclass my_GetObjectClass(JNIEnv* env, jobject obj)
 {
+    (void)env;
+    (void)obj;
     return (jclass)0x42;
 }
 
 MOCKABLE_FUNCTION(JNICALL, jmethodID, GetMethodID, JNIEnv*, env, jclass, clazz, const char*, name, const char*, sig);
 jmethodID my_GetMethodID(JNIEnv* env, jclass clazz, const char* name, const char* sig)
 {
+    (void)env;
+    (void)clazz;
+    (void)name;
+    (void)sig;
     return (jmethodID)0x42;
 }
 
 MOCKABLE_FUNCTION(JNICALL, jobject, NewObjectV, JNIEnv*, env, jclass, clazz, jmethodID, methodID, va_list, args);
 jobject my_NewObject(JNIEnv* env, jclass clazz, jmethodID methodID, va_list args)
 {
+    (void)env;
+    (void)clazz;
+    (void)methodID;
+    (void)args;
     return (jobject)0x42;
 }
 
 MOCKABLE_FUNCTION(JNICALL, jstring, NewStringUTF, JNIEnv*, env, const char*, utf);
 jstring my_NewStringUTF(JNIEnv* env, const char* utf)
 {
+    (void)env;
+    (void)utf;
     return (jstring)0x42;
 }
 
 MOCKABLE_FUNCTION(JNICALL, jbyteArray, NewByteArray, JNIEnv*, env, jsize, len);
 jbyteArray my_NewByteArray(JNIEnv* env, jsize len)
 {
+    (void)env;
+    (void)len;
     return (jbyteArray)malloc(1);
 }
 
@@ -169,6 +190,7 @@ MOCKABLE_FUNCTION(JNICALL, void, SetByteArrayRegion, JNIEnv*, env, jbyteArray, a
 MOCKABLE_FUNCTION(JNICALL, jsize, GetArrayLength, JNIEnv*, env, jarray, arr);
 jsize my_GetArrayLength(JNIEnv* env, jarray arr)
 {
+    (void)env;
     return sizeof(arr);
 }
 
@@ -177,6 +199,7 @@ MOCKABLE_FUNCTION(JNICALL, void, GetByteArrayRegion, JNIEnv*, env, jbyteArray, a
 MOCKABLE_FUNCTION(JNICALL, void, DeleteLocalRef, JNIEnv*, env, jobject, obj);
 void my_DeleteLocalRef(JNIEnv* env, jobject obj)
 {
+    (void)env;
     free((void*)obj);
 }
 
@@ -184,12 +207,15 @@ void my_DeleteLocalRef(JNIEnv* env, jobject obj)
 MOCKABLE_FUNCTION(JNICALL, jobject, NewGlobalRef, JNIEnv*, env, jobject, lobj);
 jobject my_NewGlobalRef(JNIEnv* env, jobject lobj)
 {
+    (void)env;
+    (void)lobj;
     return (jobject)malloc(1);
 }
 
 MOCKABLE_FUNCTION(JNICALL, void, DeleteGlobalRef, JNIEnv*, env, jobject, gref);
 void my_DeleteGlobalRef(JNIEnv* env, jobject gref)
 {
+    (void)env;
     free(gref);
 }
 
@@ -198,6 +224,7 @@ MOCKABLE_FUNCTION(JNICALL, void, CallVoidMethodV, JNIEnv*, env, jobject, obj, jm
 MOCKABLE_FUNCTION(JNICALL, jthrowable, ExceptionOccurred, JNIEnv*, env);
 jthrowable my_ExceptionOccurred(JNIEnv* env)
 {
+    (void)env;
     return NULL;
 }
 
@@ -233,6 +260,9 @@ jint my_DestroyJavaVM(JavaVM* vm)
 MOCKABLE_FUNCTION(JNICALL, jint, GetEnv, JavaVM*, jvm, void**, penv, jint, version);
 jint my_GetEnv(JavaVM* jvm, void** penv, jint version)
 {
+    (void)jvm;
+    (void)version;
+
     *penv = (void*)global_env;
 
     return 0;
@@ -243,6 +273,7 @@ MOCKABLE_FUNCTION(JNICALL, jint, JNI_GetDefaultJavaVMInitArgs, void*, args);
 MOCKABLE_FUNCTION(JNICALL, jint, JNI_CreateJavaVM, JavaVM**, pvm, void**, penv, void*, args);
 jint mock_JNI_CreateJavaVM(JavaVM** pvm, void** penv, void* args)
 {
+    (void)args;
     if (!global_env && !global_vm)
     {
         struct JNINativeInterface_ env = {
@@ -316,6 +347,8 @@ jint mock_JNI_CreateJavaVM(JavaVM** pvm, void** penv, void* args)
 MOCKABLE_FUNCTION(JNICALL, jint, JNI_GetCreatedJavaVMs, JavaVM**, pvm, jsize, count, jsize*, size);
 jint mock_JNI_GetCreatedJavaVMs(JavaVM** pvm, jsize num, jsize* vmCount)
 {
+    (void)num;
+    (void)vmCount;
     *pvm = global_vm;
 
     return 0;
@@ -533,11 +566,12 @@ JAVA_MODULE_HOST_MANAGER_RESULT my_JavaModuleHostManager_Remove(JAVA_MODULE_HOST
 
 size_t my_JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE manager)
 {
-    return manager == NULL ? -1 : module_manager_count;
+    return manager == NULL ? 0 : module_manager_count;
 }
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 

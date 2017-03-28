@@ -18,19 +18,6 @@ static TEST_MUTEX_HANDLE g_dllByDll;
 static size_t currentmalloc_call;
 static size_t whenShallmalloc_fail;
 
-static size_t currentConstMap_Create_call;
-static size_t whenShallConstMap_Create_fail;
-
-static size_t currentConstMap_Clone_call;
-static size_t whenShallConstMap_Clone_fail;
-
-static size_t currentCONSTBUFFER_Create_call;
-static size_t whenShallCONSTBUFFER_Create_fail;
-static size_t currentCONSTBUFFER_refCount;
-
-static size_t currentCONSTBUFFER_Clone_call;
-static size_t whenShallCONSTBUFFER_Clone_fail;
-
 static void* my_gballoc_malloc(size_t size)
 {
     void* result;
@@ -79,6 +66,7 @@ static void my_gballoc_free(void* ptr)
 
 static void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -350,7 +338,7 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_roundabout_success)
 	int r2 = ControlMessage_ToByteArray(r1, NULL, 0);
 	unsigned char * serialized_again = (unsigned char *)malloc(r2);
 	ASSERT_IS_NOT_NULL(serialized_again);
-	int32_t r3 = ControlMessage_ToByteArray(r1, serialized_again, r2);
+	(void)ControlMessage_ToByteArray(r1, serialized_again, r2);
 	
 	///assert
 	ASSERT_IS_NOT_NULL(r1);
@@ -369,8 +357,6 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_incorrect_size_fails)
 
 	///act
 	CONTROL_MESSAGE * r1 = ControlMessage_CreateFromByteArray(notFail__1url_1args, sizeof(notFail__1url_1args)-1);
-
-	CONTROL_MESSAGE_MODULE_CREATE* rc = (CONTROL_MESSAGE_MODULE_CREATE*)r1;
 
 	///assert
 	ASSERT_IS_NULL(r1);
@@ -403,8 +389,6 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_args_way_too_long)
 	///act
 	CONTROL_MESSAGE * r1 = ControlMessage_CreateFromByteArray(fail__1url_1args, sizeof(fail__1url_1args));
 
-	CONTROL_MESSAGE_MODULE_CREATE* rc = (CONTROL_MESSAGE_MODULE_CREATE*)r1;
-
 	///assert
 	ASSERT_IS_NULL(r1);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -427,8 +411,6 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_args_malloc_fail)
 
 	///act
 	CONTROL_MESSAGE * r1 = ControlMessage_CreateFromByteArray(notFail__1url_1args, sizeof(notFail__1url_1args));
-
-	CONTROL_MESSAGE_MODULE_CREATE* rc = (CONTROL_MESSAGE_MODULE_CREATE*)r1;
 
 	///assert
 	ASSERT_IS_NULL(r1);
@@ -458,8 +440,6 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_url_way_too_long)
 	///act
 	CONTROL_MESSAGE * r1 = ControlMessage_CreateFromByteArray(fail__1url_1args, sizeof(fail__1url_1args));
 
-	CONTROL_MESSAGE_MODULE_CREATE* rc = (CONTROL_MESSAGE_MODULE_CREATE*)r1;
-
 	///assert
 	ASSERT_IS_NULL(r1);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -481,8 +461,6 @@ TEST_FUNCTION(ControlMessage_CreateFromByteArray_url_malloc_fail)
 
 	///act
 	CONTROL_MESSAGE * r1 = ControlMessage_CreateFromByteArray(notFail__1url_1args, sizeof(notFail__1url_1args));
-
-	CONTROL_MESSAGE_MODULE_CREATE* rc = (CONTROL_MESSAGE_MODULE_CREATE*)r1;
 
 	///assert
 	ASSERT_IS_NULL(r1);
