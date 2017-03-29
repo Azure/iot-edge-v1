@@ -239,6 +239,7 @@ static void OutprocessModuleLoader_FreeEntrypoint(const struct MODULE_LOADER_TAG
 static MODULE_LOADER_BASE_CONFIGURATION* OutprocessModuleLoader_ParseConfigurationFromJson(const struct MODULE_LOADER_TAG* loader, const JSON_Value* json)
 {
 	(void)loader;
+	(void)json;
 	/*Codes_SRS_OUTPROCESS_LOADER_17_024: [ The out of process loader does not have any configuration. So this method shall return NULL. ]*/
 	return NULL;
 }
@@ -257,6 +258,7 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 )
 {
 	OUTPROCESS_MODULE_CONFIG * fullModuleConfiguration;
+	(void)loader;
 
 	if ((entrypoint == NULL) || (module_configuration == NULL))
 	{

@@ -174,6 +174,8 @@ static void connect_system_bus(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)previous_result;
+    (void)callback_context;
     g_bus_get(
         G_BUS_TYPE_SYSTEM,
         NULL,               // not cancellable
@@ -188,6 +190,7 @@ static gpointer connect_system_bus_finish(
     GError** error
 )
 {
+    (void)async_seq_handle;
     return g_bus_get_finish(result, error);
 }
 
@@ -198,6 +201,7 @@ static void create_object_manager(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)callback_context;
     CONNECT_CONTEXT* context = (CONNECT_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->handle_data->bus = (GDBusConnection*)previous_result;
 
@@ -219,6 +223,7 @@ static gpointer create_object_manager_finish(
     GError** error
 )
 {
+    (void)async_seq_handle;
     return g_dbus_object_manager_client_new_finish(result, error);
 }
 
@@ -229,6 +234,7 @@ static void create_device_proxy(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)callback_context;
     CONNECT_CONTEXT* context = (CONNECT_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->handle_data->object_manager = (GDBusObjectManagerClient*)previous_result;
 
@@ -263,6 +269,7 @@ static gpointer create_device_proxy_finish(
     GError** error
 )
 {
+    (void)async_seq_handle;
     return bluez_device__proxy_new_finish(result, error);
 }
 
@@ -273,6 +280,7 @@ static void connect_device(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)callback_context;
     CONNECT_CONTEXT* context = (CONNECT_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->handle_data->device = (bluezdevice*)previous_result;
 
@@ -311,6 +319,7 @@ static void unref_object(gpointer data)
 
 static void unref_list_object(gpointer data, gpointer user_data)
 {
+    (void)user_data;
     unref_object(data);
 }
 
@@ -405,6 +414,7 @@ static void process_object(gpointer data, gpointer user_data)
 
 static void on_sequence_complete(GIO_ASYNCSEQ_HANDLE async_seq_handle, gpointer previous_result)
 {
+    (void)previous_result;
     CONNECT_CONTEXT* context = (CONNECT_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->handle_data->state = BLEIO_GATT_STATE_CONNECTED;
 

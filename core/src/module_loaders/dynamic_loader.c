@@ -261,6 +261,7 @@ static void DynamicModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void
 static MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
     (void)loader;
+    (void)json;
 
     /**
      * The dynamic loader does not have any configuration so we always return NULL.
@@ -272,6 +273,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* DynamicModuleLoader_ParseConfigurationF
 static void DynamicModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
 {
     (void)loader;
+    (void)configuration;
 
     /**
      * Nothing to free.
@@ -286,6 +288,7 @@ static void* DynamicModuleLoader_BuildModuleConfiguration(
 )
 {
     (void)loader;
+    (void)entrypoint;
 
    /**
     * The native dynamic loader does not need to do any special configuration translation.
@@ -298,6 +301,7 @@ static void* DynamicModuleLoader_BuildModuleConfiguration(
 static void DynamicModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration)
 {
     (void)loader;
+    (void)module_configuration;
 
     /**
      * Nothing to free.

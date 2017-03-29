@@ -56,11 +56,6 @@ static void on_connect_complete(
     BLEIO_GATT_CONNECT_RESULT connect_result
 );
 
-static void on_disconnect_complete(
-    BLEIO_GATT_HANDLE bleio_gatt_handle,
-    void* context
-);
-
 static void on_read_complete(
     BLEIO_SEQ_HANDLE bleio_seq_handle,
     void* context,
@@ -531,6 +526,7 @@ static void on_connect_complete(
     BLEIO_GATT_CONNECT_RESULT connect_result
 )
 {
+    (void)bleio_gatt_handle;
     // this MUST NOT be NULL
     BLE_HANDLE_DATA* handle_data = (BLE_HANDLE_DATA*)context;
     if (connect_result != BLEIO_GATT_CONNECT_OK)
@@ -596,6 +592,8 @@ static void on_read_complete(
     BUFFER_HANDLE data
 )
 {
+    (void)bleio_seq_handle;
+    (void)type;
     // this MUST NOT be NULL
     BLE_HANDLE_DATA* handle_data = (BLE_HANDLE_DATA*)context;
     if (result != BLEIO_SEQ_OK)
@@ -619,7 +617,7 @@ static void on_read_complete(
                 "%d",
                 handle_data->device_config.ble_controller_index
             );
-            if(ret < 0 || ret >= (sizeof(ble_controller_index) / sizeof(ble_controller_index[0])))
+            if(ret < 0 || (size_t)ret >= (sizeof(ble_controller_index) / sizeof(ble_controller_index[0])))
             {
                 LogError("snprintf() failed");
             }
@@ -638,7 +636,7 @@ static void on_read_complete(
                     handle_data->device_config.device_addr.address[4],
                     handle_data->device_config.device_addr.address[5]
                 );
-                if (ret < 0 || ret >= (sizeof(mac_address) / sizeof(mac_address[0])))
+                if (ret < 0 || (size_t)ret >= (sizeof(mac_address) / sizeof(mac_address[0])))
                 {
                     LogError("snprintf() failed");
                 }
@@ -720,6 +718,9 @@ void on_write_complete(
     BLEIO_SEQ_RESULT result
 )
 {
+    (void)bleio_seq_handle;
+    (void)characteristic_uuid;
+    (void)type;
     // this MUST NOT be NULL
     BLE_HANDLE_DATA* handle_data = (BLE_HANDLE_DATA*)context;
 
@@ -832,6 +833,7 @@ static void BLE_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 
 static void on_destroy_complete(BLEIO_SEQ_HANDLE bleio_seq_handle, void* context)
 {
+    (void)bleio_seq_handle;
     BLE_HANDLE_DATA* handle_data = (BLE_HANDLE_DATA*)context;
     if (handle_data != NULL)
     {

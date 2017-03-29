@@ -51,6 +51,7 @@ static char all_fprintfs[100][10000];
 /*poor man mock*/
 int gb_fprintf(FILE * stream, const char * format, ...) /*cannot be static*/
 {
+    (void)stream;
     CURRENT_API_CALL(gb_fprintf)++;
     
     va_list args;
@@ -715,7 +716,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%C\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -777,7 +778,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%C\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -840,7 +841,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%C\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -898,7 +899,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "{\"time\":\"%C\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4)
@@ -1210,7 +1211,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, ",{\"time\":\"%c\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, ",{\"time\":\"%C\",\"content\":\"Log started\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1288,7 +1289,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1375,7 +1376,7 @@ BEGIN_TEST_SUITE(logger_ut)
 		STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
 			.IgnoreArgument(1)
 			.IgnoreArgument(2)
 			.IgnoreArgument(4);
@@ -1458,7 +1459,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1542,7 +1543,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1620,7 +1621,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1693,7 +1694,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1764,7 +1765,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1832,7 +1833,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1898,7 +1899,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -1961,7 +1962,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -2021,7 +2022,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -2075,7 +2076,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -2125,7 +2126,7 @@ BEGIN_TEST_SUITE(logger_ut)
 		STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
 			.IgnoreArgument(1);
 
-		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+		STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
 			.IgnoreArgument(1)
 			.IgnoreArgument(2)
 			.IgnoreArgument(4);
@@ -2172,7 +2173,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -2216,7 +2217,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);
@@ -2255,7 +2256,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%c", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, "%C", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4)
@@ -2355,7 +2356,7 @@ BEGIN_TEST_SUITE(logger_ut)
         STRICT_EXPECTED_CALL(mocks, gb_localtime(IGNORED_PTR_ARG)) /*this is transforming the time from time_t to struct tm* */
             .IgnoreArgument(1);
 
-        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, ",{\"time\":\"%c\",\"content\":\"Log stopped\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
+        STRICT_EXPECTED_CALL(mocks, gb_strftime(IGNORED_PTR_ARG, IGNORED_NUM_ARG, ",{\"time\":\"%C\",\"content\":\"Log stopped\"}]", IGNORED_PTR_ARG)) /*this is building a JSON object in timetemp*/
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(4);

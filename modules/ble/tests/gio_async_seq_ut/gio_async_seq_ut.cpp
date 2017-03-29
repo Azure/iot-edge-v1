@@ -56,15 +56,15 @@ public:
 
 public:
     CGPtrArray() :
-        _destroy_notify(NULL),
+        pdata(NULL),
         len(0),
-        pdata(NULL)
+        _destroy_notify(NULL)
     {}
 
     CGPtrArray(PFN_DESTROY_NOTIFY destroy_notify) :
-        _destroy_notify(destroy_notify),
+        pdata(NULL),
         len(0),
-        pdata(NULL)
+        _destroy_notify(destroy_notify)
     {}
 
     ~CGPtrArray()

@@ -86,21 +86,26 @@ size_t g_dispatch_entries_length = sizeof(g_dispatch_entries) / sizeof(g_dispatc
 
 MODULE_HANDLE BLEPrinter_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)broker;
+    (void)configuration;
     return (MODULE_HANDLE)0x42;
 }
 
 void* BLEPrinter_ParseConfigurationFromJson(const char* configuration)
 {
+    (void)configuration;
     return NULL;
 }
 
 void BLEPrinter_FreeConfiguration(void * configuration)
 {
+    (void)configuration;
     return;
 }
 
 void BLEPrinter_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 {
+    (void)module;
     if (message != NULL)
     {
         CONSTMAP_HANDLE props = Message_GetProperties(message);
@@ -109,8 +114,8 @@ void BLEPrinter_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
             const char* source = ConstMap_GetValue(props, GW_SOURCE_PROPERTY);
             if (source != NULL && strcmp(source, GW_SOURCE_BLE_TELEMETRY) == 0)
             {
-                const char* ble_controller_id = ConstMap_GetValue(props, GW_BLE_CONTROLLER_INDEX_PROPERTY);
-                const char* mac_address_str = ConstMap_GetValue(props, GW_MAC_ADDRESS_PROPERTY);
+                //const char* ble_controller_id = ConstMap_GetValue(props, GW_BLE_CONTROLLER_INDEX_PROPERTY);
+                //const char* mac_address_str = ConstMap_GetValue(props, GW_MAC_ADDRESS_PROPERTY);
                 const char* timestamp = ConstMap_GetValue(props, GW_TIMESTAMP_PROPERTY);
                 const char* characteristic_uuid = ConstMap_GetValue(props, GW_CHARACTERISTIC_UUID_PROPERTY);
                 const CONSTBUFFER* buffer = Message_GetContent(message);
@@ -160,6 +165,7 @@ void BLEPrinter_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
 void BLEPrinter_Destroy(MODULE_HANDLE module)
 {
     // Nothing to do here
+    (void)module;
 }
 
 static const MODULE_API_1 Module_GetApi_Impl =
@@ -170,7 +176,8 @@ static const MODULE_API_1 Module_GetApi_Impl =
     BLEPrinter_FreeConfiguration,
     BLEPrinter_Create,
     BLEPrinter_Destroy,
-    BLEPrinter_Receive
+    BLEPrinter_Receive,
+    NULL
 
 };
 

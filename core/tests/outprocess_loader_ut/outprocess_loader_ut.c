@@ -97,6 +97,7 @@ const MODULE_API_1 Outprocess_Module_API_all =
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -164,11 +165,7 @@ MOCK_FUNCTION_END(newString)
 
 #undef ENABLE_MOCKS
 
-TEST_DEFINE_ENUM_TYPE(OUTPROCESS_LOADER_ACTIVATION_TYPE, OUTPROCESS_LOADER_ACTIVATION_TYPE_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(OUTPROCESS_LOADER_ACTIVATION_TYPE, OUTPROCESS_LOADER_ACTIVATION_TYPE_VALUES);
-
 TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 
 BEGIN_TEST_SUITE(OutprocessLoader_UnitTests)
 
@@ -283,7 +280,7 @@ TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_loader_type_is_not_O
 TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_control_id_is_NULL)
 {
 	// arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, NULL, (STRING_HANDLE)0x42 };
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, NULL, (STRING_HANDLE)0x42, 0 };
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -301,7 +298,7 @@ TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_control_id_is_NULL)
 TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_activation_type_is_not_NONE)
 {
 	// arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { (OUTPROCESS_LOADER_ACTIVATION_TYPE)0x42, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42};
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { (OUTPROCESS_LOADER_ACTIVATION_TYPE)0x42, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42, 0};
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -319,7 +316,7 @@ TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_activation_type_is_n
 TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_things_fail)
 {
     // arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42 };
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42, 0 };
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -360,7 +357,7 @@ TEST_FUNCTION(OutprocessModuleLoader_Load_returns_NULL_when_things_fail)
 TEST_FUNCTION(OutprocessModuleLoader_Load_succeeds)
 {
     // arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42 };
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42, 0 };
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -397,7 +394,7 @@ TEST_FUNCTION(OutprocessModuleLoader_GetModuleApi_returns_NULL_when_moduleLibrar
 TEST_FUNCTION(OutprocessModuleLoader_GetModuleApi_succeeds)
 {
     // arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42};
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42, 0};
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -434,7 +431,7 @@ TEST_FUNCTION(OutprocessModuleLoader_Unload_does_nothing_when_moduleLibraryHandl
 TEST_FUNCTION(OutprocessModuleLoader_Unload_frees_things)
 {
     // arrange
-	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42};
+	OUTPROCESS_LOADER_ENTRYPOINT entrypoint = { OUTPROCESS_LOADER_ACTIVATION_NONE, (STRING_HANDLE)0x42, (STRING_HANDLE)0x42, 0};
 	MODULE_LOADER loader =
 	{
 		OUTPROCESS,
@@ -534,7 +531,6 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_j
 {
 	// arrange
 	char * activation_type = "none";
-	char * control_id = "a url";
 
 	STRICT_EXPECTED_CALL(json_value_get_type((JSON_Value*)0x42))
 		.SetReturn(JSONObject);
@@ -790,7 +786,8 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_success_with_msg_u
 	{
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
-		STRING_construct("message_id")
+		STRING_construct("message_id"),
+		0
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 
@@ -830,6 +827,7 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_success_with_no_ms
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
 		NULL,
+		0,
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 
@@ -863,6 +861,7 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_mo
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
 		STRING_construct("message_id"),
+		0
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 
@@ -904,6 +903,7 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_ms
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
 		NULL,
+		0,
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 
@@ -938,6 +938,7 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_returns_null_on_ma
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
 		NULL,
+		0,
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 
@@ -978,6 +979,7 @@ TEST_FUNCTION(OutprocessModuleLoader_FreeModuleConfiguration_frees_stuff)
 		OUTPROCESS_LOADER_ACTIVATION_NONE,
 		STRING_construct("control_id"),
 		NULL,
+		0,
 	};
 	STRING_HANDLE mc = STRING_construct("message config");
 

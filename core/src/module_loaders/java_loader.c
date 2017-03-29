@@ -85,6 +85,7 @@ static MODULE_LIBRARY_HANDLE JavaModuleLoader_Load(const MODULE_LOADER* loader, 
 {
     JAVA_MODULE_HANDLE_DATA* result;
 
+    (void)entrypoint;
     /*Codes_SRS_JAVA_MODULE_LOADER_14_001: [JavaModuleLoader_Load shall return NULL if loader is NULL.]*/
     if (loader == NULL)
     {

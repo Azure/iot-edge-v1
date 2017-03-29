@@ -10,11 +10,17 @@ const char *hello_module_path = "../../../modules/hello_world/Debug/hello_world.
 
 void started_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
+    (void)ctx;
     printf("Gateway is being started, called with param: \"%d\".\n", *(int*)user_param);
 }
 
 void module_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
+    (void)user_param;
     VECTOR_HANDLE modules = (VECTOR_HANDLE)ctx;
     GATEWAY_MODULE_INFO *module_info = (GATEWAY_MODULE_INFO*)VECTOR_front(modules);
     printf("Gateway had a new module added, module callback with first module name: \"%s\"\n", module_info->module_name);
@@ -22,11 +28,17 @@ void module_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_
 
 void my_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
+    (void)ctx;
     printf("Gateway is being destroyed, first callback called with param: \"%d\".\n", *(int*)user_param);
 }
 
 void second_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
+    (void)ctx;
     printf("Gateway is being destroyed, second callback called with param: \"%d\".\n", *(int*)user_param);
 }
 

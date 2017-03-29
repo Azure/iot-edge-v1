@@ -1,5 +1,4 @@
 #include <string>
-#include "v8.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "nodejs_utils.h"
 
@@ -44,6 +43,7 @@ PersistentCopyable<v8::ObjectTemplate> nodejs_module::NodeJSUtils::CreateObjectT
     PersistentCopyable<v8::ObjectTemplate> result;
 
     RunWithNodeContext([&result, &method_name, &callback](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+        (void)context;
         auto obj_template = v8::ObjectTemplate::New(isolate);
         if (obj_template.IsEmpty() == true)
         {

@@ -72,10 +72,22 @@ static int LogStartStop_Print(char* destination, size_t destinationSize, bool ap
         }
         else
         {
-            const char* format = appendStart ?
-                (isAbsoluteStart?"{\"time\":\"%c\",\"content\":\"Log started\"}]" : ",{\"time\":\"%c\",\"content\":\"Log started\"}]"):
-                ",{\"time\":\"%c\",\"content\":\"Log stopped\"}]";
-            if (strftime(destination, destinationSize, format, t) == 0)
+            size_t err;
+
+            if (isAbsoluteStart)
+            {
+                err = strftime(destination, destinationSize, "{\"time\":\"%C\",\"content\":\"Log started\"}]", t);
+            }
+            else if (appendStart)
+            {
+                err = strftime(destination, destinationSize, ",{\"time\":\"%C\",\"content\":\"Log started\"}]", t);
+            }
+            else
+            {
+                err = strftime(destination, destinationSize, ",{\"time\":\"%C\",\"content\":\"Log stopped\"}]", t);
+            }
+
+            if (err == 0)
             {
                 LogError("unable to strftime");
                 result = __LINE__;
@@ -419,7 +431,7 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
             else
             {
                 char timetemp[80] = { 0 };
-                if (strftime(timetemp, sizeof(timetemp) / sizeof(timetemp[0]), "%c", t) == 0)
+                if (strftime(timetemp, sizeof(timetemp) / sizeof(timetemp[0]), "%C", t) == 0)
                 {
                     LogError("unable to strftime");
                     /*Codes_SRS_LOGGER_02_012: [If producing the JSON format or writing it to the file fails, then Logger_Receive shall fail and return.]*/

@@ -8,7 +8,14 @@
 #include <string>
 #include <utility>
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include "v8.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #include "broker.h"
 #include "lock.h"
@@ -28,9 +35,9 @@ struct NODEJS_MODULE_HANDLE_DATA
     NODEJS_MODULE_HANDLE_DATA()
         :
         broker(nullptr),
-        on_module_start(nullptr),
-        module_id(0),
         v8_isolate(nullptr),
+        module_id(0),
+        on_module_start(nullptr),
         module_state(NodeModuleState::error)
     {
     }
@@ -44,9 +51,9 @@ struct NODEJS_MODULE_HANDLE_DATA
         broker(broker),
         main_path(path),
         configuration_json(config == nullptr ? "null" : config),
-        on_module_start(module_start),
-        module_id(0),
         v8_isolate(nullptr),
+        module_id(0),
+        on_module_start(module_start),
         module_state(NodeModuleState::error)
     {
     }
