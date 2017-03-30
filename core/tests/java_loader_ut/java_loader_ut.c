@@ -78,6 +78,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* g_config;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -246,12 +247,6 @@ extern "C"
 #endif
 
 #undef ENABLE_MOCKS
-
-TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
-
-TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 
 BEGIN_TEST_SUITE(JavaLoader_UnitTests)
 
@@ -1987,7 +1982,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_returns_NULL_when_loader
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         NULL
     };
 
@@ -2019,7 +2014,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_failure_test)
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         NULL
     };
 
@@ -2091,7 +2086,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_copys_information_succes
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         &options
     };
 
@@ -2164,7 +2159,7 @@ TEST_FUNCTION(JavaModuleLoader_FreeModuleConfiguration_frees_object)
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         &options
     };
 

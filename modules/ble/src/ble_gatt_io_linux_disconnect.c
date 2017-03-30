@@ -77,6 +77,7 @@ static void on_device_disconnect(
     gpointer user_data
 )
 {
+    (void)source_object;
     DISCONNECT_CONTEXT* context = (DISCONNECT_CONTEXT*)user_data;
     bluez_device__call_disconnect_finish(context->handle_data->device, result, NULL);
 

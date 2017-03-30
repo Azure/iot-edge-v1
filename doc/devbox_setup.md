@@ -16,7 +16,11 @@ This section shows you how to set up a development environment for the Azure IoT
     > Note: Be sure to include Visual C++ and NuGet Package Manager.
 
 1. Install [git](http://www.git-scm.com) making sure git.exe can be run from a command line.
+<<<<<<< HEAD
 1. Install [CMake](https://cmake.org/download/) making sure cmake.exe can be run from a command line. CMake version 3.7.2 or later is recommended.
+=======
+1. Install [cmake](https://cmake.org/download/) making sure cmake.exe can be run from a command line.
+>>>>>>> d2c251d76a231eff3af4ffc4b854031dc9cacdde
 
     > Note: Using the .msi is the easiest option when installing on Windows. Add CMake to the PATH for at least the current user when prompted to do so by the installer.
 

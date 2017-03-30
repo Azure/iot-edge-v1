@@ -30,6 +30,7 @@ typedef struct BLE_C2D_HANDLE_DATA_TAG
 
 static MODULE_HANDLE BLE_C2D_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)configuration;
     BLE_C2D_HANDLE_DATA* result;
 
     /*Codes_SRS_BLE_CTOD_13_001: [ BLE_C2D_Create shall return NULL if the broker parameter is NULL. ]*/
@@ -59,13 +60,15 @@ static MODULE_HANDLE BLE_C2D_Create(BROKER_HANDLE broker, const void* configurat
 static void* BLE_C2D_ParseConfigurationFromJson(const char* configuration)
 {
     /*Codes_SRS_BLE_CTOD_17_027: [ BLE_C2D_ParseConfigurationFromJson shall return NULL. ]*/
+    (void)configuration;
     return NULL;
 }
 
 static void BLE_C2D_FreeConfiguration(void* configuration)
 {
-	/*Codes_SRS_BLE_CTOD_17_028: [ BLE_C2D_FreeConfiguration shall do nothing. ]*/
-	return;
+    /*Codes_SRS_BLE_CTOD_17_028: [ BLE_C2D_FreeConfiguration shall do nothing. ]*/
+    (void)configuration;
+    return;
 }
 
 static void BLE_C2D_Destroy(MODULE_HANDLE module)
@@ -84,6 +87,7 @@ static void BLE_C2D_Destroy(MODULE_HANDLE module)
 
 static bool validate_message(BLE_C2D_HANDLE_DATA* handle_data, CONSTMAP_HANDLE properties)
 {
+    (void)handle_data;
     bool result;
     const char * message_mac = ConstMap_GetValue(properties, GW_MAC_ADDRESS_PROPERTY);
     if (message_mac != NULL)

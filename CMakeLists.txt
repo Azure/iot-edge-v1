@@ -137,6 +137,8 @@ endif()
 if(LINUX)
   set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
   set (CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wtrampolines -Wformat=2 -Wformat-security -Wl,-z,relro,-z,now -Wl,-z,noexecstack -Wl,-z,noexecheap ")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wtrampolines -Wformat=2 -Wformat-security -Wl,-z,relro,-z,now  -Wl,-z,noexecstack -Wl,-z,noexecheap")
 elseif(APPLE)
   # Warnings as errors
   set (CMAKE_C_FLAGS "-Werror ${CMAKE_C_FLAGS}")
@@ -160,7 +162,6 @@ function(add_sample_to_solution sampleName)
     BUILD_WITH_INSTALL_RPATH TRUE
   )
 endfunction()
-
 
 macro(compileAsC99)
   if (CMAKE_VERSION VERSION_LESS "3.1")

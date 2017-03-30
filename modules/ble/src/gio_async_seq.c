@@ -379,6 +379,7 @@ static void resolve_callback(
     gpointer user_data
 )
 {
+    (void)source_object;
     GIO_ASYNCSEQ_HANDLE_DATA* async_seq = (GIO_ASYNCSEQ_HANDLE_DATA*)user_data;
     // 'user_data' MUST be a GIO_ASYNCSEQ_HANDLE_DATA pointer
     if (user_data != NULL)

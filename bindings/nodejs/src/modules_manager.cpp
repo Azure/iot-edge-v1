@@ -6,6 +6,11 @@
 #include <memory>
 
 #include "uv.h"
+#include "nodejs_common.h"
+#include "nodejs_utils.h"
+#include "modules_manager.h"
+#include "nodejs_idle.h"
+
 #include "node.h"
 
 #include "azure_c_shared_utility/threadapi.h"
@@ -14,10 +19,6 @@
 #include "azure_c_shared_utility/xlogging.h"
 
 #include "lock.h"
-#include "nodejs_common.h"
-#include "nodejs_utils.h"
-#include "modules_manager.h"
-#include "nodejs_idle.h"
 
 using namespace nodejs_module;
 
@@ -271,6 +272,7 @@ int ModulesManager::NodeJSRunnerInternal(void* user_data)
 
 void ModulesManager::OnNodeInitComplete(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    (void)info;
     auto manager = ModulesManager::Get();
     LockGuard<ModulesManager> lock_guard(*manager);
     manager->m_node_initialized = true;

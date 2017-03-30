@@ -260,6 +260,7 @@ public:
 
     BLEIO_SEQ_RESULT add_instruction(BLEIO_SEQ_INSTRUCTION* instruction)
     {
+        (void)instruction;
         return BLEIO_SEQ_OK;
     }
 };
@@ -648,7 +649,7 @@ public:
 
     MOCK_STATIC_METHOD_2(, JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index)
         JSON_Object* object = NULL;
-        if (arr != NULL && index >= 0)
+        if (arr != NULL)
         {
             object = (JSON_Object*)0x42;
         }
@@ -1980,7 +1981,7 @@ BEGIN_TEST_SUITE(ble_ut)
         CBLEMocks mocks;
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             NULL
         };
 
@@ -2001,8 +2002,8 @@ BEGIN_TEST_SUITE(ble_ut)
         CBLEMocks mocks;
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
-            VECTOR_create(sizeof(BLE_INSTRUCTION))
+           { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
+           VECTOR_create(sizeof(BLE_INSTRUCTION))
         };
         mocks.ResetAllCalls();
 
@@ -2034,7 +2035,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2071,7 +2072,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2111,7 +2112,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2154,7 +2155,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2212,7 +2213,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2277,7 +2278,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2349,7 +2350,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2427,7 +2428,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2518,7 +2519,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2584,7 +2585,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2655,7 +2656,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
         mocks.ResetAllCalls();
@@ -2722,7 +2723,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -2802,7 +2803,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -2885,7 +2886,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -2972,7 +2973,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3061,7 +3062,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3151,7 +3152,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3244,7 +3245,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3344,7 +3345,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3451,7 +3452,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3565,7 +3566,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3685,7 +3686,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3813,7 +3814,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -3969,7 +3970,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4091,7 +4092,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4158,7 +4159,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4226,7 +4227,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4298,7 +4299,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4367,7 +4368,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4435,7 +4436,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 
@@ -4508,7 +4509,7 @@ BEGIN_TEST_SUITE(ble_ut)
         VECTOR_push_back(instructions, &instr1, 1);
         BLE_CONFIG config =
         {
-            { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF },
+            { { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, 0 },
             instructions
         };
 

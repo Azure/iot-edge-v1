@@ -126,6 +126,8 @@ static MODULE_HANDLE fake_module_handle = (MODULE_HANDLE)0x42;
 
 static MODULE_HANDLE FakeModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)configuration;
+    (void)broker;
     return (MODULE_HANDLE)malloc(1);
 }
 static void FakeModule_Destroy(MODULE_HANDLE module)
@@ -135,6 +137,7 @@ static void FakeModule_Destroy(MODULE_HANDLE module)
 
 static void FakeModule_Receive(MODULE_HANDLE module, MESSAGE_HANDLE messageHandle)
 {
+    (void)messageHandle;
     call_status_for_FakeModule_Receive.was_called = true;
     ASSERT_ARE_EQUAL(void_ptr, module, call_status_for_FakeModule_Receive.module);
 }
@@ -428,7 +431,6 @@ public:
         }
         else
         {
-            ListNode* my_result = NULL;
             result1 = (LIST_ITEM_HANDLE)(((ListNode*)list)->next);
         }
     MOCK_METHOD_END(LIST_ITEM_HANDLE, result1)
@@ -506,7 +508,7 @@ public:
     MOCK_METHOD_END(size_t, BASEIMPLEMENTATION::STRING_length(s))
 
     MOCK_STATIC_METHOD_2(, UNIQUEID_RESULT, UniqueId_Generate, char*, uid, size_t, bufferSize)
-        for (int i = 0; i < (int)bufferSize; i++)
+        for (size_t i = 0; i < bufferSize; i++)
         {
             if (i == (bufferSize - 1))
                 uid[i] = '\0';
@@ -1643,7 +1645,7 @@ TEST_FUNCTION(module_publish_worker_calls_receive_once_then_exits_on_quit_msg)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1705,7 +1707,7 @@ TEST_FUNCTION(module_publish_worker_exits_on_lock_fail)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1740,7 +1742,7 @@ TEST_FUNCTION(module_publish_worker_exits_on_Unlock_fail)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1781,7 +1783,7 @@ TEST_FUNCTION(module_publish_worker_exits_on_nn_recv_error)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1820,7 +1822,7 @@ TEST_FUNCTION(module_publish_worker_message_size_matches_but_not_quit_for_me)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -1887,7 +1889,7 @@ TEST_FUNCTION(module_publish_worker_continue_on_CreateFromByteArray_fails)
     call_status_for_FakeModule_Receive.module = fake_module.module_handle;
     call_status_for_FakeModule_Receive.messageHandle = message;
 
-    auto add_result = Broker_AddModule(broker, &fake_module);
+    (void)Broker_AddModule(broker, &fake_module);
 
     mocks.ResetAllCalls();
 
@@ -2359,11 +2361,6 @@ TEST_FUNCTION(Broker_AddLink_null_link_fails)
     ///arrange
     CBrokerMocks mocks;
     BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
-    BROKER_LINK_DATA bld =
-    {
-        fake_module_handle,
-        fake_module_handle
-    };
 
     ///act
     auto result = Broker_AddLink(broker, NULL);
@@ -2671,11 +2668,6 @@ TEST_FUNCTION(Broker_RemoveLink_null_link_fails)
     ///arrange
     CBrokerMocks mocks;
     BROKER_HANDLE broker = (BROKER_HANDLE)0x01;
-    BROKER_LINK_DATA bld =
-    {
-        fake_module_handle,
-        fake_module_handle
-    };
 
     ///act
     auto result = Broker_RemoveLink(broker, NULL);

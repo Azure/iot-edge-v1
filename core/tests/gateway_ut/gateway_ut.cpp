@@ -222,6 +222,10 @@ public:
     MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
 
     MOCK_STATIC_METHOD_4(, void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param)
+        (void)event_system;
+        (void)event_type;
+        (void)callback;
+        (void)user_param;
         // no-op
     MOCK_VOID_METHOD_END();
 
@@ -425,6 +429,10 @@ static void expectEventSystemDestroy(CGatewayLLMocks &mocks)
 
 static void sampleCallbackFunc(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
+    (void)ctx;
+    (void)user_param;
     sampleCallbackFuncCallCount++;
 }
 
@@ -2331,7 +2339,7 @@ TEST_FUNCTION(Gateway_RemoveModule_Finds_Module_Data_Failure)
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
     mocks.ResetAllCalls();
 
     //Expectations
@@ -2406,7 +2414,7 @@ TEST_FUNCTION(Gateway_RemoveLink_Does_Nothing_If_Gateway_NULL)
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
@@ -2419,7 +2427,7 @@ TEST_FUNCTION(Gateway_RemoveLink_Does_Nothing_If_Gateway_NULL)
         "dummy module2"
     };
 
-    MODULE_HANDLE handle2 = Gateway_AddModule(gw, &dummyEntry2);
+    (void)Gateway_AddModule(gw, &dummyEntry2);
 
     Gateway_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
 
@@ -2460,7 +2468,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSourceModule_Find_Link_Data_Failure)
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
@@ -2478,7 +2486,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSourceModule_Find_Link_Data_Failure)
         "dummy module"        
     };
 
-    MODULE_HANDLE handle2 = Gateway_AddModule(gw, &dummyEntry2);
+    (void)Gateway_AddModule(gw, &dummyEntry2);
 
     Gateway_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
 
@@ -2505,7 +2513,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_Link_Data_Failure)
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
@@ -2523,7 +2531,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_Link_Data_Failure)
         "NonExistingLink"
     };
 
-    MODULE_HANDLE handle2 = Gateway_AddModule(gw, &dummyEntry2);
+    (void)Gateway_AddModule(gw, &dummyEntry2);
 
     Gateway_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
 
@@ -2550,7 +2558,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_star_Link_Data_Failu
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
@@ -2564,7 +2572,7 @@ TEST_FUNCTION(Gateway_RemoveLink_NonExistingSinkModule_Find_star_Link_Data_Failu
         dm2
     };
 
-    MODULE_HANDLE handle2 = Gateway_AddModule(gw, &dummyEntry2);
+    (void)Gateway_AddModule(gw, &dummyEntry2);
 
     Gateway_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
 
@@ -2604,7 +2612,7 @@ TEST_FUNCTION(Gateway_RemoveLink_Finds_Link_Data_Success)
     //Arrange
     CGatewayLLMocks mocks;
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    MODULE_HANDLE handle = Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
+    (void)Gateway_AddModule(gw, (GATEWAY_MODULES_ENTRY*)BASEIMPLEMENTATION::VECTOR_front(dummyProps->gateway_modules));
 
     GATEWAY_MODULES_ENTRY dummyEntry2 = {
         "dummy module2",
@@ -2622,7 +2630,7 @@ TEST_FUNCTION(Gateway_RemoveLink_Finds_Link_Data_Success)
         "dummy module2"
     };
 
-    MODULE_HANDLE handle2 = Gateway_AddModule(gw, &dummyEntry2);
+    (void)Gateway_AddModule(gw, &dummyEntry2);
 
     Gateway_AddLink(gw, (GATEWAY_LINK_ENTRY*)&dummyLink);
 
@@ -2685,10 +2693,6 @@ TEST_FUNCTION(Gateway_AddLink_with_Null_Link_Fail)
     CGatewayLLMocks mocks;
 
     GATEWAY_HANDLE gw = Gateway_Create(NULL);
-    GATEWAY_LINK_ENTRY dummyLink2 = {
-        "dummy module",
-        "dummy module2"
-    };
 
     mocks.ResetAllCalls();
 
@@ -5256,7 +5260,7 @@ TEST_FUNCTION(Gateway_Start_starts_stuff)
     };
     const MODULE_API * dummy_nostart_api = reinterpret_cast<const MODULE_API*>(&dummyAPIs_nostart);
 
-    MODULE_HANDLE handle1 = Gateway_AddModule(gw, &entry1);
+    (void)Gateway_AddModule(gw, &entry1);
     MODULE_HANDLE handle2 = Gateway_AddModule(gw, &entry2);
     mocks.ResetAllCalls();
 

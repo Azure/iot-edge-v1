@@ -5,15 +5,14 @@
 
 #include <glib.h>
 
-#include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/buffer_.h"
-#include "azure_c_shared_utility/refcount.h"
 
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
+
 #include "bleio_seq_linux_common.h"
 
 typedef struct TIMER_CONTEXT_TAG {
@@ -101,7 +100,7 @@ BLEIO_SEQ_RESULT schedule_periodic(
         // check after this call and 'on-timer' might have run by then
         // in which case it would have done a DEC_REF and the ref counts will be
         // out of whack
-        INC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+        inc_ref_handle(handle_data);
 
         /*Codes_SRS_BLEIO_SEQ_13_017: [ BLEIO_Seq_Run shall create timers at the specified intervals for scheduling execution of all READ_PERIODIC instructions. ]*/
         /*Codes_SRS_BLEIO_SEQ_13_039: [ BLEIO_Seq_AddInstruction shall create a timer at the specified interval if the instruction is a READ_PERIODIC instruction. ]*/
@@ -113,7 +112,7 @@ BLEIO_SEQ_RESULT schedule_periodic(
         if (timer_id == 0)
         {
             LogError("g_timeout_add failed");
-            DEC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+            dec_ref_handle_only(handle_data);
             free(context);
             result = BLEIO_SEQ_ERROR;
         }

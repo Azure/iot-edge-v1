@@ -5,8 +5,6 @@
 #include <functional>
 
 #include "uv.h"
-#include "v8.h"
-
 #include "lock.h"
 #include "nodejs_utils.h"
 #include "nodejs_idle.h"
@@ -132,5 +130,6 @@ void NodeJSIdle::InvokeCallbacks()
 
 void NodeJSIdle::OnIdle(uv_async_t* handle)
 {
+    (void)handle;
     NodeJSIdle::Get()->InvokeCallbacks();
 }

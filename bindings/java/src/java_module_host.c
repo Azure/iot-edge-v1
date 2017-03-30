@@ -543,6 +543,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_LocalBroker_publish
 
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
 {
+    (void)jBroker;
     /*Codes_SRS_JAVA_MODULE_HOST_14_048: [This function shall return a non - zero value if any underlying function call fails.]*/
     BROKER_RESULT result = BROKER_ERROR;
 

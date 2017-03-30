@@ -254,7 +254,7 @@ BEGIN_TEST_SUITE(gateway_e2e)
                 );
             ASSERT_IS_NOT_NULL(iotHubTestHandle);
 
-            IOTHUB_TEST_CLIENT_RESULT result = IoTHubTest_ListenForEventForMaxDrainTime(iotHubTestHandle, IoTHubCallback, IoTHubAccount_GetIoTHubPartitionCount(g_iothubAcctInfo), sendData);
+            (void)IoTHubTest_ListenForEventForMaxDrainTime(iotHubTestHandle, IoTHubCallback, IoTHubAccount_GetIoTHubPartitionCount(g_iothubAcctInfo), sendData);
             IoTHubTest_Deinit(iotHubTestHandle);
         }
 
