@@ -405,7 +405,7 @@ public:
 
     MOCK_STATIC_METHOD_2(, JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index)
         JSON_Object* object = NULL;
-        if (arr != NULL && index >= 0)
+        if (arr != NULL)
         {
             object = (JSON_Object*)0x42;
         }
@@ -853,10 +853,7 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
     {
         ///arrange
         CBLEC2DMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
+
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
             .IgnoreArgument(1)
             .SetReturn((const char*)"write_at_init");
@@ -890,10 +887,7 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
     {
         ///arrange
         CBLEC2DMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
+
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
             .IgnoreArgument(1)
             .SetReturn((const char*)"write_at_init");
@@ -930,10 +924,7 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
     {
         ///arrange
         CBLEC2DMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
+
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
             .IgnoreArgument(1)
             .SetReturn((const char*)"write_at_init");
@@ -970,10 +961,7 @@ BEGIN_TEST_SUITE(ble_c2d_ut)
     {
         ///arrange
         CBLEC2DMocks mocks;
-        unsigned char fake = '\0';
-        CONSTBUFFER messageBuffer;
-        messageBuffer.buffer = &fake;
-        messageBuffer.size = 1;
+
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "type"))
             .IgnoreArgument(1)
             .SetReturn((const char*)"write_at_init");

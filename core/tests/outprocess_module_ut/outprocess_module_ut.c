@@ -74,6 +74,7 @@ static TEST_MUTEX_HANDLE g_dllByDll;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -530,7 +531,8 @@ static void setup_create_config(OUTPROCESS_MODULE_CONFIG* config)
 		OUTPROCESS_LIFECYCLE_SYNC,
 		STRING_construct("control_uri"),
 		STRING_construct("message_uri"),
-		STRING_construct("outprocess_module_args")
+		STRING_construct("outprocess_module_args"),
+		0
 	};
 	*config = new_config;
 	umock_c_reset_all_calls();
@@ -561,6 +563,7 @@ static void setup_create_connections(OUTPROCESS_MODULE_CONFIG* config)
 
 static void setup_create_create_message(OUTPROCESS_MODULE_CONFIG* config)
 {
+    (void)config;
 	STRICT_EXPECTED_CALL(STRING_length(IGNORED_PTR_ARG))
 		.IgnoreAllArguments();
 	STRICT_EXPECTED_CALL(STRING_c_str(IGNORED_PTR_ARG))
@@ -2198,7 +2201,7 @@ TEST_FUNCTION(Outprocess_Create_returns_null_control_socket_fails)
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
 	const char * real_message_uri = real_STRING_c_str(config.message_uri);
-	const char * real_control_uri = real_STRING_c_str(config.control_uri);
+
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());
@@ -2239,7 +2242,7 @@ TEST_FUNCTION(Outprocess_Create_returns_null_message_connect_fails)
 	OUTPROCESS_MODULE_CONFIG config;
 	setup_create_config(&config);
 	const char * real_message_uri = real_STRING_c_str(config.message_uri);
-	const char * real_control_uri = real_STRING_c_str(config.control_uri);
+
 	STRICT_EXPECTED_CALL(gballoc_malloc(IGNORED_NUM_ARG))
 		.IgnoreArgument(1);
 	STRICT_EXPECTED_CALL(Lock_Init());

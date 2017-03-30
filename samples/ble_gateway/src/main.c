@@ -73,7 +73,7 @@ int main(int argc, char*argv[])
 static bool validate_args(int argc, char* argv[])
 {
     bool result;
-    const size_t EXPECTED_PARAMS = 2;
+    const int EXPECTED_PARAMS = 2;
 
     // we expect the path to the gateway JSON to be passed in
     if (argc < EXPECTED_PARAMS)
@@ -84,7 +84,7 @@ static bool validate_args(int argc, char* argv[])
     else
     {
         result = true;
-        for (size_t i = 1; i < EXPECTED_PARAMS; i++)
+        for (int i = 1; i < EXPECTED_PARAMS; i++)
         {
             char* param = argv[i];
             if (strlen(param) == 0)

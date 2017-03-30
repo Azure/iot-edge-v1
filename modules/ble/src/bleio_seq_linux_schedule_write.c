@@ -8,7 +8,6 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/buffer_.h"
-#include "azure_c_shared_utility/refcount.h"
 
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
@@ -22,6 +21,7 @@ typedef struct WRITE_CONTEXT_TAG {
 
 static void on_write_complete(BLEIO_GATT_HANDLE bleio_gatt_handle, void* write_context, BLEIO_GATT_RESULT result)
 {
+    (void)bleio_gatt_handle;
     // this MUST NOT be NULL
     WRITE_CONTEXT* context = (WRITE_CONTEXT*)write_context;
     if (context->handle_data->on_write_complete != NULL)
@@ -102,7 +102,7 @@ BLEIO_SEQ_RESULT schedule_write(
         // even before we hit the if check after this call and 'on_read_complete'
         // might have run by then in which case it would have done a DEC_REF and
         // the ref counts will be out of whack
-        INC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+        inc_ref_handle(handle_data);
 
         int write_result = BLEIO_gatt_write_char_by_uuid(
             handle_data->bleio_gatt_handle,
@@ -117,7 +117,7 @@ BLEIO_SEQ_RESULT schedule_write(
             /*Codes_SRS_BLEIO_SEQ_13_014: [ BLEIO_Seq_Run shall return BLEIO_SEQ_ERROR if an underlying platform call fails. ]*/
             result = BLEIO_SEQ_ERROR;
             free(context);
-            DEC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+            dec_ref_handle_only(handle_data);
             LogError("BLEIO_gatt_write_char_by_uuid failed with %d.", write_result);
         }
         else

@@ -98,6 +98,7 @@ static TEST_MUTEX_HANDLE g_dllByDll;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -148,7 +149,7 @@ MOCK_FUNCTION_END(arr)
 
 MOCK_FUNCTION_WITH_CODE(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index)
     JSON_Value* val = NULL;
-    if (arr != NULL && index >= 0)
+    if (arr != NULL)
     {
         val = (JSON_Value*)0x42;
     }
@@ -163,9 +164,6 @@ MOCK_FUNCTION_WITH_CODE(, JSON_Value_Type, json_value_get_type, const JSON_Value
 MOCK_FUNCTION_END(val)
 
 #undef ENABLE_MOCKS
-
-TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
 
 TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);

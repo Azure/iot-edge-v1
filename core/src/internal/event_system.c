@@ -426,5 +426,8 @@ static GATEWAY_EVENT_CTX handle_module_list_update(EVENTSYSTEM_HANDLE event_syst
 
 static void callback_destroy_modulelist(GATEWAY_HANDLE gateway, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX context, void* user_param)
 {
+    (void)gateway;
+    (void)event_type;
+    (void)user_param;
     Gateway_DestroyModuleList((VECTOR_HANDLE)context);
 }
