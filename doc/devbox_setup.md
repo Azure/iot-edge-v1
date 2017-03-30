@@ -11,12 +11,13 @@ This document describes how to prepare your development environment to use the *
 
 This section shows you how to set up a development environment for the Azure IoT Gateway SDK on Windows 10.
 
-1. Install [Visual Studio 2015](https://www.visualstudio.com). You can use the free Community Edition if you meet the licensing requirements.
+1. Install [Visual Studio 2015 or 2017](https://www.visualstudio.com). You can use the free Community Edition if you meet the licensing requirements.
 
     > Note: Be sure to include Visual C++ and NuGet Package Manager.
 
 1. Install [git](http://www.git-scm.com) making sure git.exe can be run from a command line.
-1. Install [cmake](https://cmake.org/download/) making sure cmake.exe can be run from a command line.
+
+1. Install [CMake](https://cmake.org/download/) making sure cmake.exe can be run from a command line. CMake version 3.7.2 or later is recommended.
 
     > Note: Using the .msi is the easiest option when installing on Windows. Add CMake to the PATH for at least the current user when prompted to do so by the installer.
 
