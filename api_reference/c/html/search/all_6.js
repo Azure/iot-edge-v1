@@ -26,5 +26,8 @@ var searchData=
   ['gateway_5fstart_5fresult',['GATEWAY_START_RESULT',['../gateway_8h.html#ad664beda78e10e50a0f7457bc6035990',1,'gateway.h']]],
   ['gateway_5fstart_5fresult_5ftag',['GATEWAY_START_RESULT_TAG',['../gateway_8h.html#a08907b883f120e6db312046ca681f91b',1,'gateway.h']]],
   ['gateway_5fstartmodule',['Gateway_StartModule',['../gateway_8h.html#aaab37b00c68fbcb208cd0481c102aa57',1,'gateway.h']]],
+  ['gateway_5fupdate_5ffrom_5fjson_5fresult',['GATEWAY_UPDATE_FROM_JSON_RESULT',['../gateway_8h.html#a1de35903d34aee7c00c81ac30fbcdc16',1,'gateway.h']]],
+  ['gateway_5fupdate_5ffrom_5fjson_5fresult_5ftag',['GATEWAY_UPDATE_FROM_JSON_RESULT_TAG',['../gateway_8h.html#a936c3ae3c446f4dc3890d850ce6cfdfa',1,'gateway.h']]],
+  ['gateway_5fupdatefromjson',['Gateway_UpdateFromJson',['../gateway_8h.html#a9b25760d53b3874861bde77ea3d38305',1,'gateway.h']]],
   ['getapi',['GetApi',['../struct_m_o_d_u_l_e___l_o_a_d_e_r___a_p_i___t_a_g.html#a5a7c8fcfa4f58bb8497f64eb524c60f7',1,'MODULE_LOADER_API_TAG']]]
 ];

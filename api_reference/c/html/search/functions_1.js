@@ -9,5 +9,6 @@ var searchData=
   ['gateway_5fremovemodule',['Gateway_RemoveModule',['../gateway_8h.html#a607e0afa7d4cc46e3d2483c6589dba0d',1,'gateway.h']]],
   ['gateway_5fremovemodulebyname',['Gateway_RemoveModuleByName',['../gateway_8h.html#a16f456ecc0348ed7eef8d559a534bd11',1,'gateway.h']]],
   ['gateway_5fstart',['Gateway_Start',['../gateway_8h.html#a2bc0b555e594cd968db3e3d2601fdad2',1,'gateway.h']]],
-  ['gateway_5fstartmodule',['Gateway_StartModule',['../gateway_8h.html#aaab37b00c68fbcb208cd0481c102aa57',1,'gateway.h']]]
+  ['gateway_5fstartmodule',['Gateway_StartModule',['../gateway_8h.html#aaab37b00c68fbcb208cd0481c102aa57',1,'gateway.h']]],
+  ['gateway_5fupdatefromjson',['Gateway_UpdateFromJson',['../gateway_8h.html#a9b25760d53b3874861bde77ea3d38305',1,'gateway.h']]]
 ];
