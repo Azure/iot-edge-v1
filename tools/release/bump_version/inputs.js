@@ -72,11 +72,47 @@ module.exports = [
     ///////////////////////////////////////////////////
     // .NET Core binding
     ///////////////////////////////////////////////////
+	
+	//PackageVersion
+	{
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/dotnet_core_module_sample/modules/SensorModule/SensorModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+	{
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/dotnet_core_module_sample/modules/PrinterModule/PrinterModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
     {
-        "taskType": "jsonReplaceTask",
-        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/project.json",
-        "search": "version",
-        "replaceString": "bindings.dotnetcore"
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/E2ETestModule/E2ETestModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/Microsoft.Azure.Devices.Gateway.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway.Tests/Microsoft.Azure.Devices.Gateway.Tests.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
     },
     {
         "taskType": "regexReplaceTask",
