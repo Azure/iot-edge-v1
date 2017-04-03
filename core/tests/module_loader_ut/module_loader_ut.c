@@ -94,8 +94,10 @@ static const size_t LOADERS_COUNT = sizeof(g_enabled_loaders) / sizeof(g_enabled
 //Globals
 //=============================================================================
 
-static TEST_MUTEX_HANDLE g_testByTest;
+#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
+#endif
+static TEST_MUTEX_HANDLE g_testByTest;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {

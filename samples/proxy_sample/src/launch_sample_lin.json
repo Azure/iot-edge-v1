@@ -1,0 +1,53 @@
+{
+  "modules": [
+    {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "../../modules/logger/liblogger.so"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    },
+    {
+      "name": "out of process",
+      "loader": {
+        "name": "outprocess",
+        "entrypoint": {
+          "activation.type": "launch",
+          "control.id": "outprocess_module_control",
+          "launch": {
+            "path": "proxy_sample_remote.exe",
+            "args": [
+              "outprocess_module_control"
+            ]
+          }
+        }
+      },
+      "args": "THIS IS THE OOP MODULE CONFIGURATION"
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "../../modules/hello_world/libhello_world.so"
+        }
+      },
+      "args": null
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "out of process"
+    },
+    {
+      "source": "out of process",
+      "sink": "logger"
+    }
+  ]
+}

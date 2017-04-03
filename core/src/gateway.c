@@ -161,6 +161,7 @@ GATEWAY_HANDLE Gateway_Create(const GATEWAY_PROPERTIES* properties)
         result = gateway_create_internal(properties, false);
         if (result == NULL)
         {
+            /* Codes_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ] */
             /* Codes_SRS_GATEWAY_17_017: [ This function shall destroy the default module loaders upon any failure. ]*/
             ModuleLoader_Destroy();
         }

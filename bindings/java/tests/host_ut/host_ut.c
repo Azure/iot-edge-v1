@@ -82,8 +82,10 @@ typedef signed char jbyte;
 //Globals
 //=============================================================================
 
+#ifdef WIN32
+  static TEST_MUTEX_HANDLE g_dllByDll;
+#endif
 static TEST_MUTEX_HANDLE g_testByTest;
-static TEST_MUTEX_HANDLE g_dllByDll;
 
 static bool malloc_will_fail = false;
 

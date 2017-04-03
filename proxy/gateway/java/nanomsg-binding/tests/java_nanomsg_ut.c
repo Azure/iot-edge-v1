@@ -29,8 +29,10 @@
 
 #include <nn.h>
 #include <pair.h>
+#ifdef WIN32
+  static TEST_MUTEX_HANDLE g_dllByDll;
+#endif
 static TEST_MUTEX_HANDLE g_testByTest;
-static TEST_MUTEX_HANDLE g_dllByDll;
 
 #define ENABLE_MOCKS
 #include <jni.h>
@@ -62,28 +64,34 @@ MOCK_FUNCTION_END(methodID)
 
 jobject NewObject(JNIEnv *env, jclass clazz, jmethodID methodID, ...)
 {
+    (void)env;
+    (void)clazz;
+    (void)methodID;
     return (jobject)0x42;
 }
 
 jobject CallObjectMethod(JNIEnv *env, jobject obj, jmethodID methodID, ...)
 {
+    (void)env;
+    (void)obj;
+    (void)methodID;
     return (jobject)0x42;
 }
 
 MOCK_FUNCTION_WITH_CODE(JNICALL, jstring, NewStringUTF, JNIEnv*, env, const char*, utf);
-jstring jstr = (jstring)utf;
+    jstring jstr = (jstring)utf;
 MOCK_FUNCTION_END(jstr)
 
 MOCK_FUNCTION_WITH_CODE(JNICALL, const char *, GetStringUTFChars, JNIEnv*, env, jstring, str, jboolean*, isCopy);
-char *stringChars = "Test";
+    char *stringChars = "Test";
 MOCK_FUNCTION_END(stringChars)
 
 MOCK_FUNCTION_WITH_CODE(JNICALL, jsize, GetArrayLength, JNIEnv*, env, jarray, arr);
-jsize size = sizeof(arr);
+    jsize size = sizeof(arr);
 MOCK_FUNCTION_END(size)
 
 MOCK_FUNCTION_WITH_CODE(JNICALL, jbyteArray, NewByteArray, JNIEnv*, env, jsize, len);
-jbyteArray arr =(jbyteArray)malloc(1);
+    jbyteArray arr =(jbyteArray)malloc(1);
 MOCK_FUNCTION_END(arr)
 
 MOCK_FUNCTION_WITH_CODE(JNICALL, void, GetByteArrayRegion, JNIEnv*, env, jbyteArray, arr, jsize, start, jsize, len, jbyte*, buf);
@@ -101,6 +109,7 @@ MOCK_FUNCTION_END()
 MOCKABLE_FUNCTION(JNICALL, void, DeleteLocalRef, JNIEnv*, env, jobject, obj);
 void my_DeleteLocalRef(JNIEnv* env, jobject obj)
 {
+    (void)env;
     free((void*)obj);
 }
 
@@ -261,8 +270,6 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1errno_s
     umock_c_reset_all_calls();
 
     jobject jObject = (jobject)0x42;
-    jint err = (jint)21;
-    jclass clazz = (jclass)0x42;
 
     STRICT_EXPECTED_CALL(nn_errno())
         .SetReturn(EAGAIN);
@@ -281,7 +288,6 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
 
     jobject jObject = (jobject)0x42;
     jint err = (jint)21;
-    jclass clazz = (jclass)0x42;
     const char* error = "Error";
 
     STRICT_EXPECTED_CALL(nn_strerror(err))
@@ -293,7 +299,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
         .IgnoreArgument(1);
 
     //Act
-    jstring result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
+    (void)Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
 }
 
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror_returns_empty)
@@ -303,7 +309,6 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
 
     jobject jObject = (jobject)0x42;
     jint err = (jint)21;
-    jclass clazz = (jclass)0x42;
     const char* error = "Error";
 
     STRICT_EXPECTED_CALL(nn_strerror(err))
@@ -315,7 +320,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
         .IgnoreArgument(1);
 
     //Act
-    jstring result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
+    (void)Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
 }
 
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror_returns_empty_if_exception)
@@ -325,7 +330,6 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
 
     jobject jObject = (jobject)0x42;
     jint err = (jint)21;
-    jclass clazz = (jclass)0x42;
     const char* error = "Error";
     jthrowable exception = (jthrowable)0x42;
 
@@ -341,7 +345,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerro
         .IgnoreArgument(1);
 
     //Act
-    jstring result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
+    (void)Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1strerror(global_env, jObject, err);
 }
 
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1socket_success)
@@ -503,7 +507,6 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_su
 
     jobject jObject = (jobject)0x42;
     jint socket = (jint)1;
-    jbyteArray buffer = (jbyteArray)0x42;
     jint flags = (jint)1;
     int expectedResult = 4;
     void *buf = NULL;
@@ -514,9 +517,9 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_su
     STRICT_EXPECTED_CALL(SetByteArrayRegion(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 0, expectedResult, IGNORED_PTR_ARG));
     STRICT_EXPECTED_CALL(ExceptionOccurred(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
-    
+
     //Act
-    jbyteArray result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv(global_env, jObject, socket, flags);
+    (void)Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv(global_env, jObject, socket, flags);
 }
 
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_return_null_if_no_message)
@@ -526,11 +529,8 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_re
 
     jobject jObject = (jobject)0x42;
     jint socket = (jint)1;
-    jbyteArray buffer = (jbyteArray)0x42;
     jint flags = (jint)1;
-    int expectedResult = 4;
-    void *buf = NULL;
-    
+
     STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
         .IgnoreAllArguments()
         .SetReturn(-1);
@@ -549,10 +549,8 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_re
 
     jobject jObject = (jobject)0x42;
     jint socket = (jint)1;
-    jbyteArray buffer = (jbyteArray)0x42;
     jint flags = (jint)1;
     int expectedResult = 4;
-    void *buf = NULL;
 
     STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
         .IgnoreAllArguments()
@@ -575,10 +573,8 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1recv_re
 
     jobject jObject = (jobject)0x42;
     jint socket = (jint)1;
-    jbyteArray buffer = (jbyteArray)0x42;
     jint flags = (jint)1;
     int expectedResult = 4;
-    void *buf = NULL;
     jthrowable exception = (jthrowable)0x42;
 
     STRICT_EXPECTED_CALL(nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, NN_DONTWAIT))
@@ -615,7 +611,7 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_getSymbols_
     STRICT_EXPECTED_CALL(nn_symbol(1, IGNORED_PTR_ARG))
         .IgnoreArgument(2)
         .SetReturn(NULL);
-   
+
     //Act
     jobject result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_getSymbols(global_env, jClass);
 
@@ -643,13 +639,10 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_getSymbols_
     umock_c_reset_all_calls();
 
     jclass jClass = (jclass)0x42;
-    jobject jObject = (jobject)0x42;
-    jmethodID jMethodId = (jmethodID)0x42;
     char* symbol = "NN_PAIR";
     jthrowable exception = (jthrowable)0x42;
 
-    int tests = 0;
-    tests = umock_c_negative_tests_init();
+    umock_c_negative_tests_init();
 
     STRICT_EXPECTED_CALL(nn_symbol(0, IGNORED_PTR_ARG))
         .IgnoreArgument(2)
@@ -694,13 +687,11 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_getSymbols_
     umock_c_reset_all_calls();
 
     jclass jClass = (jclass)0x42;
-    jobject jObject = (jobject)0x42;
     jmethodID jMethodId = (jmethodID)0x42;
     char* symbol = "NN_PAIR";
     jthrowable exception = (jthrowable)0x42;
 
-    int tests = 0;
-    tests = umock_c_negative_tests_init();
+    umock_c_negative_tests_init();
 
     STRICT_EXPECTED_CALL(FindClass(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreAllArguments()

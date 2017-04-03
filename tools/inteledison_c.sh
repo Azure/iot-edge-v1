@@ -110,7 +110,7 @@ cmake_root="$build_root"/build
 rm -r -f "$cmake_root"
 mkdir -p "$cmake_root"
 pushd "$cmake_root"
-cmake $dependency_install_prefix -DCMAKE_TOOLCHAIN_FILE=$FILE -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Drun_unittests:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cmake $dependency_install_prefix -DCMAKE_TOOLCHAIN_FILE=$FILE -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Drun_unittests:BOOL=OFF -Denable_native_remote_modules:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)

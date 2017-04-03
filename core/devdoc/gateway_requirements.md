@@ -115,6 +115,8 @@ Gateway_Create creates a new gateway using information from the `GATEWAY_PROPERT
 
 **SRS_GATEWAY_17_017: [** This function shall destroy the default module loaders upon any failure. **]**
 
+**SRS_GATEWAY_27_027: [** *Launch* - This function shall join any spawned threads upon any failure. **]**
+
 **SRS_GATEWAY_14_003: [** This function shall create a new `BROKER_HANDLE` for the gateway representing this gateway's message broker. **]**
 
 **SRS_GATEWAY_14_004: [** This function shall return `NULL` if a `BROKER_HANDLE` cannot be created. **]**
@@ -183,6 +185,8 @@ Gateway_Destroy destroys a gateway represented by the `gw` parameter.
 **SRS_GATEWAY_04_014: [** The function shall remove each link in `GATEWAY_HANDLE_DATA`'s `links` vector and destroy `GATEWAY_HANDLE_DATA`'s `link`. **]**
 
 **SRS_GATEWAY_14_037: [** If `GATEWAY_HANDLE_DATA`'s message broker cannot remove a module, the function shall log the error and continue removing modules from the `GATEWAY_HANDLE`. **]**
+
+**SRS_GATEWAY_27_040: [** *Launch* - `Gateway_Destroy` shall join any spawned threads. **]**
 
 **SRS_GATEWAY_14_006: [** The function shall destroy the `GATEWAY_HANDLE_DATA`'s `broker` `BROKER_HANDLE`. **]**
 

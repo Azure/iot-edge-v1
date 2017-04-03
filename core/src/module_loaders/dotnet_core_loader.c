@@ -30,8 +30,6 @@ static DOTNET_CORE_LOADER_CONFIGURATION* create_default_config();
 
 static int set_default_paths(DOTNET_CORE_CLR_OPTIONS* options);
 
-static DYNAMIC_LIBRARY_HANDLE hCoreCLRModule;
-
 static DYNAMIC_LIBRARY_HANDLE DotnetCoreModuleLoader_LoadBindingModule(const MODULE_LOADER* loader)
 {
     // find the binding path from the loader configuration; if there isn't one, use

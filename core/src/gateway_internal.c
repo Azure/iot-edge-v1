@@ -12,6 +12,9 @@
 #include "experimental/event_system.h"
 #include "broker.h"
 #include "module_access.h"
+#ifdef OUTPROCESS_ENABLED
+  #include "module_loaders/outprocess_loader.h"
+#endif
 
 #include "gateway_internal.h"
 
@@ -310,6 +313,10 @@ void gateway_destroy_internal(GATEWAY_HANDLE gw)
             }
 
             VECTOR_destroy(gateway_handle->modules);
+#ifdef OUTPROCESS_ENABLED
+            /*Codes_SRS_GATEWAY_27_040: [ Launch - `Gateway_Destroy` shall join any spawned threads. ]*/
+            OutprocessLoader_JoinChildProcesses();
+#endif
         }
 
         if (gateway_handle->broker != NULL)

@@ -311,6 +311,7 @@ static void* DotNetCore_ParseConfigurationFromJson(const char* configuration)
 
 void DotNetCore_FreeConfiguration(void* configuration)
 {
+    (void)configuration;
     //Nothing to be freed here.
 }
 

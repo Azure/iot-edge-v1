@@ -51,9 +51,10 @@ MOCKABLE_FUNCTION(, JSON_Object*, json_value_get_object, const JSON_Value *, val
 
 #include "azure_functions.h"
 
-
-static TEST_MUTEX_HANDLE g_testByTest;
+#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
+#endif
+static TEST_MUTEX_HANDLE g_testByTest;
 
 DEFINE_ENUM_STRINGS(UMOCK_C_ERROR_CODE, UMOCK_C_ERROR_CODE_VALUES)
 

@@ -71,8 +71,10 @@ static pfModuleLoader_FreeModuleConfiguration JavaModuleLoader_FreeModuleConfigu
 //Globals
 //=============================================================================
 
+#ifdef WIN32
+  static TEST_MUTEX_HANDLE g_dllByDll;
+#endif
 static TEST_MUTEX_HANDLE g_testByTest;
-static TEST_MUTEX_HANDLE g_dllByDll;
 static const MODULE_LOADER* g_loader;
 static MODULE_LOADER_BASE_CONFIGURATION* g_config;
 
