@@ -214,6 +214,8 @@ void ModulesManager::ExitNodeThread() const
 {
     NodeJSIdle::Get()->AddCallback([]() {
         NodeJSUtils::RunWithNodeContext([](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+            (void)isolate;
+            (void)context;
             NodeJSIdle::Get()->DeInitialize();
         });
     });

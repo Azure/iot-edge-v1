@@ -68,7 +68,7 @@ static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, si
 			else
 			{
 				/* allocate 1 more for null-termination */
-				*value = (char *)malloc(chunk_size);
+				*value = (unsigned char *)malloc(chunk_size);
 				if (*value == NULL)
 				{
 					LogError("unable to allocate memory chunk");
@@ -165,7 +165,7 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			position,
 			&current_parsed,
 			&(create_msg->args_size),
-			&(create_msg->args)) != 0)
+			(unsigned char**)(&(create_msg->args))) != 0)
 		{
 			LogError("unable to parse a module args");
 			result = __LINE__;
@@ -218,7 +218,7 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
 			(void)parse_uint32_t(source, size, currentPosition, &parsed, &messageSize);
             currentPosition += parsed;
 			/*Codes_SRS_CONTROL_MESSAGE_17_006: [ If the size embedded in the message is not the same as size parameter then this function shall fail and return NULL. ]*/
-            if ((messageSize < 0) || ((size_t)messageSize != size))
+            if (messageSize != size)
             {
                 LogError("message size is inconsistent");
                 result = NULL;
