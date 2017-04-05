@@ -237,7 +237,7 @@ bluez_characteristic_org_freedesktop_dbus_introspectable_interface_info (void)
  * Returns: The last property id.
  */
 guint
-bluez_characteristic_org_freedesktop_dbus_introspectable_override_properties (GObjectClass *klass, guint property_id_begin)
+bluez_characteristic_org_freedesktop_dbus_introspectable_override_properties (GObjectClass *klass G_GNUC_UNUSED, guint property_id_begin)
 {
   return property_id_begin - 1;
 }
@@ -399,7 +399,7 @@ _out:
  */
 void
 bluez_characteristic_org_freedesktop_dbus_introspectable_complete_introspect (
-    bluezcharacteristicOrgFreedesktopDBusIntrospectable *object,
+    bluezcharacteristicOrgFreedesktopDBusIntrospectable *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     const gchar *xml)
 {
@@ -449,17 +449,17 @@ bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_finalize (GObject
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_get_property (GObject      *object,
-  guint         prop_id,
-  GValue       *value,
+bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_get_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  GValue       *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_set_property (GObject      *object,
-  guint         prop_id,
-  const GValue *value,
+bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_set_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  const GValue *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
@@ -567,7 +567,7 @@ bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_class_init (bluez
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_iface_init (bluezcharacteristicOrgFreedesktopDBusIntrospectableIface *iface)
+bluez_characteristic_org_freedesktop_dbus_introspectable_proxy_iface_init (bluezcharacteristicOrgFreedesktopDBusIntrospectableIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -959,7 +959,7 @@ out:
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_introspectable_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton)
+bluez_characteristic_org_freedesktop_dbus_introspectable_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton G_GNUC_UNUSED)
 {
 }
 
@@ -1020,7 +1020,7 @@ bluez_characteristic_org_freedesktop_dbus_introspectable_skeleton_class_init (bl
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_introspectable_skeleton_iface_init (bluezcharacteristicOrgFreedesktopDBusIntrospectableIface *iface)
+bluez_characteristic_org_freedesktop_dbus_introspectable_skeleton_iface_init (bluezcharacteristicOrgFreedesktopDBusIntrospectableIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -2141,7 +2141,7 @@ _out:
  */
 void
 bluez_characteristic__complete_read_value (
-    bluezcharacteristic *object,
+    bluezcharacteristic *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     const gchar *value)
 {
@@ -2161,7 +2161,7 @@ bluez_characteristic__complete_read_value (
  */
 void
 bluez_characteristic__complete_write_value (
-    bluezcharacteristic *object,
+    bluezcharacteristic *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -2179,7 +2179,7 @@ bluez_characteristic__complete_write_value (
  */
 void
 bluez_characteristic__complete_start_notify (
-    bluezcharacteristic *object,
+    bluezcharacteristic *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -2197,7 +2197,7 @@ bluez_characteristic__complete_start_notify (
  */
 void
 bluez_characteristic__complete_stop_notify (
-    bluezcharacteristic *object,
+    bluezcharacteristic *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -3508,7 +3508,7 @@ bluez_characteristic_org_freedesktop_dbus_properties_interface_info (void)
  * Returns: The last property id.
  */
 guint
-bluez_characteristic_org_freedesktop_dbus_properties_override_properties (GObjectClass *klass, guint property_id_begin)
+bluez_characteristic_org_freedesktop_dbus_properties_override_properties (GObjectClass *klass G_GNUC_UNUSED, guint property_id_begin)
 {
   return property_id_begin - 1;
 }
@@ -3990,7 +3990,7 @@ _out:
  */
 void
 bluez_characteristic_org_freedesktop_dbus_properties_complete_get (
-    bluezcharacteristicOrgFreedesktopDBusProperties *object,
+    bluezcharacteristicOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     GVariant *value)
 {
@@ -4010,7 +4010,7 @@ bluez_characteristic_org_freedesktop_dbus_properties_complete_get (
  */
 void
 bluez_characteristic_org_freedesktop_dbus_properties_complete_set (
-    bluezcharacteristicOrgFreedesktopDBusProperties *object,
+    bluezcharacteristicOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation)
 {
   g_dbus_method_invocation_return_value (invocation,
@@ -4029,7 +4029,7 @@ bluez_characteristic_org_freedesktop_dbus_properties_complete_set (
  */
 void
 bluez_characteristic_org_freedesktop_dbus_properties_complete_get_all (
-    bluezcharacteristicOrgFreedesktopDBusProperties *object,
+    bluezcharacteristicOrgFreedesktopDBusProperties *object G_GNUC_UNUSED,
     GDBusMethodInvocation *invocation,
     GVariant *properties)
 {
@@ -4079,17 +4079,17 @@ bluez_characteristic_org_freedesktop_dbus_properties_proxy_finalize (GObject *ob
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_properties_proxy_get_property (GObject      *object,
-  guint         prop_id,
-  GValue       *value,
+bluez_characteristic_org_freedesktop_dbus_properties_proxy_get_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  GValue       *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_properties_proxy_set_property (GObject      *object,
-  guint         prop_id,
-  const GValue *value,
+bluez_characteristic_org_freedesktop_dbus_properties_proxy_set_property (GObject      *object G_GNUC_UNUSED,
+  guint         prop_id G_GNUC_UNUSED,
+  const GValue *value G_GNUC_UNUSED,
   GParamSpec   *pspec G_GNUC_UNUSED)
 {
 }
@@ -4197,7 +4197,7 @@ bluez_characteristic_org_freedesktop_dbus_properties_proxy_class_init (bluezchar
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_properties_proxy_iface_init (bluezcharacteristicOrgFreedesktopDBusPropertiesIface *iface)
+bluez_characteristic_org_freedesktop_dbus_properties_proxy_iface_init (bluezcharacteristicOrgFreedesktopDBusPropertiesIface *iface G_GNUC_UNUSED)
 {
 }
 
@@ -4589,7 +4589,7 @@ out:
 }
 
 static void
-bluez_characteristic_org_freedesktop_dbus_properties_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton)
+bluez_characteristic_org_freedesktop_dbus_properties_skeleton_dbus_interface_flush (GDBusInterfaceSkeleton *_skeleton G_GNUC_UNUSED)
 {
 }
 

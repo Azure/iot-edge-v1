@@ -668,7 +668,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         IotHubMocks mocks;
         const char * validJsonString = "calling it valid makes it so";
-        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -702,7 +701,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         IotHubMocks mocks;
         const char * validJsonString = "calling it valid makes it so";
-        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -743,7 +741,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         IotHubMocks mocks;
         const char * validJsonString = "calling it valid makes it so";
-        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -781,7 +778,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         IotHubMocks mocks;
         const char * validJsonString = "calling it valid makes it so";
-        BROKER_HANDLE broker = (BROKER_HANDLE)0x42;
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
         STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
@@ -873,10 +869,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         CNiceCallComparer<IotHubMocks> mocks;
 
         const char* transportStrings[] = { "http", "amqp", "mqtt" };
-        const IOTHUB_CLIENT_TRANSPORT_PROVIDER providers[] = { HTTP_Protocol, AMQP_Protocol, MQTT_Protocol };
         const size_t length = sizeof(transportStrings) / sizeof(transportStrings[0]);
 
-        for (int i = 0; i < length; ++i)
+        for (size_t i = 0; i < length; ++i)
         {
             mocks.ResetAllCalls();
 

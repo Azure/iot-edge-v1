@@ -35,20 +35,12 @@ public class GatewayModuleTest {
         assertEquals(configuration, expectedConfiguration);
     }
 
-    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or broker is null the constructor shall throw an IllegalArgumentException. ]*/
+    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_002: [ If broker is null the constructor shall throw an IllegalArgumentException. ]*/
     @Test(expected = IllegalArgumentException.class)
     public void constructorThrowsExceptionForNullBroker(){
         long address = 0x12345678;
 
         GatewayModule module = new TestModule(address, null, null);
-    }
-
-    /*Tests_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or broker is null the constructor shall throw an IllegalArgumentException. ]*/
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorThrowsExceptionForNullMessageAddr(){
-        long address = 0;
-
-        GatewayModule module = new TestModule(0, mockBroker, null);
     }
 
     public class TestModule extends GatewayModule{

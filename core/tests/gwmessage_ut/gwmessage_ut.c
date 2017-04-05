@@ -66,7 +66,9 @@ static void my_gballoc_free(void* ptr)
 
 static CONSTMAP_HANDLE my_ConstMap_Create(MAP_HANDLE sourceMap)
 {
+    (void)sourceMap;
     CONSTMAP_HANDLE result2;
+
     currentConstMap_Create_call++;
     if (whenShallConstMap_Create_fail == currentConstMap_Create_call)
     {
@@ -176,6 +178,7 @@ static void my_CONSTBUFFER_Destroy(CONSTBUFFER_HANDLE constbufferHandle)
 
 static void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -1147,7 +1150,7 @@ BEGIN_TEST_SUITE(gwmessage_ut)
         ///cleanup
     }
 
-    /*Tests_SRS_MESSAGE_02_020: [Otherwise, Message_Destroy shall decrement the internal ref count of the message.] 
+    /*Tests_SRS_MESSAGE_02_020: [Otherwise, Message_Destroy shall decrement the internal ref count of the message.]*/
     /*Tests_SRS_MESSAGE_02_021: [If the ref count is zero then the allocated resources are freed.]*/
     /*Tests_SRS_MESSAGE_17_002: [Message_Destroy shall destroy the CONSTMAP properties.]*/
     /*Tests_SRS_MESSAGE_17_005: [Message_Destroy shall destroy the CONSTBUFFER.]*/
@@ -2072,8 +2075,6 @@ BEGIN_TEST_SUITE(gwmessage_ut)
         const char* values[] = { "rocks", "awesome" };
         const char* const* *pkeys = (const char* const* *)&keys;
         const char* const* *pvalues = (const char* const* *)&values;
-
-        const CONSTBUFFER bufferContent = { (const unsigned char*)"34", 2 };
 
         STRICT_EXPECTED_CALL(ConstMap_GetInternals(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument_handle()

@@ -7,13 +7,46 @@ set -e
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 build_root=$build_root/build_nodejs
 
+# Version of Node.js to build
+node_version="v6.10.1"
+
+usage ()
+{
+    echo "build_nodejs.sh [options]"
+    echo "options"
+    echo " --node-version                 Version of Node.js to build. Defaults to $node_version"
+    exit 1
+}
+
+process_args ()
+{
+    save_next_arg=0
+
+    for arg in $*
+    do
+      if [ $save_next_arg == 1 ]
+      then
+        # save arg to pass to gcc
+        node_version="$arg"
+        save_next_arg=0
+      else
+          case "$arg" in
+              "--node-version" ) save_next_arg=1;;
+              * ) usage;;
+          esac
+      fi
+    done
+}
+
+process_args $*
+
 # clear the Node.js build folder so we have a fresh build
 rm -rf $build_root
 mkdir -p $build_root
 
 # build Node.js
 pushd $build_root
-git clone -b shared-691 --depth 1 https://github.com/avranju/node.git
+git clone -b $node_version --depth 1 https://github.com/nodejs/node.git
 pushd node
 ./configure --shared
 make -j $(nproc)

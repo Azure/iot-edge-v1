@@ -272,6 +272,8 @@ static void expectEventSystemDestroy(CEventSystemMocks &mocks, bool started_thre
 
 static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)ctx;
+    (void)user_param;
     ASSERT_IS_TRUE(event_type < GATEWAY_EVENTS_COUNT);
     callback_gw_history->push_back(gw);
     callback_per_event_count[event_type]++;
@@ -279,6 +281,8 @@ static void countingCallback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWA
 
 static void catch_context_callback(GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param)
 {
+    (void)gw;
+    (void)event_type;
     last_context = ctx;
     last_user_param = user_param;
 }
@@ -722,14 +726,29 @@ TEST_FUNCTION(EventSystem_Report_CallOrder)
     EVENTSYSTEM_HANDLE event_system = EventSystem_Init();
     // We can't have capturing lambdas used as function pointers so duplication is necessary
     EventSystem_AddEventCallback(event_system, GATEWAY_STARTED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
+        (void)gw;
+        (void)event_type;
+        (void)ctx;
+        (void)user_param;
+
         ASSERT_ARE_EQUAL(int, helper_counter, 0);
         helper_counter++;
     }, NULL);
     EventSystem_AddEventCallback(event_system, GATEWAY_STARTED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
+        (void)gw;
+        (void)event_type;
+        (void)ctx;
+        (void)user_param;
+
         ASSERT_ARE_EQUAL(int, helper_counter, 1);
         helper_counter++;
     }, NULL);
     EventSystem_AddEventCallback(event_system, GATEWAY_STARTED, [](GATEWAY_HANDLE gw, GATEWAY_EVENT event_type, GATEWAY_EVENT_CTX ctx, void* user_param) {
+        (void)gw;
+        (void)event_type;
+        (void)ctx;
+        (void)user_param;
+
         ASSERT_ARE_EQUAL(int, helper_counter, 2);
         helper_counter++;
     }, NULL);

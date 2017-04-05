@@ -146,7 +146,7 @@ private:
 public:
     GCompareFuncComparer(GCompareDataFunc comparer, gpointer key_compare_data) :
         _comparer(comparer),
-        _key_compare_data(_key_compare_data)
+        _key_compare_data(key_compare_data)
     {}
 
     bool operator()(const gpointer& a, const gpointer& b) const
@@ -217,7 +217,7 @@ public:
         }
     }
 
-    const gpointer lookup(const gpointer key) const
+    gpointer lookup(const gpointer key) const
     {
         auto it = _tree.find(key);
         return it == _tree.end() ? NULL : it->second;
@@ -997,6 +997,7 @@ class AsyncCallFinisherValueType : public AsyncCallFinisherBase
 public:
     T async_call_finish(GAsyncResult* res, GError** error)
     {
+        (void)res;
         ++call_count;
 
         T result;
@@ -1019,6 +1020,7 @@ class AsyncCallFinisherRefType : public AsyncCallFinisherBase
 public:
     T* async_call_finish(GAsyncResult* res, GError** error)
     {
+        (void)res;
         ++call_count;
         T* result;
 
@@ -3186,7 +3188,7 @@ BEGIN_TEST_SUITE(gatt_io_ut)
         CBLEGATTIOMocks mocks;
         auto handle = BLEIO_gatt_create(&g_device_config);
         unsigned char fake_data[] = "fake data";
-        size_t size_data = sizeof(fake_data) / sizeof(unsigned char);
+
         mocks.ResetAllCalls();
 
         ///act

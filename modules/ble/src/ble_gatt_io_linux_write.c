@@ -195,6 +195,8 @@ static void create_characteristic(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)previous_result;
+    (void)callback_context;
     WRITE_CONTEXT* context = (WRITE_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     bluez_characteristic__proxy_new(
         context->handle_data->bus,
@@ -213,6 +215,7 @@ static gpointer create_characteristic_finish(
     GError** error
 )
 {
+    (void)async_seq_handle;
     return bluez_characteristic__proxy_new_finish(result, error);
 }
 
@@ -223,6 +226,7 @@ static void write_characteristic(
     GAsyncReadyCallback async_callback
 )
 {
+    (void)callback_context;
     WRITE_CONTEXT* context = (WRITE_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
     context->characteristic = (bluezcharacteristic*)previous_result;
 
@@ -269,6 +273,7 @@ static gpointer write_characteristic_finish(
 
 static void on_sequence_complete(GIO_ASYNCSEQ_HANDLE async_seq_handle, gpointer previous_result)
 {
+    (void)previous_result;
     WRITE_CONTEXT* context = (WRITE_CONTEXT*)GIO_Async_Seq_GetContext(async_seq_handle);
 
     /*Codes_SRS_BLEIO_GATT_13_041: [ BLEIO_gatt_write_char_by_uuid shall invoke on_bleio_gatt_attrib_write_complete when the write operation completes. ]*/

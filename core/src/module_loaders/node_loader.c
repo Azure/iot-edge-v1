@@ -47,6 +47,7 @@ static MODULE_LIBRARY_HANDLE NodeModuleLoader_Load(const MODULE_LOADER* loader, 
 {
     NODE_MODULE_HANDLE_DATA* result;
 
+    (void)entrypoint;
     // loader cannot be null
     if (loader == NULL)
     {

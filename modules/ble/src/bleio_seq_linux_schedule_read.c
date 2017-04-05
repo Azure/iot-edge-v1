@@ -3,12 +3,10 @@
 
 #include <stdlib.h>
 
-#include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/buffer_.h"
-#include "azure_c_shared_utility/refcount.h"
 
 #include "ble_gatt_io.h"
 #include "bleio_seq.h"
@@ -28,6 +26,7 @@ static void on_read_complete(
     size_t size
 )
 {
+    (void)bleio_gatt_handle;
     // this MUST NOT be NULL
     READ_CONTEXT* context = (READ_CONTEXT*)read_context;
     if (context->handle_data->on_read_complete != NULL)
@@ -97,7 +96,7 @@ BLEIO_SEQ_RESULT schedule_read(
         // even before we hit the if check after this call and 'on_read_complete'
         // might have run by then in which case it would have done a DEC_REF and
         // the ref counts will be out of whack
-        INC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+        inc_ref_handle(handle_data);
 
         int read_result = BLEIO_gatt_read_char_by_uuid(
             handle_data->bleio_gatt_handle,
@@ -111,7 +110,7 @@ BLEIO_SEQ_RESULT schedule_read(
             /*Codes_SRS_BLEIO_SEQ_13_014: [ BLEIO_Seq_Run shall return BLEIO_SEQ_ERROR if an underlying platform call fails. ]*/
             result = BLEIO_SEQ_ERROR;
             free(context);
-            DEC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
+            dec_ref_handle_only(handle_data);
             LogError("BLEIO_gatt_read_char_by_uuid failed with %d.", read_result);
         }
         else

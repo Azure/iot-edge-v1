@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <chrono>
@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "azure_c_shared_utility/gballoc.h"
 
@@ -19,7 +20,13 @@
 #endif
 
 #include "uv.h"
-#include "v8.h"
+
+#include "nodejs_common.h"
+#include "nodejs.h"
+#include "nodejs_utils.h"
+#include "nodejs_idle.h"
+#include "modules_manager.h"
+
 #include "node.h"
 
 #include "azure_c_shared_utility/map.h"
@@ -36,12 +43,6 @@
 #include "message.h"
 #include "broker.h"
 #include "messageproperties.h"
-
-#include "nodejs_common.h"
-#include "nodejs.h"
-#include "nodejs_utils.h"
-#include "nodejs_idle.h"
-#include "modules_manager.h"
 
 #define DESTROY_WAIT_TIME_IN_SECS   (5)
 
@@ -235,6 +236,7 @@ static bool validate_prop(
     TValidator validator
 )
 {
+    (void)context;
     bool result;
     auto prop_key = v8::String::NewFromUtf8(isolate, prop_name);
     if (prop_key.IsEmpty() == true)
@@ -444,21 +446,22 @@ static bool copy_properties_from_message(
     return result;
 }
 
-static unsigned char* copy_contents(
+static std::pair<bool, unsigned char*> copy_contents(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> message,
     size_t* psize
 )
 {
-    unsigned char* result;
+    (void)context;
+    std::pair<bool, unsigned char*> result;
 
     *psize = 0;
     auto prop_key = v8::String::NewFromUtf8(isolate, "content");
     if (prop_key.IsEmpty() == true)
     {
         LogError("Could not instantiate v8 string for constant 'content'");
-        result = NULL;
+        result = std::make_pair(false, nullptr);
     }
     else
     {
@@ -468,7 +471,7 @@ static unsigned char* copy_contents(
         if (contents->IsUint8Array() == false)
         {
             LogInfo("Message contents is not a Uint8Array");
-            result = NULL;
+            result = std::make_pair(false, nullptr);
         }
         else
         {
@@ -476,27 +479,39 @@ static unsigned char* copy_contents(
             if (arr.IsEmpty() == true)
             {
                 LogError("Could not convert message contents to a v8 Uint8Array");
-                result = NULL;
+                result = std::make_pair(false, nullptr);
             }
             else
             {
                 *psize = arr->ByteLength();
-                result = (unsigned char*)malloc(*psize);
-                if (result == NULL)
+                if (*psize > 0)
                 {
-                    *psize = 0;
-                    LogError("malloc failed");
+                    auto buffer = (unsigned char*)malloc(*psize);
+                    if (buffer == nullptr)
+                    {
+                        *psize = 0;
+                        LogError("malloc failed");
+                        result = std::make_pair(false, nullptr);
+                    }
+                    else
+                    {
+                        auto copied = arr->CopyContents(buffer, *psize);
+                        if (copied != *psize)
+                        {
+                            LogError("CopyContents failed");
+                            free((void*)buffer);
+                            result = std::make_pair(false, nullptr);
+                            *psize = 0;
+                        }
+                        else
+                        {
+                            result = std::make_pair(true, buffer);
+                        }
+                    }
                 }
                 else
                 {
-                    auto copied = arr->CopyContents(result, *psize);
-                    if (copied != *psize)
-                    {
-                        LogError("CopyContents failed");
-                        free((void*)result);
-                        result = NULL;
-                        *psize = 0;
-                    }
+                    result = std::make_pair(true, nullptr);
                 }
             }
         }
@@ -581,46 +596,62 @@ static void broker_publish(const v8::FunctionCallbackInfo<v8::Value>& info)
                         // copy the message contents if we have any
                         MESSAGE_CONFIG message_config;
                         message_config.sourceProperties = message_properties;
+                        bool content_copied;
 
                         if (validate_object_prop(isolate, context, message_obj, "content") == true)
                         {
-                            message_config.source = copy_contents(
+                            auto copy_result = copy_contents(
                                 isolate, context, message_obj, &(message_config.size)
                             );
+                            if (copy_result.first == false)
+                            {
+                                LogError("copy_contents failed.");
+                                info.GetReturnValue().Set(false);
+                                content_copied = false;
+                            }
+                            else
+                            {
+                                message_config.source = copy_result.second;
+                                content_copied = true;
+                            }
                         }
                         else
                         {
                             message_config.source = nullptr;
+                            content_copied = true;
                         }
 
                         /*Codes_SRS_NODEJS_13_030: [ broker_publish shall construct and initialize a MESSAGE_HANDLE from the first argument. ]*/
-                        MESSAGE_HANDLE message = Message_Create(&message_config);
-                        if (message == NULL)
+                        if(content_copied == true)
                         {
-                            /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
-                            LogError("Message_Create() failed");
-                            info.GetReturnValue().Set(false);
-                        }
-                        else
-                        {
-                            /*Codes_SRS_NODEJS_13_032: [ broker_publish shall call Broker_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
-                            if (Broker_Publish(handle_data.broker, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != BROKER_OK)
+                            MESSAGE_HANDLE message = Message_Create(&message_config);
+                            if (message == NULL)
                             {
                                 /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
-                                LogError("Broker_Publish() failed");
+                                LogError("Message_Create() failed");
                                 info.GetReturnValue().Set(false);
                             }
                             else
                             {
-                                /*Codes_SRS_NODEJS_13_033: [ broker_publish shall set the return value to true or false depending on the status of the Broker_Publish call. ]*/
-                                info.GetReturnValue().Set(true);
+                                /*Codes_SRS_NODEJS_13_032: [ broker_publish shall call Broker_Publish passing the newly constructed MESSAGE_HANDLE. ]*/
+                                if (Broker_Publish(handle_data.broker, reinterpret_cast<MODULE_HANDLE>(&handle_data), message) != BROKER_OK)
+                                {
+                                    /*Codes_SRS_NODEJS_13_031: [ broker_publish shall set the return value to false if any underlying platform call fails. ]*/
+                                    LogError("Broker_Publish() failed");
+                                    info.GetReturnValue().Set(false);
+                                }
+                                else
+                                {
+                                    /*Codes_SRS_NODEJS_13_033: [ broker_publish shall set the return value to true or false depending on the status of the Broker_Publish call. ]*/
+                                    info.GetReturnValue().Set(true);
+                                }
+
+                                /*Codes_SRS_NODEJS_13_034: [ broker_publish shall destroy the MESSAGE_HANDLE. ]*/
+                                Message_Destroy(message);
                             }
 
-                            /*Codes_SRS_NODEJS_13_034: [ broker_publish shall destroy the MESSAGE_HANDLE. ]*/
-                            Message_Destroy(message);
+                            free((void*)message_config.source);
                         }
-
-                        free((void*)message_config.source);
                     }
 
                     Map_Destroy(message_properties);
@@ -811,6 +842,8 @@ static bool create_gateway_host(v8::Isolate* isolate, v8::Local<v8::Context> con
     // This function is always called from a libuv thread - so we are guaranteed to
     // be thread-safe. The gateway host object should be setup only once - the first
     // time that a node module is created. We track this via a static bool.
+    (void)isolate;
+    (void)context;
     static bool gateway_host_created = false;
     bool result;
 
@@ -931,6 +964,7 @@ static v8::Local<v8::Uint8Array> copy_contents_to_object(
     const CONSTBUFFER* content
 )
 {
+    (void)context;
     // this object does not have ownership of the buffer
     auto array_buffer = v8::ArrayBuffer::New(isolate, (void *)content->buffer, content->size);
 

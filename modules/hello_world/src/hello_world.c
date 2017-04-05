@@ -39,8 +39,8 @@ int helloWorldThread(void *param)
         }
         else
         {
-            msgConfig.size = strlen(HELLOWORLD_MESSAGE);
-            msgConfig.source = HELLOWORLD_MESSAGE;
+            msgConfig.size = (size_t)strlen(HELLOWORLD_MESSAGE);
+            msgConfig.source = (unsigned char*)HELLOWORLD_MESSAGE;
     
             msgConfig.sourceProperties = propertiesMap;
 
@@ -82,9 +82,9 @@ int helloWorldThread(void *param)
 static MODULE_HANDLE HelloWorld_Create(BROKER_HANDLE broker, const void* configuration)
 {
     HELLOWORLD_HANDLE_DATA* result;
-    if (
-        (broker == NULL) /*configuration is not used*/
-        )
+    (void)configuration;
+    
+	if (broker == NULL) /*configuration is not used*/
     {
         LogError("invalid arg broker=%p", broker);
         result = NULL;
@@ -178,6 +178,8 @@ static void HelloWorld_Destroy(MODULE_HANDLE module)
 static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     /*no action, HelloWorld is not interested in any messages*/
+    (void)moduleHandle;
+    (void)messageHandle;
 }
 
 static const MODULE_API_1 HelloWorld_API_all =

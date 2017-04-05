@@ -6,6 +6,11 @@
 #include <memory>
 
 #include "uv.h"
+#include "nodejs_common.h"
+#include "nodejs_utils.h"
+#include "modules_manager.h"
+#include "nodejs_idle.h"
+
 #include "node.h"
 
 #include "azure_c_shared_utility/threadapi.h"
@@ -14,24 +19,15 @@
 #include "azure_c_shared_utility/xlogging.h"
 
 #include "lock.h"
-#include "nodejs_common.h"
-#include "nodejs_utils.h"
-#include "modules_manager.h"
-#include "nodejs_idle.h"
 
 using namespace nodejs_module;
 
-#define NODE_STARTUP_SCRIPT  ""                  \
-"(function () {"                                 \
-"    _gatewayInit.onNodeInitComplete();"         \
-"    global._gatewayExit = false;"               \
-"    function onTimer() {"                       \
-"        if(global._gatewayExit === false) {"    \
-"            setTimeout(onTimer, 150);"          \
-"        }"                                      \
-"    }"                                          \
-"    onTimer();"                                 \
-"})();"
+#define NODE_STARTUP_SCRIPT  ""          \
+"(function () {"                         \
+"  setTimeout(() => {"                   \
+"    _gatewayInit.onNodeInitComplete();" \
+"  }, 100);"                             \
+"})();"                                  \
 
 ModulesManager::ModulesManager() :
     m_nodejs_thread(nullptr),
@@ -135,53 +131,62 @@ NODEJS_MODULE_HANDLE_DATA* ModulesManager::AddModule(const NODEJS_MODULE_HANDLE_
     /*Codes_SRS_NODEJS_MODULES_MGR_13_005: [ AddModule shall acquire a lock on the ModulesManager object. ]*/
     LockGuard<ModulesManager> lock_guard(*this);
 
-    // start NodeJS if not already started
-    if (m_nodejs_thread == nullptr)
+    // initialize idle processor if necessary
+    auto idler = NodeJSIdle::Get();
+    if (idler->IsInitialized() == false && idler->Initialize() == false)
     {
-        /*Codes_SRS_NODEJS_MODULES_MGR_13_007: [ If this is the first time that this method is being called then it shall start a new thread and start up Node JS from the thread. ]*/
-        StartNode();
-    }
-
-    // if m_nodejs_thread is still NULL then StartNode failed
-    if (m_nodejs_thread != nullptr)
-    {
-        auto module_id = m_moduleid_counter++;
-        try
-        {
-            /*Codes_SRS_NODEJS_MODULES_MGR_13_008: [ AddModule shall add the module to it's internal collection of modules. ]*/
-            m_modules.insert(
-                std::make_pair(
-                    module_id,
-                    NODEJS_MODULE_HANDLE_DATA(handle_data, module_id)
-                )
-            );
-
-            // start up the module
-            if (StartModule(module_id) == true)
-            {
-                result = &(m_modules[module_id]);
-            }
-            else
-            {
-                /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-                // remove the module from the map
-                LogError("Could not start Node JS module from path '%s'", handle_data.main_path.c_str());
-                m_modules.erase(module_id);
-                result = nullptr;
-            }
-        }
-        catch (std::bad_alloc& err)
-        {
-            /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-            LogError("Memory allocation error occurred with %s", err.what());
-            result = nullptr;
-        }
+        result = nullptr;
     }
     else
     {
-        /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
-        LogError("Could not start Node JS thread.");
-        result = nullptr;
+        // start NodeJS if not already started
+        if (m_nodejs_thread == nullptr)
+        {
+            /*Codes_SRS_NODEJS_MODULES_MGR_13_007: [ If this is the first time that this method is being called then it shall start a new thread and start up Node JS from the thread. ]*/
+            StartNode();
+        }
+
+        // if m_nodejs_thread is still NULL then StartNode failed
+        if (m_nodejs_thread != nullptr)
+        {
+            auto module_id = m_moduleid_counter++;
+            try
+            {
+                /*Codes_SRS_NODEJS_MODULES_MGR_13_008: [ AddModule shall add the module to it's internal collection of modules. ]*/
+                m_modules.insert(
+                    std::make_pair(
+                        module_id,
+                        NODEJS_MODULE_HANDLE_DATA(handle_data, module_id)
+                    )
+                );
+
+                // start up the module
+                if (StartModule(module_id) == true)
+                {
+                    result = &(m_modules[module_id]);
+                }
+                else
+                {
+                    /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
+                    // remove the module from the map
+                    LogError("Could not start Node JS module from path '%s'", handle_data.main_path.c_str());
+                    m_modules.erase(module_id);
+                    result = nullptr;
+                }
+            }
+            catch (std::bad_alloc& err)
+            {
+                /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
+                LogError("Memory allocation error occurred with %s", err.what());
+                result = nullptr;
+            }
+        }
+        else
+        {
+            /*Codes_SRS_NODEJS_MODULES_MGR_13_006: [ AddModule shall return NULL if an underlying API call fails. ]*/
+            LogError("Could not start Node JS thread.");
+            result = nullptr;
+        }
     }
 
     return result;
@@ -209,7 +214,9 @@ void ModulesManager::ExitNodeThread() const
 {
     NodeJSIdle::Get()->AddCallback([]() {
         NodeJSUtils::RunWithNodeContext([](v8::Isolate* isolate, v8::Local<v8::Context> context) {
-            NodeJSUtils::RunScript(isolate, context, "global._gatewayExit = true;");
+            (void)isolate;
+            (void)context;
+            NodeJSIdle::Get()->DeInitialize();
         });
     });
 }
@@ -249,7 +256,7 @@ int ModulesManager::NodeJSRunner()
     const char *p3 = p2 + sizeof("-e");
     const char *pargv[] = { p1, p2, p3 };
 
-    int result = node::Start(argc, const_cast<char**>(pargv), NodeJSIdle::OnIdle);
+    int result = node::Start(argc, const_cast<char**>(pargv));
 
     // reset object state to indicate that the node thread has now
     // left the building
@@ -267,6 +274,7 @@ int ModulesManager::NodeJSRunnerInternal(void* user_data)
 
 void ModulesManager::OnNodeInitComplete(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    (void)info;
     auto manager = ModulesManager::Get();
     LockGuard<ModulesManager> lock_guard(*manager);
     manager->m_node_initialized = true;

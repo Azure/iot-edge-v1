@@ -61,6 +61,7 @@ bool parse_write(
     size_t index
 )
 {
+    (void)index;
     bool result;
     ble_instr->instruction_type = type;
     const char* base64_encoded_data = json_object_get_string(instr, "data");
@@ -95,6 +96,7 @@ bool parse_instruction(
     size_t index
 )
 {
+    (void)index;
     bool result;
     if (strcmp(type, "read_once") == 0)
     {

@@ -129,6 +129,7 @@ void my_gballoc_free(void* ptr)
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 

@@ -78,6 +78,7 @@ static MODULE_LOADER_BASE_CONFIGURATION* g_config;
 
 void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
+    (void)error_code;
     ASSERT_FAIL("umock_c reported error");
 }
 
@@ -149,7 +150,7 @@ MOCK_FUNCTION_END(arr)
 
 MOCK_FUNCTION_WITH_CODE(, JSON_Value*, json_array_get_value, const JSON_Array*, arr, size_t, index)
 JSON_Value* val = NULL;
-if (arr != NULL && index >= 0)
+if (arr != NULL)
 {
     val = (JSON_Value*)0x42;
 }
@@ -197,7 +198,7 @@ MOCK_FUNCTION_END(num)
 
 MOCK_FUNCTION_WITH_CODE(, const char*, json_array_get_string, const JSON_Array*, arr, size_t, index)
 const char* str = NULL;
-if (arr != NULL && index >= 0)
+if (arr != NULL)
 {
     str = "hello_world";
 }
@@ -246,12 +247,6 @@ extern "C"
 #endif
 
 #undef ENABLE_MOCKS
-
-TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_RESULT, MODULE_LOADER_RESULT_VALUES);
-
-TEST_DEFINE_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
-IMPLEMENT_UMOCK_C_ENUM_TYPE(MODULE_LOADER_TYPE, MODULE_LOADER_TYPE_VALUES);
 
 BEGIN_TEST_SUITE(JavaLoader_UnitTests)
 
@@ -1987,7 +1982,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_returns_NULL_when_loader
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         NULL
     };
 
@@ -2019,7 +2014,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_failure_test)
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         NULL
     };
 
@@ -2091,7 +2086,7 @@ TEST_FUNCTION(JavaModuleLoader_BuildModuleConfiguration_copys_information_succes
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         &options
     };
 
@@ -2164,7 +2159,7 @@ TEST_FUNCTION(JavaModuleLoader_FreeModuleConfiguration_frees_object)
 
     JAVA_LOADER_CONFIGURATION config =
     {
-        NULL,
+        { NULL },
         &options
     };
 

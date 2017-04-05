@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+#include <stdlib.h>
+
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/macro_utils.h"
@@ -292,10 +294,6 @@ static void NativeModuleHost_Destroy(MODULE_HANDLE moduleHandle)
         MODULE_HOST* module_host = (MODULE_HOST*)moduleHandle;
         if (module_host->module != NULL)
         {
-            MODULE module;
-            module.module_apis = NULL;
-            module.module_handle = module_host->module;
-
             const MODULE_LOADER* module_loader = module_host->module_loader;
             MODULE_LIBRARY_HANDLE module_library = module_host->module_library_handle;
 

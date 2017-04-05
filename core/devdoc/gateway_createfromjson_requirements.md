@@ -65,7 +65,7 @@ extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 #endif
 ```
 
-##Gateway_CreateFromJson
+## Gateway_CreateFromJson
 ```
 extern GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path);
 ```
@@ -118,3 +118,30 @@ Gateway_CreateFromJson creates a new gateway using information contained within 
 **SRS_GATEWAY_JSON_17_002: [** This function shall return `NULL` if starting the gateway fails. **]**
 
 **SRS_GATEWAY_JSON_14_008: [** This function shall return `NULL` upon any memory allocation failure. **]**
+
+
+## Gateway_UpdateFromJson
+```
+extern int Gateway_UpdateFromJson(GATEWAY_HANDLE gw, const char* json_content);
+```
+Gateway_UpdateFromJson adds loades, modules or links based on a well-formed JSON configuration content.
+
+**SRS_GATEWAY_JSON_04_003: [** If `json_content` is NULL the function shall return GATEWAY_UPDATE_FROM_JSON_ERROR. **]**
+
+**SRS_GATEWAY_JSON_04_004: [** If `gw` is NULL the function shall return GATEWAY_UPDATE_FROM_JSON_ERROR.
+ **]**
+
+**SRS_GATEWAY_JSON_04_005: [** The function shall use *parson* to parse the JSON string to a *parson* `JSON_Value` structure. **]**
+
+**SRS_GATEWAY_JSON_04_006: [** The function shall return NULL if the JSON content could not be parsed to a `JSON_Value`. **]**
+
+**SRS_GATEWAY_JSON_04_007: [** The function shall traverse the `JSON_Value` object to initialize a `GATEWAY_PROPERTIES` instance. **]**
+
+**SRS_GATEWAY_JSON_04_010: [** The function shall return NULL if the `JSON_Value` contains incomplete information. **]**
+
+**SRS_GATEWAY_JSON_04_011: [** The function shall be able to add just `modules`, just `links` or both.
+ **]**
+
+**SRS_GATEWAY_JSON_04_009: [** The function shall be able to roll back previous operation if any `module` or `link` fails to be added. **]**
+
+**SRS_GATEWAY_JSON_04_008: [** This function shall return GATEWAY_UPDATE_FROM_JSON_ERROR upon any memory allocation failure. **]**

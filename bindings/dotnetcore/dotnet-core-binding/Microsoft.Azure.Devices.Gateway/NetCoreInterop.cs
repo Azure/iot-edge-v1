@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Gateway
             return moduleIDCounter;
         }
 
-        public void Receive(byte[] messageAsArray, ulong size, uint moduleID)
+        public void Receive(byte[] messageAsArray, UInt32 size, uint moduleID)
         {
             DotNetCoreModuleInstance moduleDetails;
 
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Gateway
     {
         private delegate uint CreateDelegate(IntPtr broker, IntPtr module, string assemblyName, string entryType, string configuration);
 
-        private delegate void ReceiveDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] messageAsArray, ulong size, uint moduleID);
+        private delegate void ReceiveDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] messageAsArray, UInt32 size, uint moduleID);
 
         private delegate void DestroyDelegate(uint moduleID);
 
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Gateway
         /// <param name="messageAsArray">Reference to the message serialized as byte array.</param>
         /// <param name="size">Size of the message byte array.</param>
         /// <param name="moduleID">Gateway module ID.</param>
-        public static void Receive([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] messageAsArray, ulong size, uint moduleID)
+        public static void Receive([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] messageAsArray, UInt32 size, uint moduleID)
         {
             _netCoreInteropInstance.Receive(messageAsArray, size, moduleID);
         }

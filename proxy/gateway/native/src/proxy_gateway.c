@@ -78,6 +78,14 @@ typedef struct REMOTE_MODULE_TAG {
     MODULE module;
 } REMOTE_MODULE;
 
+static size_t strnlen_(const char* s, size_t max)
+{
+    if (!s) return 0;
+
+    size_t i;
+    for (i = 0; i < max && s[i] != 0; ++i) {}
+    return i;
+}
 
 REMOTE_MODULE_HANDLE
 ProxyGateway_Attach (
@@ -109,7 +117,7 @@ ProxyGateway_Attach (
         /* Codes_SRS_PROXY_GATEWAY_027_005: [Prerequisite Check - If the `connection_id` parameter is `NULL`, then `ProxyGateway_Attach` shall do nothing and return `NULL`] */
         LogError("%s: NULL parameter - connection_id", __FUNCTION__);
         remote_module = NULL;
-    } else if (GATEWAY_CONNECTION_ID_MAX < strnlen(connection_id, (GATEWAY_CONNECTION_ID_MAX + 1)) ) {
+    } else if (GATEWAY_CONNECTION_ID_MAX + 1 == strnlen_(connection_id, GATEWAY_CONNECTION_ID_MAX + 1)) {
         /* Codes_SRS_PROXY_GATEWAY_027_006: [Prerequisite Check - If the `connection_id` parameter is longer than `GATEWAY_CONNECTION_ID_MAX`, then `ProxyGateway_Attach` shall do nothing and return `NULL`] */
         LogError("%s: connection_id exceeds GATEWAY_CONNECTION_ID_MAX in length", __FUNCTION__);
         remote_module = NULL;
@@ -118,10 +126,9 @@ ProxyGateway_Attach (
         /* Codes_SRS_PROXY_GATEWAY_027_008: [If memory allocation fails for the instance data, then `ProxyGateway_Attach` shall return `NULL`] */
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
     } else {
-        static const size_t ENDPOINT_DECORATION_SIZE = ((sizeof("ipc://") - 1) + (sizeof(".ipc") - 1) + (sizeof("\0") - 1));
+        static const size_t ENDPOINT_DECORATION_SIZE = sizeof("ipc://") - 1 + sizeof(".ipc") - 1;
 
-        const size_t endpoint_length_max = (GATEWAY_CONNECTION_ID_MAX + ENDPOINT_DECORATION_SIZE);
-        const size_t control_channel_uri_size = (strnlen(connection_id, endpoint_length_max) + ENDPOINT_DECORATION_SIZE);
+        const size_t control_channel_uri_size = strlen(connection_id) + ENDPOINT_DECORATION_SIZE + 1;
         char * control_channel_uri;
 
         // Transform the connection id into a nanomsg URI

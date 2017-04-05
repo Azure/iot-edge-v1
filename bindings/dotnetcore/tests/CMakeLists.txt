@@ -7,7 +7,4 @@ add_definitions(-DUNDER_TEST)
 
 add_subdirectory(dotnetcore_ut)
 
-#Enable e2e test just on 64bits for now
-if(NOT (${ARCHITECTURE} STREQUAL "x86")) 
 add_subdirectory(dotnetcore_e2e)
-endif()

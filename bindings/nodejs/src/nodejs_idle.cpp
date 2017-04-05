@@ -5,15 +5,14 @@
 #include <functional>
 
 #include "uv.h"
-#include "v8.h"
-
 #include "lock.h"
 #include "nodejs_utils.h"
 #include "nodejs_idle.h"
 
 using namespace nodejs_module;
 
-NodeJSIdle::NodeJSIdle()
+NodeJSIdle::NodeJSIdle() :
+    m_initialized(false)
 {}
 
 NodeJSIdle::~NodeJSIdle()
@@ -63,6 +62,48 @@ NodeJSIdle* NodeJSIdle::Get()
     return instance;
 }
 
+bool nodejs_module::NodeJSIdle::IsInitialized() const
+{
+    LockGuard<NodeJSIdle> lock_guard{ *this };
+    return m_initialized;
+}
+
+bool nodejs_module::NodeJSIdle::Initialize()
+{
+    LockGuard<NodeJSIdle> lock_guard{ *this };
+
+    if (m_initialized == false)
+    {
+        auto loop = uv_default_loop();
+        if (loop == nullptr)
+        {
+            LogError("uv_default_loop() failed.");
+            m_initialized = false;
+        }
+        else
+        {
+            if (uv_async_init(loop, &m_uv_async, NodeJSIdle::OnIdle) != 0)
+            {
+                LogError("uv_async_init() failed.");
+                m_initialized = false;
+            }
+            else
+            {
+                m_initialized = true;
+            }
+        }
+    }
+
+    return m_initialized;
+}
+
+void nodejs_module::NodeJSIdle::DeInitialize()
+{
+    LockGuard<NodeJSIdle> lock_guard{ *this };
+    uv_close(reinterpret_cast<uv_handle_t*>(&m_uv_async), nullptr);
+    m_initialized = false;
+}
+
 void NodeJSIdle::AcquireLock() const
 {
     m_lock.AcquireLock();
@@ -87,7 +128,8 @@ void NodeJSIdle::InvokeCallbacks()
     ReleaseLock();
 }
 
-void NodeJSIdle::OnIdle(v8::Isolate* isolate)
+void NodeJSIdle::OnIdle(uv_async_t* handle)
 {
+    (void)handle;
     NodeJSIdle::Get()->InvokeCallbacks();
 }

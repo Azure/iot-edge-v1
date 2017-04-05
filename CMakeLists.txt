@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(azure_iot_gateway_sdk)
 
-set(GATEWAY_VERSION 1.0.2 CACHE INTERNAL "")
+set(GATEWAY_VERSION 1.0.3 CACHE INTERNAL "")
 set(COMPANY_NAME "Microsoft")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -57,6 +57,9 @@ else()
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
+# apps need to be able to load native_module_host
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/proxy/modules/native_module_host/)
+
 # tests and samples should use pre-install path to gateway.so
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/core/)
 
@@ -74,6 +77,7 @@ option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet bi
 option(enable_dotnet_core_binding "set enable_dotnet_core_binding to ON to build dotnet core binding host binaries (default is OFF)" OFF)
 option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
 option(enable_native_remote_modules "Build the infrastructure required to support native remote modules" ON)
+option(enable_java_remote_modules "Build the infrastructure required to support java remote modules" OFF)
 option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
 option(use_http "set use_http to ON if http is to be used, set to OFF to not use http" ON)
 option(use_mqtt "set use_mqtt to ON if mqtt is to be used, set to OFF to not use mqtt" ON)
@@ -133,6 +137,17 @@ endif()
 if(LINUX)
   set (CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
   set (CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wformat=2 -Wformat-security ")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wformat=2 -Wformat-security ")
+  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,noexecheap -pie")
+  if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wtrampolines")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtrampolines")
+  endif()
+elseif(APPLE)
+  # Warnings as errors
+  set (CMAKE_C_FLAGS "-Werror ${CMAKE_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "-Werror ${CMAKE_CXX_FLAGS}")
 endif()
 
 function(add_module_to_solution undecoratedModuleName)
@@ -152,7 +167,6 @@ function(add_sample_to_solution sampleName)
     BUILD_WITH_INSTALL_RPATH TRUE
   )
 endfunction()
-
 
 macro(compileAsC99)
   if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -196,9 +210,7 @@ endfunction(linkSharedUtil)
 include_directories(./deps/parson)
 
 function(link_broker whatIsBuilding)
-
-target_link_libraries(${whatIsBuilding} nanomsg ${NN_REQUIRED_LIBRARIES})
-
+  target_link_libraries(${whatIsBuilding} nanomsg ${NN_REQUIRED_LIBRARIES})
 endfunction(link_broker)
 
 function(install_broker whatIsBuilding whatIsBuildingLocation)
@@ -224,8 +236,6 @@ function(copy_gateway_dll whatIsBuilding whatIsBuildingLocation)
           "${azure_c_shared_utility_DIR}/../bin/${SHARED_UTIL_LIB}.dll"
           ${whatIsBuildingLocation})
     endif()
-
-
   endif()
 endfunction(copy_gateway_dll)
 
@@ -295,7 +305,7 @@ add_subdirectory(core)
 
 include_directories(${GW_INC}) # GW_INC defined in core
 
-if (${enable_native_remote_modules})
+if (${enable_native_remote_modules} OR ${enable_java_remote_modules})
     add_subdirectory(proxy)
 endif()
 

@@ -10,6 +10,11 @@ include("gatewayFunctions.cmake")
 ###############################################################################
 ###################Find/Install/Build azure_c_shared_utility###################
 ###############################################################################
+set(PASSVARS)
+if(DEFINED OPENSSL_ROOT_DIR)
+    set(PASSVARS ${PASSVARS} -DOPENSSL_ROOT_DIR:PATH=${OPENSSL_ROOT_DIR})
+endif()
+
 findAndInstall(azure_c_shared_utility 1.0.25
     ${PROJECT_SOURCE_DIR}/deps/c-utility
     ${PROJECT_SOURCE_DIR}/deps/c-utility
@@ -17,6 +22,7 @@ findAndInstall(azure_c_shared_utility 1.0.25
     -Drun_unittests=${run_unittests}
     -Dbuild_as_dynamic=ON
     -Duse_default_uuid=${use_xplat_uuid}
+    ${PASSVARS}
     -G "${CMAKE_GENERATOR}")
 set(SHARED_UTIL_INC_FOLDER ${AZURE_C_SHARED_UTILITY_INCLUDE_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 set(SHARED_UTIL_LIB_FOLDER ${AZURE_C_SHARED_LIBRARY_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
@@ -48,32 +54,36 @@ if(WIN32)
         set(NANOMSG_INCLUDES "${CMAKE_INSTALL_PREFIX}/../nanomsg/include" CACHE INTERNAL "")
     endif()
 else()
-    include(FindPkgConfig)
     find_package(PkgConfig REQUIRED)
 
     #If using a custom install prefix, tell find pkg to use it instead of defaults
     set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-
     pkg_search_module(NANOMSG QUIET nanomsg)
     if(NOT NANOMSG_FOUND)
-        findAndInstallNonFindPkg(nanomsg ${PROJECT_SOURCE_DIR}/deps/nanomsg ${PROJECT_SOURCE_DIR}/deps/nanomsg -G "${CMAKE_GENERATOR}")
+        findAndInstallNonFindPkg(nanomsg
+            ${PROJECT_SOURCE_DIR}/deps/nanomsg
+            ${PROJECT_SOURCE_DIR}/deps/nanomsg
+            -G "${CMAKE_GENERATOR}"
+            -DNN_TESTS=OFF
+            -DNN_TOOLS=OFF)
     endif()
 
     #If earlier cmake
     if("${CMAKE_VERSION}" VERSION_GREATER 3.0.2)
         pkg_search_module(NANOMSG REQUIRED nanomsg)
-        set (NANOMSG_LIB_LOCATION "${NANOMSG_LIBDIR}/lib${NANOMSG_LIBRARIES}.so")
+        set (NANOMSG_LIB_LOCATION
+            "${NANOMSG_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${NANOMSG_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}")
     else()
         if(DEFINED ${dependency_install_prefix})
             set(NANOMSG_INCLUDEDIR "${dependency_install_prefix}/include")
             set(NANOMSG_LIBRARIES nanomsg)
             set(NANOMSG_LIBRARY_DIRS "${dependency_install_prefix}/${CMAKE_INSTALL_LIBDIR}")
-            set(NANOMSG_LDFLAGS "-L${NANOMSG_LIBRARY_DIRS};-l${NANOMSG_LIBRARIES}")
         else()
             pkg_search_module(NANOMSG REQUIRED nanomsg)
             set(NANOMSG_LIBRARY_DIRS "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
         endif()
-        set (NANOMSG_LIB_LOCATION "${NANOMSG_LIBRARY_DIRS}/lib${NANOMSG_LIBRARIES}.so")
+        set (NANOMSG_LIB_LOCATION
+            "${NANOMSG_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${NANOMSG_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
     endif()
 
@@ -88,11 +98,9 @@ else()
         set_target_properties(nanomsg PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${NANOMSG_INCLUDEDIR}"
             INTERFACE_LINK_LIBRARIES "${NANOMSG_LIBRARIES}"
-            INTERFACE_COMPILE_OPTIONS "${NANOMSG_LDFLAGS}"
             IMPORTED_LOCATION "${NANOMSG_LIB_LOCATION}"
         )
         message(STATUS "NANOMSG LIBRARIES: ${NANOMSG_LIBRARIES}")
-        message(STATUS "NANOMSG LDFLAGS: ${NANOMSG_LDFLAGS}")
         message(STATUS "NANOMSG CFLAGS: ${NANOMSG_CFLAGS}")
         message(STATUS "NANOMSG LOCATION: ${NANOMSG_LIB_LOCATION}")
     endif()

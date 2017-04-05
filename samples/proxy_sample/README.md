@@ -1,10 +1,10 @@
-#Azure IoT Gateway SDK - out of process proxy module example
+# Azure IoT Gateway SDK - out of process proxy module example
 
 This document provides an overview of the out of process module [code](./src) which allows a module to run in a separate process.
 
-##Concepts
+## Concepts
 
-Until this feature, all gateway modules were required to run in the same process as the gateway executable. Now, the user may define a module that runs in a different process on the same machine.  For details, please read the [high level design on out of process modules](../../core/devdoc/on-out-process-gateway-modules.md).
+Until this feature, all gateway modules were required to run in the same process as the gateway executable. Now, the user may define a module that runs in a different process on the same machine.  For details, please read the [outprocess high level design](../../core/devdoc/outprocess_hld.md).
 
 There are two executables "proxy\_sample" and "proxy\_sample\_remote". The "proxy\_sample" is a gateway executable with an out of process module, and "proxy\_sample\_remote" is the executable which implements the out of process modules.
 
@@ -12,9 +12,9 @@ The two processes must establish a control channel to communicate gateway events
 
 ![](../../core/devdoc/media/outprocess-gateway-modules.png)
 
-##How to run the sample
+## How to run the sample
 
-###Linux
+### Linux
 
 The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run
 "proxy\_sample" in one and "proxy\_sample\_remote" in the other.
@@ -33,7 +33,7 @@ cd build/samples/proxy_sample
 ./proxy_sample_remote outprocess_module_control
 ```
 
-###Windows
+### Windows
 
 Start two command prompts, navigate to the `build\samples\proxy_sample` directory in each and run "proxy\_sample" in one and "proxy\_sample\_remote" in the other.
 
@@ -53,7 +53,7 @@ Debug\proxy_sample_remote.exe outprocess_module_control
 
 You may also run the executables simultaneously by opening up the solution file, opening the properties for the top level solution, select "Multiple startup projects", and choose "proxy\_sample" in one and "proxy\_sample\_remote" to start.
 
-## Example Gateway configuration.
+## Example Gateway configuration
 
 This sample gateway has three modules, the "Hello World" module, which periodically generates a message, the "out of process" module which configures the gateway for communication to the "proxy\_sample\_remote" process, and a "logger" module to record any messages returning from the out of process module.
 

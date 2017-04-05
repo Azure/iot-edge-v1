@@ -50,6 +50,7 @@ typedef signed char jbyte;
 
 #include <stdio.h>
 #include "broker_proxy.h"
+#include "local_broker_proxy.h"
 #include "java_module_host_common.h"
 #include "java_module_host.h"
 #include "azure_c_shared_utility/xlogging.h"
@@ -417,7 +418,7 @@ static void JavaModuleHost_Receive(MODULE_HANDLE module, MESSAGE_HANDLE message)
                     else
                     {
                         /*Codes_SRS_JAVA_MODULE_HOST_14_044: [This function shall set the contents of the jbyteArray to the serialized_message.]*/
-                        JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, serialized_message);
+                        JNIFunc(moduleHandle->env, SetByteArrayRegion, arr, 0, size, (jbyte*)serialized_message);
                         jthrowable exception = JNIFunc(moduleHandle->env, ExceptionOccurred);
                         if (exception)
                         {
@@ -535,8 +536,14 @@ static void JavaModuleHost_FreeConfiguration(void* configuration)
     }
 }
 
+JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_LocalBroker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
+{
+    return Java_com_microsoft_azure_gateway_core_Broker_publishMessage(env, jBroker, broker_address, module_address, serialized_message);
+}
+
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessage(JNIEnv* env, jobject jBroker, jlong broker_address, jlong module_address, jbyteArray serialized_message)
 {
+    (void)jBroker;
     /*Codes_SRS_JAVA_MODULE_HOST_14_048: [This function shall return a non - zero value if any underlying function call fails.]*/
     BROKER_RESULT result = BROKER_ERROR;
 
@@ -558,7 +565,7 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_core_Broker_publishMessa
         else
         {
             /*Codes_SRS_JAVA_MODULE_HOST_14_025: [This function shall convert the jbyteArray message into an unsigned char array.]*/
-            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, (jsize)length, arr);
+            JNIFunc(env, GetByteArrayRegion, serialized_message, 0, (jsize)length, (jbyte*)arr);
             jthrowable exception = JNIFunc(env, ExceptionOccurred);
             if (exception)
             {

@@ -152,6 +152,7 @@ static MODULE_LOADER dummyModuleLoader =
 
 static void* my_Module_ParseConfigurationFromJson(const char* configuration)
 {
+    (void)configuration;
 	return my_gballoc_malloc(13);
 }
 static void my_Module_FreeConfiguration(void* configuration)
@@ -160,6 +161,8 @@ static void my_Module_FreeConfiguration(void* configuration)
 }
 static MODULE_HANDLE my_Module_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)broker;
+    (void)configuration;
 	return (MODULE_HANDLE)my_gballoc_malloc(14);
 
 }
@@ -170,34 +173,43 @@ static void my_Module_Destroy(MODULE_HANDLE moduleHandle)
 
 static MODULE_LIBRARY_HANDLE my_ModuleLoader_Load(const MODULE_LOADER* loader, const void* entrypoint)
 {
+    (void)loader;
+    (void)entrypoint;
 	MODULE_LIBRARY_HANDLE result = (MODULE_LIBRARY_HANDLE)my_gballoc_malloc(1);
 	return result;
 }
 
 static void my_ModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_HANDLE moduleLibraryHandle)
 {
+    (void)loader;
 	my_gballoc_free(moduleLibraryHandle);
 }
 
 static void* my_ModuleLoader_ParseEntrypointFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
+    (void)json;
 	void* result = my_gballoc_malloc(2);
 	return result;
 }
 
 static void my_ModuleLoader_FreeEntrypoint(const MODULE_LOADER* loader, void* entrypoint)
 {
+    (void)loader;
 	my_gballoc_free(entrypoint);
 }
 
 static MODULE_LOADER_BASE_CONFIGURATION* my_ModuleLoader_ParseConfigurationFromJson(const MODULE_LOADER* loader, const JSON_Value* json)
 {
+    (void)loader;
+    (void)json;
 	MODULE_LOADER_BASE_CONFIGURATION* result = (MODULE_LOADER_BASE_CONFIGURATION*)my_gballoc_malloc(sizeof(MODULE_LOADER_BASE_CONFIGURATION));
 	return result;
 }
 
 static void my_ModuleLoader_FreeConfiguration(const MODULE_LOADER* loader, MODULE_LOADER_BASE_CONFIGURATION* configuration)
 {
+   (void)loader;
 	my_gballoc_free(configuration);
 }
 
@@ -207,12 +219,17 @@ static void* my_ModuleLoader_BuildModuleConfiguration(
 	const void* module_configuration
 )
 {
+    (void)loader;
+    (void)entrypoint;
+    (void)module_configuration;
 	void* result = my_gballoc_malloc(3);
 	return result;
 }
 
 static void my_ModuleLoader_FreeModuleConfiguration(const MODULE_LOADER* loader, const void* module_configuration)
 {
+    (void)loader;
+    (void)module_configuration;
 	my_gballoc_free((void*)module_configuration);
 }
 
@@ -224,9 +241,8 @@ DEFINE_ENUM_STRINGS(UMOCK_C_ERROR_CODE, UMOCK_C_ERROR_CODE_VALUES)
 
 static void on_umock_c_error(UMOCK_C_ERROR_CODE error_code)
 {
-    char temp_str[256];
-    (void)snprintf(temp_str, sizeof(temp_str), "umock_c reported error :%s", ENUM_TO_STRING(UMOCK_C_ERROR_CODE, error_code));
-    ASSERT_FAIL(temp_str);
+    (void)error_code;
+    ASSERT_FAIL("umock_c reported error");
 }
 
 BEGIN_TEST_SUITE(native_module_host_ut)

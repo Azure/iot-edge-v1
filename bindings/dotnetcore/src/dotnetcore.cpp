@@ -26,13 +26,13 @@ using namespace dotnetcore_module;
 #define AZUREIOTGATEWAYASSEMBLYNAME L"Microsoft.Azure.Devices.Gateway"
 
 
-typedef unsigned int(*PGatewayCreateDelegate)(long long broker, long long module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration);
+typedef unsigned int(DOTNET_CORE_CALLING_CONVENTION *PGatewayCreateDelegate)(intptr_t broker, intptr_t module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration);
 
-typedef void(*PGatewayReceiveDelegate)(unsigned char* buffer, size_t bufferSize, unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayReceiveDelegate)(unsigned char* buffer, int32_t bufferSize, unsigned int moduleIdManaged);
 
-typedef void(*PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
 
-typedef void(*PGatewayStartDelegate)(unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayStartDelegate)(unsigned int moduleIdManaged);
 
 PGatewayCreateDelegate GatewayCreateDelegate = NULL;
 
@@ -280,7 +280,7 @@ static MODULE_HANDLE DotNetCore_Create(BROKER_HANDLE broker, const void* configu
                     try
                     {
                         /* Codes_SRS_DOTNET_CORE_04_014: [ DotNetCore_Create shall call Microsoft.Azure.Devices.Gateway.GatewayDelegatesGateway.Delegates_Create C# method, implemented on Microsoft.Azure.Devices.Gateway.dll. ] */
-                        result->module_id = (*GatewayCreateDelegate)((long long)broker, (long long)result, dotNetCoreConfig->assemblyName, dotNetCoreConfig->entryType, dotNetCoreConfig->moduleArgs);
+                        result->module_id = (*GatewayCreateDelegate)((intptr_t)broker, (intptr_t)result, dotNetCoreConfig->assemblyName, dotNetCoreConfig->entryType, dotNetCoreConfig->moduleArgs);
 
                         m_dotnet_core_modules_counter++;
                     }

@@ -72,11 +72,47 @@ module.exports = [
     ///////////////////////////////////////////////////
     // .NET Core binding
     ///////////////////////////////////////////////////
+	
+	//PackageVersion
+	{
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/dotnet_core_module_sample/modules/SensorModule/SensorModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+	{
+        "taskType": "regexReplaceTask",
+        "filePath": "samples/dotnet_core_module_sample/modules/PrinterModule/PrinterModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
     {
-        "taskType": "jsonReplaceTask",
-        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/project.json",
-        "search": "version",
-        "replaceString": "bindings.dotnetcore"
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/E2ETestModule/E2ETestModule.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway/Microsoft.Azure.Devices.Gateway.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
+    },
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "bindings/dotnetcore/dotnet-core-binding/Microsoft.Azure.Devices.Gateway.Tests/Microsoft.Azure.Devices.Gateway.Tests.csproj",
+        "search": "(<PackageVersion>).*(</PackageVersion>)",
+        "replaceString": function(versions) {
+            return '$1' + versions.bindings.dotnetcore + '$2';
+		}
     },
     {
         "taskType": "regexReplaceTask",
@@ -111,6 +147,13 @@ module.exports = [
         "replaceString": "bindings.java"
     },
     {
+        "taskType": "xmlReplaceTask",
+        "filePath": "samples/java_sample/java_modules/RemotePrinter/pom.xml",
+        "search": "//mavenns:project/mavenns:version",
+        "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
+        "replaceString": "bindings.java"
+    },
+    {
         "taskType": "regexReplaceTask",
         "filePath": "samples/java_sample/src/java_sample_lin.json",
         "search": "\\d+\.\\d+\.\\d+",
@@ -121,5 +164,16 @@ module.exports = [
         "filePath": "samples/java_sample/src/java_sample_win.json",
         "search": "\\d+\.\\d+\.\\d+",
         "replaceString": "bindings.java"
-    }
+    },
+    
+    ///////////////////////////////////////////////////
+    // Java remote module
+    /////////////////////////////////////////////////// 
+    {
+        "taskType": "xmlReplaceTask",
+        "filePath": "proxy/gateway/java/gateway-remote-module/pom.xml",
+        "search": "//mavenns:project/mavenns:version",
+        "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
+        "replaceString": "proxygateway.java",
+    },
 ];

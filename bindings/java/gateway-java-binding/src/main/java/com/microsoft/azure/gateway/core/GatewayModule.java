@@ -36,9 +36,9 @@ public abstract class GatewayModule implements IGatewayModule{
      * @param configuration The module-specific configuration
      */
     public GatewayModule(long address, Broker broker, String configuration){
-        /*Codes_SRS_JAVA_GATEWAY_MODULE_14_002: [ If address or broker is null the constructor shall throw an IllegalArgumentException. ]*/
-        if(address == 0 || broker == null){
-            throw new IllegalArgumentException("Address is invalid or Broker is null.");
+        /*Codes_SRS_JAVA_GATEWAY_MODULE_14_002: [ If broker is null the constructor shall throw an IllegalArgumentException. ]*/
+        if(broker == null){
+            throw new IllegalArgumentException("Broker can not be null.");
         }
 
         /*Codes_SRS_JAVA_GATEWAY_MODULE_14_001: [ The constructor shall save address, broker, and configuration into class variables. ]*/

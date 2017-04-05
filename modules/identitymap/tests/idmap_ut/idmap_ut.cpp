@@ -431,7 +431,7 @@ TYPED_MOCK_CLASS(CIdentitymapMocks, CGlobalMock)
     MOCK_STATIC_METHOD_2(, void*, VECTOR_element, const VECTOR_HANDLE, handle, size_t, index)
         currentVectorElement_call++;
         void * result1;
-        if (currentVectorElement_call = whenShallVectorElement_fail)
+        if (currentVectorElement_call == whenShallVectorElement_fail)
         {
             result1 = NULL;
         }
@@ -658,9 +658,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
 
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
-
         ///Act
         auto n = MODULE_PARSE_CONFIGURATION_FROM_JSON(theAPIS)(NULL);
 
@@ -679,9 +676,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -732,8 +726,6 @@ BEGIN_TEST_SUITE(idmap_ut)
 		CIdentitymapMocks mocks;
 		const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
 
-		unsigned char fake;
-		BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
 		const char* config = "pretend this is a valid JSON string";
 
 		STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -800,9 +792,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -849,9 +838,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -894,9 +880,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -937,8 +920,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -977,8 +958,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -1016,8 +995,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -1045,8 +1022,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -1072,8 +1047,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config))
@@ -1095,9 +1068,6 @@ BEGIN_TEST_SUITE(idmap_ut)
         ///Arrange
         CIdentitymapMocks mocks;
         const MODULE_API* theAPIS = Module_GetApi(MODULE_API_VERSION_1);
-
-        unsigned char fake;
-        BROKER_HANDLE broker = (BROKER_HANDLE)&fake;
         const char* config = "pretend this is a valid JSON string";
 
         STRICT_EXPECTED_CALL(mocks, json_parse_string(config));
@@ -1174,7 +1144,6 @@ BEGIN_TEST_SUITE(idmap_ut)
     TEST_FUNCTION(IdentityMap_Create_Broker_Null)
     {
         ///Arrange
-        CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
         BROKER_HANDLE broker = NULL;
         unsigned char config;
@@ -1192,7 +1161,6 @@ BEGIN_TEST_SUITE(idmap_ut)
     TEST_FUNCTION(IdentityMap_Create_Config_Null)
     {
         ///Arrange
-        CIdentitymapMocks mocks;
         const MODULE_API* theAPIS= Module_GetApi(MODULE_API_VERSION_1);
         unsigned char fake;
         BROKER_HANDLE broker = (BROKER_HANDLE)&fake;

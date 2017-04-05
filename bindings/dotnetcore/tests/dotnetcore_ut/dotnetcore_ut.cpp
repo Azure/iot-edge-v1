@@ -29,13 +29,13 @@
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
 
-typedef unsigned int(*PGatewayCreateDelegate)(long long broker, long long module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration);
+typedef unsigned int(DOTNET_CORE_CALLING_CONVENTION *PGatewayCreateDelegate)(intptr_t broker, intptr_t module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration);
 
-typedef void(*PGatewayReceiveDelegate)(unsigned char* buffer, size_t bufferSize, unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayReceiveDelegate)(unsigned char* buffer, int32_t bufferSize, unsigned int moduleIdManaged);
 
-typedef void(*PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayDestroyDelegate)(unsigned int moduleIdManaged);
 
-typedef void(*PGatewayStartDelegate)(unsigned int moduleIdManaged);
+typedef void(DOTNET_CORE_CALLING_CONVENTION *PGatewayStartDelegate)(unsigned int moduleIdManaged);
 
 
 extern PGatewayCreateDelegate GatewayCreateDelegate;
@@ -73,30 +73,30 @@ static bool calledReceiveMethod = false;
 static bool calledDestroyMethod = false;
 static bool calledStartMethod = false;
 
-int fakeGatewayCreateMethod(long long broker, long long module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration)
+ int DOTNET_CORE_CALLING_CONVENTION fakeGatewayCreateMethod(intptr_t broker, intptr_t module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration)
 {
     calledCreateMethod = true;
 
     return __LINE__;
 };
 
-void fakeGatewayReceiveMethod(unsigned char* buffer, size_t bufferSize, unsigned int moduleIdManaged)
+void DOTNET_CORE_CALLING_CONVENTION fakeGatewayReceiveMethod(unsigned char* buffer, int32_t bufferSize, unsigned int moduleIdManaged)
 {
     calledReceiveMethod = true;
 };
 
-void fakeGatewayDestroyMethod(unsigned int moduleIdManaged)
+void DOTNET_CORE_CALLING_CONVENTION fakeGatewayDestroyMethod(unsigned int moduleIdManaged)
 {
     calledDestroyMethod = true;
 };
 
-void fakeGatewayStartMethod(unsigned int moduleIdManaged)
+void DOTNET_CORE_CALLING_CONVENTION fakeGatewayStartMethod(unsigned int moduleIdManaged)
 {
     calledStartMethod = true;
 }
 
 
-int fake_create_delegate(void* hostHandle,
+int DOTNET_CORE_CALLING_CONVENTION fake_create_delegate(void* hostHandle,
     unsigned int domainId,
     const char* entryPointAssemblyName,
     const char* entryPointTypeName,
@@ -147,7 +147,7 @@ int fake_create_delegate(void* hostHandle,
 
 
 
-int fake_shutdownclr(
+int DOTNET_CORE_CALLING_CONVENTION fake_shutdownclr(
     void* hostHandle,
     unsigned int domainId)
 {

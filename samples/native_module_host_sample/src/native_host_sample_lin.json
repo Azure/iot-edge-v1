@@ -16,7 +16,7 @@
              "module.path": "../../modules/logger/liblogger.so"
           }
         },
-        "module.arguments" : {
+        "module.args": {
           "filename": "log.txt"
         }
       }

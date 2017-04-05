@@ -4,7 +4,7 @@ Binding for Out of Process Azure IoT Gateway Modules
 Overview
 --------
 
-This document specifies the requirements for the gateway module that manages a module running out of process.  The module communicates to the remote module via the inter-process transport mechanism.  The [high level design](../../core/devdoc/on-out-process-gateway-modules.md) will provide an overview on how this module communicates to the module host process.
+This document specifies the requirements for the gateway module that manages a module running out of process.  The module communicates to the remote module via the inter-process transport mechanism.  The [high level design](../../core/devdoc/outprocess_hld.md) will provide an overview on how this module communicates to the module host process.
 
 Types
 -----
@@ -32,7 +32,7 @@ extern const MODULE_API_1 Outprocess_Module_API_all =
 
 ## References
 
-[On out process gateway modules](on-out-process-gateway-modules.md)
+[On out process gateway modules](outprocess_hld.md)
 
 [Control messages in out process modules](out-process-control-messages.md)
 
@@ -192,6 +192,8 @@ Outprocess control management thread
 **SRS_OUTPROCESS_MODULE_17_059: [** If a _Module Reply_ message has been received, and the status indicates the module has failed or has been terminated, this thread shall attempt to restart communications with module host process. **]**
 
 **SRS_OUTPROCESS_MODULE_17_060: [** Once the control channel has been restarted, it shall follow the same process in `Outprocess_Create` to send a _Create Message_ to the module host. **]**
+
+**SRS_OUTPROCESS_MODULE_24_061**: [** Once the control channel has been restarted and Create Message was sent, it shall send a Start Message to the module host. **]**
 
 
 Outprocess_FreeConfiguration

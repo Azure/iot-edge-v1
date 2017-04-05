@@ -18,8 +18,8 @@
           "loader":{
               "name": "java",
               "entrypoint": {
-                  "class.name": "Printer",
-                  "class.path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.0.1-with-deps.jar"
+                  "class.name": "com/microsoft/azure/gateway/sample/Printer",
+                  "class.path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.1.0-with-deps.jar"
               }
           },
           "args": null
@@ -29,8 +29,8 @@
           "loader":{
               "name": "java",
               "entrypoint": {
-                  "class.name": "Sensor",
-                  "class.path": "../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.0.1-with-deps.jar"
+                  "class.name": "com/microsoft/azure/gateway/sample/Sensor",
+                  "class.path": "../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.1.0-with-deps.jar"
               }
           },
           "args": null

@@ -12,7 +12,7 @@ if(WIN32)
         ${testSuiteName}_windows.cpp)
     set(${testSuiteName}_c_files
         ../../adapters/dynamic_library_windows.c)
-elseif(LINUX)
+elseif(UNIX) # LINUX or APPLE
     set(${testSuiteName}_cpp_files
         ${testSuiteName}_linux.cpp)
     set(${testSuiteName}_c_files

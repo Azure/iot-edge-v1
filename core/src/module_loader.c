@@ -43,7 +43,7 @@ static struct
     // Lock used to protect this instance.
     LOCK_HANDLE   lock;
 
-} g_module_loaders = { 0 };
+} g_module_loaders = { 0, NULL };
 
 MODULE_LOADER_RESULT ModuleLoader_Initialize(void)
 {

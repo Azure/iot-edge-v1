@@ -30,6 +30,7 @@ set CMAKE_enable_dotnet_core_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set enable_native_remote_modules=ON
+set enable_java_remote_modules=OFF
 set CMAKE_enable_ble_module=ON
 set use_xplat_uuid=OFF
 set dependency_install_prefix="-Ddependency_install_prefix=%local-install%"
@@ -46,6 +47,7 @@ if "%1" equ "--enable-dotnet-core-binding" goto arg-enable-dotnet-core-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-native-remote-modules" goto arg-disable_native_remote_modules
+if "%1" equ "--enable-java-remote-modules" goto arg-enable-java-remote-modules
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
 if "%1" equ "--system-deps-path" goto arg-system-deps-path
 if "%1" equ "--use-xplat-uuid" goto arg-use-xplat-uuid
@@ -104,6 +106,19 @@ goto args-continue
 set enable_native_remote_modules=OFF
 goto args-continue
 
+:arg-enable-java-remote-modules
+set enable_java_remote_modules=ON
+
+if "%enable-java-binding%" == "OFF" (
+    call %current-path%\build_java.cmd
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+)
+
+call %current-path%\build_java_oop.cmd
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+
+goto args-continue
+
 :arg-system-deps-path
 set dependency_install_prefix=""
 goto args-continue
@@ -124,11 +139,16 @@ rem ----------------------------------------------------------------------------
 
 if %CMAKE_enable_dotnet_core_binding% == ON (
 call %current-path%\build_dotnet_core.cmd --config %build-config%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
+
+
 
 if %CMAKE_enable_dotnet_binding% == ON (
 call %current-path%\build_dotnet.cmd --config %build-config%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
+
 
 rem -----------------------------------------------------------------------------
 rem -- build with CMAKE and run tests
@@ -136,6 +156,21 @@ rem ----------------------------------------------------------------------------
 
 rem this is setting the cmake path in a quoted way
 set "cmake-root=%build-root%\build"
+
+rem Figure out which CMake generator to use
+if "%VisualStudioVersion%" == "14.0" (
+    set "cmake-generator=Visual Studio 14 2015"
+) else if "%VisualStudioVersion%" == "15.0" (
+    set "cmake-generator=Visual Studio 15 2017"
+)
+if NOT DEFINED cmake-generator (
+    echo ERROR: VisualStudioVersion not defined, or not one of ^(14.0, 15.0^)
+    exit /b 1
+)
+if "%build-platform%" == "x64" (
+    set "cmake-generator=%cmake-generator% Win64"
+)
+echo **Building for "%cmake-generator%"
 
 echo Cleaning up build artifacts...
 rmdir /s/q %cmake-root%
@@ -148,15 +183,8 @@ mkdir %cmake-root%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 pushd %cmake-root%
-if %build-platform% == x64 (
-    echo ***Running CMAKE for Win64***
-        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_native_remote_modules:BOOL=%enable_native_remote_modules% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14 Win64" "%build-root%" 
-        if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
-) else (
-    echo ***Running CMAKE for Win32***
-        cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_native_remote_modules:BOOL=%enable_native_remote_modules% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "Visual Studio 14" "%build-root%"
-        if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
-)
+cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_native_remote_modules:BOOL=%enable_native_remote_modules% -Denable_java_remote_modules:BOOL=%enable_java_remote_modules% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "%cmake-generator%" "%build-root%"
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
@@ -187,6 +215,8 @@ echo  --enable-nodejs-binding        Build Node.js binding
 echo                                 (NODE_INCLUDE, NODE_LIB must be defined)
 echo  --disable-native-remote-modules Do not build the infrastructure required
 echo                                 to support native remote modules
+echo  --enable-java-remote-modules   Build Java Remote modules SDK
+echo                                 (JAVA_HOME must be defined in your environment)
 echo  --platform value               Build platform (e.g. [Win32], x64, ...)
 echo  --rebuild-deps                 Force rebuild of dependencies
 echo  --run-e2e-tests                Build/run end-to-end tests

@@ -1,0 +1,59 @@
+{
+  "loaders": [
+      {
+          "type": "java",
+          "name": "java",
+          "configuration":{
+              "jvm.options":{
+                  "library.path": "../../bindings/java"
+              },
+              "binding.path": "../../bindings/java/libjava_module_host.dylib"
+          }
+          
+      }
+  ],
+  "modules": [
+      {
+          "name": "java_printer",
+          "loader":{
+              "name": "java",
+              "entrypoint": {
+                  "class.name": "com/microsoft/azure/gateway/sample/Printer",
+                  "class.path": "../../../samples/java_sample/java_modules/Printer/target/sample-printer-module-1.1.0-with-deps.jar"
+              }
+          },
+          "args": null
+      },
+      {
+          "name": "java_sensor",
+          "loader":{
+              "name": "java",
+              "entrypoint": {
+                  "class.name": "com/microsoft/azure/gateway/sample/Sensor",
+                  "class.path": "../../../samples/java_sample/java_modules/Sensor/target/sample-sensor-module-1.1.0-with-deps.jar"
+              }
+          },
+          "args": null
+      },
+      {
+          "name": "logger",
+          "loader": {
+              "name": "native",
+              "entrypoint": {
+                  "module.path": "../../modules/logger/liblogger.so"
+              }
+          },
+          "args": { "filename": "log.txt" }
+      }
+  ],
+  "links": [
+      {
+          "source": "*",
+          "sink": "logger"
+      },
+      {
+          "source": "java_sensor",
+          "sink": "java_printer"
+      }
+  ]
+}

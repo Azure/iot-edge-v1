@@ -41,8 +41,7 @@ Running the sample
 ------------------
 1. Open azure_iot_gateway_sdk solution and configure project `dotnet_core_module_sample` as a Startup Sample.
 2. Go to the Project Properties and change `Command Arguments` to point to dotnet_core_module_sample.json.
-4. Change the configuration Debugger Type to Mixed (this way you will be able to set breakpoints on Managed code as well as Native Code).
-5. Run.
+3. Run.
 
 
 
