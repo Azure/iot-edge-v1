@@ -168,9 +168,6 @@ static void NodeModuleLoader_Unload(const MODULE_LOADER* loader, MODULE_LIBRARY_
     if (moduleLibraryHandle != NULL)
     {
         NODE_MODULE_HANDLE_DATA* loader_data = moduleLibraryHandle;
-        //Codes_SRS_NODE_MODULE_LOADER_13_009: [ NodeModuleLoader_Unload shall unload the binding module from memory by calling DynamicLibrary_UnloadLibrary. ]
-        DynamicLibrary_UnloadLibrary(loader_data->binding_module);
-
         //Codes_SRS_NODE_MODULE_LOADER_13_010: [ NodeModuleLoader_Unload shall free resources allocated when loading the binding module. ]
         free(loader_data);
     }

@@ -106,8 +106,6 @@ Unloads the binding module from memory.
 
 **SRS_NODE_MODULE_LOADER_13_008: [** `NodeModuleLoader_Unload` shall do nothing if `moduleLibraryHandle` is `NULL`. **]**
 
-**SRS_NODE_MODULE_LOADER_13_009: [** `NodeModuleLoader_Unload` shall unload the binding module from memory by calling `DynamicLibrary_UnloadLibrary`. **]**
-
 **SRS_NODE_MODULE_LOADER_13_010: [** `NodeModuleLoader_Unload` shall free resources allocated when loading the binding module. **]**
 
 NodeModuleLoader_ParseEntrypointFromJson

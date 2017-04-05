@@ -628,7 +628,6 @@ TEST_FUNCTION(NodeModuleLoader_Unload_does_nothing_when_moduleLibraryHandle_is_N
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
-//Tests_SRS_NODE_MODULE_LOADER_13_009: [ NodeModuleLoader_Unload shall unload the binding module from memory by calling DynamicLibrary_UnloadLibrary. ]
 //Tests_SRS_NODE_MODULE_LOADER_13_010: [ NodeModuleLoader_Unload shall free resources allocated when loading the binding module. ]
 TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
 {
@@ -667,7 +666,6 @@ TEST_FUNCTION(NodeModuleLoader_Unload_frees_things)
 
     umock_c_reset_all_calls();
 
-    STRICT_EXPECTED_CALL(DynamicLibrary_UnloadLibrary((DYNAMIC_LIBRARY_HANDLE)0x42));
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
