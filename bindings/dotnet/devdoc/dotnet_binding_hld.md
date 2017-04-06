@@ -68,7 +68,7 @@ gateway process, it:
 
 ### Module\_Start
 
-When the **.NET Module Host**’s `Module_Destroy` function is invoked by the
+When the **.NET Module Host**’s `Module_Start` function is invoked by the
 gateway, it:
 
 - Checks to see if the .NET module has implemented the `Start` method.
