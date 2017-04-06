@@ -263,13 +263,18 @@ namespace Microsoft.Azure.Devices.Gateway
             _netCoreInteropInstance.Start(moduleID);
         }
 
+        private static CreateDelegate delCreate = null;
+        private static ReceiveDelegate delReceive = null;
+        private static DestroyDelegate delDestroy = null;
+        private static StartDelegate delStart = null;
+
         public static void InitializeDelegates()
         {
             
-            CreateDelegate delCreate = Create;
-            ReceiveDelegate delReceive = Receive;
-            DestroyDelegate delDestroy = Destroy;
-            StartDelegate delStart = Start;
+            delCreate = Create;
+            delReceive = Receive;
+            delDestroy = Destroy;
+            delStart = Start;
 
             InitializeDelegatesOnNative(Marshal.GetFunctionPointerForDelegate(delCreate),
                                         Marshal.GetFunctionPointerForDelegate(delReceive),
