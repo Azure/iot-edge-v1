@@ -195,7 +195,7 @@ static void* OutprocessModuleLoader_ParseEntrypointFromJson(const struct MODULE_
 						/*Codes_SRS_OUTPROCESS_LOADER_17_017: [ This function shall assign the entrypoint activation_type to NONE. ] */
 						config->activation_type = OUTPROCESS_LOADER_ACTIVATION_NONE;
 						/*Codes_SRS_OUTPROCESS_LOADER_17_018: [ This function shall assign the entrypoint control_id to the string value of "control.id" in json, NULL if not present. ] */
-						config->control_id = URL_EncodeString(controlId);
+						config->control_id = STRING_construct(controlId);
 						if (config->control_id == NULL)
 						{
 							/*Codes_SRS_OUTPROCESS_LOADER_17_021: [ This function shall return NULL if any calls fails. ] */
@@ -206,7 +206,7 @@ static void* OutprocessModuleLoader_ParseEntrypointFromJson(const struct MODULE_
 						else
 						{
 							/*Codes_SRS_OUTPROCESS_LOADER_17_019: [ This function shall assign the entrypoint message_id to the string value of "message.id" in json, NULL if not present. ] */
-							config->message_id = URL_EncodeString(messageId);
+							config->message_id = STRING_construct(messageId);
 							/*Codes_SRS_OUTPROCESS_LOADER_17_022: [ This function shall return a valid pointer to an OUTPROCESS_LOADER_ENTRYPOINT on success. ]*/
 						}
 					}
@@ -294,13 +294,13 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 				else
 				{
 					/*Codes_SRS_OUTPROCESS_LOADER_17_032: [ The message uri shall be composed of "ipc://" + unique id . ]*/
-					fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, uuid, ".ipc");
+					fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, uuid);
 				}
 			}
 			else
 			{
 				/*Codes_SRS_OUTPROCESS_LOADER_17_033: [ This function shall allocate and copy each string in OUTPROCESS_LOADER_ENTRYPOINT and assign them to the corresponding fields in OUTPROCESS_MODULE_CONFIG. ]*/
-				fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, STRING_c_str(ep->message_id), ".ipc");
+				fullModuleConfiguration->message_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, STRING_c_str(ep->message_id));
 			}
 			if (fullModuleConfiguration->message_uri == NULL)
 			{
@@ -312,7 +312,7 @@ static void* OutprocessModuleLoader_BuildModuleConfiguration(
 			else 
 			{
 				/*Codes_SRS_OUTPROCESS_LOADER_17_033: [ This function shall allocate and copy each string in OUTPROCESS_LOADER_ENTRYPOINT and assign them to the corresponding fields in OUTPROCESS_MODULE_CONFIG. ]*/
-				fullModuleConfiguration->control_uri = STRING_construct_sprintf("%s%s%s", IPC_URI_HEAD, STRING_c_str(ep->control_id), ".ipc");
+				fullModuleConfiguration->control_uri = STRING_construct_sprintf("%s%s", IPC_URI_HEAD, STRING_c_str(ep->control_id));
 				if (fullModuleConfiguration->control_uri == NULL)
 				{
 					/*Codes_SRS_OUTPROCESS_LOADER_17_026: [ This function shall return NULL if entrypoint, control_id, or module_configuration is NULL. ] */

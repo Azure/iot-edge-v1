@@ -792,7 +792,7 @@ TEST_FUNCTION(attach_SCENARIO_success)
     // Arrange
     static const int COMMAND_ENDPOINT = 917;
     static const int COMMAND_SOCKET = 1979;
-    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
+    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut";
     const MODULE_API_1 module_apis = {
         { MODULE_API_VERSION_1 },
         mock_parseConfigurationFromJson,
@@ -840,7 +840,7 @@ TEST_FUNCTION(attach_SCENARIO_negative_tests)
 
     static const int COMMAND_ENDPOINT = 917;
     static const int COMMAND_SOCKET = 1979;
-    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut.ipc";
+    static const char CONTROL_CHANNEL_URI[] = "ipc://proxy_gateway_ut";
 
     REMOTE_MODULE_HANDLE remote_module;
 
@@ -1958,9 +1958,9 @@ TEST_FUNCTION(connect_to_message_channel_SCENARIO_success)
 {
     // Arrange
     static const MESSAGE_URI MESSAGE = {
-        sizeof("ipc://proxy_gateway_ut.ipc"),
+        sizeof("ipc://proxy_gateway_ut"),
         NN_PAIR,
-        "ipc://proxy_gateway_ut.ipc"
+        "ipc://proxy_gateway_ut"
     };
 
     int result;
@@ -1992,9 +1992,9 @@ TEST_FUNCTION(connect_to_message_channel_SCENARIO_negative_tests)
     ASSERT_ARE_EQUAL(int, 0, negativeTestsInitResult);
 
     static const MESSAGE_URI MESSAGE = {
-        sizeof("ipc://proxy_gateway_ut.ipc"),
+        sizeof("ipc://proxy_gateway_ut"),
         NN_PAIR,
-        "ipc://proxy_gateway_ut.ipc"
+        "ipc://proxy_gateway_ut"
     };
 
     int result;

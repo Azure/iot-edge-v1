@@ -39,6 +39,6 @@ class CommunicationControlStrategy implements CommunicationStrategy {
      */
     @Override
     public String getEndpointUri(String identifier) {
-        return String.format("ipc://%s.ipc", identifier);
+        return String.format("ipc://%s", identifier);
     }
 }

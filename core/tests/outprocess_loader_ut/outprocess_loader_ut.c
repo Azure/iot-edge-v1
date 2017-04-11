@@ -105,12 +105,6 @@ MOCK_FUNCTION_WITH_CODE(, MODULE_API*, Fake_GetAPI, MODULE_API_VERSION, gateway_
 MODULE_API* val = (MODULE_API*)0x42;
 MOCK_FUNCTION_END(val)
 
-STRING_HANDLE myURL_EncodeString(const char* textEncode)
-{
-	STRING_HANDLE val = real_STRING_construct(textEncode);
-	return val;
-}
-
 //parson mocks
 
 MOCK_FUNCTION_WITH_CODE(, JSON_Object*, json_value_get_object, const JSON_Value*, value)
@@ -197,7 +191,6 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     REGISTER_GLOBAL_MOCK_HOOK(STRING_clone, real_STRING_clone);
     REGISTER_GLOBAL_MOCK_HOOK(STRING_delete, real_STRING_delete);
 	REGISTER_GLOBAL_MOCK_HOOK(STRING_c_str, real_STRING_c_str);
-	REGISTER_GLOBAL_MOCK_HOOK(URL_EncodeString, myURL_EncodeString);
 
     REGISTER_GLOBAL_MOCK_FAIL_RETURN(STRING_clone, NULL);
 
@@ -627,7 +620,7 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_returns_NULL_when_u
 	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(OUTPROCESS_LOADER_ENTRYPOINT)));
 	STRICT_EXPECTED_CALL(json_object_get_number((JSON_Object*)0x43, "timeout"))
 		.SetReturn(0);
-	STRICT_EXPECTED_CALL(URL_EncodeString(control_id))
+	STRICT_EXPECTED_CALL(STRING_construct(control_id))
 		.SetReturn(NULL);
 	STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG))
 		.IgnoreArgument(1);
@@ -667,8 +660,8 @@ TEST_FUNCTION(OutprocessModuleLoader_ParseEntrypointFromJson_succeeds)
 	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(OUTPROCESS_LOADER_ENTRYPOINT)));
 	STRICT_EXPECTED_CALL(json_object_get_number((JSON_Object*)0x43, "timeout"))
 		.SetReturn(2000);
-	STRICT_EXPECTED_CALL(URL_EncodeString(control_id));
-	STRICT_EXPECTED_CALL(URL_EncodeString(NULL));
+	STRICT_EXPECTED_CALL(STRING_construct(control_id));
+	STRICT_EXPECTED_CALL(STRING_construct(NULL));
 
 	// act
 	void* result = OutprocessModuleLoader_ParseEntrypointFromJson(NULL, (JSON_Value*)0x42);
@@ -708,8 +701,8 @@ TEST_FUNCTION(OutprocessModuleLoader_FreeEntrypoint_frees_resources)
 	STRICT_EXPECTED_CALL(json_object_get_string((JSON_Object*)0x43, "message.id"))
 		.SetReturn(message_id);
 	STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(OUTPROCESS_LOADER_ENTRYPOINT)));
-	STRICT_EXPECTED_CALL(URL_EncodeString(control_id));
-	STRICT_EXPECTED_CALL(URL_EncodeString(message_id));
+	STRICT_EXPECTED_CALL(STRING_construct(control_id));
+	STRICT_EXPECTED_CALL(STRING_construct(message_id));
 
 	void* entrypoint = OutprocessModuleLoader_ParseEntrypointFromJson(NULL, (JSON_Value*)0x42);
     ASSERT_IS_NOT_NULL(entrypoint);
@@ -805,8 +798,8 @@ TEST_FUNCTION(OutprocessModuleLoader_BuildModuleConfiguration_success_with_msg_u
 	//assert
 	ASSERT_IS_NOT_NULL(result);
 	ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->control_uri), "ipc://control_id.ipc");
-	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->message_uri), "ipc://message_id.ipc");
+	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->control_uri), "ipc://control_id");
+	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->message_uri), "ipc://message_id");
 	ASSERT_ARE_EQUAL(char_ptr, STRING_c_str(omc->outprocess_module_args), STRING_c_str(mc));
 
 	//cleanup

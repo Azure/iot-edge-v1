@@ -126,7 +126,7 @@ ProxyGateway_Attach (
         /* Codes_SRS_PROXY_GATEWAY_027_008: [If memory allocation fails for the instance data, then `ProxyGateway_Attach` shall return `NULL`] */
         LogError("%s: Unable to allocate memory!", __FUNCTION__);
     } else {
-        static const size_t ENDPOINT_DECORATION_SIZE = sizeof("ipc://") - 1 + sizeof(".ipc") - 1;
+        static const size_t ENDPOINT_DECORATION_SIZE = sizeof("ipc://") - 1;
 
         const size_t control_channel_uri_size = strlen(connection_id) + ENDPOINT_DECORATION_SIZE + 1;
         char * control_channel_uri;
@@ -144,10 +144,6 @@ ProxyGateway_Attach (
             remote_module = NULL;
         } else if (NULL == strncat(control_channel_uri, connection_id, GATEWAY_CONNECTION_ID_MAX + 1)) {
             LogError("%s: Unable to compose channel uri body!", __FUNCTION__);
-            free(remote_module);
-            remote_module = NULL;
-        } else if (NULL == strcat(control_channel_uri, ".ipc")) {
-            LogError("%s: Unable to compose channel uri suffix!", __FUNCTION__);
             free(remote_module);
             remote_module = NULL;
         } else {
