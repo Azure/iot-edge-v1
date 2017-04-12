@@ -1,0 +1,33 @@
+﻿{
+    "modules": [
+        {
+            "name": "metrics1",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "Debug\\metrics.dll"
+                }
+            },
+            "args": null
+        },
+        {
+            "name": "simulator1",
+            "loader": {
+                "name": "native",
+                "entrypoint": {
+                    "module.path": "Debug\\simulator.dll"
+                }
+            },
+            "args": {
+                "deviceId": "device1",
+                "message.delay": 0
+            }
+        }
+    ],
+    "links": [
+        {
+            "source": "simulator1",
+            "sink": "metrics1"
+        }
+    ]
+}

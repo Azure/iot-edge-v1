@@ -291,7 +291,7 @@ The information the metrics module produces is:
 | Maximum latency          | Time (microseconds) | Maximum message latency |
 | Devices Discovered       | Count               | Number of deviceId names received in message. | 
 
-The metrics module also produces this information for each deviceId recognized:
+The metrics module also produces this information for each deviceId recognized.
 
 | Metric                   | Measure             | Description |
 | ------------------------ | ------------------- | ----------- |

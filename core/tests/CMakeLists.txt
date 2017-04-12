@@ -12,6 +12,7 @@ add_subdirectory(gwmessage_ut)
 add_subdirectory(message_q_ut)
 add_subdirectory(dynamic_loader_ut)
 add_subdirectory(module_loader_ut)
+
 if(${enable_java_binding})
     add_subdirectory(java_loader_ut)
 endif()
@@ -34,5 +35,6 @@ endif()
 
 if(${run_e2e_tests})
     add_subdirectory(gateway_e2e)
+    add_subdirectory(performance_e2e)
 endif()
 
