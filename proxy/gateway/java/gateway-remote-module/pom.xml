@@ -3,7 +3,7 @@
 
   <groupId>com.microsoft.azure.gateway</groupId>
   <artifactId>gateway-remote-module</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <developers>
       <developer>
           <id>microsoft</id>

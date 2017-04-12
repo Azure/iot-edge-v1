@@ -1,16 +1,16 @@
 {
     "gateway": 
     {
-        "core" : "1.0.3"
+        "core" : "1.0.4"
     },
     "bindings" :
     {
         "dotnet" : "1.0.2",
-        "dotnetcore": "1.0.1",
+        "dotnetcore": "1.0.2",
         "java" : "1.1.0"
     },
     "proxygateway" :
     {
-        "java" : "1.0.0"
+        "java" : "1.0.1"
     }
 }

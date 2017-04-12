@@ -161,6 +161,12 @@ module.exports = [
     },
     {
         "taskType": "regexReplaceTask",
+        "filePath": "samples/java_sample/src/java_sample_mac.json",
+        "search": "\\d+\.\\d+\.\\d+",
+        "replaceString": "bindings.java"
+    },
+    {
+        "taskType": "regexReplaceTask",
         "filePath": "samples/java_sample/src/java_sample_win.json",
         "search": "\\d+\.\\d+\.\\d+",
         "replaceString": "bindings.java"
