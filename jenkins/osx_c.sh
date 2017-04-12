@@ -9,10 +9,15 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 build_root=$(cd "${script_dir}/.." && pwd)
 build_folder=$build_root"/build"
 
-CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
+CORES=$(sysctl -n hw.ncpu)
 
 # Java binding
 pushd $build_root/bindings/java/gateway-java-binding
+mvn clean install
+popd
+
+# Java proxy gateway
+pushd $build_root/proxy/gateway/java/gateway-remote-module
 mvn clean install
 popd
 
@@ -26,6 +31,7 @@ cmake \
     -Dbuild_cores=$CORES \
     -Denable_ble_module:BOOL=OFF \
     -Denable_java_binding=ON \
+    -Denable_java_remote_modules:BOOL=ON \
     -Drun_unittests:BOOL=ON \
     -Drun_e2e_tests:BOOL=ON \
     ..

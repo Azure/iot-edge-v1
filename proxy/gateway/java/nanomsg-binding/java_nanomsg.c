@@ -18,7 +18,6 @@ JNIEXPORT jstring JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary
     jthrowable exception = (*env)->ExceptionOccurred(env);
     if (error_msg == NULL || exception)
     {
-        error_msg = "";
         (*env)->ExceptionDescribe(env);
         (*env)->ExceptionClear(env);
     }
