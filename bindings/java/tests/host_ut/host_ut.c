@@ -1349,8 +1349,6 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_invalid
     STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
 
     STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
-    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(JavaVMOption) * 5));
     STRICT_EXPECTED_CALL(STRING_construct("-Djava.class.path="));
     STRICT_EXPECTED_CALL(STRING_concat(IGNORED_PTR_ARG, config2.options->class_path))
@@ -1527,8 +1525,6 @@ TEST_FUNCTION(JavaModuleHost_Create_initializes_JavaVMInitArgs_structure_no_addi
     STRICT_EXPECTED_CALL(JavaModuleHostManager_Create(&config2));
 
     STRICT_EXPECTED_CALL(VECTOR_create(sizeof(STRING_HANDLE)));
-    STRICT_EXPECTED_CALL(VECTOR_size(IGNORED_PTR_ARG))
-        .IgnoreAllArguments();
     STRICT_EXPECTED_CALL(gballoc_malloc(sizeof(JavaVMOption) * 5));
     STRICT_EXPECTED_CALL(STRING_construct("-Djava.class.path="));
     STRICT_EXPECTED_CALL(STRING_concat(IGNORED_PTR_ARG, config2.options->class_path))

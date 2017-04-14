@@ -699,7 +699,11 @@ static int init_vm_options(JavaVMInitArgs* jvm_args, VECTOR_HANDLE* options_stri
             options_count += (jvm_options->library_path != NULL ? 1 : 0);
             options_count += (jvm_options->debug == true ? 3 : 0);
             options_count += (jvm_options->verbose == true ? 1 : 0);
-            options_count += (int)VECTOR_size(jvm_options->additional_options);
+
+            if (jvm_options->additional_options != NULL)
+            {
+                options_count += (int)VECTOR_size(jvm_options->additional_options);
+            }
 
             /*Codes_SRS_JAVA_MODULE_HOST_14_009: [This function shall allocate memory for an array of JavaVMOption structures and initialize each with each option provided.]*/
             (*jvm_args).options = options_count == 0 ? NULL : (JavaVMOption*)malloc(sizeof(JavaVMOption)*options_count);

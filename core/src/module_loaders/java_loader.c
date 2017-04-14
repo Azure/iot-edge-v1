@@ -767,15 +767,19 @@ static void free_jvm_config(JVM_OPTIONS* options)
 {
     if (options != NULL)
     {
-        for (size_t index = 0; index < VECTOR_size(options->additional_options); index++)
+        if (options->additional_options != NULL)
         {
-            STRING_HANDLE* element = (STRING_HANDLE*)VECTOR_element(options->additional_options, index);
-            if (element != NULL)
+            for (size_t index = 0; index < VECTOR_size(options->additional_options); index++)
             {
-                STRING_delete(*element);
+                STRING_HANDLE* element = (STRING_HANDLE*)VECTOR_element(options->additional_options, index);
+                if (element != NULL)
+                {
+                    STRING_delete(*element);
+                }
             }
+            VECTOR_destroy(options->additional_options);
         }
-        VECTOR_destroy(options->additional_options);
+
         free((char*)(options->class_path));
         free((char*)(options->library_path));
         free(options);

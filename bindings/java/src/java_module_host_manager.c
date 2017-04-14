@@ -266,8 +266,13 @@ static JVM_OPTIONS* options_copy(JVM_OPTIONS* options)
     }
     else
     {
-        new_options->additional_options = VECTOR_copy(options->additional_options);
-        if (new_options->additional_options == NULL)
+        new_options->additional_options = NULL;
+        if (options->additional_options != NULL)
+        {
+            new_options->additional_options = VECTOR_copy(options->additional_options);
+        }
+
+        if (options->additional_options != NULL && new_options->additional_options == NULL)
         {
             LogError("Failed to copy additional_options VECTOR_HANDLE.");
             free(new_options);
@@ -418,7 +423,11 @@ static int VECTOR_compare(VECTOR_HANDLE vector1, VECTOR_HANDLE vector2)
 {
     int result = 0;
 
-    if (VECTOR_size(vector1) == 0 && VECTOR_size(vector2) == 0)
+    if (vector1 == NULL && vector2 == NULL)
+    {
+        result = 0;
+    }
+    else if (VECTOR_size(vector1) == 0 && VECTOR_size(vector2) == 0)
     {
         result = 0;
     }
