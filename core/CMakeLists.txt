@@ -32,29 +32,28 @@ elseif(UNIX) # LINUX or APPLE
     set(dynamic_library_c_file ./adapters/dynamic_library_linux.c ./adapters/gb_library_linux.c )
 endif()
 
-# If using the appropriate build script based on OS that it is used
+# Build libuv with an OS-appropriate script
 if (${enable_native_remote_modules} OR ${enable_java_remote_modules})
     if(WIN32)
         if(8 EQUAL CMAKE_SIZEOF_VOID_P)
-            MESSAGE(STATUS "Building 64-bit LibUV for Windows...")
-            execute_process (
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
-                COMMAND build_libuv.cmd x64
-            )
+            message(STATUS "Building libuv for 64-bit Windows...")
+            set(build_libuv build_libuv.cmd x64)
         else()
-            MESSAGE(STATUS "Building 32-bit LibUV for Windows...")
-            execute_process (
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
-                COMMAND build_libuv.cmd
-            )
+            message(STATUS "Building libuv for 32-bit Windows...")
+            set(build_libuv build_libuv.cmd)
         endif()
-    elseif(UNIX)
-        MESSAGE(STATUS "Building LibUV for Unix...")
-        execute_process (
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
-            COMMAND ./build_libuv.sh
-        )
+    elseif(LINUX)
+        message(STATUS "Building libuv for Linux...")
+        set(build_libuv ./build_libuv.sh)
+    elseif(APPLE)
+        message(STATUS "Building libuv for macOS...")
+        set(build_libuv ./build_libuv_macos.sh)
     endif()
+
+    execute_process (
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
+        COMMAND ${build_libuv}
+    )
 endif()
 
 #setting specific libraries to be loaded based on OS (for example, Linux needs "-ldl", windows does not)
