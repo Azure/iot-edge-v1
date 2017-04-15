@@ -15,7 +15,9 @@
 #include "module_loader.h"
 
 #include "azure_c_shared_utility/vector_types_internal.h"
-
+#ifdef OUTPROCESS_ENABLED
+  #include "module_loaders/outprocess_loader.h"
+#endif
 
 #define DUMMY_LIBRARY_PATH "x.dll"
 
@@ -217,6 +219,12 @@ public:
 	MOCK_STATIC_METHOD_0(, void, ModuleLoader_Destroy);
 	MOCK_VOID_METHOD_END();
 
+    MOCK_STATIC_METHOD_0(, void, OutprocessLoader_JoinChildProcesses);
+    MOCK_VOID_METHOD_END();
+
+    MOCK_STATIC_METHOD_0(, int, OutprocessLoader_SpawnChildProcesses);
+    MOCK_METHOD_END(int, 0);
+
 
     MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
     MOCK_METHOD_END(EVENTSYSTEM_HANDLE, (EVENTSYSTEM_HANDLE)BASEIMPLEMENTATION::gballoc_malloc(1));
@@ -351,6 +359,8 @@ DECLARE_GLOBAL_MOCK_METHOD_3(CGatewayLLMocks, , void*, DynamicModuleLoader_Build
 DECLARE_GLOBAL_MOCK_METHOD_2(CGatewayLLMocks, , void, DynamicModuleLoader_FreeModuleConfiguration, const struct MODULE_LOADER_TAG*, loader, const void*, module_configuration);
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , MODULE_LOADER_RESULT, ModuleLoader_Initialize);
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , void, ModuleLoader_Destroy);
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , void, OutprocessLoader_JoinChildProcesses);
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , int, OutprocessLoader_SpawnChildProcesses);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayLLMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
 DECLARE_GLOBAL_MOCK_METHOD_4(CGatewayLLMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param);
@@ -562,6 +572,7 @@ TEST_FUNCTION(Gateway_Create_Creates_Handle_Success)
 
 /*Tests_SRS_GATEWAY_14_011: [ If gw, entry, or GATEWAY_MODULES_ENTRY's loader_configuration or loader_api is NULL the function shall return NULL. ]*/
 /*Tests_SRS_GATEWAY_17_017: [ This function shall destroy the default module loaders upon any failure. ]*/
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_returns_null_on_bad_module_api_entry)
 {
     //Arrange
@@ -613,6 +624,9 @@ TEST_FUNCTION(Gateway_Create_returns_null_on_bad_module_api_entry)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -738,6 +752,7 @@ TEST_FUNCTION(Gateway_Create_VECTOR_Create_Fails)
 }
 
 /*Codes_SRS_GATEWAY_14_002: [ This function shall return NULL upon any failure. ] */
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_VECTOR_Create2_Fails)
 {
     //Arrange
@@ -762,6 +777,9 @@ TEST_FUNCTION(Gateway_Create_VECTOR_Create2_Fails)
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
 
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -779,6 +797,7 @@ TEST_FUNCTION(Gateway_Create_VECTOR_Create2_Fails)
 }
 
 /*Codes_SRS_GATEWAY_14_002: [ This function shall return NULL upon any failure. ] */
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
 {
     //Arrange
@@ -912,6 +931,9 @@ TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -929,6 +951,7 @@ TEST_FUNCTION(Gateway_Create_VECTOR_push_back_Fails_To_Add_All_Modules_In_Props)
 }
 
 /*Tests_SRS_GATEWAY_14_036: [ If any MODULE_HANDLE is unable to be created from a GATEWAY_MODULES_ENTRY the GATEWAY_HANDLE will be destroyed. ]*/
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
 {
     //Arrange
@@ -1050,6 +1073,9 @@ TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1069,6 +1095,7 @@ TEST_FUNCTION(Gateway_Create_Broker_AddModule_Fails_To_Add_All_Modules_In_Props)
 
 /*Tests_SRS_GATEWAY_04_004: [If a module with the same module_name already exists, this function shall fail and the GATEWAY_HANDLE will be destroyed.]*/
 /*Tests_SRS_GATEWAY_17_020: [ The function shall clean up any constructed resources. ]*/
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_AddModule_WithDuplicatedModuleName_Fails)
 {
     //Arrange
@@ -1165,6 +1192,9 @@ TEST_FUNCTION(Gateway_Create_AddModule_WithDuplicatedModuleName_Fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1443,6 +1473,7 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_All_Links_In_Props_Success)
 }
 
 /*Tests_SRS_GATEWAY_04_003: [If any GATEWAY_LINK_ENTRY is unable to be added to the broker the GATEWAY_HANDLE will be destroyed.]*/
+/*Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ]*/
 TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_Links_fromNonExistingModule_Fail)
 {
     //Arrange
@@ -1541,6 +1572,9 @@ TEST_FUNCTION(Gateway_Create_Adds_All_Modules_And_Links_fromNonExistingModule_Fa
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1573,6 +1607,7 @@ TEST_FUNCTION(Gateway_Destroy_destroys_loader_If_NULL)
 }
 
 /*Tests_SRS_GATEWAY_14_037: [ If GATEWAY_HANDLE_DATA's message broker cannot remove a module, the function shall log the error and continue removing modules from the GATEWAY_HANDLE. ]*/
+/* Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ] */
 TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
 {
     //Arrange
@@ -1649,6 +1684,9 @@ TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
         .IgnoreArgument(1); //Modules
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -1666,6 +1704,7 @@ TEST_FUNCTION(Gateway_Destroy_Continues_Unloading_If_Broker_RemoveModule_Fails)
 /*Tests_SRS_GATEWAY_14_006: [ The function shall destroy the GATEWAY_HANDLE_DATA's broker BROKER_HANDLE. ]*/
 /*Tests_SRS_GATEWAY_04_014: [ The function shall remove each link in GATEWAY_HANDLE_DATA's links vector and destroy GATEWAY_HANDLE_DATA's link. ]*/
 /*Tests_SRS_GATEWAY_17_019: [ The function shall destroy the module loader list. ]*/
+/*Tests_SRS_GATEWAY_27_040: [ Launch - `Gateway_Destroy` shall join any spawned threads. ]*/
 TEST_FUNCTION(Gateway_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
 {
     //Arrange
@@ -1759,6 +1798,9 @@ TEST_FUNCTION(Gateway_Destroy_Removes_All_Modules_And_Destroys_Vector_Success)
         .IgnoreArgument(1); //Modules.
     STRICT_EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1); //Links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     STRICT_EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
@@ -2759,6 +2801,7 @@ TEST_FUNCTION(Gateway_Event_System_Create_And_Report)
 }
 
 /* Tests_SRS_GATEWAY_26_002: [ If Event System module fails to be initialized the gateway module shall be destroyed and NULL returned with no events reported. ] */
+/* Tests_SRS_GATEWAY_27_027: [ Launch - This function shall join any spawned threads upon any failure. ] */
 TEST_FUNCTION(Gateway_Event_System_Create_Fail)
 {
     // Arrange
@@ -2780,6 +2823,9 @@ TEST_FUNCTION(Gateway_Event_System_Create_Fail)
     EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)); //For Links.
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG)); //Modules
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG)); //Links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 
@@ -2793,6 +2839,7 @@ TEST_FUNCTION(Gateway_Event_System_Create_Fail)
 
 /* Tests_SRS_GATEWAY_26_003: [ If the Event System module is initialized, this function shall report GATEWAY_DESTROYED event. ] */
 /* Tests_SRS_GATEWAY_26_004: [ This function shall destroy the attached Event System. ] */
+/* Tests_SRS_GATEWAY_27_040: [ Launch - This function shall join any spawned threads. ] */
 TEST_FUNCTION(Gateway_Event_System_Report_Destroy)
 {
     // Arrange
@@ -2807,6 +2854,9 @@ TEST_FUNCTION(Gateway_Event_System_Report_Destroy)
     EXPECTED_CALL(mocks, VECTOR_size(IGNORED_PTR_ARG)); //For Links
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG)); //Modules
     EXPECTED_CALL(mocks, VECTOR_destroy(IGNORED_PTR_ARG)); //Links
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
     EXPECTED_CALL(mocks, Broker_Destroy(IGNORED_PTR_ARG));
     EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG));
 	EXPECTED_CALL(mocks, ModuleLoader_Destroy());

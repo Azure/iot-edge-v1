@@ -39,7 +39,7 @@ This section shows you how to set up a development environment for the Azure IoT
 
     ```
     sudo apt-get update 
-    sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-dev uuid-dev valgrind libglib1.0-dev
+    sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-dev uuid-dev valgrind libglib2.0-dev libtool autoconf
     ```
 
     > Note: libglib1.0-dev is required for ble module/sample.

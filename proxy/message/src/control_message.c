@@ -31,7 +31,7 @@ static int parse_uint32_t(const unsigned char* source, size_t sourceSize, size_t
     else
     {
         *parsed = 4;
-        *value = 
+        *value =
             (source[position + 0] << 24) |
             (source[position + 1] << 16) |
             (source[position + 2] <<  8) |
@@ -59,7 +59,7 @@ static int parse_memory_chunk(const unsigned char* source, size_t sourceSize, si
         else
         {
 			if (chunk_size == 0)
-			{ 
+			{
 				*value = NULL;
 				*parsed = current_parsed;
 				*size = chunk_size;
@@ -116,22 +116,22 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
     (void)parsed;
 
 	init_create_message_contents(create_msg); /* initialize to NULL for easy cleanup */
-    /* 
-	 * Parse the number of uris
-	 * We already know we won't extend past the end of the array - 
-	 * it was checked before entering this function 
-	 */
+    /*
+     * Parse the number of uris
+     * We already know we won't extend past the end of the array -
+     * it was checked before entering this function
+     */
 
-	if (position + 2 > sourceSize)
-	{
-		LogError("couldn't parse message uri");
-		result = __LINE__;
-	}
-	else
-	{
-		create_msg->gateway_message_version = (uint8_t)source[position++];
-		/*Codes_SRS_CONTROL_MESSAGE_17_012: [ This function shall read the uri_type, uri_size, and the uri. ]*/
-		create_msg->uri.uri_type =	(uint8_t)source[position++];
+    if (position + 2 > sourceSize)
+    {
+        LogError("couldn't parse message uri");
+        result = __LINE__;
+    }
+    else
+    {
+        create_msg->gateway_message_version = (uint8_t)source[position++];
+        /*Codes_SRS_CONTROL_MESSAGE_17_012: [ This function shall read the uri_type, uri_size, and the uri. ]*/
+        create_msg->uri.uri_type = (uint8_t)source[position++];
 
 		/*Codes_SRS_CONTROL_MESSAGE_17_013: [ This function shall allocate uri_size bytes for the url. ]*/
 		if (parse_memory_chunk(source,
@@ -139,7 +139,7 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			position,
 			&current_parsed,
 			&(create_msg->uri.uri_size),
-			(unsigned char**)(&(create_msg->uri.uri))) != 0)
+			(unsigned char**)&(create_msg->uri.uri)) != 0)
 		{
 			LogError("unable to parse a uri");
 			result = __LINE__;
@@ -150,33 +150,35 @@ int parse_create_message(const unsigned char* source, size_t sourceSize, size_t 
 			result = 0;
 		}
 	}
+
     if (result != 0)
     {
         /* Did not come out of parsing the URLs OK */
-		/*Codes_SRS_CONTROL_MESSAGE_17_022: [ This function shall release all allocated memory upon failure. ]*/
+        /*Codes_SRS_CONTROL_MESSAGE_17_022: [ This function shall release all allocated memory upon failure. ]*/
         free_create_message_contents(create_msg);
     }
-	else
-	{
-		/*Codes_SRS_CONTROL_MESSAGE_17_014: [ This function shall read the args_size and args from the byte stream. ]*/
-		/*Codes_SRS_CONTROL_MESSAGE_17_015: [ This function shall allocate args_size + 1 bytes for the args and will null terminate the memory block. ]*/
-		if (parse_memory_chunk(source,
-			sourceSize,
-			position,
-			&current_parsed,
-			&(create_msg->args_size),
-			(unsigned char**)(&(create_msg->args))) != 0)
-		{
-			LogError("unable to parse a module args");
-			result = __LINE__;
-			/*Codes_SRS_CONTROL_MESSAGE_17_022: [ This function shall release all allocated memory upon failure. ]*/
-			free_create_message_contents(create_msg);
-		}
-		else
+    else
+    {
+        /*Codes_SRS_CONTROL_MESSAGE_17_014: [ This function shall read the args_size and args from the byte stream. ]*/
+        /*Codes_SRS_CONTROL_MESSAGE_17_015: [ This function shall allocate args_size + 1 bytes for the args and will null terminate the memory block. ]*/
+        if (parse_memory_chunk(source,
+            sourceSize,
+            position,
+            &current_parsed,
+            &(create_msg->args_size),
+            (unsigned char **)&(create_msg->args)) != 0)
+        {
+            LogError("unable to parse a module args");
+            result = __LINE__;
+            /*Codes_SRS_CONTROL_MESSAGE_17_022: [ This function shall release all allocated memory upon failure. ]*/
+            free_create_message_contents(create_msg);
+        }
+        else
         {
             result = 0;
-		}
-	}
+        }
+    }
+
     return result;
 }
 
@@ -210,15 +212,15 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
         {
             size_t currentPosition = 2; /*current position is always the first character that "we are about to look at"*/
             int32_t parsed; /*reused in all parsings*/
-			/*Codes_SRS_CONTROL_MESSAGE_17_005: [ This function shall read the version, type and size from the byte stream. ]*/
+            /*Codes_SRS_CONTROL_MESSAGE_17_005: [ This function shall read the version, type and size from the byte stream. ]*/
             uint8_t messageVersion = (uint8_t)source[currentPosition++];
-			uint8_t messageType = (uint8_t)source[currentPosition++];
-			uint32_t messageSize;
-			/* we already know buffer is at least BASE_MESSAGE_SIZE - this will always return OK */
-			(void)parse_uint32_t(source, size, currentPosition, &parsed, &messageSize);
+            uint8_t messageType = (uint8_t)source[currentPosition++];
+            uint32_t messageSize;
+            /* we already know buffer is at least BASE_MESSAGE_SIZE - this will always return OK */
+            (void)parse_uint32_t(source, size, currentPosition, &parsed, &messageSize);
             currentPosition += parsed;
-			/*Codes_SRS_CONTROL_MESSAGE_17_006: [ If the size embedded in the message is not the same as size parameter then this function shall fail and return NULL. ]*/
-            if (messageSize != size)
+            /*Codes_SRS_CONTROL_MESSAGE_17_006: [ If the size embedded in the message is not the same as size parameter then this function shall fail and return NULL. ]*/
+            if ((size_t)messageSize != size)
             {
                 LogError("message size is inconsistent");
                 result = NULL;
@@ -238,14 +240,14 @@ CONTROL_MESSAGE * ControlMessage_CreateFromByteArray(const unsigned char* source
                         result = (CONTROL_MESSAGE *)malloc(sizeof(CONTROL_MESSAGE_MODULE_CREATE));
                         if (result != NULL)
                         {
-							/*Codes_SRS_CONTROL_MESSAGE_17_024: [ Upon valid reading of the byte stream, this function shall assign the message version and type into the CONTROL_MESSAGE base structure. ]*/
-							result->version = messageVersion;
+                            /*Codes_SRS_CONTROL_MESSAGE_17_024: [ Upon valid reading of the byte stream, this function shall assign the message version and type into the CONTROL_MESSAGE base structure. ]*/
+                            result->version = messageVersion;
                             result->type = messageType;
                             if (parse_create_message(
-                                    source, 
-                                    size, 
-                                    currentPosition, 
-                                    &parsed, 
+                                    source,
+                                    size,
+                                    currentPosition,
+                                    &parsed,
                                     (CONTROL_MESSAGE_MODULE_CREATE*)result) != 0)
                             {
 								/*Codes_SRS_CONTROL_MESSAGE_17_022: [ This function shall release all allocated memory upon failure. ]*/

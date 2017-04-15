@@ -28,7 +28,6 @@ if(${enable_nodejs_binding})
 endif()
 
 if (${enable_native_remote_modules})
-    add_subdirectory(control_msg_ut)
     add_subdirectory(outprocess_loader_ut)
     add_subdirectory(outprocess_module_ut)
 endif()

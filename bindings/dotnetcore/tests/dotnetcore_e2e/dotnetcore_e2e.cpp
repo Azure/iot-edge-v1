@@ -31,21 +31,27 @@ static bool messageReplyReceived = false;
 
 static void* E2EModule_ParseConfigurationFromJson(const char* configuration)
 {
-	return (void*)0x4242;
+    (void)configuration;
+    return (void*)0x4242;
 }
 
 static void E2EModule_FreeConfiguration(void* configuration)
 {
-	return;
+    (void)configuration;
+    return;
 }
 
 static MODULE_HANDLE E2EModule_Create(BROKER_HANDLE broker, const void* configuration)
 {
+    (void)broker;
+    (void)configuration;
     return (MODULE_HANDLE)0x4242;
 }
 
 static void E2EModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
+    (void)moduleHandle;
+    (void)messageHandle;
     if (messageHandle != NULL)
     {
         CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
@@ -66,16 +72,17 @@ static void E2EModule_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE message
         ConstMap_Destroy(properties);
     }
 }
+
 static void E2EModule_Destroy(MODULE_HANDLE module)
 {
-
+    (void)module;
 }
+
 static const MODULE_API_1 E2E_APIS_all =
 {
     {MODULE_API_VERSION_1},
-
-	E2EModule_ParseConfigurationFromJson,
-	E2EModule_FreeConfiguration,
+    E2EModule_ParseConfigurationFromJson,
+    E2EModule_FreeConfiguration,
     E2EModule_Create,
     E2EModule_Destroy,
     E2EModule_Receive,
@@ -84,21 +91,30 @@ static const MODULE_API_1 E2E_APIS_all =
 
 MODULE_EXPORT const MODULE_API* Module_GetApi(const struct MODULE_LOADER_TAG* loader, MODULE_API_VERSION gateway_api_version)
 {
+    (void)loader;
+    (void)gateway_api_version;
     return reinterpret_cast<const MODULE_API *>(&E2E_APIS_all);
 }
 
 MODULE_LIBRARY_HANDLE E2E_Loader_Load(const struct MODULE_LOADER_TAG* loader, const void * config)
 {
+    (void)loader;
+    (void)config;
     return (MODULE_LIBRARY_HANDLE)&E2E_APIS_all;
 }
 
 void E2E_Loader_Unload(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle)
 {
+    (void)loader;
+    (void)handle;
     return;
 }
 
 const MODULE_API* E2E_Loader_GetApi(const struct MODULE_LOADER_TAG* loader, MODULE_LIBRARY_HANDLE handle)
 {
+    (void)loader;
+    (void)handle;
+
     const MODULE_API* result;
     if (handle != NULL)
     {
@@ -113,12 +129,16 @@ const MODULE_API* E2E_Loader_GetApi(const struct MODULE_LOADER_TAG* loader, MODU
 
 void* E2E_Loader_BuildModuleConfiguration(const struct MODULE_LOADER_TAG* loader, const void* entrypoint, const void* module_configuration)
 {
-	return NULL;
+    (void)loader;
+    (void)entrypoint;
+    (void)module_configuration;
+    return NULL;
 }
 
 void E2E_Loader_FreeModuleConfiguration(const struct MODULE_LOADER_TAG* loader, const void* module_configuration)
 {
-
+    (void)loader;
+    (void)module_configuration;
 }
 
 // E2E static module loader does not need any JSON parsing.
@@ -223,12 +243,6 @@ TEST_FUNCTION(GW_dotnetcore_binding_e2e_Managed2Managed)
 		&receiverEndpoint
 	};
 
-    const DOTNET_CORE_HOST_CONFIG receiverConfig{
-        "E2ETestModule",
-        "E2ETestModule.DotNetE2ETestModule",
-        "Receiver"
-    };
-
     modulesEntryArray[1] = {
 		nameModuleReceiver,
 		loaders[1],
@@ -271,7 +285,7 @@ TEST_FUNCTION(GW_dotnetcore_binding_e2e_Managed2Managed)
         nameProbeModule
     };
 
-    ///act    
+    ///act
     GATEWAY_PROPERTIES properties;
     properties.gateway_modules = VECTOR_create(sizeof(GATEWAY_MODULES_ENTRY));
     properties.gateway_links = VECTOR_create(sizeof(GATEWAY_LINK_ENTRY));

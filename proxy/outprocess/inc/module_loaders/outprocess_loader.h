@@ -26,7 +26,9 @@ extern "C"
 #define OUTPROCESS_LOADER_NAME "outprocess"
 
 #define OUTPROCESS_LOADER_ACTIVATION_TYPE_VALUES \
-    OUTPROCESS_LOADER_ACTIVATION_NONE
+    OUTPROCESS_LOADER_ACTIVATION_NONE, \
+    OUTPROCESS_LOADER_ACTIVATION_LAUNCH, \
+    OUTPROCESS_LOADER_ACTIVATION_INVALID \
 
 /**
  * @brief Enumeration listing all supported module loaders
@@ -45,12 +47,28 @@ typedef struct OUTPROCESS_LOADER_ENTRYPOINT_TAG
     STRING_HANDLE control_id;
     /** @brief The URI for the gateway message channel.*/
     STRING_HANDLE message_id;
-	/** @brief controls timeout for ipc retries. */
+    /** @brief The count of arguments to be handed-off to the child process.*/
+    size_t process_argc;
+    /** @brief The arguments to be handed-off to the child process.*/
+    char ** process_argv;
+    /** @brief controls timeout for ipc retries. */
 	unsigned int remote_message_wait;
 } OUTPROCESS_LOADER_ENTRYPOINT;
 
 /** @brief      The API for the out of process proxy module loader. */
 MOCKABLE_FUNCTION(, GATEWAY_EXPORT const MODULE_LOADER*, OutprocessLoader_Get);
+
+/**
+ * @brief      Join the OutprocessLoader child processes (static)
+ */
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT void, OutprocessLoader_JoinChildProcesses);
+
+/**
+* @brief      Spawn the OutprocessLoader child processes (static)
+*
+* @return     Returns 0 on success and non-zero to indicate an error occurred
+*/
+MOCKABLE_FUNCTION(, GATEWAY_EXPORT int, OutprocessLoader_SpawnChildProcesses);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,7 @@ set(${theseTestsName}_c_files
 set(${theseTestsName}_h_files
 )
 
+include_directories(../../inc)
 include_directories(${GW_INC})
 
 build_c_test_artifacts(${theseTestsName} ON "tests/UnitTests")

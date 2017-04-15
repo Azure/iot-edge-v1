@@ -20,7 +20,7 @@ MODULE_HANDLE RemoteSample_Create(BROKER_HANDLE broker, const void* configuratio
 {
     (void)configuration;
     printf("Remote Module Create\n");
-	theBrokerHandle = broker;
+    theBrokerHandle = broker;
     MODULE_HANDLE m = (MODULE_HANDLE)"remote module";
     return m;
 }
@@ -31,7 +31,7 @@ void RemoteSample_Destroy(MODULE_HANDLE moduleHandle)
 void RemoteSample_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     printf("Remote Module Receive: %s, %p\n", (char *)moduleHandle, messageHandle);
-	Broker_Publish(theBrokerHandle, moduleHandle, messageHandle);
+    Broker_Publish(theBrokerHandle, moduleHandle, messageHandle);
 }
 void RemoteSample_Start(MODULE_HANDLE moduleHandle)
 {
@@ -56,6 +56,16 @@ const MODULE_API * pRemoteModuleApi = (const MODULE_API *)&remoteModuleApi;
 int main(int argc, char** argv)
 {
     REMOTE_MODULE_HANDLE remote_module;
+
+    // Log received parameters to file
+    FILE * param_log = fopen("param.txt", "w+");
+    if (param_log) {
+        for (int i = 0; i < argc; ++i) {
+            fprintf(param_log, "%s\n", argv[i]);
+        }
+        fclose(param_log);
+    }
+
     if (argc != 2)
     {
         printf("usage: proxy_sample_remote control_channel_id\n");

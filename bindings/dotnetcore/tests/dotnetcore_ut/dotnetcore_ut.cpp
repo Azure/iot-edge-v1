@@ -73,8 +73,14 @@ static bool calledReceiveMethod = false;
 static bool calledDestroyMethod = false;
 static bool calledStartMethod = false;
 
- int DOTNET_CORE_CALLING_CONVENTION fakeGatewayCreateMethod(intptr_t broker, intptr_t module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration)
+int DOTNET_CORE_CALLING_CONVENTION fakeGatewayCreateMethod(intptr_t broker, intptr_t module, const char* assemblyName, const char* entryType, const char* gatewayConfiguration)
 {
+    (void)broker;
+    (void)module;
+    (void)assemblyName;
+    (void)entryType;
+    (void)gatewayConfiguration;
+
     calledCreateMethod = true;
 
     return __LINE__;
@@ -82,16 +88,24 @@ static bool calledStartMethod = false;
 
 void DOTNET_CORE_CALLING_CONVENTION fakeGatewayReceiveMethod(unsigned char* buffer, int32_t bufferSize, unsigned int moduleIdManaged)
 {
+    (void)buffer;
+    (void)bufferSize;
+    (void)moduleIdManaged;
+
     calledReceiveMethod = true;
 };
 
 void DOTNET_CORE_CALLING_CONVENTION fakeGatewayDestroyMethod(unsigned int moduleIdManaged)
 {
+    (void)moduleIdManaged;
+
     calledDestroyMethod = true;
 };
 
 void DOTNET_CORE_CALLING_CONVENTION fakeGatewayStartMethod(unsigned int moduleIdManaged)
 {
+    (void)moduleIdManaged;
+
     calledStartMethod = true;
 }
 
@@ -103,6 +117,11 @@ int DOTNET_CORE_CALLING_CONVENTION fake_create_delegate(void* hostHandle,
     const char* entryPointMethodName,
     void** delegate)
 {
+    (void)hostHandle;
+    (void)domainId;
+    (void)entryPointAssemblyName;
+    (void)entryPointTypeName;
+
     int returnStatus;
 
     //assign delegates.
@@ -124,7 +143,7 @@ int DOTNET_CORE_CALLING_CONVENTION fake_create_delegate(void* hostHandle,
     }
 
 
-    //Define return status. 
+    //Define return status.
     if (failCreateDelegate == true && strcmp(entryPointMethodName, "Create") == 0)
     {
         returnStatus = -1;
@@ -148,9 +167,11 @@ int DOTNET_CORE_CALLING_CONVENTION fake_create_delegate(void* hostHandle,
 
 
 int DOTNET_CORE_CALLING_CONVENTION fake_shutdownclr(
-    void* hostHandle,
+    void * hostHandle,
     unsigned int domainId)
 {
+    (void)hostHandle;
+    (void)domainId;
     return 0;
 };
 
@@ -243,7 +264,6 @@ public:
     MOCK_STATIC_METHOD_3(, int32_t, Message_ToByteArray, MESSAGE_HANDLE, messageHandle, unsigned char*, buf, int32_t , size)
     MOCK_METHOD_END( int32_t, (int32_t)11);
 
-    
     MOCK_STATIC_METHOD_2(, MESSAGE_HANDLE, Message_CreateFromByteArray, const unsigned char*, source, int32_t, size)
     MOCK_METHOD_END(MESSAGE_HANDLE, (MESSAGE_HANDLE)0x42);
 
@@ -302,7 +322,7 @@ public:
 
     MOCK_STATIC_METHOD_2(, JSON_Object*, json_array_get_object, const JSON_Array*, arr, size_t, index)
         JSON_Object* object = NULL;
-    if (arr != NULL && index >= 0)
+    if (arr != NULL)
     {
         object = (JSON_Object*)0x42;
     }

@@ -16,6 +16,9 @@
 #include <parson.h>
 
 #include "azure_c_shared_utility/vector_types_internal.h"
+#ifdef OUTPROCESS_ENABLED
+  #include "module_loaders/outprocess_loader.h"
+#endif
 
 #define DUMMY_JSON_PATH "x.json"
 #define MISCONFIG_JSON_PATH "invalid_json.json"
@@ -270,6 +273,11 @@ public:
     MOCK_STATIC_METHOD_1(, MODULE_LOADER*, ModuleLoader_FindByName, const char*, name)
     MOCK_METHOD_END(MODULE_LOADER*, &dummyModuleLoader);
 
+    MOCK_STATIC_METHOD_0(, void, OutprocessLoader_JoinChildProcesses);
+    MOCK_VOID_METHOD_END();
+
+    MOCK_STATIC_METHOD_0(, int, OutprocessLoader_SpawnChildProcesses);
+    MOCK_METHOD_END(int, 0);
 
     /*EventSystem Mocks*/
     MOCK_STATIC_METHOD_0(, EVENTSYSTEM_HANDLE, EventSystem_Init)
@@ -401,7 +409,8 @@ DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , MODULE_LOADER_RESULT, ModuleLoader
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LOADER_RESULT, ModuleLoader_InitializeFromJson, const JSON_Value*, loaders);
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , void, ModuleLoader_Destroy);
 DECLARE_GLOBAL_MOCK_METHOD_1(CGatewayMocks, , MODULE_LOADER*, ModuleLoader_FindByName, const char*, name);
-
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , void, OutprocessLoader_JoinChildProcesses);
+DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , int, OutprocessLoader_SpawnChildProcesses);
 
 DECLARE_GLOBAL_MOCK_METHOD_0(CGatewayMocks, , EVENTSYSTEM_HANDLE, EventSystem_Init);
 DECLARE_GLOBAL_MOCK_METHOD_4(CGatewayMocks, , void, EventSystem_AddEventCallback, EVENTSYSTEM_HANDLE, event_system, GATEWAY_EVENT, event_type, GATEWAY_CALLBACK, callback, void*, user_param);
@@ -1050,6 +1059,9 @@ TEST_FUNCTION(Gateway_Create_Start_fails_returns_null)
 		.IgnoreArgument(1)
         .IgnoreArgument(2);
     STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
 
     //Act
     GATEWAY_HANDLE gateway = Gateway_CreateFromJson(VALID_JSON_PATH);
@@ -1684,6 +1696,9 @@ TEST_FUNCTION(Gateway_CreateFromJson_fails_with_no_entry_point)
     STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, ModuleLoader_Destroy());
+#ifdef OUTPROCESS_ENABLED
+    EXPECTED_CALL(mocks, OutprocessLoader_JoinChildProcesses());
+#endif
 
 
     //Act

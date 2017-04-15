@@ -28,12 +28,14 @@ set(proxy_sample_main_sources
 if(WIN32)
     set(proxy_sample_main_sources 
         ${proxy_sample_main_sources}
+        ./src/launch_sample_win.json
         ./src/proxy_sample_win.json
     )
     set_source_files_properties(./src/proxy_sample_win.json PROPERTIES HEADER_FILE_ONLY ON)
 else()
     set(proxy_sample_main_sources 
         ${proxy_sample_main_sources}
+        ./src/launch_sample_lin.json
         ./src/proxy_sample_lin.json
     )
     set_source_files_properties(./src/proxy_sample_lin.json PROPERTIES HEADER_FILE_ONLY ON)
