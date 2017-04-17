@@ -32,6 +32,13 @@ The following modules are available in this repository:
 >| simulated_device | Simulates a gateway-connected BLE device                                | 
 >| azure_functions  | Sends message content to an Azure Function                              | 
 
+## Create Modules using Packages
+The fastest way to setup your development environment to start writing modules is to leverage our packages for Java, C#, and Node.js. Our [sample apps repo](https://github.com/Azure-Samples/azure-iot-gateway-samples/) has quick steps on getting started with these packages:
+- [Gateway SDK Maven](https://github.com/Azure-Samples/azure-iot-gateway-samples/#how-to-run-java-modules-windows-10ubuntu-linux-14): With this you will be able to run the Gateway sample app and start writing Java modules. This package contains the Gateway runtime core and links to the module dependencies’ packages for Linux or Windows.
+- [Gateway SDK npm](https://www.npmjs.com/package/azure-iot-gateway): With this you will be able to run the Gateway sample app and start writing Node.js modules. This package contains the Gateway runtime core and auto-installs the module dependencies’ packages for Linux or Windows.
+- [Gateway SDK NuGet .NET Framework](https://www.nuget.org/packages/Microsoft.Azure.IoT.Gateway.Module): With this you will be able to run the Gateway sample app and write .NET Framework modules on Windows, dependent on [Gateway Core Runtime for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Win32/).
+- Gateway SDK NuGet .NET Core (coming soon)
+
 ## Featured Modules
 Other people are creating modules for the gateway SDK too! See the **More information** link for 
 a module to find out how to get it, who supports it, etc.
