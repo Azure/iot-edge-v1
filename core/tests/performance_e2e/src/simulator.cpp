@@ -275,6 +275,14 @@ static int SimulatorModule_thread(void * context)
     if (thread_result != 0)
     {
         LogError("unable to continue with simulation");
+        if (message_to_send.sourceProperties != NULL)
+        {
+            Map_Destroy(message_to_send.sourceProperties);
+        }
+        if (message_to_send.source != NULL)
+        {
+            free( (void*)message_to_send.source);
+        }
     }
     else
     {
@@ -337,6 +345,14 @@ static int SimulatorModule_thread(void * context)
                     }
                 }
             }
+        }
+        if (message_to_send.sourceProperties != NULL)
+        {
+            Map_Destroy(message_to_send.sourceProperties);
+        }
+        if (message_to_send.source != NULL)
+        {
+            free((void*)message_to_send.source);
         }
     }
     return thread_result;

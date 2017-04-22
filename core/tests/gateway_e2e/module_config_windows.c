@@ -1,11 +1,17 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "gateway.h"
 
+#ifdef _DEBUG
 const char* e2e_module_path_string = "..\\e2e_module\\Debug\\e2e_module.dll";
 const char* iothub_path_string = "..\\..\\..\\..\\modules\\iothub\\Debug\\iothub.dll";
 const char* identity_map_path_string = "..\\..\\..\\..\\modules\\identitymap\\Debug\\identity_map.dll";
+#else
+const char* e2e_module_path_string = "..\\e2e_module\\Release\\e2e_module.dll";
+const char* iothub_path_string = "..\\..\\..\\..\\modules\\iothub\\Release\\iothub.dll";
+const char* identity_map_path_string = "..\\..\\..\\..\\modules\\identitymap\\Release\\identity_map.dll"; 
+#endif
 
 const char* e2e_module_path()
 {

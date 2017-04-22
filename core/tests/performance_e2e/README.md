@@ -386,9 +386,14 @@ resources allocated in `moduleHandle`.
 
 ## Running the performance test. 
 
+To run on the command line, use the `performance_e2e` executable.
+
 The program accepts 2 command line arguments, the json configuration file and an 
 optional test duration in seconds. The sample creates the gateway from the JSON 
 file, starts all modules, pauses for a given time (default of 5 seconds), and 
 stops the gateway. Stopping the gateway will trigger the metrics module to 
 report message statistics.
+
+A 5 second and 10 second performance test are run as part of the build tests.
+run `ctest -C Debug -V -R performance_e2e` to execute those tests.
 

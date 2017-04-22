@@ -241,6 +241,7 @@ static void MetricsModule_Destroy(MODULE_HANDLE moduleHandle)
                     << "Messages Lost: " << (*d).second.messages_lost << std::endl;
             }
         }    
+        delete (module->per_device_metrics);
         free(module);
     }
 }
