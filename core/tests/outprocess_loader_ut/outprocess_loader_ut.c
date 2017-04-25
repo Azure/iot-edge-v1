@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdint.h>
@@ -1404,8 +1404,6 @@ TEST_FUNCTION(OutprocessLoader_JoinChildProcesses_SCENARIO_no_threads_running)
 
     // Expected call listing
     umock_c_reset_all_calls();
-    STRICT_EXPECTED_CALL(VECTOR_size(NULL))
-        .SetReturn(0);
     EXPECTED_CALL(uv_default_loop())
         .SetReturn(MOCK_UV_LOOP);
     STRICT_EXPECTED_CALL(uv_loop_alive(MOCK_UV_LOOP))

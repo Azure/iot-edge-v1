@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "module_loaders/outprocess_loader.h"
@@ -249,7 +249,7 @@ int OutprocessLoader_SpawnChildProcesses(void) {
 
 void OutprocessLoader_JoinChildProcesses(void) {
     /* Codes_SRS_OUTPROCESS_LOADER_27_064: [ `OutprocessLoader_JoinChildProcesses` shall get the count of child processes, by calling `size_t VECTOR_size(VECTOR_HANDLE handle)`. ] */
-    const size_t child_count = VECTOR_size(uv_processes);
+    const size_t child_count = (uv_processes == NULL)? 0 :VECTOR_size(uv_processes);
 
     TICK_COUNTER_HANDLE ticks = NULL;
     tickcounter_ms_t started_waiting;
@@ -313,12 +313,8 @@ void OutprocessLoader_JoinChildProcesses(void) {
 
     uv_process_grace_period_ms = 0;
 
-    if (NULL == uv_thread)
-    {
-        /* Codes_SRS_OUTPROCESS_LOADER_27_050: [ Prerequisite Check - If no threads are running, then `OutprocessLoader_JoinChildProcesses` shall abandon the effort to join the child processes immediately. ] */
-        LogInfo("The process management thread is not currently running.");
-    }
-    else
+    /* Codes_SRS_OUTPROCESS_LOADER_27_050: [ Prerequisite Check - If no threads are running, then `OutprocessLoader_JoinChildProcesses` shall abandon the effort to join the child processes immediately. ] */
+    if (NULL != uv_thread)
     {
         /* Codes_SRS_OUTPROCESS_LOADER_27_062: [ `OutprocessLoader_JoinChildProcesses` shall join the child process management thread, by calling `THREADAPI_RESULT ThreadAPI_Join(THREAD_HANDLE threadHandle, int * res)`. ] */
         (void)ThreadAPI_Join(uv_thread, &uv_thread_result);
