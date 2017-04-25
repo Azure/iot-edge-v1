@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
@@ -707,6 +707,7 @@ static bool determine_message_direction(const char * source, bool * isC2DMessage
         {
             /*Codes_SRS_IDMAP_17_047: [ If messageHandle property "source" is not equal to "iothub", then the message shall not be marked as a C2D message. ]*/
             /*Codes_SRS_IDMAP_17_044: [ If messageHandle properties contains a "source" property that is set to "mapping", the message shall not be marked as a D2C message. ]*/
+            LogError("Message did not have a known source, message dropped");
             result = false;
             *isC2DMessage = false;
         }
@@ -714,6 +715,7 @@ static bool determine_message_direction(const char * source, bool * isC2DMessage
     else
     {
         /*Codes_SRS_IDMAP_17_046: [ If messageHandle properties does not contain a "source" property, then the message shall not be marked as a C2D message. ]*/
+        LogError("Message did not contain a source, message dropped");
         result = false;
         *isC2DMessage = false;
     }
