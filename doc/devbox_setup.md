@@ -21,6 +21,10 @@ This section shows you how to set up a development environment for the Azure IoT
 
     > Note: Using the .msi is the easiest option when installing on Windows. Add CMake to the PATH for at least the current user when prompted to do so by the installer.
 
+1. Install [Python 2.7](https://www.python.org/downloads/release/python-27)
+
+    > Note: Ensure Python is added to your `PATH` environment variable (*Control Panel - Edit environment variables for your account*)
+
 1. Clone the latest version of this repository to your local machine:
 
     ```
@@ -42,7 +46,7 @@ This section shows you how to set up a development environment for the Azure IoT
     sudo apt-get install curl build-essential libcurl4-openssl-dev git cmake libssl-dev uuid-dev valgrind libglib2.0-dev libtool autoconf
     ```
 
-    > Note: libglib1.0-dev is required for ble module/sample.
+    > Note: libglib2.0-dev is required for ble module/sample.
 
 1. Clone the latest version of this repository to your Ubuntu machine
 
