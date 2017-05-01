@@ -81,6 +81,11 @@ General documentation
 build the Azure IoT Gateway SDK as well as instructions for configuring your machine to build 
 modules written in Java, Node.js, and .NET.
 
+- [Ubuntu Snap Package Walk-through](doc/azure_iot_gateway_snap.md) provides the step-by-step
+instructions used to create the Azure IoT Gateway Snap package. The walk-through is a great
+starting point, for anyone trying to integrate the Azure IoT Gateway SDK into their own snap
+package.
+
 API documentation can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html).
 
 ### /samples
