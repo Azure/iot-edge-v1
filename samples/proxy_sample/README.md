@@ -4,7 +4,7 @@ This document provides an overview of the out of process module [code](./src) wh
 
 ## Concepts
 
-Until this feature, all gateway modules were required to run in the same process as the gateway executable. Now, the user may define a module that runs in a different process on the same machine.  For details, please read the [outprocess high level design](../../core/devdoc/outprocess_hld.md).
+Until this feature, all gateway modules were required to run in the same process as the gateway executable. Now, the user may define a module that runs in a different process on the same machine.  For details, please read the [outprocess high level design](../../proxy/outprocess/devdoc/outprocess_hld.md).
 
 There are two executables "proxy\_sample" and "proxy\_sample\_remote". The "proxy\_sample" is a gateway executable with an out of process module, and "proxy\_sample\_remote" is the executable which implements the out of process modules.
 
