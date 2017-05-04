@@ -306,6 +306,7 @@ add_subdirectory(core)
 include_directories(${GW_INC}) # GW_INC defined in core
 
 if (${enable_native_remote_modules} OR ${enable_java_remote_modules})
+    cmake_minimum_required(VERSION 3.2.2)
     add_subdirectory(proxy)
 endif()
 
