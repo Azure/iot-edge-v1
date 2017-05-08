@@ -1,8 +1,8 @@
-#Azure IoT Gateway SDK - Hello World
+# Azure IoT Gateway SDK - Hello World
 
 This document provides a detailed overview of the Hello World sample [code](./src) which uses the fundamental components of the Azure IoT Gateway SDK architecture to log a hello world message to a file every 5 seconds.
 
-#The walkthrough covers
+# The walkthrough covers
 
 1.  **Dev box setup** - steps necessary to build and run the sample
 2.  **Concepts** - conceptual overview of the components that compose any gateway created with the SDK  
@@ -13,13 +13,13 @@ This document provides a detailed overview of the Hello World sample [code](./sr
 7.  **Typical output** - example of typical output when the hello world sample is run on Linux or Windows
 8.  **Code snippets** - code snippets which show how and where the Hello World sample implements key gateway components 
 
-##Dev box setup 
+## Dev box setup 
 
 A dev box configured with the SDK and necessary libraries is necessary to complete this walkthrough. Please complete the [dev box setup](../../doc/devbox_setup.md) before continuing.
 
-##Concepts
+## Concepts
 
-###Modules
+### Modules
 
 Modules are the brains of a gateway built with the Azure IoT Gateway SDK. Modules exchange data with each other via messages. A module receives a message, performs some action on it, might transform it into a new message, and subsequently publishes it to other modules. There might be modules that only produce new messages and never process incoming messages. A chain of modules can be thought of as a data processing pipeline with a module being nothing more than a chunk of code performing a transformation on the data at one point in that pipeline.
 
@@ -35,7 +35,7 @@ The SDK abstracts away  operating system dependencies via an abstraction layer i
 
 ![](../../doc/media/modules_2.png) 
 
-###Messages
+### Messages
 
 Thinking about modules passing each other messages is a convenient way of conceptualizing how a gateway functions, but it does not accurately reflect what's happening under the hood. Modules actually use a broker to communicate with each other. They publish messages to the broker (bus, pubsub or any other messaging pattern) and then let the broker route the message to the modules connected to it.
 
@@ -43,13 +43,13 @@ A module publishes a message to the broker via the `Broker_Publish` function. Th
 
 ![](../../doc/media/messages_1.png)
 
-###Message routing and filtering
+### Message routing and filtering
 
 Today we have 2 ways of directing the message to the correct modules. First is by passing a set of links to the broker, so the broker knows the source and sink for each module. Second is by the module filtering its properties. A module should only act upon a message if the message is intended for it. The links and this message filtering is what effectively creates a message pipeline.
 
 This is enough background to actually start discussing the Hello World sample.
 
-##Hello World sample architecture
+## Hello World sample architecture
 
 Before diving into the details of filtering messages based on properties or links, first think of the Hello World sample simply in terms of modules. The sample is made up of a pipeline of two modules:
 -  A "hello world" module
@@ -59,7 +59,7 @@ The "hello world" module creates a message every 5 seconds and passes it to the 
 
 ![](../../doc/media/high_level_architecture.png) 
 
-##Detailed architecture
+## Detailed architecture
 
 Based on the gateway architecture, we know that the "hello world" module is not directly passing messages to the logger module every 5 seconds. Instead, it is actually publishing a message to the broker every 5 seconds.
 
@@ -71,7 +71,7 @@ The logger module only consumes messages (by logger them to a file) and never pu
  
 The figure above shows an accurate representation of the Hello World sample's architecture as well as the relative paths to the source files that implement different portions of the sample. Feel free to explore the code on your own, or use the code snippets below as a guide.
 
-##How to build the sample
+## How to build the sample
 Linux
 
 1. Open a shell
@@ -112,7 +112,7 @@ Windows
 
 >run `ctest -C Debug -V`
 
-##How to run the sample
+## How to run the sample
 
 Linux
 
@@ -239,9 +239,9 @@ Below is an example of typical output that is written to the log file when the H
 }]
 ```
 
-##Code snippets
+## Code snippets
 
-###Gateway creation
+### Gateway creation
 
 The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_CreateFromJson` function which allows developers to bootstrap a gateway from a JSON file.
 
@@ -342,7 +342,7 @@ World sample on Linux. Every message produced by module `hello_world` will be co
 ]
 ```
 
-###"hello world" module message publishing
+### "hello world" module message publishing
 
 The code used by the "hello world" module to publish messages is in [`hello_world.c`](../../modules/hello_world/src/hello_world.c). An amended version has been reproduced below. Comments calling out the more interesting parts of message creation and publishing process has been given below. 
 Also, error checks have been omitted for the sake of brevity.
@@ -393,7 +393,7 @@ int helloWorldThread(void *param)
 }
 ```
 
-###"hello world" module message processing
+### "hello world" module message processing
 
 The "hello world" module does not ever have to process any messages since it is not interested in any of the messages that are published. This makes implementation of the "hello world" module's message receive callback a no-op function.
 
@@ -404,7 +404,7 @@ static void HelloWorld_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messag
 }
 ```
 
-###Logger module message publishing
+### Logger module message publishing
 
 The logger module receives messages from the broker and writes them to a file. It never has to publish messages to the broker. Therefore, the code of the logger module never calls 'Broker_Publish'.
 
