@@ -1,16 +1,16 @@
 # Prepare your development environment (Java)
 
-This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK* for Java module development.
+This document describes how to prepare your development environment to use the *Azure IoT Edge* for Java module development.
 
 -  [Java JDK SE](#installjava)
 -  [Maven 3](#installmaven)
--  [Azure IoT Gateway SDK for Java](#installgw)
+-  [Azure IoT Edge for Java](#installgw)
    -  [Build from source](#installgwsource)
 -  [Application Samples](#samplecode)
 
 <a name="installjava"/>
 ## Install Java JDK SE
-To use the SDK and run the samples you will need a **32-bit** installation of a **JDK** (it is insufficient to only have the JRE installed).
+To use Azure IoT Edge and run the samples you will need a **32-bit** installation of a **JDK** (it is insufficient to only have the JRE installed).
 
 ### Windows
 For downloads and installation instructions go here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
@@ -53,7 +53,7 @@ Depending on your Linux distribution, you can install the JDK using *apt-get*, a
 
 <a name="installmaven"/>
 ## Install Maven
-Using **_Maven 3_** is the recommended way to install the interfaces and classes for the Java binding mechanism for the **Microsoft Azure IoT Gateway SDK**.
+Using **_Maven 3_** is the recommended way to install the interfaces and classes for the Java binding mechanism for **Azure IoT Edge**.
 
 ### Windows
 For downloads and installation instructions go here: https://maven.apache.org/download.cgi
@@ -91,13 +91,13 @@ Ensure that the bin directory shown by the ```which mvn``` command matches one o
 You can verify that the environment variables necessary to run **_Maven 3_** have been set correctly by running `mvn --version`.
 
 <a name="installgw"/>
-## Install Azure IoT Gateway SDK
+## Install Azure IoT Edge
 
-- There are two ways to get the .jar library for the Java module binding for the Microsoft Azure IoT Gateway SDK. You may either download the source code and build on your machine, or include the project as a dependency in your project if your project is a Maven project. Both methods are described below.
+- There are two ways to get the .jar library for the Java module binding for Azure IoT Edge. You may either download the source code and build on your machine, or include the project as a dependency in your project if your project is a Maven project. Both methods are described below.
 
 <a name="installgwsource">
-### Build Java binding for the Azure IoT Gateway SDK from sources
-- Get a copy of the **Azure IoT Gateway SDK** from GitHub if you have not already done so. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-gateway-sdk>
+### Build Java binding for Azure IoT Edge from sources
+- Get a copy of **Azure IoT Edge** from GitHub if you have not already done so. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-gateway-sdk>
 - When you have obtained a copy of the source, you can build the binding for Java.
 
 Open a command prompt and use the following commands for the steps above:
@@ -111,7 +111,7 @@ Open a command prompt and use the following commands for the steps above:
 The compiled JAR file with all dependencies bundled in can then be found at:
 
 ```
-{IoT gateway SDK root}/bindings/java/gateway-java-binding/target/gateway-java-binding-{version}.jar
+{Azure IoT Edge root}/bindings/java/gateway-java-binding/target/gateway-java-binding-{version}.jar
 ```
 
 When you're ready to build your own module in Java, include this JAR file in your project to get the interfaces and classes that you need.
@@ -119,6 +119,6 @@ When you're ready to build your own module in Java, include this JAR file in you
 <a name="samplecode">
 ## Sample applications
 
-This repository contains a sample gateway that includes modules written in Java that illustrate how to write modules in Java and use the Microsoft Azure IoT Gateway SDK. For more information, see the [readme][readme].
+This repository contains a sample gateway that includes modules written in Java that illustrate how to write modules in Java and use Azure IoT Edge. For more information, see the [readme][readme].
 
 [readme]: ./README.md

@@ -4,7 +4,7 @@
 Overview
 --------
 
-This sample showcases how one might build an IoT Gateway as a .NET Core Application and still be able to load .NET Core Modules. 
+This sample showcases how one might build an IoT gateway as a .NET Core Application and still be able to load .NET Core Modules. 
 
 The sample contains:
 
@@ -25,12 +25,12 @@ Prerequisites
 
 Building the sample
 -------------------
-The sample Gateway gets built when you build the SDK by first running
+The sample gateway gets built when you build Azure IoT Edge by first running
 ```
 tools\build.cmd --enable-dotnet-core-binding
 ```
 
-The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build the SDK.
+The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build Azure IoT Edge.
 
 The `build_dotnet_core.cmd` script builds the .NET Core binding, and the sample sensor and printer modules.
 Building the solution you will have the following binaries: 

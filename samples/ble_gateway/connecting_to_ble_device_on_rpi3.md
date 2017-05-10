@@ -1,10 +1,10 @@
-Azure IoT Gateway - Connecting to a Bluetooth Low Energy device on the Raspberry Pi 3 
+Azure IoT Edge - Connecting to a Bluetooth Low Energy device on the Raspberry Pi 3 
 ===================================================================================
 
 Overview
 --------
 
-As it stands today, the Bluetooth LE (BLE) module that the Azure IoT Gateway SDK
+As it stands today, the Bluetooth LE (BLE) module that Azure IoT Edge
 ships with does not support *discovery* of BLE devices. This is however on the
 product roadmap. In the meantime, the BLE module is perfectly usable for
 prototyping solutions by performing some preparatory work as documented here.
@@ -138,4 +138,4 @@ Before running the sample, you need to verify that your Raspberry Pi 3 can conne
     [CHG] Device A0:E6:F8:B5:F6:00 Connected: no
     ```
 
-You're now ready to run the BLE Gateway sample on your Raspberry Pi 3.
+You're now ready to run the BLE gateway sample on your Raspberry Pi 3.

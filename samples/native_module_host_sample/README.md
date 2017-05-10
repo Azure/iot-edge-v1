@@ -1,4 +1,4 @@
-# Azure IoT Gateway SDK - native module host example
+# Azure IoT Edge - native module host example
 
 This document provides an overview of the out of process module [code](./src) which allows a native gateway module to run in a separate process.
 

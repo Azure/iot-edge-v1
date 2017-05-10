@@ -1,11 +1,11 @@
-Bluetooth Low Energy Telemetry Sample for Azure IoT Gateway SDK
-===============================================================
+Bluetooth Low Energy Telemetry Sample for Azure IoT Edge
+========================================================
 
 Overview
 --------
 
-This sample showcases how one can build an IoT Gateway that interacts with a 
-Bluetooth Low Energy (BLE) device using the Azure IoT Gateway SDK. A more in
+This sample showcases how one can build an IoT gateway that interacts with a 
+Bluetooth Low Energy (BLE) device using Azure IoT Edge. A more in
 depth [walkthrough](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-gateway-sdk-physical-device) 
 with concept explanations and code snippets can be found on 
 [docs.microsoft.com](https://docs.microsoft.com/en-us/azure/iot-hub/).
@@ -22,7 +22,7 @@ The sample contains the following modules:
   5. A BLE Printer module that interprets telemetry from the Texas Instruments
      SensorTag device and prints formatted data to the console.
 
-How does the data flow through the Gateway
+How does the data flow through the gateway
 ------------------------------------------
 
 The telemetry upload data flow pipeline is best described via a block diagram:
@@ -66,9 +66,8 @@ Building the sample
 -------------------
 
 At this point, gateways containing BLE modules are only supported on Linux. The
-sample gets built when you build the SDK by running `tools/build.sh`.  The
-[devbox setup](../../doc/devbox_setup.md) guide has information on how you can build the
-SDK.
+sample gets built when you build Azure IoT Edge by running `tools/build.sh`.  The
+[devbox setup](../../doc/devbox_setup.md) guide has information on how you can build Azure IoT Edge.
 
 Preparing your BLE device
 -------------------------

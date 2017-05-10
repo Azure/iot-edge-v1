@@ -1,6 +1,6 @@
 # Prepare your development environment
 
-This document describes how to prepare your development environment to use the *Microsoft Azure IoT Gateway SDK*. It describes how to prepare a development environment in Windows using Visual Studio and in Linux.
+This document describes how to prepare your development environment to use *Azure IoT Edge*. It describes how to prepare a development environment in Windows using Visual Studio and in Linux.
 
 - [Set up a Windows development environment](#set-up-a-windows-development-environment)
 - [Set up a Linux development environment](#set-up-a-linux-development-environment)
@@ -9,7 +9,7 @@ This document describes how to prepare your development environment to use the *
 
 ## Set up a Windows development environment
 
-This section shows you how to set up a development environment for the Azure IoT Gateway SDK on Windows 10.
+This section shows you how to set up a development environment for Azure IoT Edge on Windows 10.
 
 1. Install [Visual Studio 2015 or 2017](https://www.visualstudio.com). You can use the free Community Edition if you meet the licensing requirements.
 
@@ -37,7 +37,7 @@ This section shows you how to set up a development environment for the Azure IoT
 
 ## Set up a Linux development environment
 
-This section shows you how to set up a development environment for the Azure IoT Gateway SDK on Ubuntu.
+This section shows you how to set up a development environment for Azure IoT Edge on Ubuntu.
 
 1. The following packages are needed and they can be installed with the following commands:
 
@@ -58,7 +58,7 @@ This section shows you how to set up a development environment for the Azure IoT
 
 ## Set up cross-compiling for Wind River Linux 7
 
-This section shows you how to set up a development environment for the Azure IoT Gateway SDK for cross-compiling to Wind River Linux on Ubuntu.
+This section shows you how to set up a development environment for the Azure IoT Edge for cross-compiling to Wind River Linux on Ubuntu.
 
 1. Set up the Ubuntu system as described in the previous section: [Setting up a Linux development environment](#set-up-a-linux-development-environment).
 
@@ -72,7 +72,7 @@ This section shows you how to set up a development environment for the Azure IoT
 
 1. By default, the toolchain will install to a directory like: `/opt/windriver/wrlinux/7.0-intel-baytrail-64`
 
-1. Change directory to the Azure IoT Gateway SDK repository.
+1. Change directory to the Azure IoT Edge repository.
 
 1. Run the Wind River Linux build script:
 

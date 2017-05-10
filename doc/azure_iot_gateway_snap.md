@@ -1,9 +1,9 @@
-Creating the Azure IoT Gateway Snap
+Creating the Azure IoT Edge Snap
 ===================================
 
 A "snap" is a self-contained unit, that can be installed on any platform capable of running `snapd`, the Ubuntu Snap Daemon. Snaps can be created manually, but *should* be created using `snapcraft`, a tool used to programmatically generate snaps.
 
-The following document will walk through creating the Azure IoT Gateway snap package. Snap packages have capabilities far beyond those discussed in this document, but the components required to construct the Azure IoT Gateway snap will be covered in detail.
+The following document will walk through creating the Azure IoT Edge snap package. Snap packages have capabilities far beyond those discussed in this document, but the components required to construct the Azure IoT Edge snap will be covered in detail.
 
 > #### Vocabulary:
 >
@@ -36,7 +36,7 @@ $ sudo apt update && apt install -y snapd snapcraft
 
 > If you are not using an Ubuntu image, then see [Ubuntu's documentation](https://snapcraft.io/docs/build-snaps/trusty) for installing the tools on other platforms.
 
-Authoring the Azure IoT Gateway Snap
+Authoring the Azure IoT Edge Snap
 ------------------------------------
 
 To begin, create a folder for the project, then call `snapcraft init` to create the basic snapcraft folder heirarchy and template.
@@ -47,14 +47,14 @@ $ cd aziot/
 $ snapcraft init
 ```
 
-This provides a `snap` folder, containing a basic template for a `snapcraft.yaml` file. All that is required to create a snap package, is to update the data in the template. Below, the template has been updated for the Azure IoT Gateway snap, and now `snapcraft.yaml` looks like the following...
+This provides a `snap` folder, containing a basic template for a `snapcraft.yaml` file. All that is required to create a snap package, is to update the data in the template. Below, the template has been updated for the Azure IoT Edge snap, and now `snapcraft.yaml` looks like the following...
 
 ```yaml
 name: azure-iot-gateway
 version: '2017-04-12'
-summary: Azure IoT Gateway for tailored IoT solutions.
+summary: Azure IoT Edge for tailored IoT solutions.
 description: |
-  The Azure IoT Gateway SDK lets you build IoT solutions tailored
+  Azure IoT Edge lets you build IoT solutions tailored
   to your exact scenario. Connect new or existing devices,
   regardless of protocol. Process the data in an on-premises
   gateway using the language of your choice (Java, C#, Node.js,
@@ -91,7 +91,7 @@ parts:
       cp samples/hello-world/hello-world-sample $SNAPCRAFT_PART_INSTALL/
 ```
 
-> *NOTE: There are several more "stanzas" (not-shown) that can be used to make up a `snapcraft.yaml`. Here we only cover the stanzas required to produce the Azure IoT Gateway snap.*
+> *NOTE: There are several more "stanzas" (not-shown) that can be used to make up a `snapcraft.yaml`. Here we only cover the stanzas required to produce the Azure IoT Edge snap.*
 > 
 > *To see the source visit the [Azure IoT launchpad.net repository](https://git.launchpad.net/azure-iot-gateway-snap/tree/snap/snapcraft.yaml)*
 >
@@ -118,9 +118,9 @@ version: '2017-04-12'
 The version is a human readable string for the consumer, it has *NOTHING* to do with actual versioning. Those versions begin at 1 and are monotomically incremented every time a snap package is generated (*note "generated" not "published"*).
 
 ```yaml
-summary: Azure IoT Gateway for tailored IoT solutions.
+summary: Azure IoT Edge for tailored IoT solutions.
 description: |
-  The Azure IoT Gateway SDK lets you build IoT solutions tailored
+  Azure IoT Edge lets you build IoT solutions tailored
   to your exact scenario. Connect new or existing devices,
   regardless of protocol. Process the data in an on-premises
   gateway using the language of your choice (Java, C#, Node.js,
@@ -188,13 +188,13 @@ parts:
       cp samples/hello-world/hello-world-sample $SNAPCRAFT_PART_INSTALL/
 ```
 
-> ***NOTE:** By simply including this "part" in your snap package, the Azure IoT Gateway will be downloaded, built and installed into your snap package.*
+> ***NOTE:** By simply including this "part" in your snap package, Azure IoT Edge will be downloaded, built and installed into your snap package.*
 
 Now onto the `parts:` stanza of the `snapcraft.yaml`. The first line is an informal name. You can choose anything that helps you remember how this part interacts with your snap; this part is named "azure-iot-gateway-sdk".
 
 Snapcraft has the ability to download code from a remote source, as specified by `source:`. As you can see above, snapcraft has been directed to look for the source code at the Azure GitHub repository. Futhermore, a particular tag has been designated for checkout via the `source-tag:` property.
 
-Snapcraft has a large collection of plugins used to build projects from source. In this case, the Azure IoT Gateway is a CMake project, which is supported by Snapcraft. By setting the `plugin:` property to `cmake`, Snapcraft knows how to build this project.
+Snapcraft has a large collection of plugins used to build projects from source. In this case, Azure IoT Edge is a CMake project, which is supported by Snapcraft. By setting the `plugin:` property to `cmake`, Snapcraft knows how to build this project.
 
 The next two properties, `build-packages` and `stage-packages`, allow you to describe any `.deb` package dependencies. The `build-packages:` property identifies which `.deb` packages are required to "build" the project using. In other words, any packages listed as `build-packages` will be automatically downloaded for anyone trying to "create" this snap. `stage-packages:` calls out which `.deb` packages are required to satisfy the runtime dependencies, or `.deb` packages that need to be shipped* with the snap.
 
@@ -309,8 +309,8 @@ edge       '2017-04-17`   1
 
 Now our snap package is available for download!
 
-Downloading and Installing the Azure IoT Gateway
-------------------------------------------------
+Downloading and Installing Azure IoT Edge
+-----------------------------------------
 
 ```bash
 $ snap install azure-iot-gateway --edge

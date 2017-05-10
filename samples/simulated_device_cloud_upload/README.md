@@ -1,4 +1,4 @@
-# Simulated Device Cloud Upload sample for Azure IoT Gateway SDK
+# Simulated Device Cloud Upload sample for Azure IoT Edge
 
 These are step by step instructions on how to build and run this sample. A more in depth walkthrough, for 
 both [Linux](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-linux-gateway-sdk-simulated-device) and

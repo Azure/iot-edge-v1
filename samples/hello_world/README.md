@@ -1,11 +1,11 @@
-# Azure IoT Gateway SDK - Hello World
+# Azure IoT Edge - Hello World
 
-This document provides a detailed overview of the Hello World sample [code](./src) which uses the fundamental components of the Azure IoT Gateway SDK architecture to log a hello world message to a file every 5 seconds.
+This document provides a detailed overview of the Hello World sample [code](./src) which uses the fundamental components of Azure IoT Edge architecture to log a hello world message to a file every 5 seconds.
 
 # The walkthrough covers
 
 1.  **Dev box setup** - steps necessary to build and run the sample
-2.  **Concepts** - conceptual overview of the components that compose any gateway created with the SDK  
+2.  **Concepts** - conceptual overview of the components that compose any gateway created with Azure IoT Edge  
 3.  **Hello World sample architecture** - describes how the concepts apply to the sample and how the components fit together
 4.  **Detailed architecture** - detailed view of the Hello World sample's architecture
 5.  **How to build the sample**
@@ -15,23 +15,23 @@ This document provides a detailed overview of the Hello World sample [code](./sr
 
 ## Dev box setup 
 
-A dev box configured with the SDK and necessary libraries is necessary to complete this walkthrough. Please complete the [dev box setup](../../doc/devbox_setup.md) before continuing.
+A dev box configured with Azure IoT Edge and necessary libraries is necessary to complete this walkthrough. Please complete the [dev box setup](../../doc/devbox_setup.md) before continuing.
 
 ## Concepts
 
 ### Modules
 
-Modules are the brains of a gateway built with the Azure IoT Gateway SDK. Modules exchange data with each other via messages. A module receives a message, performs some action on it, might transform it into a new message, and subsequently publishes it to other modules. There might be modules that only produce new messages and never process incoming messages. A chain of modules can be thought of as a data processing pipeline with a module being nothing more than a chunk of code performing a transformation on the data at one point in that pipeline.
+Modules are the brains of a gateway built with Azure IoT Edge. Modules exchange data with each other via messages. A module receives a message, performs some action on it, might transform it into a new message, and subsequently publishes it to other modules. There might be modules that only produce new messages and never process incoming messages. A chain of modules can be thought of as a data processing pipeline with a module being nothing more than a chunk of code performing a transformation on the data at one point in that pipeline.
 
 ![](../../doc/media/modules.png) 
  
-The SDK contains the following:
+Azure IoT Edge contains the following:
 
 - prewritten modules which perform common gateway functions
 - the interfaces needed for a developer to write his own custom modules
 - the infrastructure necessary to deploy and run a set of modules
 
-The SDK abstracts away  operating system dependencies via an abstraction layer in order to allow for gateways to be built on a variety of platforms.
+Azure IoT Edge abstracts away  operating system dependencies via an abstraction layer in order to allow for gateways to be built on a variety of platforms.
 
 ![](../../doc/media/modules_2.png) 
 
@@ -243,7 +243,7 @@ Below is an example of typical output that is written to the log file when the H
 
 ### Gateway creation
 
-The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. The SDK provides the `Gateway_CreateFromJson` function which allows developers to bootstrap a gateway from a JSON file.
+The gateway process needs to be written by the developer. This a program which creates internal infrastructure (e.g. the broker), loads the correct modules, and sets everything up to function correctly. Azure IoT Edge provides the `Gateway_CreateFromJson` function which allows developers to bootstrap a gateway from a JSON file.
 
 `Gateway_CreateFromJson` deals with creating internal infrastructure (e.g. the broker), loading modules, and setting everything up to function correctly. All the developer needs to do is provide this function with the path to a JSON file specifying what modules they want loaded and links to guide the broker to send messages to the correct module. The configuration file must be encoded either as ASCII or UTF-8.
 
@@ -355,10 +355,10 @@ int helloWorldThread(void *param)
     MESSAGE_CONFIG msgConfig;
     MAP_HANDLE propertiesMap = Map_Create(NULL);
     
-    // add a property named "helloWorld" with a value of "from Azure IoT
-    // Gateway SDK simple sample!" to a set of message properties that
+    // add a property named "helloWorld" with a value of "from Azure IoT Edge
+    // simple sample!" to a set of message properties that
     // will be appended to the message before publishing it. 
-    Map_AddOrUpdate(propertiesMap, "helloWorld", "from Azure IoT Gateway SDK simple sample!")
+    Map_AddOrUpdate(propertiesMap, "helloWorld", "from Azure IoT Edge simple sample!")
 
     // set the content for the message
     msgConfig.size = strlen(HELLOWORLD_MESSAGE);

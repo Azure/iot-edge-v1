@@ -1,10 +1,10 @@
-# Azure IoT Gateway SDK - Dynamically Add Module Sample
+# Azure IoT Edge - Dynamically Add Module Sample
 
-This document provides a detailed overview of the Dynamically Add Module sample [code](./src) which uses the fundamental components of the Azure IoT Gateway SDK architecture to create a gateway without modules, adding modules (and links) from a JSON file after the gateway is created, starting a gateway, removing a module and destroying a gateway.
+This document provides a detailed overview of the Dynamically Add Module sample [code](./src) which uses the fundamental components of Azure IoT Edge architecture to create a gateway without modules, adding modules (and links) from a JSON file after the gateway is created, starting a gateway, removing a module and destroying a gateway.
 
 # Dev box setup
 
-A dev box configured with the SDK and necessary libraries is necessary to complete this walkthrough. Please complete the [dev box setup](../../doc/devbox_setup.md) before continuing.
+A dev box configured with Azure IoT Edge and necessary libraries is necessary to complete this walkthrough. Please complete the [dev box setup](../../doc/devbox_setup.md) before continuing.
 
 
 # The sample contains:

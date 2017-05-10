@@ -1,10 +1,10 @@
-Azure Functions Sample for Azure IoT Gateway SDK
-================================================
+Azure Functions Sample for Azure IoT Edge
+=========================================
 
 Overview
 --------
 
-This sample showcases how one can build an IoT Gateway that interacts with Azure Functions using the Azure IoT Gateway SDK. 
+This sample showcases how one can build an IoT gateway that interacts with Azure Functions using Azure IoT Edge. 
 Details about Azure Functions can be found on [Introduction to Azure Functions](https://azure.microsoft.com/en-us/blog/introducing-azure-functions/).
 
 The sample contains the following modules:
@@ -12,7 +12,7 @@ The sample contains the following modules:
   1. Hello World module. A module that sends random data on our gateway bus.
   2. Azure Functions module. A module that receives this data and sends to the cloud. More details on this module here [Azure Functions Module](../../modules/azure_functions/devdoc/azure_functions.md)
   
-How does the data flow through the Gateway
+How does the data flow through the gateway
 ------------------------------------------
 Here's the journey that a piece of data takes originating from the hello_world module to Azure Functions.
 
@@ -23,9 +23,8 @@ Here's the journey that a piece of data takes originating from the hello_world m
 Building the sample
 -------------------
 
-The sample gets built when you build the SDK by running `tools/build.sh` for Linux or `tools\build.cmd` for windows.  The
-[devbox setup](../../doc/devbox_setup.md) guide has information on how you can build the
-SDK.
+The sample gets built when you build Azure IoT Edge by running `tools/build.sh` for Linux or `tools\build.cmd` for windows.  The
+[devbox setup](../../doc/devbox_setup.md) guide has information on how you can build Azure IoT Edge.
 
 Setting up your Azure Functions
 -------------------------------

@@ -1,6 +1,6 @@
 #Java Binding
 
-This document provides everything one might need to use and understand the Java Binding mechanism used by the **Microsoft Azure IoT Gateway SDK**.
+This document provides everything one might need to use and understand the Java Binding mechanism used by **Azure IoT Edge**.
 
 ##Contents
 

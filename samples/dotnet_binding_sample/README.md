@@ -4,7 +4,7 @@
 Overview
 --------
 
-This sample showcases how one might build modules for IoT Gateway in .NET.
+This sample showcases how one might build modules for Azure IoT Edge in .NET.
 
 The sample contains:
 
@@ -23,7 +23,7 @@ Prerequisites
 1. Setup your Windows development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
 2. Make sure you have .NET Framework installed. Our current version of the binding was tested and loads modules written in .NET version v4.0.30319.
 
-How does the data flow through the Gateway
+How does the data flow through the gateway
 ------------------------------------------
 You can find the diagram for Receiving a message and publishing a message on this flow chart:
 
@@ -33,7 +33,7 @@ You can find the diagram for Receiving a message and publishing a message on thi
 Building the sample
 -------------------
 At this point, gateways containing .NET modules are only supported on Windows 
-Desktop. The sample Gateway gets built when you build the SDK by first running
+Desktop. The sample gateway gets built when you build Azure IoT Edge by first running
 ``` 
 tools\build_dotnet.cmd
 ```
@@ -42,7 +42,7 @@ then running
 tools\build.cmd --enable-dotnet-binding
 ```
 
-The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build the SDK.
+The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build Azure IoT Edge.
 
 The `build_dotnet.cmd` script builds the .NET Modules in the solution located here (../bindings/dotnet/dotnet-binding/dotnet-binding.sln).
 Today the Solution has: 
@@ -156,7 +156,7 @@ namespace PrinterModule
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Modules may also implement the `IGatewayModuleStart` interface.  The Start method is called when the Gateway's Broker is ready for the module to send and receive messages. 
+Modules may also implement the `IGatewayModuleStart` interface.  The Start method is called when the gateway's Broker is ready for the module to send and receive messages. 
 
 4. Add your new module on Json configuration:
 ```json

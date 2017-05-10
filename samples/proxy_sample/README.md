@@ -1,4 +1,4 @@
-# Azure IoT Gateway SDK - out of process proxy module example
+# Azure IoT Edge - out of process proxy module example
 
 This document provides an overview of the out of process module [code](./src) which allows a module to run in a separate process.
 

@@ -1,4 +1,4 @@
-Microsoft Azure IoT Gateway SDK 
+Microsoft Azure IoT Edge 
 Copyright (c) Microsoft Corporation
 
 MIT license

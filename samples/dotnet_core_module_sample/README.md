@@ -4,7 +4,7 @@
 Overview
 --------
 
-This sample showcases how one might build modules for IoT Gateway in .NET Core.
+This sample showcases how one might build modules for IoT gateway in .NET Core.
 
 The sample contains:
 
@@ -24,12 +24,12 @@ Prerequisites
 
 Building the sample
 -------------------
-The sample Gateway gets built when you build the SDK by first running
+The sample gateway gets built when you build Azure IoT Edge by first running
 ```
 tools\build.cmd --enable-dotnet-core-binding
 ```
 
-The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build the SDK.
+The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build Azure IoT Edge.
 
 The `build_dotnet_core.cmd` script builds the .NET Core binding, and the sample sensor and printer modules.
 Building the solution you will have the following binaries: 
@@ -131,7 +131,7 @@ namespace PrinterModule
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Modules may also implement the `IGatewayModuleStart` interface.  The Start method is called when the Gateway's Broker is ready for the module to send and receive messages. 
+Modules may also implement the `IGatewayModuleStart` interface.  The Start method is called when the gateway's Broker is ready for the module to send and receive messages. 
 
 4. Add your new module on Json configuration:
 ```json
