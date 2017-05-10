@@ -52,14 +52,15 @@ The fastest way to setup your development environment to start writing modules i
 ## Featured Modules
 Other people are creating modules for Azure IoT Edge too! See the **More information** link for 
 a module to find out how to get it, who supports it, etc.
->| Name          | More information                            | Targets Azure IoT Edge version |
->|---------------|---------------------------------------------|--------------------------------|
->| Modbus        | https://github.com/Azure/iot-gateway-modbus | 2017-01-13                     |
->| OPC-UA Client | https://github.com/Azure/iot-gateway-opc-ua | 2016-11-18                     |
->| GZip Compression (NodeJS) | https://github.com/Azure/iot-gateway-compression-gzip-nodejs | 2016-12-16                  |
->| Proficy Historian | https://github.com/azure-samples/iot-gateway-proficy-historian | 2017-01-13 |
->| SQLite        | https://github.com/Azure/iot-gateway-sqlite | 2017-01-13                  |
->| Batch/Shred (NodeJS)        | https://github.com/Azure/iot-gateway-batch-nodejs | 2017-01-13                  |
+>| Name              | More information                                               | Targets IoT Edge version |
+>|-------------------|----------------------------------------------------------------|--------------------------|
+>| OPC Publisher     | https://github.com/Azure/iot-edge-opc-publisher                | 2017-04-27               |
+>| OPC Proxy         | https://github.com/Azure/iot-edge-opc-proxy                    | 2017-04-27               |
+>| Modbus            | https://github.com/Azure/iot-gateway-modbus                    | 2017-01-13               |
+>| GZip Compression  | https://github.com/Azure/iot-gateway-compression-gzip-nodejs   | 2016-12-16               |
+>| Proficy Historian | https://github.com/azure-samples/iot-gateway-proficy-historian | 2017-01-13               |
+>| SQLite            | https://github.com/Azure/iot-gateway-sqlite                    | 2017-01-13               |
+>| Batch/Shred       | https://github.com/Azure/iot-gateway-batch-nodejs              | 2017-01-13               |
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 
 more info.
