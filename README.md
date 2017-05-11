@@ -106,9 +106,9 @@ in the README.md file in the root of each sample's folder.
 Samples include:
 - [Hello World](samples/hello_world/README.md) - Learn the basic concepts of Azure IoT Edge by creating a simple gateway that logs a hello world message to a file every 5 seconds.
 - [Simulated Device](samples/simulated_device_cloud_upload/README.md) Send data to IoTHub from
-a gateway using a simualted device instead of using a real device. 
+a gateway using a simulated device instead of using a real device. 
 - [Real Device](samples/ble_gateway/README.md) - Send data to IoTHub from a real device that could not
-connect to the cloud unless it connected through a gateway. This sample uses a Blueetooth Low Energy 
+connect to the cloud unless it connected through a gateway. This sample uses a Bluetooth Low Energy 
 [Texas Instruments SensorTag](http://www.ti.com/ww/en/wireless_connectivity/sensortag2015/index.html) 
 as the end device .
 
