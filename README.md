@@ -18,7 +18,7 @@ language of your choice (Java, C#, Node.js, or C), before sending it to the clou
 on hardware that meets your performance needs and runs the operating system of your choice.
 
 In the image below an existing device has been connected to the cloud using edge intelligence. The 
-on-premises gateway not only preforms protocol adaptation which allows the device to send data to the 
+on-premises gateway not only performs protocol adaptation which allows the device to send data to the 
 cloud, it also filters the data so that only the most important information is uploaded.
 
 ![](doc/media/READMEDiagram.png)
