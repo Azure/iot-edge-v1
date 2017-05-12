@@ -43,11 +43,11 @@ The following modules are available in this repository:
 >| azure_functions  | Sends message content to an Azure Function                              | 
 
 ## Create Modules using Packages
-The fastest way to setup your development environment to start writing modules is to leverage our packages for Java, C#, and Node.js. Our [sample apps repo](https://github.com/Azure-Samples/azure-iot-gateway-samples/) has quick steps on getting started with these packages:
-- [Azure IoT Edge Maven](https://github.com/Azure-Samples/azure-iot-gateway-samples/#how-to-run-java-modules-windows-10ubuntu-linux-14): With this you will be able to run the Azure IoT Edge sample app and start writing Java modules. This package contains the Azure IoT Edge core and links to the module dependencies’ packages for Linux or Windows.
+The fastest way to setup your development environment to start writing modules is to leverage our packages for Java, C#, and Node.js. Our [sample apps repo](https://github.com/Azure-Samples/iot-edge-samples) has quick steps on getting started with these packages:
+- [Azure IoT Edge Maven](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-module-base): With this you will be able to run the Azure IoT Edge sample app and start writing Java modules. This package contains the Azure IoT Edge core and links to the module dependencies’ packages for Linux or Windows. Requires the [java binding package](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-java-binding).  
 - [Azure IoT Edge npm](https://www.npmjs.com/package/azure-iot-gateway): With this you will be able to run the Azure IoT Edge sample app and start writing Node.js modules. This package contains the Azure IoT Edge core and auto-installs the module dependencies’ packages for Linux or Windows.
-- [Azure IoT Edge NuGet .NET Framework](https://www.nuget.org/packages/Microsoft.Azure.IoT.Gateway.Module): With this you will be able to run the Azure IoT Edge sample app and write .NET Framework modules on Windows, dependent on [Azure IoT Edge Core for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Win32/).
-- Azure IoT Edge NuGet .NET Core (coming soon)
+- [Azure IoT Edge NuGet .NET Standard](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Module.NetStandard/): With this you will be able to run the Azure IoT Edge sample app and write .NET Standard modules on Windows ([IoT Edge Core for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Windows.x64/)) or Ubuntu ([IoT Edge Core for Ubuntu](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Ubuntu.x64/)).
+- [Azure IoT Edge NuGet .NET Framework](https://www.nuget.org/packages/Microsoft.Azure.IoT.Gateway.Module): With this you will be able to run the Azure IoT Edge sample app and write .NET Framework modules on Windows, dependent on [IoT Edge Core for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Windows.x64/).
 
 ## Featured Modules
 Other people are creating modules for Azure IoT Edge too! See the **More information** link for 
