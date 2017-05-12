@@ -24,7 +24,7 @@ The **.NET Module Host** is a C module that
 
 3. Brokers calls **from** the .NET Module (dotnetHost_PublishMessage, which invokes `MessageCreate_FromByteArray` and `Broker_Publish`);
 
-###JSON Configuration
+### JSON Configuration
 
 The JSON configuration for .NET Module will be similar to the configuration for Node and Java Module Host:
 
@@ -56,7 +56,7 @@ The JSON configuration for .NET Module will be similar to the configuration for 
     
 3. `args`  The value of this property is used to supply configuration information specific to a given .NET module. The value is passed as a byte[] to .NET module and it shall be converted as a UTF-8 String;  
 
-##Native methods description
+## Native methods description
 ### Module\_Create
 
 When the **.NET Module Host**’s `Module_Create` function is invoked by the

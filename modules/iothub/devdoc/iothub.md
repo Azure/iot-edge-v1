@@ -99,7 +99,7 @@ Each {device ID, device key, IoTHubClient handle} triplet is referred to as a "p
 **SRS_IOTHUBMODULE_02_027: [** When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. **]**
 **SRS_IOTHUBMODULE_02_008: [** Otherwise, `IotHub_Create` shall return a non-`NULL` handle. **]**
 
-###IotHub_Receive
+### IotHub_Receive
 ```C
 void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
