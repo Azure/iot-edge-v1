@@ -68,5 +68,5 @@ Pop-Location # Undo Push-Location -Path $buildRoot
 Write-Output "`nNode JS has been built and the includes and library files are in:`n"
 Write-Output "`t$buildRoot\dist"
 Write-Output "`nSet the following variables so that the Azure IoT Gateway SDK build scripts can find these files."
-Write-Output "`n`tset NODE_INCLUDE=`"$buildRoot\dist\inc`""
-Write-Output "`tset NODE_LIB=`"$buildRoot\dist\lib`"`n"
+Write-Output "`n`tset `"NODE_INCLUDE=$buildRoot\dist\inc`""
+Write-Output "`tset `"NODE_LIB=$buildRoot\dist\lib`"`n"
