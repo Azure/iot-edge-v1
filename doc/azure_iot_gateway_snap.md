@@ -72,8 +72,8 @@ apps:
       - home
 
 parts:
-  azure-iot-gateway-sdk:
-    source: https://github.com/azure/azure-iot-gateway-sdk.git
+  iot-edge:
+    source: https://github.com/azure/iot-edge.git
     source-tag: '2017-04-12'
     plugin: cmake
     build-packages:
@@ -169,8 +169,8 @@ Now to bring it all together. In order for the `create-from-json` application to
 
 ```yaml
 parts:
-  azure-iot-gateway-sdk:
-    source: https://github.com/azure/azure-iot-gateway-sdk.git
+  iot-edge:
+    source: https://github.com/azure/iot-edge.git
     source-tag: '2017-04-12'
     plugin: cmake
     build-packages:
@@ -190,7 +190,7 @@ parts:
 
 > ***NOTE:** By simply including this "part" in your snap package, Azure IoT Edge will be downloaded, built and installed into your snap package.*
 
-Now onto the `parts:` stanza of the `snapcraft.yaml`. The first line is an informal name. You can choose anything that helps you remember how this part interacts with your snap; this part is named "azure-iot-gateway-sdk".
+Now onto the `parts:` stanza of the `snapcraft.yaml`. The first line is an informal name. You can choose anything that helps you remember how this part interacts with your snap; this part is named "iot-edge".
 
 Snapcraft has the ability to download code from a remote source, as specified by `source:`. As you can see above, snapcraft has been directed to look for the source code at the Azure GitHub repository. Futhermore, a particular tag has been designated for checkout via the `source-tag:` property.
 
@@ -225,17 +225,17 @@ You can request any step of snap creation by name, and it will walk through all 
 
 ```bash
 $ snapcraft clean azure-iot-gateway -s build
-Cleaning priming area for azure-iot-gateway-sdk
-Cleaning staging area for azure-iot-gateway-sdk
-Cleaning build for azure-iot-gateway-sdk
+Cleaning priming area for iot-edge
+Cleaning staging area for iot-edge
+Cleaning build for iot-edge
 Cleaning up priming area
 Cleaning up staging area
 $ snapcraft build azure-iot-gateway
-Skipping pull azure-iot-gateway-sdk
+Skipping pull iot-edge
 Copying needed target link from the system /lib/x86_64-linux-gnu/libz.so.1.2.8
 Copying needed target link from the system /lib/x86_64-linux-gnu/libuuid.so.1.3.0
 Copying needed target link from the system /lib/x86_64-linux-gnu/libpcre.so.3.13.2
-Building azure-iot-gateway-sdk
+Building iot-edge
 ...
 Install the project...
 ...

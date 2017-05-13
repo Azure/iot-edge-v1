@@ -16,7 +16,7 @@ if exist %gh_pages_dir% rd /s /q %gh_pages_dir%
 if !ERRORLEVEL! neq 0 exit /b !ERRORLEVEL!
 mkdir %gh_pages_dir%
 cd %temp%
-git clone -b gh-pages https://github.com/Azure/azure-iot-gateway-sdk %gh_pages_dir%
+git clone -b gh-pages https://github.com/Azure/iot-edge %gh_pages_dir%
 
 rem ---------------------------------------------------------------------------
 rem -- Put docs into temp directory
