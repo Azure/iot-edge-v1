@@ -5,7 +5,7 @@
       "loader": {
         "name": "native",
         "entrypoint": {
-          "module.path": "./modules/logger/liblogger.so"
+          "module.path": "./build/modules/logger/liblogger.so"
         }
       },
       "args": {
@@ -17,7 +17,7 @@
       "loader": {
         "name": "native",
         "entrypoint": {
-          "module.path": "./modules/hello_world/libhello_world.so"
+          "module.path": "./build/modules/hello_world/libhello_world.so"
         }
       },
       "args": null
