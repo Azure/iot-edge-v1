@@ -207,9 +207,15 @@ set(module_host_sources
     ${gateway_c_sources}
 )
 
+if (${enable_event_system})
+    set( event_system_sources ./src/internal/event_system.c )
+else()
+    set( event_system_sources ./src/internal/event_stub.c )
+endif()
+
 set(gateway_c_sources
     ${gateway_c_sources}
-    ./src/internal/event_system.c
+    ${event_system_sources}
     ./src/gateway_internal.c
     ./src/gateway.c
     ./src/gateway_createfromjson.c

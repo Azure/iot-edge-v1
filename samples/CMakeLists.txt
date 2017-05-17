@@ -5,7 +5,9 @@ cmake_minimum_required(VERSION 2.8.12)
 
 add_subdirectory(hello_world)
 add_subdirectory(simulated_device_cloud_upload)
-add_subdirectory(experimental/events_sample)
+if(${enable_event_system})
+    add_subdirectory(experimental/events_sample)
+endif()
 add_subdirectory(azure_functions_sample)
 add_subdirectory(dynamically_add_module_sample)
 

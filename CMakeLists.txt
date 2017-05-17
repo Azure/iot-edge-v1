@@ -83,7 +83,8 @@ option(use_http "set use_http to ON if http is to be used, set to OFF to not use
 option(use_mqtt "set use_mqtt to ON if mqtt is to be used, set to OFF to not use mqtt" ON)
 option(use_xplat_uuid "use the SDK's platform-independent UUID implementation (default is OFF)" OFF)
 
-SET(use_condition ON CACHE BOOL "Build C shared utility with condition code" FORCE)
+option(enable_event_system "Build event system (default is ON)" ON)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #making a nice global variable to know if we are on linux or not.
