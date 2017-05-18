@@ -28,12 +28,12 @@ This section shows you how to set up a development environment for Azure IoT Edg
 1. Clone the latest version of this repository to your local machine:
 
     ```
-    git clone https://github.com/Azure/azure-iot-gateway-sdk.git
+    git clone https://github.com/Azure/iot-edge.git
     ```
 
     Use the **master** branch to ensure you fetch the latest release version.
 
-> Note: Make sure to clone the repo into a directory heirachy with less than 20 characters (if the path is **prefix**\azure-iot-gateway-sdk, **prefix** must be less than 20 characters). Windows has limitations on the length of file names and placing the repo in a hierarchy deeper than 20 characters will cause the build to fail. Our `build.cmd` script throws an error if it would eventually hit this failure, but one can hit this when manually building the project with cmake.
+> Note: Make sure to clone the repo into a directory heirachy with less than 20 characters (if the path is **prefix**\iot-edge, **prefix** must be less than 20 characters). Windows has limitations on the length of file names and placing the repo in a hierarchy deeper than 20 characters will cause the build to fail. Our `build.cmd` script throws an error if it would eventually hit this failure, but one can hit this when manually building the project with cmake.
 
 ## Set up a Linux development environment
 
@@ -51,7 +51,7 @@ This section shows you how to set up a development environment for Azure IoT Edg
 1. Clone the latest version of this repository to your Ubuntu machine
 
     ```
-    git clone https://github.com/Azure/azure-iot-gateway-sdk.git
+    git clone https://github.com/Azure/iot-edge.git
     ```
 
     Use the **master** branch to ensure you fetch the latest release version.

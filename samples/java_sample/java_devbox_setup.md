@@ -97,14 +97,14 @@ You can verify that the environment variables necessary to run **_Maven 3_** hav
 
 <a name="installgwsource">
 ### Build Java binding for Azure IoT Edge from sources
-- Get a copy of **Azure IoT Edge** from GitHub if you have not already done so. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-gateway-sdk>
+- Get a copy of **Azure IoT Edge** from GitHub if you have not already done so. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/iot-edge>
 - When you have obtained a copy of the source, you can build the binding for Java.
 
 Open a command prompt and use the following commands for the steps above:
 
 ```
-    git clone https://github.com/Azure/azure-iot-gateway-sdk.git
-    cd azure-iot-gateway-sdk/bindings/java/gateway-java-binding
+    git clone https://github.com/Azure/iot-edge.git
+    cd iot-edge/bindings/java/gateway-java-binding
     mvn clean install
 ```
 

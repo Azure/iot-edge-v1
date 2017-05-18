@@ -22,7 +22,7 @@ The logger module logs all the exchanges on the message broker to a file.
 ### Linux
 
 1. Open a shell
-2. Navigate to `azure-iot-gateway-sdk\tools\`
+2. Navigate to `iot-edge/tools/`
 3. Run `build.sh`
 
 >Note: `build.sh` does multiple things. It builds the project and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.sh` is run. Additionally, `build.sh` runs all tests. The project can be build manually by using cmake. To do this:
@@ -42,7 +42,7 @@ The logger module logs all the exchanges on the message broker to a file.
 ### Windows
 
 1. Open a Developer Command for VS2015 as an Administrator
-2. Navigate to `azure-iot-gateway-sdk/tools/`
+2. Navigate to `iot-edge\tools\`
 3. Run `build.cmd`
 
 >Note: `build.cmd` does multiple things. It builds a solution ('azure_iot_gateway_sdk.sln') and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.cmd` is run. Additionally, `build.cmd` runs all tests. The project can be build manually by using cmake. To do this:
@@ -65,7 +65,7 @@ We recommend using the Azure recipes provided by Intel available in the
 [meta-iot-cloud](https://github.com/intel-iot-devkit/meta-iot-cloud) repository.
 Follow the instructions in the 
 [README](https://github.com/intel-iot-devkit/meta-iot-cloud#configuration) to 
-build an Edison image with the azure-iot-gateway-sdk libraries included.
+build an Edison image with the iot-edge libraries included.
 
 #### Intel Edison
 
@@ -98,7 +98,7 @@ meta-intel-edison/meta-intel-edison-distro/recipes-core/images/edison-image.bb:I
 Linux
 
 - In a text editor, open the file `samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json` in your local copy
-of the azure-iot-gateway-sdk repository. This file configures the modules in the sample gateway:
+of the iot-edge repository. This file configures the modules in the sample gateway:
 
 >Note: You will need connection information for two devices in IoT Hub before continuing. Refer to the sample [walkthrough](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-linux-gateway-sdk-simulated-device)
 if you need help getting this information. 
@@ -113,18 +113,18 @@ match the ids of the two devices you added to your IoT hub, and that the `device
 
 >The `Logger` module logs your gateway activity to a file.
 
->The `module path` values shown below assume that you will run the sample from the root of your local copy of the `azure-iot-gateway-sdk` repository.
+>The `module path` values shown below assume that you will run the sample from the root of your local copy of the `iot-edge` repository.
 
-- Navigate to `azure-iot-gateway-sdk/build`.
+- Navigate to `iot-edge/build`.
 
 - Run `$ ./samples/simulated_device_cloud_upload/simulated_device_cloud_upload_sample <path to JSON config file>`
 
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json'. 
+>Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge/samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_lin.json'. 
 
 Windows
 
 - In a text editor, open the file `samples/simulated_device_cloud_upload/src/simulated_device_cloud_upload_win.json` in your local copy
-of the azure-iot-gateway-sdk repository. This file configures the modules in the sample gateway:
+of the iot-edge repository. This file configures the modules in the sample gateway:
 
 >Note: You will need connection information for two devices in IoT Hub before continuing. Refer to the sample [walkthrough](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-windows-gateway-sdk-simulated-device)
 if you need help getting this information. 
@@ -139,11 +139,11 @@ match the ids of the two devices you added to your IoT hub, and that the `device
 
 >The `Logger` module logs your gateway activity to a file.
 
->The `module path` values shown below assume that you will run the sample from the root of your local copy of the `azure-iot-gateway-sdk` repository.
+>The `module path` values shown below assume that you will run the sample from the root of your local copy of the `iot-edge` repository.
 
-- Navigate to `azure-iot-gateway-sdk\build\samples\simulated_device_cloud_upload\Debug`.
+- Navigate to `iot-edge\build\samples\simulated_device_cloud_upload\Debug`.
 
 - Run `.\simulated_device_cloud_upload_sample.exe <path to JSON config file>`
 
->Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\simulated_device_cloud_upload\src\simulated_device_cloud_upload_win.json'.
+>Note: The simulated device cloud upload process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge\samples\simulated_device_cloud_upload\src\simulated_device_cloud_upload_win.json'.
 

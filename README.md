@@ -96,7 +96,7 @@ instructions used to create Azure IoT Edge Snap package. The walk-through is a g
 starting point for anyone trying to integrate Azure IoT Edge into their own snap
 package.
 
-API documentation can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html).
+API documentation can be found [here](http://azure.github.io/iot-edge).
 
 ### /samples
 This folder contains all of the samples for Azure IoT Edge. Samples are separated 
@@ -120,7 +120,7 @@ solution. Details on the implementation of each module can be found in each modu
 ### /core
 This folder contains all of the core infrastructure necessary to create a gateway solution. 
 In general, developers only need to *use* components in the core folder, not modify them. API 
-documentation for core infrastructure can be found [here](http://azure.github.io/azure-iot-gateway-sdk/api_reference/c/html). 
+documentation for core infrastructure can be found [here](http://azure.github.io/iot-edge/api_reference/c/html). 
 Details on the implementation of core components can be found in [core/devdoc](core/devdoc).
 
 ### /build

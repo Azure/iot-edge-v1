@@ -1,5 +1,5 @@
 Azure IoT Edge shares the same [contribution guidelines](https://github.com/Azure/azure-iot-sdks/blob/master/CONTRIBUTING.md) as
-the other Azure IoT SDKs. The Azure IoT Edge team also monitors our [GitHub issues](https://github.com/Azure/azure-iot-gateway-sdk/issues)
+the other Azure IoT SDKs. The Azure IoT Edge team also monitors our [GitHub issues](https://github.com/Azure/iot-edge/issues)
 section and Stack Overflow, especially the [azure-iot-edge](http://stackoverflow.com/questions/tagged/azure-iot-edge) tag.
 
 ----------
@@ -27,7 +27,7 @@ If your module is _not_ available as open-source code, we still recommend automa
 We recommend that you provide one or more samples, in the form of code or documentation, that demonstrate how to configure and use your module in a simple scenario.
 
 ### Pull Request
-Open a [Pull Request](https://github.com/Azure/azure-iot-gateway-sdk/compare) that adds a row about your module to the bottom of the Featured Modules table in our [README](https://github.com/Azure/azure-iot-gateway-sdk/blob/master/README.md), e.g.,
+Open a [Pull Request](https://github.com/Azure/iot-edge/compare) that adds a row about your module to the bottom of the Featured Modules table in our [README](https://github.com/Azure/iot-edge/blob/master/README.md), e.g.,
 
 ```
 >| Name         | More information                | Targets Azure IoT Edge version |
