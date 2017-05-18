@@ -75,7 +75,7 @@ The figure above shows an accurate representation of the Hello World sample's ar
 Linux
 
 1. Open a shell
-2. Navigate to `azure-iot-gateway-sdk/tools/`
+2. Navigate to `iot-edge/tools/`
 3. Run `./build.sh`
 
 >Note: `build.sh` does multiple things. It builds the project and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.sh` is run. Additionally, `build.sh` runs all tests. The project can be build manually by using cmake. To do this:
@@ -95,7 +95,7 @@ Linux
 Windows
 
 1. Open a Developer Command Prompt for VS2015 as an Administrator
-2. Navigate to `azure-iot-gateway-sdk\tools\`
+2. Navigate to `iot-edge\tools\`
 3. Run `build.cmd`. 
 
 >Note: `build.cmd` does multiple things. It builds a solution ('azure_iot_gateway_sdk.sln') and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.cmd` is run. Additionally, `build.cmd` runs all tests. The project can be build manually by using cmake. To do this:
@@ -116,10 +116,10 @@ Windows
 
 Linux
 
-- build.sh produces its outputs in `azure-iot-gateway-sdk/build`. This is where the two module SOs and executable used in this sample are built.
+- build.sh produces its outputs in `iot-edge/build`. This is where the two module SOs and executable used in this sample are built.
 > Note: The logger module is built as `/modules/logger/logger.so`. The hello world module is built as `/modules/hello_world/hello_world.so`. The sample executable is built as `/samples/hello_world/hello_world_sample`. 
 
-- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk/samples/hello_world/src/hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
+- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge/samples/hello_world/src/hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
 > Note: The module paths are relative to the current working directory from where the hello_world_sample executable is launched, not the directory where the executable is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
 
 ```json
@@ -157,7 +157,7 @@ Linux
 }
 ```
 
-- Navigate to `azure-iot-gateway-sdk/`.
+- Navigate to `iot-edge/`.
 
 -  Run `$ ./build/samples/hello_world/hello_world_sample samples/hello_world/src/hello_world_lin.json`
 
@@ -167,7 +167,7 @@ Windows
 - `build.cmd` produces a folder called `build` in the root repo folder. This is where the two module dlls and executable used in this sample are built.
 > Note: The logger module is built as `\modules\logger\Debug\logger.dll`. The hello world module is built as `\modules\hello_world\Debug\hello_world.dll`. The sample exe is built as `\samples\hello_world\Debug\hello_world_sample.exe`.
 
-- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `azure-iot-gateway-sdk\samples\hello_world\src\hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
+- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge\samples\hello_world\src\hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
 > Note: The module paths are relative to the directory where the hello_world_sample.exe is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
 
 ```json
@@ -203,7 +203,7 @@ Windows
 }
 ```
 
-- Navigate to `azure-iot-gateway-sdk\`.
+- Navigate to `iot-edge\`.
 
 - Run `.\build\samples\hello_world\Debug\hello_world_sample.exe samples\hello_world\src\hello_world_win.json`
 
@@ -275,8 +275,8 @@ Each module must specify a:
 * **loader**: a loader which knows how to load the desired module.  Loaders are an extension 
 point for loading different types of modules. We provide loaders for use with modules written 
 in native C, Node.js, Java, and .Net. The Hello World sample only uses the "native" loader since 
-all the modules in this sample are dynamic libraries written in C. Please refer to the [Node](https://github.com/Azure/azure-iot-gateway-sdk/blob/master/samples/nodejs_simple_sample/), 
-[Java](https://github.com/Azure/azure-iot-gateway-sdk/tree/master/samples/java_sample), or [.Net](https://github.com/Azure/azure-iot-gateway-sdk/tree/master/samples/dotnet_binding_sample) 
+all the modules in this sample are dynamic libraries written in C. Please refer to the [Node](https://github.com/Azure/iot-edge/blob/master/samples/nodejs_simple_sample/), 
+[Java](https://github.com/Azure/iot-edge/tree/master/samples/java_sample), or [.Net](https://github.com/Azure/iot-edge/tree/master/samples/dotnet_binding_sample) 
 samples for more information on using modules written in different languages.
     * **name**: name of the loader used to load the module.  
     * **entrypoint**: the path to the library containing the module. For Linux this is a .so 

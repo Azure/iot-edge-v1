@@ -16,7 +16,7 @@ A dev box configured with Azure IoT Edge and necessary libraries is necessary to
 Linux
 
 1. Open a shell
-2. Navigate to `azure-iot-gateway-sdk/tools/`
+2. Navigate to `iot-edge/tools/`
 3. Run `./build.sh`
 
 >Note: `build.sh` does multiple things. It builds the project and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.sh` is run. Additionally, `build.sh` runs all tests. The project can be build manually by using cmake. To do this:
@@ -36,7 +36,7 @@ Linux
 Windows
 
 1. Open a Developer Command Prompt for VS2015 as an Administrator
-2. Navigate to `azure-iot-gateway-sdk\tools\`
+2. Navigate to `iot-edge\tools\`
 3. Run `build.cmd`. 
 
 >Note: `build.cmd` does multiple things. It builds a solution ('azure_iot_gateway_sdk.sln') and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.cmd` is run. Additionally, `build.cmd` runs all tests. The project can be build manually by using cmake. To do this:
