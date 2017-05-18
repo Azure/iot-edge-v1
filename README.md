@@ -7,7 +7,7 @@ All the important developer concepts are maintained as we continue to improve Az
 
 This similarity means that existing solutions can evolve with the product! There will be some infrastructural changes. For example: modules will run in Docker containers and the broker used to pass messages between module code will move to a lite version of IoT Hub running locally in a module. The vast majority of this is shielded from both a module developer and gateway developer.
 
-Sign up [here](https://microsoft.qualtrics.com/jfe/form/SV_0V8Xr8y9c4mHUfb) to be kept up to date about the next generation of Azure IoT Edge features. In the meantime, be sure to check out the great features we just added to Azure IoT Edge, like [development packages](https://azure.microsoft.com/en-us/blog/azure-iot-gateway-sdk-packages/) and an [Azure Stream Analytics module](https://azure.microsoft.com/en-us/blog/announcing-azure-stream-analytics-on-edge-devices-preview/).
+Sign up [here](https://microsoft.qualtrics.com/jfe/form/SV_0V8Xr8y9c4mHUfb) to be kept up to date about the next generation of Azure IoT Edge features. In the meantime, be sure to check out the great features we just added to Azure IoT Edge, like [development packages](https://azure.microsoft.com/en-us/blog/azure-iot-edge-packages/) and an [Azure Stream Analytics module](https://azure.microsoft.com/en-us/blog/announcing-azure-stream-analytics-on-edge-devices-preview/).
 
 
 # Azure IoT Edge
