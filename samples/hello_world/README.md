@@ -72,140 +72,54 @@ The logger module only consumes messages (by logger them to a file) and never pu
 The figure above shows an accurate representation of the Hello World sample's architecture as well as the relative paths to the source files that implement different portions of the sample. Feel free to explore the code on your own, or use the code snippets below as a guide.
 
 ## How to build the sample
-Linux
+
+### Linux
 
 1. Open a shell
 2. Navigate to `iot-edge/tools/`
 3. Run `./build.sh`
 
->Note: `build.sh` does multiple things. It builds the project and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.sh` is run. Additionally, `build.sh` runs all tests. The project can be build manually by using cmake. To do this:
+>Note: `build.sh` builds the project and places it in the `iot-edge/build/` folder. This folder is deleted and recreated every time `build.sh` is run
 
->create a folder for the build output and navigate to that folder.
-
->run `sudo cmake <path to repo root>`
-
->Note: The cmake scripts will check for installed cmake dependencies on your machine before it attempts to fetch, build, and install them for you.
-
->run `make -j $(nproc)`
-
->To run the tests:
-
->run `ctest -j $(nproc) -C Debug --output-on-failure`
-
-Windows
+### Windows
 
 1. Open a Developer Command Prompt for VS2015 as an Administrator
 2. Navigate to `iot-edge\tools\`
 3. Run `build.cmd`. 
 
->Note: `build.cmd` does multiple things. It builds a solution ('azure_iot_gateway_sdk.sln') and places it in the "build" folder in the root of the repo. This folder is deleted and recreated every time `build.cmd` is run. Additionally, `build.cmd` runs all tests. The project can be build manually by using cmake. To do this:
-
->create a folder for the build output and navigate to that folder.
-
->run `cmake <path to repo root>`
-
->Note: The cmake scripts will check for installed cmake dependencies on your machine before it attempts to fetch, build, and install them for you.
-
->run `msbuild /m /p:Configuration="Debug" /p:Platform="Win32" azure_iot_gateway_sdk.sln`
-
->To run the tests:
-
->run `ctest -C Debug -V`
+>Note: `build.cmd` builds a VisualStudio Solution ('azure_iot_gateway_sdk.sln') in the `iot-edge\build\` folder. This folder is deleted and recreated every time `build.cmd` is run.
 
 ## How to run the sample
 
-Linux
+### Linux
 
-- build.sh produces its outputs in `iot-edge/build`. This is where the two module SOs and executable used in this sample are built.
-> Note: The logger module is built as `/modules/logger/logger.so`. The hello world module is built as `/modules/hello_world/hello_world.so`. The sample executable is built as `/samples/hello_world/hello_world_sample`. 
+The application and its dependencies (including the two modules required by this sample) can be found under `iot-edge/build/`:
+- The sample executable is built as `samples/hello_world/hello_world_sample`
+- The logger module is built as `modules/logger/logger.so`
+- The hello world module is built as `modules/hello_world/hello_world.so`
 
-- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge/samples/hello_world/src/hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
-> Note: The module paths are relative to the current working directory from where the hello_world_sample executable is launched, not the directory where the executable is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
+The hello_world_sample application takes the path to a JSON configuration file as an argument. The configuration file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge/samples/hello_world/src/hello_world_win.json`. It will work as-is unless you have modified your environment to place binaries in non-default locations.
 
-```json
-{
-    "modules" :
-    [
-        {
-          "name" : "logger",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "./modules/logger/liblogger.so"
-            }
-          },
-          "args" : {"filename":"log.txt"}
-        },
-        {
-            "name" : "hello_world",
-          "loader": {
-            "name": "native",
-            "entrypoint": {
-              "module.path": "./modules/hello_world/libhello_world.so"
-            }
-          },
-            "args" : null
-        }
-    ],
-    "links": 
-    [
-        {
-            "source": "hello_world",
-            "sink": "logger"
-        }
-    ]
-}
-```
+> Note: In the sample JSON configuration file, the module paths are relative to your current working directory at the time you launched the sample app, not the directory where the executable is located. The logger module's output is also written to a file ("log.txt") in your current working directory.
 
-- Navigate to `iot-edge/`.
+To run the sample:
+- Navigate to `iot-edge/build/`.
+- Run `samples/hello_world/hello_world_sample samples/hello_world/src/hello_world_lin.json`
 
--  Run `$ ./build/samples/hello_world/hello_world_sample samples/hello_world/src/hello_world_lin.json`
+### Windows
 
+The application and its dependencies (including the two modules required by this sample) can be found under `iot-edge\build\`:
+- The sample executable is built as `samples\hello_world\Debug\hello_world_sample.exe`.
+- The logger module is built as `modules\logger\Debug\logger.dll`.
+- The hello world module is built as `modules\hello_world\Debug\hello_world.dll`.
 
-Windows
+The hello_world_sample application takes the path to a JSON configuration file as an argument. The configuration file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge\samples\hello_world\src\hello_world_win.json`. It will work as-is unless you have modified your environment to place binaries in non-default locations.
 
-- `build.cmd` produces a folder called `build` in the root repo folder. This is where the two module dlls and executable used in this sample are built.
-> Note: The logger module is built as `\modules\logger\Debug\logger.dll`. The hello world module is built as `\modules\hello_world\Debug\hello_world.dll`. The sample exe is built as `\samples\hello_world\Debug\hello_world_sample.exe`.
+> Note: In the sample JSON configuration file, the module paths are relative to the directory where the hello_world_sample.exe is located, not your current working directory. The logger module's output, on the other hand, is written to a file ("log.txt") in your current working directory.
 
-- The hello_world_sample process takes the path to a JSON configuration file as an argument in the command line. The file must be encoded either as ASCII or UTF-8. An example JSON file has been provided as part of the repo at `iot-edge\samples\hello_world\src\hello_world_win.json' and is copied below. It will work as is unless you have modified the build script to place modules or sample executables in non-default locations.
-> Note: The module paths are relative to the directory where the hello_world_sample.exe is located. The sample JSON configuration file is defaults to writing 'log.txt' in your current working directory.
-
-```json
-{
-  "modules": [
-    {
-      "name": "logger",
-      "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-        }
-      },
-      "args": { "filename": "log.txt" }
-    },
-    {
-      "name": "hello_world",
-      "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
-        }
-      },
-      "args": null
-      }
-  ],
-  "links": [
-    {
-      "source": "hello_world",
-      "sink": "logger"
-    }
-  ]
-}
-```
-
+To run the sample:
 - Navigate to `iot-edge\`.
-
-- Run `.\build\samples\hello_world\Debug\hello_world_sample.exe samples\hello_world\src\hello_world_win.json`
+- Run `build\samples\hello_world\Debug\hello_world_sample.exe samples\hello_world\src\hello_world_win.json`
 
 
 ## Typical Output
