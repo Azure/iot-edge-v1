@@ -104,7 +104,7 @@ The hello_world_sample application takes the path to a JSON configuration file a
 
 To run the sample:
 - Navigate to `iot-edge/build/`.
-- Run `samples/hello_world/hello_world_sample samples/hello_world/src/hello_world_lin.json`
+- Run `samples/hello_world/hello_world_sample ../samples/hello_world/src/hello_world_lin.json`
 
 ### Windows
 
