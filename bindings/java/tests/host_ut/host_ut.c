@@ -235,6 +235,12 @@ MOCKABLE_FUNCTION(JNICALL, void, ExceptionDescribe, JNIEnv*, env);
 
 //JVM function mocks
 MOCKABLE_FUNCTION(JNICALL, jint, AttachCurrentThread, JavaVM*, vm, void**, penv, void*, args);
+jint my_AttachCurrentThread(JavaVM* vm, void** penv, void* args) 
+{
+    *penv = (void*)global_env;
+
+    return 0;
+}
 
 MOCKABLE_FUNCTION(JNICALL, jint, DetachCurrentThread, JavaVM*, vm);
 
@@ -638,6 +644,7 @@ TEST_SUITE_INITIALIZE(TestClassInitialize)
     REGISTER_GLOBAL_MOCK_HOOK(ExceptionOccurred, my_ExceptionOccurred);
     REGISTER_GLOBAL_MOCK_HOOK(DestroyJavaVM, my_DestroyJavaVM);
     REGISTER_GLOBAL_MOCK_HOOK(GetEnv, my_GetEnv);
+    REGISTER_GLOBAL_MOCK_HOOK(AttachCurrentThread, my_AttachCurrentThread);
 
     //gballoc Hooks
     REGISTER_GLOBAL_MOCK_HOOK(gballoc_malloc, my_gballoc_malloc);
