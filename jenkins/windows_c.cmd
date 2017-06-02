@@ -14,7 +14,7 @@ set all-args=%*
 :args-loop
 if "%1" equ "" goto args-done
 if "%1" equ "--platform" goto arg-build-platform
-shift
+goto args-continue
 
 :arg-build-platform
 shift
@@ -30,7 +30,7 @@ goto args-loop
 
 REM -- set JAVA_HOME based on platform 
 set "JAVA_SAVE=%JAVA_HOME%"
-if %build-platform% == x64 (
+if "%build-platform%" == "x64" (
     set "JAVA_HOME=%JAVA_8_64%"
 ) else (
     set "JAVA_HOME=%JAVA_8_32%"
