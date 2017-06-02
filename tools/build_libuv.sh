@@ -8,6 +8,8 @@ set -e
 
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 build_root=$build_root/build_libuv
+prefix=$build_root/dist
+libdir=$prefix/lib
 
 # clear the libuv build folder so we have a fresh build
 rm -rf $build_root
@@ -19,7 +21,7 @@ git clone https://github.com/libuv/libuv.git
 cd libuv
 git checkout -b v1.11.0 tags/v1.11.0
 sh autogen.sh
-./configure --prefix=$build_root/dist/ CFLAGS='-fPIC' CXXFLAGS='-fPIC'
+./configure --prefix=$prefix --libdir=$libdir CFLAGS='-fPIC' CXXFLAGS='-fPIC'
 make -j $(nproc)
 make install
 popd
