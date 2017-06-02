@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Azure.IoT.Gateway.SDK</id>
+    <version>2017.01.13-alpha</version>
+    <title>Azure IoT Gateway SDK</title>
+    <description>This package contains the Microsoft Azure IoT Gateway SDK</description>
+    <authors>Microsoft Corporation</authors>
+    <language>en-US</language>
+    <projectUrl>https://github.com/azure/azure-iot-gateway-sdk</projectUrl>
+    <licenseUrl>https://github.com/Azure/azure-iot-gateway-sdk/blob/master/License.txt</licenseUrl>
+    <tags>Microsoft Azure IoT Gateway SDK</tags>
+  </metadata>
+  <files>
+    <file src="..\build\core\Release\gateway.dll" target="build\x86" />
+    <file src="..\build\core\Release\gateway.pdb" target="build\x86" />
+    <file src="..\build\modules\iothub\Release\iothub.dll" target="build\x86" />
+    <file src="..\build\modules\iothub\Release\iothub.pdb" target="build\x86" />
+    <file src="..\install-deps\bin\aziotsharedutil.dll" target="build\x86" />
+    <file src="..\install-deps\bin\aziotsharedutil.pdb" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_client.dll" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_client.pdb" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_service_client.dll" target="build\x86" />
+    <file src="..\install-deps\bin\iothub_service_client.pdb" target="build\x86" />
+    <file src="..\install-deps\bin\nanomsg.dll" target="build\x86" />
+    <file src="..\install-deps\bin\nanomsg.pdb" target="build\x86" />
+    <file src="..\install-deps\bin\serializer.dll" target="build\x86" />
+    <file src="..\install-deps\bin\serializer.pdb" target="build\x86" />
+  </files>
+</package>
