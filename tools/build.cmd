@@ -224,6 +224,9 @@ if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 :skip-tests
 
 popd
+
+if %enable-java-binding% == ON call %current-path%\build_java_core.cmd %build-config%
+
 goto :eof
 
 rem -----------------------------------------------------------------------------
