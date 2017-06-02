@@ -16,6 +16,7 @@ enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
 enable_native_remote_modules=ON
+enable_nodejs_remote_modules=ON
 enable_java_remote_modules=OFF
 toolchainfile=
 enable_ble_module=ON
@@ -27,29 +28,31 @@ usage ()
 {
     echo "build.sh [options]"
     echo "options"
-    echo " -cl, --compileoption <val>  Specify a gcc compile option"
+    echo " -cl, --compileoption <val>      Specify a gcc compile option"
     echo "   Example: -cl -O1 -cl ..."
-    echo " -f,  --config <value>          Build configuration (e.g. [Debug], Release)"
-    echo " --disable-ble-module           Do not build the BLE module"
-    echo " --enable-dotnet-core-binding   Build the .NET Core binding"
-    echo " --enable-java-binding          Build Java binding"
-    echo "                                (JAVA_HOME must be defined in your environment)"
-    echo " --enable-nodejs-binding        Build Node.js binding"
-    echo "                                (NODE_INCLUDE, NODE_LIB must be defined)"
+    echo " -f,  --config <value>           Build configuration (e.g. [Debug], Release)"
+    echo " --disable-ble-module            Do not build the BLE module"
+    echo " --enable-dotnet-core-binding    Build the .NET Core binding"
+    echo " --enable-java-binding           Build Java binding"
+    echo "                                 (JAVA_HOME must be defined in your environment)"
+    echo " --enable-nodejs-binding         Build Node.js binding"
+    echo "                                 (NODE_INCLUDE, NODE_LIB must be defined)"
     echo " --disable-native-remote-modules Do not build the infrastructure"
-    echo "                                required to support native remote modules"
-    echo " --enable-java-remote-modules   Build Java Remote Module SDK"
-    echo "                                (JAVA_HOME must be defined in your environment)"
-    echo " --rebuild-deps                 Force rebuild of dependencies"
-    echo " --run-e2e-tests                Build/run end-to-end tests"
-    echo " --run-unittests                Build/run unit tests"
-    echo " -rv,  --run-valgrind           Execute ctest with valgrind"
-    echo " --system-deps-path             Search for dependencies in a system-level location,"
-    echo "                                e.g. /usr/local, and install if not found. When this"
-    echo "                                option is omitted the path is $local_install."
-    echo " --toolchain-file <file>        Pass CMake a toolchain file for cross-compiling"
-    echo " --use-xplat-uuid               Use SDK's platform-independent UUID implementation"
-    echo " -x,  --xtrace                  Print a trace of each command"
+    echo "                                 required to support native remote modules"
+    echo " --disable-nodejs-remote-modules Do not build the infrastructure"
+    echo "                                 required to support Node.js remote modules"
+    echo " --enable-java-remote-modules    Build Java Remote Module SDK"
+    echo "                                 (JAVA_HOME must be defined in your environment)"
+    echo " --rebuild-deps                  Force rebuild of dependencies"
+    echo " --run-e2e-tests                 Build/run end-to-end tests"
+    echo " --run-unittests                 Build/run unit tests"
+    echo " -rv,  --run-valgrind            Execute ctest with valgrind"
+    echo " --system-deps-path              Search for dependencies in a system-level location,"
+    echo "                                 e.g. /usr/local, and install if not found. When this"
+    echo "                                 option is omitted the path is $local_install."
+    echo " --toolchain-file <file>         Pass CMake a toolchain file for cross-compiling"
+    echo " --use-xplat-uuid                Use SDK's platform-independent UUID implementation"
+    echo " -x,  --xtrace                   Print a trace of each command"
     exit 1
 }
 
@@ -87,6 +90,7 @@ process_args ()
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
+              "--disable-nodejs-remote-modules" ) enable_nodejs_remote_modules=OFF;;
               "--enable-java-remote-modules" ) enable_java_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
@@ -151,6 +155,27 @@ then
     [ $? -eq 0 ] || exit $?
 fi
 
+if [[ $enable_nodejs_remote_modules == ON ]]
+then 
+    pushd "$build_root/samples/nodejs_remote_sample"
+    [ $? -eq 0 ] || exit $?
+    npm install
+    [ $? -eq 0 ] || exit $?
+    npm run lint
+    [ $? -eq 0 ] || exit $?
+    popd
+
+    pushd "$build_root/proxy/gateway/nodejs"
+    [ $? -eq 0 ] || exit $?
+    npm install
+    [ $? -eq 0 ] || exit $?
+    npm run lint
+    [ $? -eq 0 ] || exit $?
+    npm test
+    [ $? -eq 0 ] || exit $?
+    popd
+fi
+
 if [[ $enable_dotnet_core_binding == ON ]]
 then
     "$build_root"/tools/build_dotnet_core.sh --config $build_config
@@ -177,6 +202,7 @@ cmake $toolchainfile \
       -Denable_dotnet_core_binding:BOOL=$enable_dotnet_core_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
       -Denable_native_remote_modules:BOOL=$enable_native_remote_modules \
+      -Denable_nodejs_remote_modules:BOOL=$enable_nodejs_remote_modules \
       -Denable_java_remote_modules:BOOL=$enable_java_remote_modules \
       -Denable_ble_module:BOOL=$enable_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \

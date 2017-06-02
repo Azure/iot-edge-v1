@@ -21,6 +21,19 @@ pushd $build_root/proxy/gateway/java/gateway-remote-module
 mvn clean install
 popd
 
+# Node.js proxy gateway
+pushd $build_root/proxy/gateway/nodejs
+npm install
+npm run lint
+npm test
+popd
+
+# Node.js proxy gateway sample
+pushd $build_root/samples/nodejs_remote_sample
+npm install
+npm run lint
+popd
+
 rm -rf $build_folder
 mkdir -p $build_folder
 pushd $build_folder

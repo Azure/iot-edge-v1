@@ -33,7 +33,7 @@ elseif(UNIX) # LINUX or APPLE
 endif()
 
 # Build libuv with an OS-appropriate script
-if (${enable_native_remote_modules} OR ${enable_java_remote_modules})
+if (${enable_core_remote_module_support})
     if(WIN32)
         if(8 EQUAL CMAKE_SIZEOF_VOID_P)
             message(STATUS "Building libuv for 64-bit Windows...")
@@ -180,7 +180,7 @@ if(${enable_nodejs_binding})
     include_directories(../bindings/nodejs/inc)
 endif()
 
-if(${enable_native_remote_modules} OR ${enable_java_remote_modules})
+if(${enable_core_remote_module_support})
     set(gateway_c_sources
         ${gateway_c_sources}
         ../proxy/message/src/control_message.c
@@ -239,7 +239,7 @@ add_library(gateway_static STATIC
     ${gateway_h_sources}
 )
 
-if(${enable_native_remote_modules} OR ${enable_java_remote_modules})
+if(${enable_core_remote_module_support})
     if(WIN32)
         target_link_libraries(gateway ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.lib Psapi.lib Iphlpapi.lib Userenv.lib)
         target_link_libraries(gateway_static ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.lib Psapi.lib Iphlpapi.lib Userenv.lib)
