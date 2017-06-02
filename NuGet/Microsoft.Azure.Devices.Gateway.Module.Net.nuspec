@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Microsoft.Azure.Devices.Gateway.Module.Net</id>
+    <version>1.0.0</version>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <language>en-US</language>
+    <licenseUrl>https://github.com/Azure/azure-iot-gateway-sdk/blob/master/License.txt</licenseUrl>
+    <projectUrl>https://github.com/azure/azure-iot-gateway-sdk</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This package contains the Microsoft Azure IoT Gateway SDK</description>
+    <releaseNotes>Initial release of the Microsoft Azure IoT Gateway SDK module developer startup package.</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Microsoft Azure IoT Gateway SDK Device Module Developer Sample .NET dotnet net40</tags>
+    <dependencies> 
+      <group> 
+        <dependency id="Microsoft.Azure.Devices.Gateway.Core" version="1.0.0"/> 
+      </group> 
+    </dependencies>
+  </metadata>
+  <files>
+     <file src="..\build\bindings\dotnet\Release\dotnet.dll" target="build\net40" /> 
+     <file src="..\build\bindings\dotnet\Release\dotnet.pdb" target="build\net40" />
+     <file src="..\build\samples\dotnet_binding_sample\Release\dotnet_binding_sample.exe" target="build\net40" />
+     <file src="..\build\samples\dotnet_binding_sample\Release\dotnet_binding_sample.pdb" target="build\net40" />
+     <file src="..\build\samples\dotnet_binding_sample\Release\PrinterModule.dll" target="build\net40" />
+     <file src="..\build\samples\dotnet_binding_sample\Release\SensorModule.dll" target="build\net40" />
+     <file src="..\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway\bin\x86\Release\Microsoft.Azure.IoT.Gateway.dll" target="lib\net40" />
+     <file src="..\bindings\dotnet\dotnet-binding\Microsoft.Azure.IoT.Gateway\bin\x86\Release\Microsoft.Azure.IoT.Gateway.pdb" target="lib\net40" />
+     <file src="content\module_dev_sample.json" target="content" />
+     <file src="content\Microsoft.Azure.Devices.Gateway.Module.Net.targets" target="build" />
+     <file src="content\Example.cs" target="content" />
+   </files> 
+</package>
