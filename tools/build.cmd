@@ -30,7 +30,7 @@ set CMAKE_enable_dotnet_core_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set enable_native_remote_modules=ON
-set enable_nodejs_remote_modules=ON
+set enable_nodejs_remote_modules=OFF
 set enable_java_remote_modules=OFF
 set CMAKE_enable_ble_module=ON
 set use_xplat_uuid=OFF
@@ -48,7 +48,7 @@ if "%1" equ "--enable-dotnet-core-binding" goto arg-enable-dotnet-core-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-native-remote-modules" goto arg-disable_native_remote_modules
-if "%1" equ "--disable-nodejs-remote-modules" goto arg-disable_nodejs_remote_modules
+if "%1" equ "--enable-nodejs-remote-modules" goto arg-enable_nodejs_remote_modules
 if "%1" equ "--enable-java-remote-modules" goto arg-enable-java-remote-modules
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
 if "%1" equ "--system-deps-path" goto arg-system-deps-path
@@ -108,8 +108,8 @@ goto args-continue
 set enable_native_remote_modules=OFF
 goto args-continue
 
-:arg-disable_nodejs_remote_modules
-set enable_nodejs_remote_modules=OFF
+:arg-enable_nodejs_remote_modules
+set enable_nodejs_remote_modules=ON
 goto args-continue
 
 :arg-enable-java-remote-modules
@@ -243,8 +243,8 @@ echo  --enable-nodejs-binding         Build Node.js binding
 echo                                  (NODE_INCLUDE, NODE_LIB must be defined)
 echo  --disable-native-remote-modules Do not build the infrastructure required
 echo                                  to support native remote modules
-echo  --disable-nodejs-remote-modules Do not build the infrastructure required
-echo                                  to support native remote modules
+echo  --enable-nodejs-remote-modules  Build the infrastructure required to support
+echo                                  Node.js apps as remote modules
 echo  --enable-java-remote-modules    Build Java Remote modules SDK
 echo                                  (JAVA_HOME must be defined in your environment)
 echo  --platform value                Build platform (e.g. [Win32], x64, ...)

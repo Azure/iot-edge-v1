@@ -78,7 +78,7 @@ option(enable_dotnet_core_binding "set enable_dotnet_core_binding to ON to build
 option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
 option(enable_native_remote_modules "Build the infrastructure required to support native remote modules (default is ON)" ON)
 option(enable_java_remote_modules "Build the infrastructure required to support java remote modules (default is OFF)" OFF)
-option(enable_nodejs_remote_modules "Build the infrastructure required to support Node.js remote modules (default is ON)" ON)
+option(enable_nodejs_remote_modules "Build the infrastructure required to support Node.js apps as remote modules (default is OFF)" OFF)
 option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
 option(use_http "set use_http to ON if http is to be used, set to OFF to not use http" ON)
 option(use_mqtt "set use_mqtt to ON if mqtt is to be used, set to OFF to not use mqtt" ON)

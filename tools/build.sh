@@ -16,7 +16,7 @@ enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
 enable_native_remote_modules=ON
-enable_nodejs_remote_modules=ON
+enable_nodejs_remote_modules=OFF
 enable_java_remote_modules=OFF
 toolchainfile=
 enable_ble_module=ON
@@ -39,8 +39,8 @@ usage ()
     echo "                                 (NODE_INCLUDE, NODE_LIB must be defined)"
     echo " --disable-native-remote-modules Do not build the infrastructure"
     echo "                                 required to support native remote modules"
-    echo " --disable-nodejs-remote-modules Do not build the infrastructure"
-    echo "                                 required to support Node.js remote modules"
+    echo " --enable-nodejs-remote-modules  Build the infrastructure required to support"
+    echo "                                 Node.js apps as remote modules"
     echo " --enable-java-remote-modules    Build Java Remote Module SDK"
     echo "                                 (JAVA_HOME must be defined in your environment)"
     echo " --rebuild-deps                  Force rebuild of dependencies"
@@ -90,7 +90,7 @@ process_args ()
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
-              "--disable-nodejs-remote-modules" ) enable_nodejs_remote_modules=OFF;;
+              "--enable-nodejs-remote-modules" ) enable_nodejs_remote_modules=ON;;
               "--enable-java-remote-modules" ) enable_java_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
