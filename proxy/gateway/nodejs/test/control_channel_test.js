@@ -10,6 +10,7 @@ let makeCreateReply = require('./test_messages.js').makeCreateReply;
 let makeStartMessage = require('./test_messages.js').makeStartMessage;
 let makeDestroyMessage = require('./test_messages.js').makeDestroyMessage;
 let makeDetachMessage = require('./test_messages.js').makeDetachMessage;
+let uuid = require('uuid');
 
 require('chai').should();
 
@@ -25,11 +26,13 @@ describe('ControlChannel', () => {
     });
   });
 
+  let uri = uuid.v4();
+
   it("can receive a 'create' message", () => {
-    let sender = new TestEndpoint('abc');
+    let sender = new TestEndpoint(uri);
 
     let ch = new ControlChannel();
-    ch.connect('abc');
+    ch.connect(uri);
 
     return new Promise((resolve) => {
       let createMessage = makeCreateMessage();
@@ -50,14 +53,14 @@ describe('ControlChannel', () => {
 
   it("can send a 'create' reply message", () => {
     let ch = new ControlChannel();
-    let listener = new TestEndpoint('abc');
+    let listener = new TestEndpoint(uri);
 
     listener.receive().then(() => {
       ch.disconnect();
       listener.close();
     });
 
-    ch.connect('abc');
+    ch.connect(uri);
     ch.send('create', true);
 
     let expected = makeCreateReply(true).buffer;
@@ -67,10 +70,10 @@ describe('ControlChannel', () => {
   });
 
   it("can receive a 'start' message", () => {
-    let sender = new TestEndpoint('abc');
+    let sender = new TestEndpoint(uri);
 
     let ch = new ControlChannel();
-    ch.connect('abc');
+    ch.connect(uri);
 
     return new Promise((resolve) => {
       ch.on('start', () => {
@@ -84,10 +87,10 @@ describe('ControlChannel', () => {
   });
 
   it("can receive a 'destroy' message", () => {
-    let sender = new TestEndpoint('abc');
+    let sender = new TestEndpoint(uri);
 
     let ch = new ControlChannel();
-    ch.connect('abc');
+    ch.connect(uri);
 
     return new Promise((resolve) => {
       ch.on('destroy', () => {
@@ -102,14 +105,14 @@ describe('ControlChannel', () => {
 
   it("can send a 'detach' message", () => {
     let ch = new ControlChannel();
-    let listener = new TestEndpoint('abc');
+    let listener = new TestEndpoint(uri);
 
     listener.receive().then(() => {
       ch.disconnect();
       listener.close();
     });
 
-    ch.connect('abc');
+    ch.connect(uri);
     ch.send('detach');
 
     let expected = makeDetachMessage().buffer;

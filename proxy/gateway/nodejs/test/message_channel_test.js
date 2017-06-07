@@ -6,15 +6,18 @@
 let TestEndpoint = require('./test_endpoint.js');
 let MessageChannel = require('../lib/message_channel.js');
 let makeModuleMessage = require('./test_messages.js').makeModuleMessage;
+let uuid = require('uuid');
 
 require('chai').should();
 
 describe('MessageChannel', () => {
+  let uri = uuid.v4();
+
   it('can receive a message', () => {
-    let sender = new TestEndpoint('abc');
+    let sender = new TestEndpoint(uri);
 
     let ch = new MessageChannel();
-    ch.connect('abc');
+    ch.connect(uri);
 
     return new Promise((resolve) => {
       let moduleMessage = makeModuleMessage();
@@ -34,7 +37,7 @@ describe('MessageChannel', () => {
 
   it('can send a message', () => {
     let ch = new MessageChannel();
-    let listener = new TestEndpoint('abc');
+    let listener = new TestEndpoint(uri);
 
     listener.receive().then(() => {
       ch.disconnect();
@@ -43,7 +46,7 @@ describe('MessageChannel', () => {
 
     let message = makeModuleMessage();
 
-    ch.connect('abc');
+    ch.connect(uri);
     ch.send(message.object);
 
     return listener.receive()

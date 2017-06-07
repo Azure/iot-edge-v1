@@ -7,6 +7,7 @@ let chai = require('chai');
 let Channel = require('../lib/channel.js');
 let TestEndpoint = require('./test_endpoint.js');
 let EventEmitter = require('events').EventEmitter;
+let uuid = require('uuid');
 
 chai.use(require('chai-as-promised'));
 chai.should();
@@ -16,11 +17,13 @@ function parentClassNameOf(obj) {
 }
 
 describe('Channel', () => {
+  let uri = uuid.v4();
+
   it('can send a message', () => {
-    let listener = new TestEndpoint('abc');
+    let listener = new TestEndpoint(uri);
 
     let ch = new Channel();
-    ch.connect('abc');
+    ch.connect(uri);
     ch.send('hello');
 
     listener.receive().then(() => {
@@ -33,10 +36,10 @@ describe('Channel', () => {
   });
 
   it('can receive a message', (done) => {
-    let sender = new TestEndpoint('abc');
+    let sender = new TestEndpoint(uri);
 
     let ch = new Channel();
-    ch.connect('abc');
+    ch.connect(uri);
     sender.send('hello');
 
     ch.on('data', data => {
