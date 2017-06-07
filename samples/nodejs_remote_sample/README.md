@@ -12,13 +12,15 @@ This Node.js application uses the `azure-iot-proxy-gateway` package to act as an
 
 To run this sample:
 
+1. Install [Node.js](https://nodejs.org/en/download/) version 6.0 or later.
+
 1. Follow the instructions in the [proxy gateway sample](https://github.com/Azure/iot-edge/blob/master/samples/proxy_sample/README.md) to build and configure an IoT Edge application that communicates with an out-of-process module.
 
-2. In the `proxy/gateway/nodejs` folder, run `npm install` to install the package's dependencies.
+1. In the `proxy/gateway/nodejs` folder, run `npm install` to install the package's dependencies.
 
-3. In the `samples/nodejs_remote_sample` directory, run `npm install` to install the sample's dependencies.
+1. In the `samples/nodejs_remote_sample` directory, run `npm install` to install the sample's dependencies.
 
-4. Start the `proxy_gateway` app from one terminal like this:
+1. Start the `proxy_gateway` app from one terminal like this:
 
     ### Linux/Mac
     ```
@@ -32,7 +34,7 @@ To run this sample:
     Debug\proxy_sample.exe ..\..\..\samples\proxy_sample\src\proxy_sample_win.json
     ```
 
-5. Start the `nodejs_remote_sample` Node.js app from _another_ terminal like this:
+1. Start the `nodejs_remote_sample` Node.js app from _another_ terminal like this:
 
     ### Linux/Mac
     ```

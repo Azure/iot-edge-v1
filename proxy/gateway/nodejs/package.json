@@ -19,6 +19,9 @@
     "lint": "jshint --show-non-errors .",
     "test": "mocha"
   },
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "author": "Microsoft",
   "license": "MIT"
 }
