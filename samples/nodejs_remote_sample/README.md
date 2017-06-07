@@ -14,7 +14,9 @@ To run this sample:
 
 1. Install [Node.js](https://nodejs.org/en/download/) version 6.0 or later.
 
-1. Follow the instructions in the [proxy gateway sample](https://github.com/Azure/iot-edge/blob/master/samples/proxy_sample/README.md) to build and configure an IoT Edge application that communicates with an out-of-process module.
+1. Build the IoT Edge code with the Node.js out-of-process modules feature enabled. If you're using a build script (`tools/build.sh` or `tools\build.cmd`), pass the `--enable-nodejs-remote-modules` argument. If you're using CMake directly, pass the `enable_nodejs_remote_modules` option (e.g., `cmake -Denable_nodejs_remote_modules=ON ..`).
+
+1. Follow the instructions in the [proxy gateway sample](../proxy_sample/README.md) to build and configure an IoT Edge application that communicates with an out-of-process module.
 
 1. In the `proxy/gateway/nodejs` folder, run `npm install` to install the package's dependencies.
 
