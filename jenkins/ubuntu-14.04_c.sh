@@ -6,6 +6,6 @@ build_root=$(cd "$(dirname "$0")/.." && pwd)
 cd $build_root
 
 # -- C --
-./tools/build.sh --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-java-binding --disable-native-remote-modules --disable-nodejs-remote-modules --enable-dotnet-core-binding "$@" #-x
+./tools/build.sh --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-java-binding --disable-native-remote-modules --enable-dotnet-core-binding "$@" #-x
 [ $? -eq 0 ] || exit $?
  

@@ -40,7 +40,7 @@ REM -- C --
 cd %build-root%\tools
 set "PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin\server;%PATH%;%NODE_LIB%"
 
-call build.cmd --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-dotnet-core-binding --enable-java-binding --enable-java-remote-modules %*
+call build.cmd --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-dotnet-core-binding --enable-java-binding --enable-java-remote-modules --enable-nodejs-remote-modules %*
 if errorlevel 1 goto :reset-java
 cd %build-root%
 
