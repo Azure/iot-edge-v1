@@ -127,7 +127,7 @@ get_cores ()
 
     if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
     # We think the number of cores to use is a function of available memory divided by 500 MB
-    CORES2=$(expr ${MEMAR[0]} / 500000)
+    CORES2=$(expr ${MEMAR[0]} / 500000) || true
 
     # Clamp the cores to use to be between 1 and $CORES (inclusive)
     CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
