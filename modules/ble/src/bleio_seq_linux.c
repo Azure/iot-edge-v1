@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +26,12 @@ static bool validate_instructions(VECTOR_HANDLE instructions);
 // are still outstanding I/O requests, we want to keep the handle data
 // alive till all of them complete.
 DEFINE_REFCOUNT_TYPE(BLEIO_SEQ_HANDLE_DATA);
+
+// Added by H. Ota
+static void on_seqential_instruction_complete(
+	BLEIO_SEQ_HANDLE_DATA* bleio_seq_handle,
+	BLEIO_SEQ_INSTRUCTION* instruction
+);
 
 BLEIO_SEQ_HANDLE BLEIO_Seq_Create(
     BLEIO_GATT_HANDLE bleio_gatt_handle,
@@ -156,7 +163,6 @@ static bool validate_instructions(VECTOR_HANDLE instructions)
 
     return result;
 }
-
 void inc_ref_handle(BLEIO_SEQ_HANDLE_DATA* handle_data)
 {
     INC_REF(BLEIO_SEQ_HANDLE_DATA, handle_data);
@@ -197,6 +203,16 @@ void dec_ref_handle(BLEIO_SEQ_HANDLE_DATA* handle_data)
                     BUFFER_delete(instruction->data.buffer);
                 }
             }
+            /*
+                added by H. Ota
+            */
+			void* nextInstr = instruction->nextInst;
+			while (nextInstr!=NULL)
+			{
+				void* current = nextInstr;
+				nextInstr = ((BLEIO_SEQ_INSTRUCTION*)current)->nextInst;
+				free(current);
+			}
         }
 
         VECTOR_destroy(handle_data->instructions);
@@ -333,7 +349,9 @@ BLEIO_SEQ_RESULT BLEIO_Seq_Run(BLEIO_SEQ_HANDLE bleio_seq_handle)
                 // schedule this instruction only if it is not a WRITE_AT_EXIT instruction
                 if (instruction->instruction_type != WRITE_AT_EXIT)
                 {
-                    result = schedule_instruction(handle_data, instruction, NULL);
+                    // Modified by H. Ota
+                    //  result = schedule_instruction(handle_data, instruction, NULL);
+                    result = schedule_instruction(handle_data, instruction, on_seqential_instruction_complete);
 
                     // bail if a schedule operation didn't succeed
                     if (result != BLEIO_SEQ_OK)
@@ -373,6 +391,23 @@ static void on_instruction_complete(
     // free the instruction
     free(instruction);
 }
+
+// Added by H. Ota. this method is called for sequential instruction
+static void on_seqential_instruction_complete(
+	BLEIO_SEQ_HANDLE_DATA* bleio_seq_handle,
+	BLEIO_SEQ_INSTRUCTION* instruction
+)
+{
+	if (instruction->nextInst != NULL) {
+		BLEIO_SEQ_RESULT result = schedule_instruction(bleio_seq_handle, instruction->nextInst, on_seqential_instruction_complete);
+		if (result != BLEIO_SEQ_OK)
+		{
+			LogError("An error occurred while child scheduling an instruction of type %d for characteristic %s",
+				instruction->instruction_type, STRING_c_str(instruction->characteristic_uuid));
+		}
+	}
+}
+
 
 BLEIO_SEQ_RESULT BLEIO_Seq_AddInstruction(
     BLEIO_SEQ_HANDLE bleio_seq_handle,

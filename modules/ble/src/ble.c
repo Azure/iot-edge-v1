@@ -56,6 +56,11 @@ static void on_connect_complete(
     BLEIO_GATT_CONNECT_RESULT connect_result
 );
 
+//static void on_disconnect_complete(
+//    BLEIO_GATT_HANDLE bleio_gatt_handle,
+//    void* context
+//);
+
 static void on_read_complete(
     BLEIO_SEQ_HANDLE bleio_seq_handle,
     void* context,
@@ -466,6 +471,7 @@ static VECTOR_HANDLE ble_instr_to_bleioseq_instr(BLE_HANDLE_DATA* module, VECTOR
             // copy the data
             BLEIO_SEQ_INSTRUCTION instr;
             instr.instruction_type = src_instr->instruction_type;
+            instr.nextInst = NULL;
             instr.characteristic_uuid = STRING_clone(src_instr->characteristic_uuid);
 
             if (
@@ -568,7 +574,7 @@ static int format_timestamp(char* dest, size_t dest_size)
              * Note: We record the time only with a granularity of seconds. We
              * may want to increase this to include milliseconds.
              */
-            if (strftime(dest, dest_size, "%Y:%m:%dT%H:%M:%S", t2) == 0)
+            if (strftime(dest, dest_size, "%Y/%m/%dT%H:%M:%S", t2) == 0)
             {
                 LogError("strftime() failed");
                 result = __LINE__;
