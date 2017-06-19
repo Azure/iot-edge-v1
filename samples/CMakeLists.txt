@@ -38,3 +38,5 @@ endif()
 if(${enable_ble_module} AND LINUX)
     add_subdirectory(ble_gateway)
 endif()
+
+add_subdirectory(httprestapi_sample)

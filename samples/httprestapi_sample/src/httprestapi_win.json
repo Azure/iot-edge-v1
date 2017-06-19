@@ -1,0 +1,35 @@
+{
+  "modules": [
+    {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    },
+    {
+      "name": "httprestapi",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "C:\\Demo\\IoT\\20170612\\iot-edge\\build\\modules\\httprestapi\\Debug\\httprestapi.dll"
+        }
+      },
+      "args": {
+          "url" : "http://localhost",
+          "port" : "12356"
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "httprestapi",
+      "sink": "logger"
+    }
+  ]
+}

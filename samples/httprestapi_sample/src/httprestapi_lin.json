@@ -1,0 +1,35 @@
+{
+  "modules": [
+    {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "./modules/logger/liblogger.so"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      }
+    },
+    {
+      "name": "httprestapi",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.path": "./modules/httprestapi/libhttprestapi.so"
+        }
+      },
+      "args": {
+          "url" : "http://localhost",
+          "port" : "12356"
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "httprestapi",
+      "sink": "logger"
+    }
+  ]
+}
