@@ -19,10 +19,16 @@ enable_native_remote_modules=ON
 enable_nodejs_remote_modules=OFF
 enable_java_remote_modules=OFF
 toolchainfile=
-enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
 build_config=Debug
 use_xplat_uuid=OFF
+if [[ $(uname -s) == Darwin ]]
+then
+    # Don't build BLE for macOS, even if the caller doesn't pass `--disable-ble-module`
+    enable_ble_module=OFF
+else
+    enable_ble_module=ON
+fi
 
 usage ()
 {
