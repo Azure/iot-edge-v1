@@ -113,25 +113,30 @@ get_cores ()
 {
     CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 
-    # Make sure there is enough virtual memory on the device to handle more than one job.
-    # We arbitrarily decide that 500 MB per core is what we need in order to run the build
-    # in parallel.
-    MINVSPACE=$(expr 500000 \* $CORES)
+    # The following logic works on Linux, doesn't work on macOS. For now, we'll assume macOS
+    # devices have enough memory per core to run the build, rather than porting this logic.
+    if [[ $(uname -s) != Darwin ]]
+    then
+        # Make sure there is enough virtual memory on the device to handle more than one job.
+        # We arbitrarily decide that 500 MB per core is what we need in order to run the build
+        # in parallel.
+        MINVSPACE=$(expr 500000 \* $CORES)
 
-    # Acquire total memory and total swap space setting them to zero in the event the command fails
-    MEMAR=( $(sed -n -e 's/^MemTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' -e 's/^SwapTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' /proc/meminfo) )
-    [ -z "${MEMAR[0]##*[!0-9]*}" ] && MEMAR[0]=0
-    [ -z "${MEMAR[1]##*[!0-9]*}" ] && MEMAR[1]=0
+        # Acquire total memory and total swap space setting them to zero in the event the command fails
+        MEMAR=( $(sed -n -e 's/^MemTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' -e 's/^SwapTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' /proc/meminfo) )
+        [ -z "${MEMAR[0]##*[!0-9]*}" ] && MEMAR[0]=0
+        [ -z "${MEMAR[1]##*[!0-9]*}" ] && MEMAR[1]=0
 
-    let VSPACE=${MEMAR[0]}+${MEMAR[1]}
+        let VSPACE=${MEMAR[0]}+${MEMAR[1]}
 
-    if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
-    # We think the number of cores to use is a function of available memory divided by 500 MB
-    CORES2=$(expr ${MEMAR[0]} / 500000) || true
+        if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
+            # We think the number of cores to use is a function of available memory divided by 500 MB
+            CORES2=$(expr ${MEMAR[0]} / 500000) || true
 
-    # Clamp the cores to use to be between 1 and $CORES (inclusive)
-    CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
-    CORES=$([ $CORES -le $CORES2 ] && echo $CORES || echo $CORES2)
+            # Clamp the cores to use to be between 1 and $CORES (inclusive)
+            CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
+            CORES=$([ $CORES -le $CORES2 ] && echo $CORES || echo $CORES2)
+        fi
     fi
 }
 
