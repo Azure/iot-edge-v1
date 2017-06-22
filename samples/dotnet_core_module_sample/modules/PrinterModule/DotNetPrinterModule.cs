@@ -24,9 +24,16 @@ namespace PrinterModule
 
         public void Receive(Message received_message)
         {
-            if(received_message.Properties["source"] == "sensor")
+            if (received_message != null)
             {
-                Console.WriteLine("Printer Module received message from Sensor. Content: " + System.Text.Encoding.UTF8.GetString(received_message.Content, 0, received_message.Content.Length));
+                string messageData = System.Text.Encoding.UTF8.GetString(received_message.Content, 0, received_message.Content.Length);
+                Console.WriteLine("{0}> Printer module received message: {1}", DateTime.Now.ToLocalTime(), messageData);
+ 
+                int propCount = 0;
+                foreach (var prop in received_message.Properties)
+                {
+                    Console.WriteLine("\tProperty[{0}]> Key={1} : Value={2}", propCount++, prop.Key, prop.Value);
+                }
             }
         }
     }
