@@ -22,6 +22,16 @@ The IotHub module dynamically creates per-device instances of IoTHubClient. It c
 IoTHubClient. Note that the AMQP and HTTP transports will share one TCP connection for all devices; the MQTT transport will create a new
 TCP connection for each device.
 
+#### Device registration
+
+In some circumstances, a device may not want to send telemetry but receive cloud to device messages.  When a device wants to connect to the IoTHub and wishes to signal that it is expecting to receive cloud-to-device messages, it may send a message with the following properties:
+
+>| PropertyName   | Description                                                                  |
+>|----------------|------------------------------------------------------------------------------|
+>| deviceName     | The device ID registered with IoT Hub                                        |
+>| deviceKey      | The device key registered with IoT Hub                                       |
+>| deviceFunction | "register"                                                                   |
+
 #### Receiving messages from IoT Hub 
 Upon reception of a message from IoT Hub, this module will publish a message to the broker with the following properties:
 
@@ -99,12 +109,12 @@ Each {device ID, device key, IoTHubClient handle} triplet is referred to as a "p
 **SRS_IOTHUBMODULE_02_027: [** When `IotHub_Create` encounters an internal failure it shall fail and return `NULL`. **]**
 **SRS_IOTHUBMODULE_02_008: [** Otherwise, `IotHub_Create` shall return a non-`NULL` handle. **]**
 
-###IotHub_Receive
+### IotHub_Receive
 ```C
 void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
 **SRS_IOTHUBMODULE_02_009: [** If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. **]**
-**SRS_IOTHUBMODULE_02_010: [** If message properties do not contain a property called "source" having the value set to "mapping" then `IotHub_Receive` shall do nothing. **]**
+**SRS_IOTHUBMODULE_02_010: [** If message properties do not contain a property called "source" set to "mapping" or "deviceFunction" set to "register" then `IotHub_Receive` shall do nothing. **]**
 **SRS_IOTHUBMODULE_02_011: [** If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. **]**
 **SRS_IOTHUBMODULE_02_012: [** If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. **]**
 
@@ -115,6 +125,7 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_IOTHUBMODULE_17_003: [** If a new personality is created, then the associated IoTHubClient will be set to receive messages by calling `IoTHubClient_SetMessageCallback` with callback function `IotHub_ReceiveMessageCallback`, and the personality as context. **]**
 **SRS_IOTHUBMODULE_02_014: [** If creating the personality fails then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_02_016: [** If adding a new personality to the vector fails, then `IoTHub_Receive` shall return. **]**
+**SRS_IOTHUBMODULE_17_024: [** If the message contains a property "deviceFunction" set to "register". then `IoTHub_Receive` shall return, the processing is complete. **]**
 **SRS_IOTHUBMODULE_02_018: [** `IotHub_Receive` shall create a new IOTHUB_MESSAGE_HANDLE having the same content as `messageHandle`, and the same properties with the exception of `deviceName` and `deviceKey`. **]**
 **SRS_IOTHUBMODULE_02_019: [** If creating the IOTHUB_MESSAGE_HANDLE fails, then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_02_020: [** `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. **]**

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <cstdlib>
@@ -1714,6 +1714,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -1814,6 +1816,82 @@ BEGIN_TEST_SUITE(iothub_ut)
 
     }
 
+    /*Tests_SRS_IOTHUBMODULE_17_024: [ If the message contains a property "deviceFunction" set to "register". then IoTHub_Receive shall return, the processing is complete. ]*/
+    TEST_FUNCTION(IotHub_register_success)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"))
+            .SetReturn((const char*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"))
+            .SetReturn("register");
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
+
+        /*VECTOR_find_if incurs a STRING_c_str until it find the deviceName. None in this test*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        /*because the deviceName is brand new, it will be added as a new personality*/
+        {/*separate scope for personality building*/
+         /* create a new PERSONALITY */
+            STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+                .IgnoreArgument(1);
+
+            /*making a copy of the deviceName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("firstDevice"));
+            /*making a copy of the deviceKey*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("cheiaDeLaPoartaVerde"));
+
+            /*getting the stored IoTHubName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            /*getting the stored IoTHubSuffix*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*creating the IOTHUB_CLIENT_HANDLE associated with the device*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_CreateWithTransport(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+        }
+
+        /*adding the personality to the VECTOR or personalities*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /*getting the location of the personality in the VECTOR*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+
+    }
+
     /*Tests_SRS_IOTHUBMODULE_05_013: [ If a new personality is created and the module's transport has already been created (in `IotHub_Create`), an `IOTHUB_CLIENT_HANDLE` will be added to the personality by a call to `IoTHubClient_CreateWithTransport`. ]*/
     TEST_FUNCTION(IotHub_Receive_creates_a_client_with_an_existing_AMQP_transport)
     {
@@ -1902,6 +1980,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -1985,6 +2065,8 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_2, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_2, "deviceFunction"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_2, "deviceName"));
 
@@ -2099,6 +2181,8 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
@@ -2216,6 +2300,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2328,6 +2414,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2436,6 +2524,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2538,6 +2628,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2620,6 +2712,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2697,6 +2791,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2743,6 +2839,8 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
@@ -2809,6 +2907,8 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
@@ -2882,6 +2982,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2933,6 +3035,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
@@ -2974,6 +3078,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"))
@@ -3004,6 +3110,8 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
 
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"))
             .SetReturn((const char*)NULL);
 
@@ -3032,6 +3140,37 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"))
             .SetReturn((const char*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" having the value set to "mapping" then `IotHub_Receive` shall do nothing. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_deviceFunction_is_not_register_does_nothing)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"))
+            .SetReturn((const char*)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"))
+            .SetReturn("not register");
 
         ///act
         Module_Receive(module, MESSAGE_HANDLE_VALID_1);
@@ -3095,6 +3234,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///cleanup
         Module_Destroy(module);
     }
+
 
     /*Tests_SRS_IOTHUBMODULE_17_007: [ `IotHub_ReceiveMessageCallback` shall get properties from message by calling `IoTHubMessage_Properties`. ]*/
     /*Tests_SRS_IOTHUBMODULE_17_009: [ `IotHub_ReceiveMessageCallback` shall define a property "source" as "iothub". ]*/
