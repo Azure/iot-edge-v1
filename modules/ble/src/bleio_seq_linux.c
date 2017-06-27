@@ -27,7 +27,6 @@ static bool validate_instructions(VECTOR_HANDLE instructions);
 // alive till all of them complete.
 DEFINE_REFCOUNT_TYPE(BLEIO_SEQ_HANDLE_DATA);
 
-// Added by H. Ota
 static void on_seqential_instruction_complete(
 	BLEIO_SEQ_HANDLE_DATA* bleio_seq_handle,
 	BLEIO_SEQ_INSTRUCTION* instruction
@@ -191,27 +190,27 @@ void dec_ref_handle(BLEIO_SEQ_HANDLE_DATA* handle_data)
         for (size_t i = 0, len = VECTOR_size(handle_data->instructions); i < len; ++i)
         {
             BLEIO_SEQ_INSTRUCTION *instruction = (BLEIO_SEQ_INSTRUCTION *)VECTOR_element(handle_data->instructions, i);
-            if (instruction->characteristic_uuid != NULL)
-            {
-                STRING_delete(instruction->characteristic_uuid);
-            }
-
-            if (is_write_instruction(instruction))
-            {
-                if (instruction->data.buffer != NULL)
-                {
-                    BUFFER_delete(instruction->data.buffer);
-                }
-            }
-            /*
-                added by H. Ota
-            */
-			void* nextInstr = instruction->nextInst;
-			while (nextInstr!=NULL)
+            BLEIO_SEQ_INSTRUCTION* baseInstruction = instruction;
+			while (instruction!=NULL)
 			{
-				void* current = nextInstr;
-				nextInstr = ((BLEIO_SEQ_INSTRUCTION*)current)->nextInst;
-				free(current);
+                if (instruction->characteristic_uuid != NULL)
+                {
+                    STRING_delete(instruction->characteristic_uuid);
+                }
+                if (is_write_instruction(instruction))
+                {
+                    if (instruction->data.buffer != NULL)
+                    {
+                        BUFFER_delete(instruction->data.buffer);
+                    }
+                }
+
+                void* nextInstr = instruction->nextInst;
+                if (instruction != baseInstruction)
+                {
+                    free(instruction);
+                }
+                instruction = nextInstr;
 			}
         }
 
@@ -349,8 +348,6 @@ BLEIO_SEQ_RESULT BLEIO_Seq_Run(BLEIO_SEQ_HANDLE bleio_seq_handle)
                 // schedule this instruction only if it is not a WRITE_AT_EXIT instruction
                 if (instruction->instruction_type != WRITE_AT_EXIT)
                 {
-                    // Modified by H. Ota
-                    //  result = schedule_instruction(handle_data, instruction, NULL);
                     result = schedule_instruction(handle_data, instruction, on_seqential_instruction_complete);
 
                     // bail if a schedule operation didn't succeed

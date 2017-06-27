@@ -203,12 +203,15 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                     }
                     else
                     {
-                        if ( strcmp(type, "sequential") == 0) {
+                        if ( strcmp(type, "sequential") == 0)
+                        {
                             JSON_Array* seq_instructions = json_object_get_array(instr, "instructions");
                             VECTOR_HANDLE seqInsts = parse_instructions(seq_instructions);
-                            if (seqInsts!=NULL){
+                            if (seqInsts!=NULL)
+                            {
                                 size_t numOfSeqs = VECTOR_size(seqInsts);
-                                if (numOfSeqs>0){
+                                if (numOfSeqs>0)
+                                {
   									BLE_INSTRUCTION* prev_instr = (BLE_INSTRUCTION*)VECTOR_element(seqInsts, 0);
 									BLE_INSTRUCTION firstInstr = { 0 };
 									firstInstr.instruction_type = prev_instr->instruction_type;
@@ -216,8 +219,10 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
 									firstInstr.nextInst = NULL;
 									memcpy(&(firstInstr.data), &(prev_instr->data), sizeof(prev_instr->data));
 									prev_instr = &firstInstr;
-									if (numOfSeqs > 1) {
-										for (size_t c = 1; c < numOfSeqs; c++) {
+									if (numOfSeqs > 1)
+                                    {
+										for (size_t c = 1; c < numOfSeqs; c++)
+                                        {
 											BLE_INSTRUCTION* current = (BLE_INSTRUCTION*)VECTOR_element(seqInsts, c);
 											BLE_INSTRUCTION* currentInstr = (BLE_INSTRUCTION*)malloc(sizeof(BLE_INSTRUCTION));
 											currentInstr->instruction_type = current->instruction_type;
@@ -227,13 +232,16 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
 											prev_instr = currentInstr;
 										}
 									}
-									if (VECTOR_push_back(result, &firstInstr, 1) != 0) {
-										// error
+									if (VECTOR_push_back(result, &firstInstr, 1) != 0)
+                                    {
+                                        LogError("VECTOR_push_back return not zero for the property 'characteristic_uuid' for instruction number %zu", i);
 									}
-
                                 }
+                                VECTOR_destroy(seqInsts);
                             }
-                        } else {
+                        }
+                        else
+                        {
                             const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
                             if (characteristic_uuid == NULL)
                             {
