@@ -43,7 +43,7 @@ extern size_t JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
 #endif /*JAVA_MODULE_HOST_MANAGER_H*/
 ```
 
-##JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config)
+## JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config)
 ```c
 extern JAVA_MODULE_HOST_MANAGER_HANDLE JavaModuleHostManager_Create(JAVA_MODULE_HOST_CONFIG* config);
 ```
@@ -73,7 +73,7 @@ JavaModuleHostManager_Create creates a new singleton instance of a `JAVA_MODULE_
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_008: [** The function shall return the global `JAVA_MODULE_HOST_MANAGER_HANDLE` instance. **]**
 
-##JavaModuleHostManager_Destroy(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
+## JavaModuleHostManager_Destroy(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
 ```c
 extern void JavaModuleHostManager_Destroy(JAVA_MODULE_HOST_MANAGER_HANDLE handle);
 ```
@@ -91,8 +91,8 @@ JavaModuleHostManager_Destroy will destroy the `JAVA_MODULE_HOST_MANAGER_HANDLE`
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_013: [** The function shall free the `handle` parameter. **]**
 
-##JavaModuleHostManager_Add(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
-##JavaModuleHostManager_Remove(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
+## JavaModuleHostManager_Add(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
+## JavaModuleHostManager_Remove(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
 ```c
 extern JAVA_MODULE_HOST_MANAGER_RESULT JavaModuleHostManager_Add(JAVA_MODULE_HOST_MANAGER_HANDLE handle);
 extern JAVA_MODULE_HOST_MANAGER_RESULT JavaModuleHostManager_Remove(JAVA_MODULE_HOST_MANAGER_HANDLE handle);
@@ -113,7 +113,7 @@ JavaModuleHostManager_Remove will safely increment/decrement the number of track
 
 **SRS_JAVA_MODULE_HOST_MANAGER_14_027: [** The function shall return `MANAGER_ERROR` if an attempt is made to decrement past 0. **]**
 
-##JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
+## JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE handle)
 ```c
 extern size_t JavaModuleHostManager_Size(JAVA_MODULE_HOST_MANAGER_HANDLE handle);
 ```

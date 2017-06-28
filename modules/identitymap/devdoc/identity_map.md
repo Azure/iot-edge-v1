@@ -1,6 +1,6 @@
 # Identity Map Module Requirements
 
-##Overview
+## Overview
 This document describes the identity map module.  This module maps MAC addresses 
 to device id and keys, and device ids to MAC Addresses. This module is 
 not multi-threaded, all work will be completed in the Receive callback.
@@ -60,7 +60,7 @@ the canonical form is "XX:XX:XX:XX:XX:XX", a sequence of six two-digit hexadecim
 numbers separated by colons, ie "AC:DE:48:12:7B:80".  The MAC address is 
 case-insenstive.
 
-##References
+## References
 
 [module.h](../../../core/devdoc/module.md)
 
@@ -68,7 +68,7 @@ case-insenstive.
 
 IEEE Std 802-2014, section 8.1 (MAC Address canonical form)
 
-##Exposed API
+## Exposed API
 ```c
 
 typedef struct IDENTITY_MAP_CONFIG_TAG
@@ -219,7 +219,7 @@ of mapping triplets.
 **SRS_IDMAP_17_043: [** If `IdentityMap_Create` fails to add a MAC address triplet to the deviceToMacArray, then this function shall fail, release all resources, and return `NULL`. **]**
 
 
-##Module_Destroy
+## Module_Destroy
 ```C
 static void IdentityMap_Destroy(MODULE_HANDLE moduleHandle);
 ```
@@ -231,7 +231,7 @@ This function released all resources owned by the module specified by the `modul
 
 
 
-##IdentityMap_Receive
+## IdentityMap_Receive
 ```C
 static void IdentityMap_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```

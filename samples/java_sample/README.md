@@ -183,7 +183,7 @@ Navigate to /samples/java_sample/java_modules/Printer and run: ```mvn clean inst
 
 Navigate to /samples/java_sample/java_modules/Sensor and run: ```mvn clean install```
 
-###Compiling the project
+### Compiling the project
 If the project is not already built, either run the build script with the ```--enable-java-binding``` flag, or use cmake and your platform build commands separately.
 
 If using the build script:
@@ -199,7 +199,7 @@ If using cmake and msbuild or make:
   - If using msbuild on Windows: ```msbuild /m /p:Configuration=[Debug | Release] /p:Platform=Win32 azure_iot_gateway_sdk.sln```
   - If using make on Linux: ```make```
 
-###Running the samples
+### Running the samples
 On windows:
   - ```cd {project_root}\build\samples\java_sample```
   - ```Debug\java_sample.exe ..\..\..\samples\java_sample\src\java_sample_win.json```
