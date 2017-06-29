@@ -36,4 +36,5 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/parson/README.md)
         message(FATAL_ERROR "Error pulling parson submodule: ${res}")
     endif()
 endif()
-findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Dbuild_as_dynamic=ON -Drun_e2e_tests=ON -Duse_openssl=OFF -G "${CMAKE_GENERATOR}")
+
+findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Dbuild_as_dynamic=ON -Drun_e2e_tests=${run_e2e_tests} -Duse_openssl=OFF -G "${CMAKE_GENERATOR}")
