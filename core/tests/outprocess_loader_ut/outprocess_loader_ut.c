@@ -148,9 +148,7 @@ MOCK_FUNCTION_END(0);
 //Globals
 //=============================================================================
 
-#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
 static TEST_MUTEX_HANDLE g_testByTest;
 const MODULE_API_1 Outprocess_Module_API_all =
 {

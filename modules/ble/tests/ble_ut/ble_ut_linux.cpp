@@ -117,6 +117,12 @@ extern "C"
         JSON_Value_Value    value;
     };
 
+typedef struct BUFFER_TAG
+{
+    unsigned char* buffer;
+    size_t size;
+} BUFFER;
+
 }
 #endif
 
@@ -140,7 +146,6 @@ namespace BASEIMPLEMENTATION
 #include "constbuffer.c"
 #include "constmap.c"
 #include "map.c"
-#include "buffer.c"
 #include "strings.c"
 #include "crt_abstractions.c"
 
@@ -326,7 +331,10 @@ public:
     MOCK_METHOD_END(const CONSTBUFFER*, result2)
     
     MOCK_STATIC_METHOD_1(, BUFFER_HANDLE, Base64_Decoder, const char*, source)
-        auto result2 = BASEIMPLEMENTATION::BUFFER_create((const unsigned char*)"abc", 3);
+        auto result2 = (BUFFER*)malloc(sizeof(BUFFER));
+                result2->buffer = (unsigned char*)malloc(4);
+                (void)memcpy(result2->buffer, "abc", 3);
+                result2->size = 3;
     MOCK_METHOD_END(BUFFER_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
@@ -358,23 +366,49 @@ public:
     MOCK_VOID_METHOD_END()
     
     MOCK_STATIC_METHOD_2(, BUFFER_HANDLE, BUFFER_create, const unsigned char*, source, size_t, size)
-        BUFFER_HANDLE result2 = BASEIMPLEMENTATION::BUFFER_create(source, size);
+        auto result2 = (BUFFER*)malloc(sizeof(BUFFER));
+                result2->buffer = (unsigned char*)malloc(size);
+                (void)memcpy(result2->buffer, source, size);
+                result2->size = size;
     MOCK_METHOD_END(BUFFER_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, void, BUFFER_delete, BUFFER_HANDLE, handle)
-        BASEIMPLEMENTATION::BUFFER_delete(handle);
+	if (handle != NULL)
+	{
+	    BUFFER* b = (BUFFER*)handle;
+	    if (b->buffer != NULL)
+	    {
+		free(b->buffer);
+	    }
+	    free(b);
+	}
     MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_1(, BUFFER_HANDLE, BUFFER_clone, BUFFER_HANDLE, handle)
-        BUFFER_HANDLE result2 = BASEIMPLEMENTATION::BUFFER_clone(handle);
+	BUFFER * original = (BUFFER*)handle;
+        auto result2 = (BUFFER*)malloc(sizeof(BUFFER));
+                result2->buffer = (unsigned char*)malloc(original->size);
+                (void)memcpy(result2->buffer, original->buffer, original->size);
+                result2->size = original->size;
     MOCK_METHOD_END(BUFFER_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, unsigned char*, BUFFER_u_char, BUFFER_HANDLE, handle)
-        auto result2 = BASEIMPLEMENTATION::BUFFER_u_char(handle);
+        BUFFER* handleData = (BUFFER*)handle;
+	unsigned char* result2;
+	if (handle == NULL || handleData->size == 0)
+	{
+	    result2 = NULL;
+	}
+	else
+	{
+	    result2 = handleData->buffer;
+	}
     MOCK_METHOD_END(unsigned char*, result2)
 
     MOCK_STATIC_METHOD_1(, size_t, BUFFER_length, BUFFER_HANDLE, handle)
-        auto result2 = BASEIMPLEMENTATION::BUFFER_length(handle);
+	size_t result2;
+        BUFFER* b = (BUFFER*)handle;
+        result2 = b->size;
     MOCK_METHOD_END(size_t, result2)
     
     MOCK_STATIC_METHOD_1(, void, STRING_delete, STRING_HANDLE, handle)

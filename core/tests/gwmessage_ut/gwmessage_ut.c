@@ -15,9 +15,7 @@
 #include "azure_c_shared_utility/map.h"
 #undef ENABLE_MOCKS
 
-#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
 static TEST_MUTEX_HANDLE g_testByTest;
 
 #include "message.h"

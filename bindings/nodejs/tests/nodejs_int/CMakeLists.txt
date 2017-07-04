@@ -44,12 +44,14 @@ set_target_properties(${theseTestsName}_exe PROPERTIES
 )
 
 if(WIN32)
-    target_include_directories(
-        ${theseTestsName}_dll PUBLIC
-        ${GW_INC}
-        ../../inc
-        ../../../modules/common
-        $ENV{NODE_INCLUDE}
-    )
-    target_link_libraries(${theseTestsName}_dll ${LIBS})
+    if(TARGET ${theseTestsName}_dll)
+        target_include_directories(
+            ${theseTestsName}_dll PUBLIC
+            ${GW_INC}
+            ../../inc
+            ../../../modules/common
+            $ENV{NODE_INCLUDE}
+        )
+        target_link_libraries(${theseTestsName}_dll ${LIBS})
+    endif()
 endif()

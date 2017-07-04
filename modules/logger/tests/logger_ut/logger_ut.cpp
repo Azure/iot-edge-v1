@@ -30,7 +30,6 @@ FOR_EACH_1(DEFINE_FAIL_VARIABLES, LIST_OF_COUNTED_APIS)
 #include "message.h"
 #include "azure_c_shared_utility/base64.h"
 #include "logger.h"
-
 #include <parson.h>
 
 #ifndef GB_STDIO_INTERCEPT
@@ -86,7 +85,6 @@ extern "C" void gballoc_free(void* ptr);
 
 namespace BASEIMPLEMENTATION
 {
-
 #define Lock(x) (LOCK_OK + gballocState - gballocState) /*compiler warning about constant in if condition*/
 #define Unlock(x) (LOCK_OK + gballocState - gballocState)
 #define Lock_Init() (LOCK_HANDLE)0x42

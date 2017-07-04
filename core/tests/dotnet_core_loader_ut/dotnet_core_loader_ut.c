@@ -116,9 +116,7 @@ MOCKABLE_FUNCTION(, JSON_Value_Type, json_value_get_type, const JSON_Value*, val
 //Globals
 //=============================================================================
 
-#ifdef WIN32
-  static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
+static TEST_MUTEX_HANDLE g_dllByDll;
 static TEST_MUTEX_HANDLE g_testByTest;
 static const MODULE_LOADER* g_loader;
 static MODULE_LOADER_BASE_CONFIGURATION* g_config;
