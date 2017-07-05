@@ -23,18 +23,19 @@ pushd %build-root%
 rem Clone libuv
 git clone https://github.com/libuv/libuv.git
 pushd libuv
-git checkout -b v1.10.1 tags/v1.10.1
-
-rem The following 2 variables must be un-defined because libuv's
-rem vcbuild.bat skips its VS version detection code if these are
-rem defined and defaults to using VS 2012.
-set "WindowsSDKDir_Value=%WindowsSDKDir%"
-set WindowsSDKDir=
-set "VCINSTALLDIR=%VCINSTALLDIR%"
-set VCINSTALLDIR=
+git checkout -b v1.13.0 tags/v1.13.0
 
 rem Build libuv
-call vcbuild.bat release %1
+if defined VisualStudioVersion if "%VisualStudioVersion%"=="15.0" (
+  call vcbuild.bat vs2017 release %1
+) else (
+  @rem The following 2 variables must be un-defined because libuv's
+  @rem vcbuild.bat skips its VS version detection code if these are
+  @rem defined and defaults to using VS 2012.
+  set WindowsSDKDir=
+  set VCINSTALLDIR=
+  call vcbuild.bat release %1
+)
 popd
 
 rem Create a 'dist' folder where the includes/libs live

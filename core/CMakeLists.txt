@@ -23,7 +23,7 @@ if(WIN32)
     include_directories(${GW_INC}/windows )
 elseif(UNIX) # LINUX or APPLE
     include_directories(${GW_INC}/linux)
-endif() 
+endif()
 
 #setting the dynamic_loader file based on OS that it is used
 if(WIN32)
@@ -107,7 +107,7 @@ set(gateway_h_sources
     ./inc/gateway_version.h
     ./src/gateway_internal.h
     ./inc/message_queue.h
-    ./inc/broker.h    
+    ./inc/broker.h
 )
 
 # Add the module loaders

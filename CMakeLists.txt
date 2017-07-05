@@ -312,8 +312,11 @@ add_subdirectory(core)
 include_directories(${GW_INC}) # GW_INC defined in core
 
 if (${enable_core_remote_module_support})
-    cmake_minimum_required(VERSION 3.2.2)
-    add_subdirectory(proxy)
+  cmake_minimum_required(VERSION 3.2.2)
+  add_subdirectory(proxy)
+  if(LINUX)
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ldl -lrt -pthread")
+  endif()
 endif()
 
 add_subdirectory(modules)

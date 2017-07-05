@@ -19,7 +19,7 @@ mkdir -p $build_root
 pushd $build_root
 git clone https://github.com/libuv/libuv.git
 cd libuv
-git checkout -b v1.11.0 tags/v1.11.0
+git checkout -b v1.13.0 tags/v1.13.0
 sh autogen.sh
 ./configure --prefix=$prefix --libdir=$libdir CFLAGS='-fPIC' CXXFLAGS='-fPIC'
 make -j $(nproc)
