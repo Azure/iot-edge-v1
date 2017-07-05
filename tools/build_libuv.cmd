@@ -23,7 +23,7 @@ pushd %build-root%
 rem Clone libuv
 git clone https://github.com/libuv/libuv.git
 pushd libuv
-git checkout -b v1.10.1 tags/v1.10.1
+git checkout -b v1.13.0 tags/v1.13.0
 
 rem The following 2 variables must be un-defined because libuv's
 rem vcbuild.bat skips its VS version detection code if these are
