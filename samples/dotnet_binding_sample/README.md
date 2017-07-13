@@ -52,7 +52,7 @@ Today the Solution has:
 4. Sensor Module ==> .NET(C#) Module that publishes Simulated Sensor data to the gateway.
 
 Building the solution you will have the following binaries: 
-1. Microsoft.Azure.IoT.Gateway.Test.dll.
+1. Microsoft.Azure.IoT.Gateway.dll.
 2. SensorModule.dll.
 3. PrinterModule.dll.
 

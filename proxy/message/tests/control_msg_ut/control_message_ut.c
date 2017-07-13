@@ -10,9 +10,7 @@
 
 #include "control_message.h"
 
-#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
 static TEST_MUTEX_HANDLE g_testByTest;
 
 #include "message.h"

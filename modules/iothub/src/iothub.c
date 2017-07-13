@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
@@ -47,6 +47,8 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
 #define MAPPING "mapping"
 #define DEVICENAME "deviceName"
 #define DEVICEKEY "deviceKey"
+#define DEVICEFUNCTION "deviceFunction"
+#define DEVICE_REGISTER "register"
 #define SUFFIX "IoTHubSuffix"
 #define HUBNAME "IoTHubName"
 #define TRANSPORT "Transport"
@@ -637,14 +639,19 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
     {
         CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
         const char* source = ConstMap_GetValue(properties, SOURCE); /*properties is !=NULL by contract of Message*/
+        const char* deviceFunction = ConstMap_GetValue(properties, DEVICEFUNCTION); /*properties is !=NULL by contract of Message*/
 
-        /*Codes_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" having the value set to "mapping" then `IotHub_Receive` shall do nothing. ]*/
-        if (
-            (source == NULL) ||
-            (strcmp(source, MAPPING)!=0)
-            )
+        /*Codes_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" set to "mapping" or "deviceFunction" set to "register" then IotHub_Receive shall do nothing.. ]*/
+        if (source == NULL && deviceFunction == NULL)
         {
-            /*do nothing, the properties do not contain either "source" or "source":"mapping"*/
+            /*do nothing, the properties do not contain "source" or "deviceFunction" */
+        }
+        else if (
+                 (source != NULL && strcmp(source, MAPPING)!=0) ||
+                 (deviceFunction != NULL && strcmp(deviceFunction, DEVICE_REGISTER) != 0)
+                )
+        {
+            /*do nothing, the properties do not contain "source":"mapping" or "deviceFunction":"register"*/
         }
         else
         {
@@ -676,24 +683,32 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                     }
                     else
                     {
-                        IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
-                        if(iotHubMessage == NULL)
+                        /*Codes_SRS_IOTHUBMODULE_17_024: [ If the message contains a property "deviceFunction" set to "register". then IoTHub_Receive shall return, the processing is complete. ] */
+                        if (deviceFunction != NULL && strcmp(deviceFunction, DEVICE_REGISTER) == 0)
                         {
-                            LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
+                            /* do nothing, processing is complete. */
                         }
                         else
                         {
-                            /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
-                            if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
+                            IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
+                            if (iotHubMessage == NULL)
                             {
-                                /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
-                                LogError("unable to IoTHubClient_SendEventAsync");
+                                LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
                             }
                             else
                             {
-                                /*all is fine, message has been accepted for delivery*/
+                                /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+                                if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
+                                {
+                                    /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
+                                    LogError("unable to IoTHubClient_SendEventAsync");
+                                }
+                                else
+                                {
+                                    /*all is fine, message has been accepted for delivery*/
+                                }
+                                IoTHubMessage_Destroy(iotHubMessage);
                             }
-                            IoTHubMessage_Destroy(iotHubMessage);
                         }
                     }
                 }

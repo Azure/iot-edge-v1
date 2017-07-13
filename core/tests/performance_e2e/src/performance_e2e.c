@@ -14,9 +14,7 @@
 //Globals
 //=============================================================================
 
-#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
 static TEST_MUTEX_HANDLE g_testByTest;
 
 BEGIN_TEST_SUITE(Performance_e2e)

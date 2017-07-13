@@ -15,9 +15,7 @@
 #include "azure_c_shared_utility/macro_utils.h"
 
 
-#ifdef WIN32
 static TEST_MUTEX_HANDLE g_dllByDll;
-#endif
 
 #ifdef __cplusplus
 extern "C" {

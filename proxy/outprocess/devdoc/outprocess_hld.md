@@ -23,28 +23,28 @@ It is possible that a remote module, due to implementation issues (a.k.a. bugs),
 Design Overview
 ---------------
 
-![Design Overview](./media/outprocess-gateway-modules.png)
+![Design Overview](../../../core/devdoc/media/outprocess-gateway-modules.png)
 
 The Gateway will still consist of the gateway, broker and modules, seen above as the "Gateway Process." To implement the out of process modules, the gateway process will now spawn a proxy module, which will forward control and data to a module host process (or proxy gateway).
 
 As an example of control flow from the Gateway to the Module host, this is an elided sequence diagram for outprocess module creation:
 
-![control flow from the Gateway to the Module Host](./media/gateway_oop_create.png)
+![control flow from the Gateway to the Module Host](../../../core/devdoc/media/gateway_oop_create.png)
 
 > *NOTE: The call to the remote module will be a synchronous call.*
 
 Message passing from the gateway to a remote module will look like this:
 
-![Message passing](./media/gateway_oop_message.png)
+![Message passing](../../../core/devdoc/media/gateway_oop_message.png)
 
 
 ### Inter-process Communication
 
 Inter-process communication between the gateway process and the process hosting the module will be managed using **nanomsg** [Pair](http://nanomsg.org/v1.0.0/nn_pair.7.html) sockets for control, and **nanomsg** [Pair](http://nanomsg.org/v1.0.0/nn_pair.7.html) sockets for messaging. The gateway will create two `NN_PAIR` sockets for each remote process. The module host (or proxy gateway) will create the corresponding two `NN_PAIR` sockets. The module host is a service to the gateway, but gateway content (messages) is sent as peers. The control channel identifier must be given to the module host process, and the remaining configuration for the outprocess module is provided through the control channel.
 
-The [Gateway Block Diagram](./media/Gateway_block.xsdx) outlines the module control functions the gateway performs and the message receive and publish functions the broker performs.
+The [Gateway Block Diagram](../../../core/devdoc/media/Gateway_block.vsdx) outlines the module control functions the gateway performs and the message receive and publish functions the broker performs.
 
-The following diagram shows which entities will handle the control channel, which is analogous to the gateway block diagram. ![Module Host Block Diagram](./media/module_host_channel_responsibilities.png)
+The following diagram shows which entities will handle the control channel, which is analogous to the gateway block diagram. ![Module Host Block Diagram](../../../core/devdoc/media/module_host_channel_responsibilities.png)
 
 > *See also: [Proxy/Module Host Control Communication Protocol](#control_communication)*  
 > *See also: [the control channel communication section](control_communication)*  
@@ -155,7 +155,7 @@ The proxy module’s configuration will include the following information:
 
 - **loader**
 
-  The information detailed here will be specific to the `outprocess` loader type. General loader information may be found [here](module_loaders.md).
+  The information detailed here will be specific to the `outprocess` loader type. General loader information may be found [here](../../../core/devdoc/module_loaders.md).
 
   - **name**
 

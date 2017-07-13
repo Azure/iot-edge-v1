@@ -12,12 +12,15 @@ The two processes must establish a control channel to communicate gateway events
 
 ![](../../core/devdoc/media/outprocess-gateway-modules.png)
 
+## About this sample
+
+This sample gateway has three modules, the "Hello World" module, which periodically generates a message, the "out of process" module which configures the gateway for communication to the "proxy\_sample\_remote" process, and a "logger" module to record any messages returning from the out of process module.
+
 ## How to run the sample
 
 ### Linux
 
-The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run
-"proxy\_sample" in one and "proxy\_sample\_remote" in the other.
+The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run "proxy\_sample" in one and "proxy\_sample\_remote" in the other.
 
 Terminal 1:
 ```
@@ -30,7 +33,7 @@ Terminal 2:
 ```
 cd <build root>
 cd build/samples/proxy_sample
-./proxy_sample_remote outprocess_module_control
+./proxy_sample_remote /tmp/proxy_sample.control
 ```
 
 ### Windows
@@ -52,57 +55,3 @@ Debug\proxy_sample_remote.exe outprocess_module_control
 ```
 
 You may also run the executables simultaneously by opening up the solution file, opening the properties for the top level solution, select "Multiple startup projects", and choose "proxy\_sample" in one and "proxy\_sample\_remote" to start.
-
-## Example Gateway configuration
-
-This sample gateway has three modules, the "Hello World" module, which periodically generates a message, the "out of process" module which configures the gateway for communication to the "proxy\_sample\_remote" process, and a "logger" module to record any messages returning from the out of process module.
-
-```JSON
-{
-  "modules": [
-    {
-      "name": "logger",
-      "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "..\\..\\..\\modules\\logger\\Debug\\logger.dll"
-        }
-      },
-      "args": {
-        "filename": "log.txt"
-      }
-    },
-    {
-      "name": "out of process",
-      "loader": {
-        "name": "outprocess",
-        "entrypoint": {
-          "activation.type": "none",
-          "control.id": "outprocess_module_control"
-        }
-      },
-      "args": "THIS IS THE OOP MODULE CONFIGURATION"
-    },
-    {
-      "name": "hello_world",
-      "loader": {
-        "name": "native",
-        "entrypoint": {
-          "module.path": "..\\..\\..\\modules\\hello_world\\Debug\\hello_world.dll"
-        }
-      },
-      "args": null
-    }
-  ],
-  "links": [
-    {
-      "source": "hello_world",
-      "sink": "out of process"
-    },
-    {
-      "source": "out of process",
-      "sink": "logger"
-    }
-  ]
-}
-```

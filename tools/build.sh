@@ -16,40 +16,49 @@ enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
 enable_native_remote_modules=ON
+enable_nodejs_remote_modules=OFF
 enable_java_remote_modules=OFF
 toolchainfile=
-enable_ble_module=ON
 dependency_install_prefix="-Ddependency_install_prefix=$local_install"
 build_config=Debug
 use_xplat_uuid=OFF
+if [[ $(uname -s) == Darwin ]]
+then
+    # Don't build BLE for macOS, even if the caller doesn't pass `--disable-ble-module`
+    enable_ble_module=OFF
+else
+    enable_ble_module=ON
+fi
 
 usage ()
 {
     echo "build.sh [options]"
     echo "options"
-    echo " -cl, --compileoption <val>  Specify a gcc compile option"
+    echo " -cl, --compileoption <val>      Specify a gcc compile option"
     echo "   Example: -cl -O1 -cl ..."
-    echo " -f,  --config <value>          Build configuration (e.g. [Debug], Release)"
-    echo " --disable-ble-module           Do not build the BLE module"
-    echo " --enable-dotnet-core-binding   Build the .NET Core binding"
-    echo " --enable-java-binding          Build Java binding"
-    echo "                                (JAVA_HOME must be defined in your environment)"
-    echo " --enable-nodejs-binding        Build Node.js binding"
-    echo "                                (NODE_INCLUDE, NODE_LIB must be defined)"
+    echo " -f,  --config <value>           Build configuration (e.g. [Debug], Release)"
+    echo " --disable-ble-module            Do not build the BLE module"
+    echo " --enable-dotnet-core-binding    Build the .NET Core binding"
+    echo " --enable-java-binding           Build Java binding"
+    echo "                                 (JAVA_HOME must be defined in your environment)"
+    echo " --enable-nodejs-binding         Build Node.js binding"
+    echo "                                 (NODE_INCLUDE, NODE_LIB must be defined)"
     echo " --disable-native-remote-modules Do not build the infrastructure"
-    echo "                                required to support native remote modules"
-    echo " --enable-java-remote-modules   Build Java Remote Module SDK"
-    echo "                                (JAVA_HOME must be defined in your environment)"
-    echo " --rebuild-deps                 Force rebuild of dependencies"
-    echo " --run-e2e-tests                Build/run end-to-end tests"
-    echo " --run-unittests                Build/run unit tests"
-    echo " -rv,  --run-valgrind           Execute ctest with valgrind"
-    echo " --system-deps-path             Search for dependencies in a system-level location,"
-    echo "                                e.g. /usr/local, and install if not found. When this"
-    echo "                                option is omitted the path is $local_install."
-    echo " --toolchain-file <file>        Pass CMake a toolchain file for cross-compiling"
-    echo " --use-xplat-uuid               Use SDK's platform-independent UUID implementation"
-    echo " -x,  --xtrace                  Print a trace of each command"
+    echo "                                 required to support native remote modules"
+    echo " --enable-nodejs-remote-modules  Build the infrastructure required to support"
+    echo "                                 Node.js apps as remote modules"
+    echo " --enable-java-remote-modules    Build Java Remote Module SDK"
+    echo "                                 (JAVA_HOME must be defined in your environment)"
+    echo " --rebuild-deps                  Force rebuild of dependencies"
+    echo " --run-e2e-tests                 Build/run end-to-end tests"
+    echo " --run-unittests                 Build/run unit tests"
+    echo " -rv,  --run-valgrind            Execute ctest with valgrind"
+    echo " --system-deps-path              Search for dependencies in a system-level location,"
+    echo "                                 e.g. /usr/local, and install if not found. When this"
+    echo "                                 option is omitted the path is $local_install."
+    echo " --toolchain-file <file>         Pass CMake a toolchain file for cross-compiling"
+    echo " --use-xplat-uuid                Use SDK's platform-independent UUID implementation"
+    echo " -x,  --xtrace                   Print a trace of each command"
     exit 1
 }
 
@@ -87,6 +96,7 @@ process_args ()
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
               "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
+              "--enable-nodejs-remote-modules" ) enable_nodejs_remote_modules=ON;;
               "--enable-java-remote-modules" ) enable_java_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;
               "--toolchain-file" ) save_next_arg=2;;
@@ -109,25 +119,30 @@ get_cores ()
 {
     CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 
-    # Make sure there is enough virtual memory on the device to handle more than one job.
-    # We arbitrarily decide that 500 MB per core is what we need in order to run the build
-    # in parallel.
-    MINVSPACE=$(expr 500000 \* $CORES)
+    # The following logic works on Linux, doesn't work on macOS. For now, we'll assume macOS
+    # devices have enough memory per core to run the build, rather than porting this logic.
+    if [[ $(uname -s) != Darwin ]]
+    then
+        # Make sure there is enough virtual memory on the device to handle more than one job.
+        # We arbitrarily decide that 500 MB per core is what we need in order to run the build
+        # in parallel.
+        MINVSPACE=$(expr 500000 \* $CORES)
 
-    # Acquire total memory and total swap space setting them to zero in the event the command fails
-    MEMAR=( $(sed -n -e 's/^MemTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' -e 's/^SwapTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' /proc/meminfo) )
-    [ -z "${MEMAR[0]##*[!0-9]*}" ] && MEMAR[0]=0
-    [ -z "${MEMAR[1]##*[!0-9]*}" ] && MEMAR[1]=0
+        # Acquire total memory and total swap space setting them to zero in the event the command fails
+        MEMAR=( $(sed -n -e 's/^MemTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' -e 's/^SwapTotal:[^0-9]*\([0-9][0-9]*\).*/\1/p' /proc/meminfo) )
+        [ -z "${MEMAR[0]##*[!0-9]*}" ] && MEMAR[0]=0
+        [ -z "${MEMAR[1]##*[!0-9]*}" ] && MEMAR[1]=0
 
-    let VSPACE=${MEMAR[0]}+${MEMAR[1]}
+        let VSPACE=${MEMAR[0]}+${MEMAR[1]}
 
-    if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
-    # We think the number of cores to use is a function of available memory divided by 500 MB
-    CORES2=$(expr ${MEMAR[0]} / 500000)
+        if [ "$VSPACE" -lt "$MINVSPACE" ] ; then
+            # We think the number of cores to use is a function of available memory divided by 500 MB
+            CORES2=$(expr ${MEMAR[0]} / 500000) || true
 
-    # Clamp the cores to use to be between 1 and $CORES (inclusive)
-    CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
-    CORES=$([ $CORES -le $CORES2 ] && echo $CORES || echo $CORES2)
+            # Clamp the cores to use to be between 1 and $CORES (inclusive)
+            CORES2=$([ $CORES2 -le 0 ] && echo 1 || echo $CORES2)
+            CORES=$([ $CORES -le $CORES2 ] && echo $CORES || echo $CORES2)
+        fi
     fi
 }
 
@@ -149,6 +164,27 @@ then
 
      "$build_root"/tools/build_java_oop.sh
     [ $? -eq 0 ] || exit $?
+fi
+
+if [[ $enable_nodejs_remote_modules == ON ]]
+then 
+    pushd "$build_root/samples/nodejs_remote_sample"
+    [ $? -eq 0 ] || exit $?
+    npm install
+    [ $? -eq 0 ] || exit $?
+    npm run lint
+    [ $? -eq 0 ] || exit $?
+    popd
+
+    pushd "$build_root/proxy/gateway/nodejs"
+    [ $? -eq 0 ] || exit $?
+    npm install
+    [ $? -eq 0 ] || exit $?
+    npm run lint
+    [ $? -eq 0 ] || exit $?
+    npm test
+    [ $? -eq 0 ] || exit $?
+    popd
 fi
 
 if [[ $enable_dotnet_core_binding == ON ]]
@@ -177,6 +213,7 @@ cmake $toolchainfile \
       -Denable_dotnet_core_binding:BOOL=$enable_dotnet_core_binding \
       -Denable_nodejs_binding:BOOL=$enable_nodejs_binding \
       -Denable_native_remote_modules:BOOL=$enable_native_remote_modules \
+      -Denable_nodejs_remote_modules:BOOL=$enable_nodejs_remote_modules \
       -Denable_java_remote_modules:BOOL=$enable_java_remote_modules \
       -Denable_ble_module:BOOL=$enable_ble_module \
       -Drun_valgrind:BOOL=$run_valgrind \

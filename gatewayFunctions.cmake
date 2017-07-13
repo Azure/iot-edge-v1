@@ -113,7 +113,7 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
             #If the library directory doesn't exist, pull submodules
             if(NOT EXISTS "${cmakeRootDirectory}/CMakeLists.txt")
                 execute_process(
-                    COMMAND git submodule update --init ${submoduleRootDirectory}
+                    COMMAND git submodule update --init --recursive ${submoduleRootDirectory}
                     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                     RESULT_VARIABLE res
                 )

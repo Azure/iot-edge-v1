@@ -20,6 +20,6 @@ set(${theseTestsName}_h_files
 
 include_directories(${GW_INC} ../../inc)
 
-add_definitions(-DGB_STDIO_INTERCEPT -DGB_TIME_INTERCEPT -DNO_LOGGING)
+add_definitions(-DGB_STDIO_INTERCEPT -DGB_TIME_INTERCEPT)
 
 build_test_artifacts(${theseTestsName} ON)

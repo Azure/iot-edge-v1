@@ -58,7 +58,7 @@ a module to find out how to get it, who supports it, etc.
 >| OPC Proxy         | https://github.com/Azure/iot-edge-opc-proxy                    | 2017-04-27               |
 >| Modbus            | https://github.com/Azure/iot-gateway-modbus                    | 2017-01-13               |
 >| GZip Compression  | https://github.com/Azure/iot-gateway-compression-gzip-nodejs   | 2016-12-16               |
->| Proficy Historian | https://github.com/azure-samples/iot-gateway-proficy-historian | 2017-01-13               |
+>| Proficy Historian | https://github.com/Azure-Samples/iot-edge-proficy-historian    | 2017-04-27               |
 >| SQLite            | https://github.com/Azure/iot-gateway-sqlite                    | 2017-01-13               |
 >| Batch/Shred       | https://github.com/Azure/iot-gateway-batch-nodejs              | 2017-01-13               |
 

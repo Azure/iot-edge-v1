@@ -45,9 +45,9 @@ namespace BASEIMPLEMENTATION
 
 #include "../../src/gio_async_seq.c"
 #include "vector.c"
-#include "buffer.c"
 #include "strings.c"
 };
+
 
 DEFINE_MICROMOCK_ENUM_TO_STRING(BLEIO_SEQ_RESULT, BLEIO_SEQ_RESULT_VALUES);
 
@@ -62,6 +62,12 @@ struct
 {
     BLEIO_GATT_RESULT result;
 } BLEIO_gatt_write_char_by_uuid_results;
+
+typedef struct BUFFER_TAG
+{
+    unsigned char* buffer;
+    size_t size;
+} BUFFER;
 
 gboolean g_expected_timer_return_value = TRUE;
 GSourceFunc g_timer_callback = NULL;
@@ -130,19 +136,41 @@ public:
     MOCK_METHOD_END(STRING_HANDLE, result2)
 
     MOCK_STATIC_METHOD_2(, BUFFER_HANDLE, BUFFER_create, const unsigned char*, source, size_t, size)
-        BUFFER_HANDLE result2 = BASEIMPLEMENTATION::BUFFER_create(source, size);
+        auto result2 = (BUFFER*)malloc(sizeof(BUFFER));
+                result2->buffer = (unsigned char*)malloc(size);
+                (void)memcpy(result2->buffer, source, size);
+                result2->size = size;
     MOCK_METHOD_END(BUFFER_HANDLE, result2)
 
     MOCK_STATIC_METHOD_1(, void, BUFFER_delete, BUFFER_HANDLE, handle)
-        BASEIMPLEMENTATION::BUFFER_delete(handle);
+        if (handle != NULL)
+        {
+            BUFFER* b = (BUFFER*)handle;
+            if (b->buffer != NULL)
+            {
+                free(b->buffer);
+            }
+            free(b);
+        }
     MOCK_VOID_METHOD_END()
 
     MOCK_STATIC_METHOD_1(, unsigned char*, BUFFER_u_char, BUFFER_HANDLE, handle)
-        auto result2 = BASEIMPLEMENTATION::BUFFER_u_char(handle);
+        BUFFER* handleData = (BUFFER*)handle;
+        unsigned char* result2;
+        if (handle == NULL || handleData->size == 0)
+        {
+            result2 = NULL;
+        }
+        else
+        {
+            result2 = handleData->buffer;
+        }
     MOCK_METHOD_END(unsigned char*, result2)
 
     MOCK_STATIC_METHOD_1(, size_t, BUFFER_length, BUFFER_HANDLE, handle)
-        auto result2 = BASEIMPLEMENTATION::BUFFER_length(handle);
+        size_t result2;
+        BUFFER* b = (BUFFER*)handle;
+        result2 = b->size;
     MOCK_METHOD_END(size_t, result2)
 
     MOCK_STATIC_METHOD_4(, int, BLEIO_gatt_read_char_by_uuid, BLEIO_GATT_HANDLE, bleio_gatt_handle, const char*, ble_uuid, ON_BLEIO_GATT_ATTRIB_READ_COMPLETE, on_bleio_gatt_attrib_read_complete, void*, callback_context)

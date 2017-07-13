@@ -14,7 +14,7 @@ set all-args=%*
 :args-loop
 if "%1" equ "" goto args-done
 if "%1" equ "--platform" goto arg-build-platform
-shift
+goto args-continue
 
 :arg-build-platform
 shift
@@ -30,7 +30,7 @@ goto args-loop
 
 REM -- set JAVA_HOME based on platform 
 set "JAVA_SAVE=%JAVA_HOME%"
-if %build-platform% == x64 (
+if "%build-platform%" == "x64" (
     set "JAVA_HOME=%JAVA_8_64%"
 ) else (
     set "JAVA_HOME=%JAVA_8_32%"
@@ -40,7 +40,7 @@ REM -- C --
 cd %build-root%\tools
 set "PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin\server;%PATH%;%NODE_LIB%"
 
-call build.cmd --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-dotnet-core-binding --enable-java-binding --enable-java-remote-modules %*
+call build.cmd --run-unittests --run-e2e-tests --enable-nodejs-binding --enable-dotnet-binding --enable-dotnet-core-binding --enable-java-binding --enable-java-remote-modules --enable-nodejs-remote-modules %*
 if errorlevel 1 goto :reset-java
 cd %build-root%
 

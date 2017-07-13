@@ -4,7 +4,7 @@ This document provides an overview of the out of process module [code](./src) wh
 
 ## Concepts
 
-This is an extension on the [out of process module example](../proxy_sample/README.md), the native module host allows a user to take an existing gateway module (including bindings) and run it in an external process. For details, please read the [outprocess high level design](../../core/devdoc/outprocess_hld.md).
+This is an extension on the [out of process module example](../proxy_sample/README.md), the native module host allows a user to take an existing gateway module (including bindings) and run it in an external process. For details, please read the [outprocess high level design](../../proxy/outprocess/devdoc/outprocess_hld.md).
 
 
 There are two executables "native\_gateway" and "native\_host\_sample". The "native\_gateway" is a gateway executable with an out of process module, and "native\_host\_sample" is the executable which implements the out of process module.

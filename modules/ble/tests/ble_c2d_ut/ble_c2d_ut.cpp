@@ -16,6 +16,9 @@
 #include "messageproperties.h"
 #include "module_access.h"
 #include "azure_c_shared_utility/vector_types_internal.h"
+#include "azure_c_shared_utility/xlogging.h"
+#include "azure_c_shared_utility/buffer_.h"
+
 
 static MICROMOCK_MUTEX_HANDLE g_testByTest;
 static MICROMOCK_GLOBAL_SEMAPHORE_HANDLE g_dllByDll;
@@ -303,10 +306,15 @@ namespace BASEIMPLEMENTATION
 #include "parson.c"
 #endif
 
-#include "buffer.c"
 #include "vector.c"
 #include "strings.c"
 };
+
+typedef struct BUFFER_TAG
+{
+	unsigned char* buffer;
+	size_t size;
+} BUFFER;
 
 #undef parson_parson_h
 #include <parson.h>
@@ -346,11 +354,23 @@ public:
     MOCK_VOID_METHOD_END()
     
     MOCK_STATIC_METHOD_1(, void, BUFFER_delete, BUFFER_HANDLE, handle)
-        BASEIMPLEMENTATION::BUFFER_delete(handle);
+		if (handle != NULL)
+		{
+			BUFFER* b = (BUFFER*)handle;
+			if (b->buffer != NULL)
+			{
+				free(b->buffer);
+			}
+			free(b);
+		}
     MOCK_VOID_METHOD_END()
     
     MOCK_STATIC_METHOD_1(, BUFFER_HANDLE, Base64_Decoder, const char*, source)
-        auto result2 = gLastBuffer = BASEIMPLEMENTATION::BUFFER_create((const unsigned char*)"abc", 3);
+        auto result2 = gLastBuffer = (BUFFER*)malloc(sizeof(BUFFER));
+		gLastBuffer->buffer = (unsigned char*)malloc(4);
+		(void)memcpy(gLastBuffer->buffer, "abc", 3);
+		gLastBuffer->size = 3;
+
     MOCK_METHOD_END(BUFFER_HANDLE, result2)
     
     // memory

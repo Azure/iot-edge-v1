@@ -38,5 +38,6 @@ endif()
 if(${run_e2e_tests})
     add_subdirectory(gateway_e2e)
     add_subdirectory(performance_e2e)
+    add_subdirectory(testtools)
 endif()
 

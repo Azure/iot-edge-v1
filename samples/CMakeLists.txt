@@ -28,8 +28,11 @@ if(${enable_nodejs_binding})
 endif()
 
 if (${enable_native_remote_modules})
-    add_subdirectory(proxy_sample)
     add_subdirectory(native_module_host_sample)
+endif()
+
+if (${enable_native_remote_modules} OR ${enable_nodejs_remote_modules})
+    add_subdirectory(proxy_sample)
 endif()
 
 if(${enable_ble_module} AND LINUX)

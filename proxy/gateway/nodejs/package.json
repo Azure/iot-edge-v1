@@ -1,0 +1,27 @@
+{
+  "name": "azure-iot-proxy-gateway",
+  "version": "0.0.1",
+  "description": "Allows Node.js apps to communicate with Azure IoT Edge as modules",
+  "main": "index.js",
+  "dependencies": {
+    "nanomsg": "^3.3.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "jshint": "^2.9.4",
+    "mocha": "^3.2.0",
+    "nanomsg": "^3.3.0",
+    "sinon": "^2.1.0",
+    "uuid": "^3.0.1"
+  },
+  "scripts": {
+    "lint": "jshint --show-non-errors .",
+    "test": "mocha"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "author": "Microsoft",
+  "license": "MIT"
+}

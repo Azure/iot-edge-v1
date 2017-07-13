@@ -59,7 +59,7 @@ set(${theseTestsName}_h_files
     ${ble_test_headers}
 )
 
-add_definitions(-DGB_TIME_INTERCEPT -DNO_LOGGING)
+add_definitions(-DGB_TIME_INTERCEPT)
 
 
 

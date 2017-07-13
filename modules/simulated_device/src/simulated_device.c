@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
@@ -107,6 +107,8 @@ static int simulated_device_worker(void * user_data)
 
         while (module_data->simulatedDeviceRunning)
         {
+            ThreadAPI_Sleep(module_data -> messagePeriod);
+
             MESSAGE_CONFIG newMessageCfg;
             MAP_HANDLE newProperties = Map_Create(NULL);
             if (newProperties == NULL)
@@ -122,7 +124,7 @@ static int simulated_device_worker(void * user_data)
                 }
                 else if (Map_Add(newProperties, GW_MAC_ADDRESS_PROPERTY, module_data->fakeMacAddress) != MAP_OK)
                 {
-                    LogError("Failed to set source property");
+                    LogError("Failed to set address property");
                 }
                 else
                 {
@@ -156,7 +158,7 @@ static int simulated_device_worker(void * user_data)
                         {
                             if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
                             {
-                                LogError("Failed to create new message");
+                                LogError("Failed to publish new message");
                             }
 
                             additionalTemp += 1.0;
@@ -166,7 +168,6 @@ static int simulated_device_worker(void * user_data)
                 }
                 Map_Destroy(newProperties);
             }
-            ThreadAPI_Sleep(module_data -> messagePeriod);
         }
     }
 
@@ -181,21 +182,68 @@ static void SimulatedDevice_Start(MODULE_HANDLE moduleHandle)
     }
     else
     {
-        SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
-        /* OK to start */
-        /* Create a fake data thread.  */
-        if (ThreadAPI_Create(
-            &(module_data->simulatedDeviceThread),
-            simulated_device_worker,
-            (void*)module_data) != THREADAPI_OK)
+        MESSAGE_CONFIG newMessageCfg;
+        MAP_HANDLE newProperties = Map_Create(NULL);
+        if (newProperties == NULL)
         {
-            LogError("ThreadAPI_Create failed");
-            module_data->simulatedDeviceThread = NULL;
+            LogError("Failed to create message properties");
         }
         else
         {
-            /* Thread started, module created, all complete.*/
-        }
+            SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+
+            if (Map_Add(newProperties, GW_SOURCE_PROPERTY, GW_SOURCE_BLE_TELEMETRY) != MAP_OK)
+            {
+                LogError("Failed to set source property");
+            }
+            else if (Map_Add(newProperties, GW_MAC_ADDRESS_PROPERTY, module_data->fakeMacAddress) != MAP_OK)
+            {
+                LogError("Failed to set address property");
+            }
+            else if (Map_Add(newProperties, "deviceFunction", "register") != MAP_OK)
+            {
+                LogError("Failed to set deviceFunction property");
+            }
+            
+            else
+            {
+                    newMessageCfg.size = 0;
+                    newMessageCfg.source = NULL;
+                    newMessageCfg.sourceProperties = newProperties;
+
+                    MESSAGE_HANDLE newMessage = Message_Create(&newMessageCfg);
+                    if (newMessage == NULL)
+                    {
+                        LogError("Failed to create register message");
+                    }
+                    else
+                    {
+                        if (Broker_Publish(module_data->broker, (MODULE_HANDLE)module_data, newMessage) != BROKER_OK)
+                        {
+                            LogError("Failed to publish register message");
+                        }
+
+                        Message_Destroy(newMessage);
+                    }
+                }
+            }
+            Map_Destroy(newProperties);
+
+            SIMULATEDDEVICE_DATA* module_data = (SIMULATEDDEVICE_DATA*)moduleHandle;
+            /* OK to start */
+            /* Create a fake data thread.  */
+            if (ThreadAPI_Create(
+                &(module_data->simulatedDeviceThread),
+                simulated_device_worker,
+                (void*)module_data) != THREADAPI_OK)
+            {
+                LogError("ThreadAPI_Create failed");
+                module_data->simulatedDeviceThread = NULL;
+            }
+            else
+            {
+                /* Thread started, module created, all complete.*/
+            }
     }
 }
 
@@ -245,7 +293,7 @@ static MODULE_HANDLE SimulatedDevice_Create(BROKER_HANDLE broker, const void* co
 
 static void * SimulatedDevice_ParseConfigurationFromJson(const char* configuration)
 {
-	SIMULATEDDEVICE_CONFIG * result;
+    SIMULATEDDEVICE_CONFIG * result;
     if (configuration == NULL)
     {
         LogError("invalid module args.");
@@ -314,12 +362,12 @@ static void * SimulatedDevice_ParseConfigurationFromJson(const char* configurati
 
 void SimulatedDevice_FreeConfiguration(void * configuration)
 {
-	if (configuration != NULL)
-	{
+    if (configuration != NULL)
+    {
         SIMULATEDDEVICE_CONFIG * config = (SIMULATEDDEVICE_CONFIG *)configuration;
         free(config->macAddress);
         free(config);
-	}
+    }
 }
 
 /*
@@ -329,8 +377,8 @@ static const MODULE_API_1 SimulatedDevice_APIS_all =
 {
     {MODULE_API_VERSION_1},
 
-	SimulatedDevice_ParseConfigurationFromJson,
-	SimulatedDevice_FreeConfiguration,
+    SimulatedDevice_ParseConfigurationFromJson,
+    SimulatedDevice_FreeConfiguration,
     SimulatedDevice_Create,
     SimulatedDevice_Destroy,
     SimulatedDevice_Receive,

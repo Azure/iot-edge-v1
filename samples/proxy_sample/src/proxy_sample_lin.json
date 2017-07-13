@@ -18,7 +18,8 @@
         "name": "outprocess",
         "entrypoint": {
           "activation.type": "none",
-          "control.id": "outprocess_module_control"
+          "control.id": "/tmp/proxy_sample.control",
+          "message.id": "/tmp/proxy_sample.message"
         }
       },
       "args": "THIS IS THE OOP MODULE CONFIGURATION"

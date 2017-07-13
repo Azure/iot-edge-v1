@@ -1,7 +1,9 @@
 # Simulated Device Module Requirements
 
 ## Overview
-This document describes the simulated device module.
+This document describes the simulated device module.  
+
+The simulated module will register the device on start, then periodically publish a telemetry message.
 
 ## Reference
 
@@ -12,13 +14,15 @@ This document describes the simulated device module.
 The argument to this module is a JSON object with the following structure:
 ```json
 {
-    "macAddress" : "<mac address in canonical form>"
+    "macAddress" : "<mac address in canonical form>",
+    "messagePeriod" : <integer value>
 }
 ```
 ### Example Arguments
 ```json
 {
-    "macAddress" : "01:01:01:01:01:01"
+    "macAddress" : "01:01:01:01:01:01",
+    "messagePeriod" : 2000
 }
 ```
 

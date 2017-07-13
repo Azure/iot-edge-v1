@@ -30,6 +30,7 @@ set CMAKE_enable_dotnet_core_binding=OFF
 set enable-java-binding=OFF
 set enable_nodejs_binding=OFF
 set enable_native_remote_modules=ON
+set enable_nodejs_remote_modules=OFF
 set enable_java_remote_modules=OFF
 set CMAKE_enable_ble_module=ON
 set use_xplat_uuid=OFF
@@ -47,6 +48,7 @@ if "%1" equ "--enable-dotnet-core-binding" goto arg-enable-dotnet-core-binding
 if "%1" equ "--enable-java-binding" goto arg-enable-java-binding
 if "%1" equ "--enable-nodejs-binding" goto arg-enable_nodejs_binding
 if "%1" equ "--disable-native-remote-modules" goto arg-disable_native_remote_modules
+if "%1" equ "--enable-nodejs-remote-modules" goto arg-enable_nodejs_remote_modules
 if "%1" equ "--enable-java-remote-modules" goto arg-enable-java-remote-modules
 if "%1" equ "--disable-ble-module" goto arg-disable_ble_module
 if "%1" equ "--system-deps-path" goto arg-system-deps-path
@@ -106,6 +108,10 @@ goto args-continue
 set enable_native_remote_modules=OFF
 goto args-continue
 
+:arg-enable_nodejs_remote_modules
+set enable_nodejs_remote_modules=ON
+goto args-continue
+
 :arg-enable-java-remote-modules
 set enable_java_remote_modules=ON
 
@@ -138,17 +144,39 @@ rem -- run .NET Scripts
 rem -----------------------------------------------------------------------------
 
 if %CMAKE_enable_dotnet_core_binding% == ON (
-call %current-path%\build_dotnet_core.cmd --config %build-config%
-if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call %current-path%\build_dotnet_core.cmd --config %build-config%
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
-
-
 
 if %CMAKE_enable_dotnet_binding% == ON (
-call %current-path%\build_dotnet.cmd --config %build-config%
-if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call %current-path%\build_dotnet.cmd --config %build-config%
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
+rem -----------------------------------------------------------------------------
+rem -- lint/test Node.js proxy gateway
+rem -----------------------------------------------------------------------------
+
+if %enable_nodejs_remote_modules% == ON (
+    rem lint the sample
+    pushd %build-root%\samples\nodejs_remote_sample
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call npm install
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call npm run lint
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    popd
+
+    pushd %build-root%\proxy\gateway\nodejs
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call npm install
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call npm run lint
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    call npm test
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    popd
+)
 
 rem -----------------------------------------------------------------------------
 rem -- build with CMAKE and run tests
@@ -183,7 +211,7 @@ mkdir %cmake-root%
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 pushd %cmake-root%
-cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_native_remote_modules:BOOL=%enable_native_remote_modules% -Denable_java_remote_modules:BOOL=%enable_java_remote_modules% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "%cmake-generator%" "%build-root%"
+cmake %dependency_install_prefix% -DCMAKE_BUILD_TYPE="%build-config%" -Drun_unittests:BOOL=%CMAKE_run_unittests% -Drun_e2e_tests:BOOL=%CMAKE_run_e2e_tests% -Denable_dotnet_binding:BOOL=%CMAKE_enable_dotnet_binding% -Denable_dotnet_core_binding:BOOL=%CMAKE_enable_dotnet_core_binding% -Denable_java_binding:BOOL=%enable-java-binding% -Denable_nodejs_binding:BOOL=%enable_nodejs_binding% -Denable_native_remote_modules:BOOL=%enable_native_remote_modules% -Denable_java_remote_modules:BOOL=%enable_java_remote_modules% -Denable_nodejs_remote_modules:BOOL=%enable_nodejs_remote_modules% -Denable_ble_module:BOOL=%CMAKE_enable_ble_module% -Drebuild_deps:BOOL=%rebuild_deps% -Duse_xplat_uuid:BOOL=%use_xplat_uuid% -G "%cmake-generator%" "%build-root%"
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 msbuild /m /p:Configuration="%build-config%" /p:Platform="%build-platform%" azure_iot_gateway_sdk.sln
@@ -205,26 +233,28 @@ rem ----------------------------------------------------------------------------
 :usage
 echo build.cmd [options]
 echo options:
-echo  --config value                 Build configuration (e.g. [Debug], Release)
-echo  --disable-ble-module           Do not build the BLE module
-echo  --enable-dotnet-binding        Build .NET binding
-echo  --enable-dotnet-core-binding   Build the .NET Core binding
-echo  --enable-java-binding          Build Java binding
-echo                                 (JAVA_HOME must be defined in your environment)
-echo  --enable-nodejs-binding        Build Node.js binding
-echo                                 (NODE_INCLUDE, NODE_LIB must be defined)
+echo  --config value                  Build configuration (e.g. [Debug], Release)
+echo  --disable-ble-module            Do not build the BLE module
+echo  --enable-dotnet-binding         Build .NET binding
+echo  --enable-dotnet-core-binding    Build the .NET Core binding
+echo  --enable-java-binding           Build Java binding
+echo                                  (JAVA_HOME must be defined in your environment)
+echo  --enable-nodejs-binding         Build Node.js binding
+echo                                  (NODE_INCLUDE, NODE_LIB must be defined)
 echo  --disable-native-remote-modules Do not build the infrastructure required
-echo                                 to support native remote modules
-echo  --enable-java-remote-modules   Build Java Remote modules SDK
-echo                                 (JAVA_HOME must be defined in your environment)
-echo  --platform value               Build platform (e.g. [Win32], x64, ...)
-echo  --rebuild-deps                 Force rebuild of dependencies
-echo  --run-e2e-tests                Build/run end-to-end tests
-echo  --run-unittests                Build/run unit tests
-echo  --system-deps-path             Search for dependencies in a system-level location,
-echo                                 e.g. "C:\Program Files (x86)", and install if not
-echo                                 found. When this option is omitted the path is
-echo                                 %local-install%.
-echo  --use-xplat-uuid               Use SDK's platform-independent UUID implementation
+echo                                  to support native remote modules
+echo  --enable-nodejs-remote-modules  Build the infrastructure required to support
+echo                                  Node.js apps as remote modules
+echo  --enable-java-remote-modules    Build Java Remote modules SDK
+echo                                  (JAVA_HOME must be defined in your environment)
+echo  --platform value                Build platform (e.g. [Win32], x64, ...)
+echo  --rebuild-deps                  Force rebuild of dependencies
+echo  --run-e2e-tests                 Build/run end-to-end tests
+echo  --run-unittests                 Build/run unit tests
+echo  --system-deps-path              Search for dependencies in a system-level location,
+echo                                  e.g. "C:\Program Files (x86)", and install if not
+echo                                  found. When this option is omitted the path is
+echo                                  %local-install%.
+echo  --use-xplat-uuid                Use SDK's platform-independent UUID implementation
 goto :eof
 
