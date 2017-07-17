@@ -38,7 +38,6 @@ DYNAMIC_LIBRARY_HANDLE DynamicLibrary_LoadLibrary(const char* dynamicLibraryFile
                 int sprintfReturnCode;
 
                 sprintfReturnCode = sprintf(libraryPath, "%s\\%s", currentPath, dynamicLibraryFileName);
-
                 if (sprintfReturnCode != -1)
                 {
                     returnValue = LoadLibraryA(libraryPath);
@@ -48,14 +47,73 @@ DYNAMIC_LIBRARY_HANDLE DynamicLibrary_LoadLibrary(const char* dynamicLibraryFile
                     LogError("CurrentPath + Library name too long and doesn't fit on MAX_PATH.");
                     returnValue = NULL;
                 }
-                free(libraryPath);
+				if (returnValue == NULL)
+				{
+					char* dllPath = NULL;
+                    if (dynamicLibraryFileName[0] == '.'
+						&& dynamicLibraryFileName[1] == '.'
+						&& dynamicLibraryFileName[2] == '\\')
+                    {
+                        // dynamic library is specified as relative path.
+						// In the case of Windows, it seems that the start path is not a result of GetCurrentDirectoryA but a ${configuration} under the result.
+						// So that top of '..\\' should be ignored.
+						const char* dllFileName = &dynamicLibraryFileName[3];
+						int currentPathLength = strlen(currentPath);
+						int indexdfn = 0;
+						int indexcpb = currentPathLength;
+						while (dllFileName[indexdfn] == '.'&&dllFileName[indexdfn + 1] == '.'&&dllFileName[indexdfn + 2] == '\\')
+						{
+							while (currentPath[--indexcpb] != '\\')
+							{
+								if (indexcpb <= 0)
+								{
+									break;
+								}
+							}
+							indexdfn += 3;
+						}
+						if (indexcpb > 0) {
+							dllFileName = &dllFileName[indexdfn];
+							currentPath[indexcpb + 1] = '\0';
+							dllPath = (char*)malloc(indexcpb + strlen(dllFileName) + 1);
+							strcpy(dllPath, currentPath);
+							strcat(dllPath, dllFileName);
+						}
+					}
+					else
+					{
+						dllPath = (char*)malloc(strlen(dynamicLibraryFileName) + 1);
+						strcpy(dllPath, dynamicLibraryFileName);
+					}
+					int index = strlen(dllPath);
+					int i = index;
+					for (i = index; i >= 0; i--)
+					{
+						if (dllPath[i] == '\\')
+						{
+							break;
+						}
+					}
+					if (i > 0)
+					{
+						dllPath[i] = '\0';
+					}
+					
+					BOOL setDllDirectoryReturnCode = SetDllDirectoryA(dllPath);
+					if (setDllDirectoryReturnCode)
+					{
+						returnValue = LoadLibraryA(dynamicLibraryFileName);
+					}
+					free(dllPath);
+				}
+
+				free(libraryPath);
             }
-            else
-            {
-                LogError("Failed to allocate memory for library path.");
-                returnValue = NULL;
-            }
-            
+			else
+			{
+				LogError("Failed to allocate memory for library path.");
+				returnValue = NULL;
+			}
         }
         else
         {
