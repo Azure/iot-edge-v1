@@ -52,12 +52,12 @@ The following Gateway config file describes a module named "logger" that is an i
             "loader": {
                 "type": "native",
                 "entrypoint": {
-                    "module path" : "logger.dll"
+                    "module.path" : "logger.dll"
                 }
             }
             "args" : 
             {
-                "filename":"deviceCloudUploadGatewaylog.txt"}"
+                "filename":"deviceCloudUploadGatewaylog.txt"
             }
         }
    ]
