@@ -6,14 +6,14 @@ include("gatewayFunctions.cmake")
 ###############################################################################
 ############################Find/Install/Build ctest###########################
 ###############################################################################
-findAndInstall(ctest 1.1.0 ${PROJECT_SOURCE_DIR}/deps/ctest ${PROJECT_SOURCE_DIR}/deps/ctest -G "${CMAKE_GENERATOR}")
+findAndInstall(ctest 1.1.0 ${PROJECT_SOURCE_DIR}/deps/ctest ${PROJECT_SOURCE_DIR}/deps/ctest -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
 
 ###############################################################################
 #########################Find/Install/Build testrunner#########################
 ###############################################################################
-findAndInstall(testrunnerswitcher 1.1.0 ${PROJECT_SOURCE_DIR}/deps/testrunner ${PROJECT_SOURCE_DIR}/deps/testrunner -G "${CMAKE_GENERATOR}")
+findAndInstall(testrunnerswitcher 1.1.0 ${PROJECT_SOURCE_DIR}/deps/testrunner ${PROJECT_SOURCE_DIR}/deps/testrunner -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
 
 ###############################################################################
 ###########################Find/Install/Build umock############################
 ###############################################################################
-findAndInstall(umock_c 1.1.0 ${PROJECT_SOURCE_DIR}/deps/umock-c ${PROJECT_SOURCE_DIR}/deps/umock-c -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(umock_c 1.1.0 ${PROJECT_SOURCE_DIR}/deps/umock-c ${PROJECT_SOURCE_DIR}/deps/umock-c -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
