@@ -8,7 +8,7 @@ namespace dotnet_core_managed_gateway
     {
         static void Main(string[] args)
         {
-            if (!File.Exists(args[0]))
+            if (args.Length < 1 || !File.Exists(args[0]))
             {
                 Console.Error.WriteLine("Usage: managed-gateway <<path to json>>");
             }
