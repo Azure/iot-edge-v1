@@ -1,4 +1,4 @@
-Azure IoT Edge shares the same [contribution guidelines](https://github.com/Azure/azure-iot-sdks/blob/master/CONTRIBUTING.md) as
+Azure IoT Edge shares the same [contribution guidelines](https://github.com/Azure/azure-iot-sdk-c/blob/master/.github/CONTRIBUTING.md) as
 the other Azure IoT SDKs. The Azure IoT Edge team also monitors our [GitHub issues](https://github.com/Azure/iot-edge/issues)
 section and Stack Overflow, especially the [azure-iot-edge](http://stackoverflow.com/questions/tagged/azure-iot-edge) tag.
 
