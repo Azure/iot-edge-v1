@@ -1,0 +1,15 @@
+{
+  "modules": [
+        {
+            "name": "dotnet_sensor_module",
+            "loader": {
+                "name": "dotnetcore",
+                "entrypoint": {
+                    "assembly.name": "SensorModule",
+                    "entry.type": "SensorModule.DotNetSensorModule"
+                }
+            },
+            "args": "module configuration"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Microsoft.Azure.Devices.Gateway
 {
@@ -8,6 +9,15 @@ namespace Microsoft.Azure.Devices.Gateway
     /// </summary>
     static public class GatewayInterop
     {
+
+        [DllImport(
+            "gateway",
+            CharSet = CharSet.Ansi,
+            EntryPoint = "Gateway_Create",
+            CallingConvention = CallingConvention.Cdecl
+        )]
+        private static extern IntPtr CreateInternal(IntPtr p);
+
         [DllImport(
             "gateway",
             CharSet = CharSet.Ansi,
@@ -16,6 +26,22 @@ namespace Microsoft.Azure.Devices.Gateway
         )]
         private static extern IntPtr CreateFromJsonInternal(string file_path);
 
+        [DllImport(
+            "gateway",
+            CharSet = CharSet.Ansi,
+            EntryPoint = "Gateway_UpdateFromJson",
+            CallingConvention = CallingConvention.Cdecl
+        )]
+        private static extern int UpdateFromJsonInternal(IntPtr gw, [MarshalAs(UnmanagedType.LPStr)] string json_string);
+
+
+        [DllImport(
+            "gateway",
+            CharSet = CharSet.Ansi,
+            EntryPoint = "Gateway_Start",
+            CallingConvention = CallingConvention.Cdecl
+        )]
+        private static extern int StartInternal(IntPtr gw);
 
         /// <summary>
         ///   Creates a gateway using a JSON configuration file as inputwhich describes each module.
@@ -28,6 +54,39 @@ namespace Microsoft.Azure.Devices.Gateway
             NetCoreInterop.InitializeDelegates();
             return CreateFromJsonInternal(file_path);
         }
+	
+	    /// <summary>
+    	///   Update the gateway with module, link details etc.
+	    /// <param name="gw">#GATEWAY_HANDLE to be started</param>
+    	/// <param name="file_path">Path to the JSON configuration file to upate from .</param>  
+	    /// </summary>	
+    	public static int UpdateFromJson(IntPtr gw, string file_path)
+	    {
+		    var json_string = File.ReadAllText(file_path); 	
+    		return UpdateFromJsonInternal(gw, json_string);
+		}
+
+    	/// <summary>
+	    ///	Create gateway using a NULL property. This forms the template which we
+    	///     will fill up with module and link information with subsequent calls to UpdateFromJson
+	    ///     and then eventually start the gateway.
+    	/// </summary>
+        public static IntPtr Create()
+        {
+            NetCoreInterop.InitializeDelegates();
+            return CreateInternal(IntPtr.Zero);
+	    }
+	
+
+    	/// <summary>
+	    ///	Start the gateway server
+    	/// </summary>
+	    /// <param name="gw">#GATEWAY_HANDLE to be started</param>
+    	public static int Start(IntPtr gw)
+	    {
+	        return StartInternal(gw);
+	    }
+
 
         /// <summary>
         ///     Destroys the gateway and disposes of all associated data.

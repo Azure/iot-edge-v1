@@ -1,0 +1,15 @@
+{
+  "modules": [
+    {
+            "name": "dotnet_printer_module",
+            "loader": {
+                "name": "dotnetcore",
+                "entrypoint": {
+                    "assembly.name": "PrinterModule",
+                    "entry.type": "PrinterModule.DotNetPrinterModule"
+                }
+            },
+            "args": "module configuration"
+    }
+  ]
+}
