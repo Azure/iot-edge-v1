@@ -22,6 +22,7 @@
 #define STRING_empty                    real_STRING_empty
 #define STRING_length                   real_STRING_length
 #define STRING_compare                  real_STRING_compare
+#define STRING_replace                  real_STRING_replace
 
 
 #undef STRINGS_H
@@ -47,6 +48,7 @@
 #undef STRING_empty
 #undef STRING_length
 #undef STRING_compare
+#undef STRING_replace
 
 #endif
 

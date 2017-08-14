@@ -19,6 +19,8 @@
 #define STRING_empty real_STRING_empty
 #define STRING_length real_STRING_length
 #define STRING_compare real_STRING_compare
+#define STRING_replace real_STRING_replace
+
 
 #define GBALLOC_H
 
