@@ -5,7 +5,7 @@ using System.IO;
 namespace Microsoft.Azure.Devices.Gateway
 {
     /// <summary>
-    ///  Wrapper for Azure IoT Gateway SDK. 
+    ///  Wrapper for Azure IoT Gateway SDK.
     /// </summary>
     static public class GatewayInterop
     {
@@ -54,38 +54,38 @@ namespace Microsoft.Azure.Devices.Gateway
             NetCoreInterop.InitializeDelegates();
             return CreateFromJsonInternal(file_path);
         }
-	
-	    /// <summary>
-    	///   Update the gateway with module, link details etc.
-	    /// <param name="gw">#GATEWAY_HANDLE to be started</param>
-    	/// <param name="file_path">Path to the JSON configuration file to upate from .</param>  
-	    /// </summary>	
-    	public static int UpdateFromJson(IntPtr gw, string file_path)
-	    {
-		    var json_string = File.ReadAllText(file_path); 	
-    		return UpdateFromJsonInternal(gw, json_string);
-		}
 
-    	/// <summary>
-	    ///	Create gateway using a NULL property. This forms the template which we
-    	///     will fill up with module and link information with subsequent calls to UpdateFromJson
-	    ///     and then eventually start the gateway.
-    	/// </summary>
+        /// <summary>
+        ///   Update the gateway with module, link details etc.
+        /// <param name="gw">#GATEWAY_HANDLE to be started</param>
+        /// <param name="file_path">Path to the JSON configuration file to upate from .</param>
+        /// </summary>
+        public static int UpdateFromJson(IntPtr gw, string file_path)
+        {
+            var json_string = File.ReadAllText(file_path);
+            return UpdateFromJsonInternal(gw, json_string);
+        }
+
+        /// <summary>
+        ///    Create gateway using a NULL property. This forms the template which we
+        ///     will fill up with module and link information with subsequent calls to UpdateFromJson
+        ///     and then eventually start the gateway.
+        /// </summary>
         public static IntPtr Create()
         {
             NetCoreInterop.InitializeDelegates();
             return CreateInternal(IntPtr.Zero);
-	    }
-	
+        }
 
-    	/// <summary>
-	    ///	Start the gateway server
-    	/// </summary>
-	    /// <param name="gw">#GATEWAY_HANDLE to be started</param>
-    	public static int Start(IntPtr gw)
-	    {
-	        return StartInternal(gw);
-	    }
+
+        /// <summary>
+        ///    Start the gateway server
+        /// </summary>
+        /// <param name="gw">#GATEWAY_HANDLE to be started</param>
+        public static int Start(IntPtr gw)
+        {
+            return StartInternal(gw);
+        }
 
 
         /// <summary>
