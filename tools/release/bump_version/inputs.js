@@ -189,4 +189,14 @@ module.exports = [
         "nsmap": {"mavenns": "http://maven.apache.org/POM/4.0.0"},
         "replaceString": "bindings.java",
     },
+
+    ///////////////////////////////////////////////////
+    // Node.js remote module
+    /////////////////////////////////////////////////// 
+    {
+        "taskType": "jsonReplaceTask",
+        "filePath": "proxy/gateway/nodejs/package.json",
+        "search": "version",
+        "replaceString": "proxygateway.nodejs",
+    }
 ];
