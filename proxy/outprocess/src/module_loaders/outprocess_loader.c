@@ -41,13 +41,18 @@ static VECTOR_HANDLE uv_processes = NULL;
 static THREAD_HANDLE uv_thread = NULL;
 static tickcounter_ms_t uv_process_grace_period_ms = 0;
 
+void exit_cb(uv_process_t* p, int64_t exit_status, int term_signal)
+{
+    LogInfo("Out process: %d, exited with status: %" PRId64 ", signal: %d !!\n", p->pid, exit_status, term_signal);
+    uv_close((uv_handle_t *) p, NULL);
+}
+
 int launch_child_process_from_entrypoint (OUTPROCESS_LOADER_ENTRYPOINT * outprocess_entry)
 {
     int result;
-    
     uv_process_t * child = NULL;
     const uv_process_options_t options = {
-        .exit_cb = NULL,
+        .exit_cb = exit_cb,
         .file = outprocess_entry->process_argv[0],
         .args = outprocess_entry->process_argv,
         .flags = UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS

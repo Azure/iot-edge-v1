@@ -23,7 +23,14 @@ int main(int argc, char** argv)
         {
             printf("gateway successfully created from JSON\n");
             printf("gateway shall run until ENTER is pressed\n");
-            (void)getchar();
+            // Since the std descriptors are shared between the out processes in launch case
+            // EOF is generated when the child process dies. Make sure the getchar
+            // can survive this.
+            int c;
+            while((c = getchar()) == EOF)
+            {
+                printf("\nGot %d from getchar. Continuing to wait for ENTER\n", c);
+            }
             Gateway_Destroy(gateway);
         }
     }
