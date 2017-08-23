@@ -135,6 +135,8 @@ MOCK_FUNCTION_WITH_CODE(, int, uv_process_kill, uv_process_t *, handle, int, sig
 MOCK_FUNCTION_END(0);
 MOCK_FUNCTION_WITH_CODE(, int, uv_spawn, uv_loop_t *, loop, uv_process_t *, handle, const uv_process_options_t *, options)
 MOCK_FUNCTION_END(0);
+MOCK_FUNCTION_WITH_CODE(, void, uv_close, uv_handle_t *, handle, uv_close_cb, close_cb);
+MOCK_FUNCTION_END();
 
 // ** Mocking uv.h (Event loop)
 MOCK_FUNCTION_WITH_CODE(, uv_loop_t *, uv_default_loop);
