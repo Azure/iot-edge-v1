@@ -48,3 +48,24 @@ Your module's documentation must be discoverable from the page at this URL.
 Add comments to the PR to describe how your module meets the requirements listed here. Also describe what steps you've taken to test your module against the gateway version referenced in the **Targets Azure IoT Edge version** field.
 
 **Note**: We reserve the right to remove a module's entry from the table if it hasn't been updated in a while.
+
+----------
+
+## Notes on submitting PR requests 
+
+Before submitting the PR, it is **recommended** to run UTs(especially for bug fixes, feature additions etc. to existing code) 
+
+Before running the UTs, make sure you have performed a recursive clone of the repository:
+```
+git clone --recursive https://github.com/Azure/iot-edge
+```
+
+# Running UTs in Linux
+```
+tools/build.sh  --run-unittests
+```
+
+# Running UTs in Windows
+```
+tools\build.cmd --run-unittests
+```
