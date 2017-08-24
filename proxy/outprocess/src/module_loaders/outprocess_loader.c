@@ -43,7 +43,7 @@ static tickcounter_ms_t uv_process_grace_period_ms = 0;
 
 void exit_cb(uv_process_t* p, int64_t exit_status, int term_signal)
 {
-    LogInfo("Out process: %d, exited with status: %" PRId64 ", signal: %d !!\n", p->pid, exit_status, term_signal);
+    LogInfo("Out process: %d, exited with status: "INT64_PRINTF", signal: %d !!\n", p->pid, exit_status, term_signal);
     uv_close((uv_handle_t *) p, NULL);
 }
 
