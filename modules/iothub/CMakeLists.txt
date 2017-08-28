@@ -23,7 +23,7 @@ add_library(iothub MODULE
 )
 target_link_libraries(iothub
     gateway
-    iothub_client
+    iothub_client_dll
 )
 
 #this builds the iothub static library

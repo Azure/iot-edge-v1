@@ -17,7 +17,7 @@ findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DI
 #######################Find/Install/Build azure_iot_sdks#######################
 ###############################################################################
 #The azure_iot_sdks repo requires special treatment. Parson submodule must be initialized.
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/parson/README.md)
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/deps/parson/README.md)
     execute_process(
         COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -28,7 +28,7 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/parson/README.md)
         message(FATAL_ERROR "Error pulling iot-sdk-c submodule: ${res}")
     endif()
     execute_process(
-        COMMAND git submodule update --init parson
+        COMMAND git submodule update --init deps/parson
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
         RESULT_VARIABLE res
     )
