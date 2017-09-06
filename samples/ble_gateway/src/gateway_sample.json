@@ -11,7 +11,8 @@
       "args": {
         "IoTHubName": "<<Azure IoT Hub Name>>",
         "IoTHubSuffix": "<<Azure IoT Hub Suffix>>",
-        "Transport": "amqp"
+        "Transport": "amqp",
+        "RetryPolicy": "EXPONENTIAL_BACKOFF_WITH_JITTER"
       }
     },
     {
