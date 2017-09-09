@@ -103,7 +103,7 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                 const char * IoTHubName;
                 const char * IoTHubSuffix;
                 const char * transport;
-                const char * retryPolicy;
+
                 if ((IoTHubName = json_object_get_string(obj, HUBNAME)) == NULL)
                 {
                     /*Codes_SRS_IOTHUBMODULE_05_006: [ If the JSON object does not contain a value named "IoTHubName" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
@@ -120,12 +120,6 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                 {
                     /*Codes_SRS_IOTHUBMODULE_05_011: [ If the JSON object does not contain a value named "Transport" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
                     LogError("Did not find expected %s configuration", TRANSPORT);
-                    result = NULL;
-                }
-                else if ((retryPolicy = json_object_get_string(obj, RETRY_POLICY)) == NULL)
-                {
-                    /*Codes_SRS_IOTHUBMODULE_99_002: [ If the JSON object does not contain a value named "RetryPolicy" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
-                    LogError("Did not find expected %s configuration", RETRY_POLICY);
                     result = NULL;
                 }
                 else
@@ -176,8 +170,15 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
 
                         if (config != NULL)
                         {
-                            /*Coders_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
-                            if (strcmp_i(retryPolicy, "NONE") == 0)
+                            const char * retryPolicy;
+
+                            /*Codes_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
+                            /*Codes_SRS_IOTHUBMODULE_99_002: [ If the value of "RetryPolicy" is not defined, retry policy is set to default value ("EXPONENTIAL_BACKOFF_WITH_JITTER") ]*/
+                            if ((retryPolicy = json_object_get_string(obj, RETRY_POLICY)) == NULL)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF_WITH_JITTER;
+                            }
+                            else if (strcmp_i(retryPolicy, "NONE") == 0)
                             {
                                 config->retryPolicy = IOTHUB_CLIENT_RETRY_NONE;
                             }
@@ -207,6 +208,7 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                             }
                             else
                             {
+                                LogError("Invalid RetryPolicy");
                                 free(name);
                                 free(suffix);
                                 free(config);

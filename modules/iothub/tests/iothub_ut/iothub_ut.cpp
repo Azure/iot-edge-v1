@@ -719,9 +719,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
             .SetReturn("HTTP");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
-            .IgnoreArgument(1)
-            .SetReturn("INTERVAL");
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1));
@@ -762,9 +759,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
             .SetReturn("HTTP");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
-            .IgnoreArgument(1)
-            .SetReturn("INTERVAL");
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1))
@@ -802,9 +796,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
             .SetReturn("HTTP");
-        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
-            .IgnoreArgument(1)
-            .SetReturn("INTERVAL");
 
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1))
             .SetFailReturn((void*)NULL);
@@ -895,11 +886,6 @@ BEGIN_TEST_SUITE(iothub_ut)
             STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
                 .IgnoreArgument(1)
                 .SetReturn(transportStrings[i]);
-
-            // if this is not defined, returns always null
-            STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
-                .IgnoreArgument(1)
-                .SetReturn("NONE");
 
             ///act
             auto result = Module_ParseConfigurationFromJson("don't care");
@@ -1070,6 +1056,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("NONE");
@@ -1089,6 +1082,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("IMMEDIATE");
@@ -1108,6 +1108,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("INTERVAL");
@@ -1127,6 +1134,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("LINEAR_BACKOFF");
@@ -1146,6 +1160,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("EXPONENTIAL_BACKOFF");
@@ -1165,6 +1186,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("EXPONENTIAL_BACKOFF_WITH_JITTER");
@@ -1184,6 +1212,13 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("RANDOM");
@@ -1198,12 +1233,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_FreeConfiguration(result);
     }
 
-    /*Test_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
     TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_null_when_retrypolicy_unknown)
     {
         ///arrange
         CNiceCallComparer<IotHubMocks> mocks;
 
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetReturn("UNKNOWN");
@@ -1216,33 +1258,30 @@ BEGIN_TEST_SUITE(iothub_ut)
         mocks.AssertActualAndExpectedCalls();
     }
 
-    /*Test_SRS_IOTHUBMODULE_99_002: [ If the JSON object does not contain a value named "RetryPolicy" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
-    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_null_when_retry_policy_is_missing)
+    /*Tests_SRS_IOTHUBMODULE_99_002: [ If the value of "RetryPolicy" is not defined, retry policy is set to default value ("EXPONENTIAL_BACKOFF_WITH_JITTER") ]*/
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_not_set_retrypolicy)
     {
         ///arrange
-        IotHubMocks mocks;
-        const char * validJsonString = "calling it valid makes it so";
+        CNiceCallComparer<IotHubMocks> mocks;
 
-        STRICT_EXPECTED_CALL(mocks, json_parse_string(validJsonString));
-        STRICT_EXPECTED_CALL(mocks, json_value_get_object(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
             .IgnoreArgument(1);
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
-            .IgnoreArgument(1);
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
             .IgnoreArgument(1)
             .SetFailReturn((const char *)NULL);
-        STRICT_EXPECTED_CALL(mocks, json_value_free(IGNORED_PTR_ARG))
-            .IgnoreArgument(1);
 
         ///act
-        auto result = Module_ParseConfigurationFromJson(validJsonString);
-        ///assert
+        IOTHUB_CONFIG* result = (IOTHUB_CONFIG*)Module_ParseConfigurationFromJson("don't care");
 
-        ASSERT_IS_NULL(result);
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+        ASSERT_IS_TRUE(result->retryPolicy == IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF_WITH_JITTER);
+        mocks.AssertActualAndExpectedCalls();
     }
 
     /*Tests_SRS_IOTHUBMODULE_05_014: [ If `configuration` is NULL then `IotHub_FreeConfiguration` shall do nothing. ]*/

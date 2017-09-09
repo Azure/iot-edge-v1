@@ -67,7 +67,7 @@ Deserializes a JSON string into an IOTHUB_CONFIG structure suitable for passing 
     "IoTHubName" : "<the name of the IoTHub>",
     "IoTHubSuffix" : "<the suffix used in generating the host name>",
     "Transport" : "HTTP" | "http" | "AMQP" | "amqp" | "MQTT" | "mqtt",
-    "RetryPolicy" : "NONE" | "IMMEDIATE" | "INTERVAL" | "LINEAR_BACKOFF" | "EXPONENTIAL_BACKOFF" | "EXPONENTIAL_BACKOFF_WITH_JITTER" | "RANDOM"
+    "RetryPolicy" : "NONE" | "IMMEDIATE" | "INTERVAL" | "LINEAR_BACKOFF" | "EXPONENTIAL_BACKOFF" | "EXPONENTIAL_BACKOFF_WITH_JITTER" (default value) | "RANDOM"
 }
 ```
 
@@ -78,8 +78,8 @@ Deserializes a JSON string into an IOTHUB_CONFIG structure suitable for passing 
 **SRS_IOTHUBMODULE_05_007: [** If the JSON object does not contain a value named "IoTHubSuffix" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
 **SRS_IOTHUBMODULE_05_011: [** If the JSON object does not contain a value named "Transport" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
 **SRS_IOTHUBMODULE_05_012: [** If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_99_001: [** If the value of "RetryPolicy" is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
-**SRS_IOTHUBMODULE_99_002: [** If the JSON object does not contain a value named "RetryPolicy" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_99_001: [** If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_99_002: [** If the value of "RetryPolicy" is not defined, retry policy is set to default value (`EXPONENTIAL_BACKOFF_WITH_JITTER`) **]**
 
 
 ### IotHub_FreeConfiguration
