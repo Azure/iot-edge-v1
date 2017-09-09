@@ -8,6 +8,8 @@
 #define GW_SOURCE_PROPERTY                  "source"
 #define GW_DEVICENAME_PROPERTY              "deviceName"
 #define GW_DEVICEKEY_PROPERTY               "deviceKey"
+#define GW_IOTHUB_MESSAGE_ID                "iotHubMessageId"
+#define GW_IOTHUB_DELIVERY_STATUS           "iotHubMessageDeliveryStatus"
 
 #define GW_SOURCE_BLE_COMMAND               "bleCommand"
 #define GW_SOURCE_BLE_TELEMETRY             "bleTelemetry"

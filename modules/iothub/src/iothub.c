@@ -44,6 +44,20 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
     IOTHUB_CLIENT_RETRY_POLICY retryPolicy;
 }IOTHUB_HANDLE_DATA;
 
+/*
+ * Message delivered callback context structure
+ */
+ typedef struct MESSAGE_DELIVERED_CALLBACK_CONTEXT_TAG
+ {
+    IOTHUB_HANDLE_DATA* moduleData;
+
+    /*
+     * Message id of the delivered (or failed) message
+     */
+    char* iotHubMessageId;
+
+} MESSAGE_DELIVERED_CALLBACK_CONTEXT;
+
 #define SOURCE "source"
 #define MAPPING "mapping"
 #define DEVICENAME "deviceName"
@@ -686,6 +700,100 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
     return result;
 }
 
+static void receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
+{
+    MESSAGE_DELIVERED_CALLBACK_CONTEXT* callbackContext;
+    if (!userContextCallback)
+    {
+        LogError("Context was null");
+        return;
+    }
+
+    char deliveryStatus[5];
+    if (result != IOTHUB_CLIENT_CONFIRMATION_OK)
+    {
+        LogError("Message was not delivered due to error: %d", result);
+        strcpy(deliveryStatus, "FAIL");
+    }
+    else
+    {
+        strcpy(deliveryStatus, "OK");
+    }
+
+    callbackContext = (MESSAGE_DELIVERED_CALLBACK_CONTEXT*)userContextCallback;
+    if (callbackContext->iotHubMessageId == NULL)
+    {
+        LogError("MessageId was not defined");
+        free(callbackContext);
+        return;
+    }
+
+    MAP_HANDLE propertiesMap = Map_Create(NULL);
+    if (propertiesMap == NULL)
+    {
+        LogError("Failed  to create properties map");
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+
+        return;
+    }
+
+    if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE))
+    {
+        LogError("Failed  to set source property");
+        Map_Destroy(propertiesMap);
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+        return;
+    }
+
+    if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, deliveryStatus))
+    {
+        LogError("Failed  to set deliveryStatus property");
+        Map_Destroy(propertiesMap);
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+    }
+
+    if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_MESSAGE_ID, callbackContext->iotHubMessageId))
+    {
+        LogError("Failed  to set iotHubMessageId property");
+        Map_Destroy(propertiesMap);
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+        return;
+    }
+
+    MESSAGE_CONFIG msgConfig;
+    msgConfig.size = 0;
+    msgConfig.source = NULL;
+    msgConfig.sourceProperties = propertiesMap;
+    MESSAGE_HANDLE message = Message_Create(&msgConfig);
+    if (message == NULL)
+    {
+        LogError("Failed to create message");
+        Map_Destroy(propertiesMap);
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+        return;
+    }
+
+    if (BROKER_OK != Broker_Publish(callbackContext->moduleData->broker, (MODULE_HANDLE)callbackContext->moduleData, message))
+    {
+        LogError("Failed to publish message");
+        Map_Destroy(propertiesMap);
+        Message_Destroy(message);
+        free(callbackContext->iotHubMessageId);
+        free(callbackContext);
+        return;
+    }
+
+    Message_Destroy(message);
+    Map_Destroy(propertiesMap);
+    free(callbackContext->iotHubMessageId);
+    free(callbackContext);
+}
+
 static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
 {
     /*Codes_SRS_IOTHUBMODULE_02_009: [ If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. ]*/
@@ -759,8 +867,23 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                             }
                             else
                             {
+                                MESSAGE_DELIVERED_CALLBACK_CONTEXT* userContextCallback = NULL;
+                                IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK eventConfirmationCallback = NULL;
+                                // if 'iotHubMessageId' property is found, register receiveConfirmation function for IoTHubClient_SendEventAsync
+                                const char* iotHubMessageId = ConstMap_GetValue(properties, GW_IOTHUB_MESSAGE_ID);
+                                if (iotHubMessageId)
+                                {
+                                    userContextCallback = malloc(sizeof(MESSAGE_DELIVERED_CALLBACK_CONTEXT));
+                                    if (userContextCallback)
+                                    {
+                                        eventConfirmationCallback = receiveMessageConfirmation;
+                                        userContextCallback->moduleData = moduleHandleData;
+                                        userContextCallback->iotHubMessageId = malloc(strlen(iotHubMessageId)+1);
+                                        strcpy(userContextCallback->iotHubMessageId, iotHubMessageId);
+                                    }
+                                }
                                 /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
-                                if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
+                                if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, eventConfirmationCallback, userContextCallback) != IOTHUB_CLIENT_OK)
                                 {
                                     /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
                                     LogError("unable to IoTHubClient_SendEventAsync");
