@@ -154,6 +154,7 @@ static pfModule_Receive Module_Receive = NULL; /*gets assigned in TEST_SUITE_INI
 
 const char name[] = "name";
 const char suffix[] = "suffix";
+IOTHUB_CLIENT_RETRY_POLICY retryPolicy = IOTHUB_CLIENT_RETRY_NONE;
 
 IOTHUB_CONFIG CreateConfigWithTransport(IOTHUB_CLIENT_TRANSPORT_PROVIDER transport)
 {
@@ -162,7 +163,7 @@ IOTHUB_CONFIG CreateConfigWithTransport(IOTHUB_CLIENT_TRANSPORT_PROVIDER transpo
     strcpy(name_, name);
     strcpy(suffix_, suffix);
 
-    return IOTHUB_CONFIG { name_, suffix_, transport };
+    return IOTHUB_CONFIG { name_, suffix_, transport, retryPolicy };
 }
 
 IOTHUB_CONFIG CreateConfig() { return CreateConfigWithTransport(HTTP_Protocol); }
@@ -415,6 +416,8 @@ public:
         IotHub_Receive_message_userContext = userContextCallback;
         MOCK_METHOD_END(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_OK)
 
+    MOCK_STATIC_METHOD_3(, IOTHUB_CLIENT_RESULT, IoTHubClient_SetRetryPolicy, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_RETRY_POLICY, retryPolicy, size_t, retryTimeoutLimitInSeconds)
+    MOCK_METHOD_END(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_OK)
 
     //// GW Message
     MOCK_STATIC_METHOD_1(, MESSAGE_HANDLE, Message_Create, const MESSAGE_CONFIG*, cfg)
@@ -571,8 +574,9 @@ DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , const char*, ConstMap_GetValue, CONS
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , MAP_RESULT, Map_AddOrUpdate, MAP_HANDLE, handle, const char*, key, const char*, value);
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , MAP_RESULT, Map_Add, MAP_HANDLE, handle, const char*, key, const char*, value);
 DECLARE_GLOBAL_MOCK_METHOD_4(IotHubMocks, , CONSTMAP_RESULT, ConstMap_GetInternals, CONSTMAP_HANDLE, handle, const char*const**, keys, const char*const**, values, size_t*, count)
-DECLARE_GLOBAL_MOCK_METHOD_4(IotHubMocks, ,IOTHUB_CLIENT_RESULT, IoTHubClient_SendEventAsync, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_MESSAGE_HANDLE, eventMessageHandle, IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK, eventConfirmationCallback, void*, userContextCallback)
+DECLARE_GLOBAL_MOCK_METHOD_4(IotHubMocks, , IOTHUB_CLIENT_RESULT, IoTHubClient_SendEventAsync, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_MESSAGE_HANDLE, eventMessageHandle, IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK, eventConfirmationCallback, void*, userContextCallback)
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , IOTHUB_CLIENT_RESULT, IoTHubClient_SetMessageCallback, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC, messageCallback, void*, userContextCallback)
+DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , IOTHUB_CLIENT_RESULT, IoTHubClient_SetRetryPolicy, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_RETRY_POLICY, retryPolicy, size_t, retryTimeoutLimitInSeconds)
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , const CONSTBUFFER *, Message_GetContent, MESSAGE_HANDLE, message)
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, IoTHubMessage_Destroy, IOTHUB_MESSAGE_HANDLE, iotHubMessageHandle)
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , IOTHUB_MESSAGE_HANDLE, IoTHubMessage_CreateFromByteArray, const unsigned char*, byteArray, size_t, size)
@@ -679,6 +683,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
             .IgnoreArgument(1)
             .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("INTERVAL");
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("aHubName") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(strlen("suffix.name") + 1));
         STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(IOTHUB_CONFIG)));
@@ -1044,6 +1051,239 @@ BEGIN_TEST_SUITE(iothub_ut)
         ASSERT_IS_NULL(result);
     }
 
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_NONE_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("NONE");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_IMMEDIATE_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("IMMEDIATE");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_INTERVAL_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("INTERVAL");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_LINEAR_BACKOFF_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("LINEAR_BACKOFF");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_EXPONENTIAL_BACKOFF_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("EXPONENTIAL_BACKOFF");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_EXPONENTIAL_BACKOFF_WITH_JITTER_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("EXPONENTIAL_BACKOFF_WITH_JITTER");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_RANDOM_RetryPolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("RANDOM");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_FreeConfiguration(result);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_returns_null_when_retrypolicy_unknown)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetReturn("UNKNOWN");
+
+        ///act
+        auto result = Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        ASSERT_IS_NULL(result);
+        mocks.AssertActualAndExpectedCalls();
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_002: [ If the value of "RetryPolicy" is not defined, retry policy is set to default value ("EXPONENTIAL_BACKOFF_WITH_JITTER") ]*/
+    TEST_FUNCTION(IotHub_ParseConfigurationFromJson_interprets_not_set_retrypolicy)
+    {
+        ///arrange
+        CNiceCallComparer<IotHubMocks> mocks;
+
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubName"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "IoTHubSuffix"))
+            .IgnoreArgument(1);
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "Transport"))
+            .IgnoreArgument(1)
+            .SetReturn("HTTP");
+        STRICT_EXPECTED_CALL(mocks, json_object_get_string(IGNORED_PTR_ARG, "RetryPolicy"))
+            .IgnoreArgument(1)
+            .SetFailReturn((const char *)NULL);
+
+        ///act
+        IOTHUB_CONFIG* result = (IOTHUB_CONFIG*)Module_ParseConfigurationFromJson("don't care");
+
+        ///assert
+        ASSERT_IS_NOT_NULL(result);
+        ASSERT_IS_TRUE(result->retryPolicy == IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF_WITH_JITTER);
+        mocks.AssertActualAndExpectedCalls();
+    }
+
     /*Tests_SRS_IOTHUBMODULE_05_014: [ If `configuration` is NULL then `IotHub_FreeConfiguration` shall do nothing. ]*/
     TEST_FUNCTION(IotHub_FreeConfiguration_does_nothing_if_configuration_is_NULL)
     {
@@ -1128,7 +1368,7 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        IOTHUB_CONFIG config_with_NULL_IoTHubName = { NULL, suffix, HTTP_Protocol };
+        IOTHUB_CONFIG config_with_NULL_IoTHubName = { NULL, suffix, HTTP_Protocol, IOTHUB_CLIENT_RETRY_NONE };
         mocks.ResetAllCalls();
 
         ///act
@@ -1146,7 +1386,7 @@ BEGIN_TEST_SUITE(iothub_ut)
     {
         ///arrange
         IotHubMocks mocks;
-        IOTHUB_CONFIG config_with_NULL_IoTHubSuffix = { name, NULL, HTTP_Protocol };
+        IOTHUB_CONFIG config_with_NULL_IoTHubSuffix = { name, NULL, HTTP_Protocol, IOTHUB_CLIENT_RETRY_NONE };
         mocks.ResetAllCalls();
 
         ///act
@@ -1700,6 +1940,7 @@ BEGIN_TEST_SUITE(iothub_ut)
     /*Tests_SRS_IOTHUBMODULE_02_018: [ `IotHub_Receive` shall create a new IOTHUB_MESSAGE_HANDLE having the same content as `messageHandle`, and the same properties with the exception of `deviceName` and `deviceKey`. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_003: [ If a new personality is created, then retry policy will be set by calling `IoTHubClient_SetRetryPolicy`. ]*/
     TEST_FUNCTION(IotHub_Receive_succeeds)
     {
         ///arrange
@@ -1748,6 +1989,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(2);
 
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
@@ -1867,6 +2113,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(2);
 
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
@@ -2106,6 +2357,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
         }
 
         /*adding the personality to the VECTOR or personalities*/
@@ -2216,6 +2472,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(2);
 
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
@@ -2338,6 +2599,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
         }
 
         /*adding the personality to the VECTOR or personalities*/
@@ -2452,6 +2718,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
         }
 
         /*adding the personality to the VECTOR or personalities*/
@@ -2560,6 +2831,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
         }
 
         /*adding the personality to the VECTOR or personalities*/
@@ -2664,6 +2940,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
         }
 
         /*adding the personality to the VECTOR or personalities*/
@@ -2755,6 +3036,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1);
 
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3);
@@ -2951,6 +3237,85 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1);
 
             STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3)
+                .SetFailReturn(IOTHUB_CLIENT_ERROR);
+        }
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+    TEST_FUNCTION(IotHub_Receive_when_creating_the_personality_fails_it_fails_1d)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
+
+        /*VECTOR_find_if incurs a STRING_c_str until it find the deviceName. None in this test*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        /*because the deviceName is brand new, it will be added as a new personality*/
+        {/*separate scope for personality building*/
+         /* create a new PERSONALITY */
+            STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+                .IgnoreArgument(1);
+            STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*making a copy of the deviceName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("firstDevice"));
+            STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*making a copy of the deviceKey*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("cheiaDeLaPoartaVerde"));
+            STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG)) /*this is deviceName*/
+                .IgnoreArgument(1);
+
+            /*getting the stored IoTHubName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            /*getting the stored IoTHubSuffix*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*creating the IOTHUB_CLIENT_HANDLE associated with the device*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_CreateWithTransport(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2);
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
                 .IgnoreArgument(1)
                 .IgnoreArgument(2)
                 .IgnoreArgument(3)
