@@ -17,6 +17,7 @@ typedef struct IOTHUB_CONFIG_TAG
     const char* IoTHubName;
     const char* IoTHubSuffix;
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
+    IOTHUB_CLIENT_RETRY_POLICY retryPolicy;
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 
 MODULE_EXPORT const MODULE_API* MODULE_STATIC_GETAPI(IOTHUB_MODULE)(MODULE_API_VERSION gateway_api_version);

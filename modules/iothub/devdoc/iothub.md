@@ -51,6 +51,7 @@ typedef struct IOTHUB_CONFIG_TAG
     const char* IoTHubName;   /*the name of the IoT hub*/
     const char* IoTHubSuffix; /*the suffix used in generating the host name*/
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
+    IOTHUB_CLIENT_RETRY_POLICY retryPolicy;
 }IOTHUB_CONFIG; /*this needs to be passed to the Module_Create function*/
 ```
 
@@ -65,7 +66,8 @@ Deserializes a JSON string into an IOTHUB_CONFIG structure suitable for passing 
 {
     "IoTHubName" : "<the name of the IoTHub>",
     "IoTHubSuffix" : "<the suffix used in generating the host name>",
-    "Transport" : "HTTP" | "http" | "AMQP" | "amqp" | "MQTT" | "mqtt"
+    "Transport" : "HTTP" | "http" | "AMQP" | "amqp" | "MQTT" | "mqtt",
+    "RetryPolicy" : "NONE" | "IMMEDIATE" | "INTERVAL" | "LINEAR_BACKOFF" | "EXPONENTIAL_BACKOFF" | "EXPONENTIAL_BACKOFF_WITH_JITTER" (default value) | "RANDOM"
 }
 ```
 
@@ -76,6 +78,9 @@ Deserializes a JSON string into an IOTHUB_CONFIG structure suitable for passing 
 **SRS_IOTHUBMODULE_05_007: [** If the JSON object does not contain a value named "IoTHubSuffix" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
 **SRS_IOTHUBMODULE_05_011: [** If the JSON object does not contain a value named "Transport" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
 **SRS_IOTHUBMODULE_05_012: [** If the value of "Transport" is not one of "HTTP", "AMQP", or "MQTT" (case-insensitive) then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_99_001: [** If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. **]**
+**SRS_IOTHUBMODULE_99_002: [** If the value of "RetryPolicy" is not defined, retry policy is set to default value (`EXPONENTIAL_BACKOFF_WITH_JITTER`) **]**
+
 
 ### IotHub_FreeConfiguration
 ```C
@@ -131,6 +136,7 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_IOTHUBMODULE_02_020: [** `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. **]**
 **SRS_IOTHUBMODULE_02_021: [** If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_02_022: [** If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. **]**
+**SRS_IOTHUBMODULE_99_003: [** If a new personality is created, then retry policy will be set by calling `IoTHubClient_SetRetryPolicy`. **]**
 
 
 ### IotHub_ReceiveMessageCallback

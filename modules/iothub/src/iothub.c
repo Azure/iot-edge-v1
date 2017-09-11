@@ -41,6 +41,7 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
     IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider;
     TRANSPORT_HANDLE transportHandle;
     BROKER_HANDLE broker;
+    IOTHUB_CLIENT_RETRY_POLICY retryPolicy;
 }IOTHUB_HANDLE_DATA;
 
 #define SOURCE "source"
@@ -52,6 +53,7 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
 #define SUFFIX "IoTHubSuffix"
 #define HUBNAME "IoTHubName"
 #define TRANSPORT "Transport"
+#define RETRY_POLICY "RetryPolicy"
 
 static int strcmp_i(const char* lhs, const char* rhs)
 {
@@ -101,6 +103,7 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                 const char * IoTHubName;
                 const char * IoTHubSuffix;
                 const char * transport;
+
                 if ((IoTHubName = json_object_get_string(obj, HUBNAME)) == NULL)
                 {
                     /*Codes_SRS_IOTHUBMODULE_05_006: [ If the JSON object does not contain a value named "IoTHubName" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
@@ -163,6 +166,54 @@ static void* IotHub_ParseConfigurationFromJson(const char* configuration)
                             free(suffix);
                             free(config);
                             config = NULL;
+                        }
+
+                        if (config != NULL)
+                        {
+                            const char * retryPolicy;
+
+                            /*Codes_SRS_IOTHUBMODULE_99_001: [ If the value of "RetryPolicy" is defined but is not one of "NONE", "IMMEDIATE", "INTERVAL", "LINEAR_BACKOFF", "EXPONENTIAL_BACKOFF", "EXPONENTIAL_BACKOFF_WITH_JITTER" or "RANDOM" then `IotHub_ParseConfigurationFromJson` shall fail and return NULL. ]*/
+                            /*Codes_SRS_IOTHUBMODULE_99_002: [ If the value of "RetryPolicy" is not defined, retry policy is set to default value ("EXPONENTIAL_BACKOFF_WITH_JITTER") ]*/
+                            if ((retryPolicy = json_object_get_string(obj, RETRY_POLICY)) == NULL)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF_WITH_JITTER;
+                            }
+                            else if (strcmp_i(retryPolicy, "NONE") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_NONE;
+                            }
+                            else if (strcmp_i(retryPolicy, "IMMEDIATE") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_IMMEDIATE;
+                            }
+                            else if (strcmp_i(retryPolicy, "INTERVAL") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_INTERVAL;
+                            }
+                            else if (strcmp_i(retryPolicy, "LINEAR_BACKOFF") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_LINEAR_BACKOFF;
+                            }
+                            else if (strcmp_i(retryPolicy, "EXPONENTIAL_BACKOFF") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF;
+                            }
+                            else if (strcmp_i(retryPolicy, "EXPONENTIAL_BACKOFF_WITH_JITTER") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_EXPONENTIAL_BACKOFF_WITH_JITTER;
+                            }
+                            else if (strcmp_i(retryPolicy, "RANDOM") == 0)
+                            {
+                                config->retryPolicy = IOTHUB_CLIENT_RETRY_RANDOM;
+                            }
+                            else
+                            {
+                                LogError("Invalid RetryPolicy");
+                                free(name);
+                                free(suffix);
+                                free(config);
+                                config = NULL;
+                            }
                         }
 
                         if (config != NULL)
@@ -291,6 +342,7 @@ static MODULE_HANDLE IotHub_Create(BROKER_HANDLE broker, const void* configurati
                     }
                     else
                     {
+                        result->retryPolicy = config->retryPolicy;
                         /*Codes_SRS_IOTHUBMODULE_17_004: [ `IotHub_Create` shall store the broker. ]*/
                         result->broker = broker;
                         /*Codes_SRS_IOTHUBMODULE_02_008: [ Otherwise, `IotHub_Create` shall return a non-`NULL` handle. ]*/
@@ -499,6 +551,16 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
                 if (IoTHubClient_SetMessageCallback(result->iothubHandle, IotHub_ReceiveMessageCallback, result) != IOTHUB_CLIENT_OK)
                 {
                     LogError("unable to IoTHubClient_SetMessageCallback");
+                    IoTHubClient_Destroy(result->iothubHandle);
+                    STRING_delete(result->deviceName);
+                    STRING_delete(result->deviceKey);
+                    free(result);
+                    result = NULL;
+                }
+                /*Codes_SRS_IOTHUBMODULE_99_003: [ If a new personality is created, then retry policy will be set by calling `IoTHubClient_SetRetryPolicy`. ]*/
+                else if (IoTHubClient_SetRetryPolicy(result->iothubHandle, moduleHandleData->retryPolicy, 0))
+                {
+                    LogError("unable to IoTHubClient_SetRetryPolicy");
                     IoTHubClient_Destroy(result->iothubHandle);
                     STRING_delete(result->deviceName);
                     STRING_delete(result->deviceKey);
