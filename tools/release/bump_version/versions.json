@@ -1,7 +1,7 @@
 {
     "gateway": 
     {
-        "core" : "1.0.6"
+        "core" : "1.0.7"
     },
     "bindings" :
     {
