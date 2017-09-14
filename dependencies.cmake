@@ -24,7 +24,7 @@ findAndInstall(azure_c_shared_utility 1.0.25
     -Duse_default_uuid=${use_xplat_uuid}
     -Duse_condition=${enable_event_system}
     ${PASSVARS}
-    -G "${CMAKE_GENERATOR}")
+    -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
 set(SHARED_UTIL_INC_FOLDER ${AZURE_C_SHARED_UTILITY_INCLUDE_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 set(SHARED_UTIL_LIB_FOLDER ${AZURE_C_SHARED_LIBRARY_DIR} CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
 set(SHARED_UTIL_LIB aziotsharedutil CACHE INTERNAL "this is what needs to be included if using sharedLib lib" FORCE)
@@ -66,7 +66,8 @@ else()
             ${PROJECT_SOURCE_DIR}/deps/nanomsg
             -G "${CMAKE_GENERATOR}"
             -DNN_TESTS=OFF
-            -DNN_TOOLS=OFF)
+            -DNN_TOOLS=OFF
+	    -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
     endif()
 
     #If earlier cmake

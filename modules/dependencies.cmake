@@ -6,12 +6,12 @@ include("../gatewayFunctions.cmake")
 ###############################################################################
 ###########################Find/Install/Build uamqp############################
 ###############################################################################
-findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
 
 ###############################################################################
 ###########################Find/Install/Build umqtt############################
 ###############################################################################
-findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
 
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
@@ -36,4 +36,4 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/deps/parson/README.md)
         message(FATAL_ERROR "Error pulling parson submodule: ${res}")
     endif()
 endif()
-findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Duse_openssl=OFF -Dbuild_as_dynamic=ON -Dskip_samples=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Duse_openssl=OFF -Dbuild_as_dynamic=ON -Dskip_samples=ON -G "${CMAKE_GENERATOR}" -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
