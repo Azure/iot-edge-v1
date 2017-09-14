@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
@@ -497,6 +497,109 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT IotHub_ReceiveMessageCallback(IOTHUB_MES
     return result;
 }
 
+void IoTHub_TwinPropertiesCallback(DEVICE_TWIN_UPDATE_STATE update_state, const unsigned char* payload, size_t size, void* userContextCallback)
+{
+    PERSONALITY_PTR personality = (PERSONALITY_PTR)userContextCallback;
+    // TODO: write logic to send message to bus
+    MESSAGE_CONFIG msgConfig;
+    MAP_HANDLE propertiesMap = Map_Create(NULL);
+    if(propertiesMap == NULL)
+    {
+        LogError("unable to create a Map");
+    }
+    else
+    {
+        if (Map_AddOrUpdate(propertiesMap, "twin-desired-properties", "true") != MAP_OK)
+        {
+            LogError("unable to Map_AddOrUpdate");
+        }
+        else
+        {
+            char* state = "unknown";
+            switch(update_state)
+            {
+                case DEVICE_TWIN_UPDATE_COMPLETE:
+                    state = "UPDATE_COMPLETE";
+                    break;
+                case DEVICE_TWIN_UPDATE_PARTIAL:
+                    state = "UPDATE_PARTIAL";
+                    break;
+            }
+            if (Map_Add(propertiesMap, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "deviceName", STRING_c_str(personality->deviceName)) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "deviceKey", STRING_c_str(personality->deviceKey)) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "udateState", state) == MAP_OK )
+            {
+                msgConfig.size = size;
+                msgConfig.source = (unsigned char*)payload;
+                msgConfig.sourceProperties = propertiesMap;
+                MESSAGE_HANDLE twinDPMsg = Message_Create(&msgConfig);
+                if (twinDPMsg == NULL)
+                {
+                    LogError("unable to create \"twin desired properties\" message");
+                }
+                else
+                {
+                    (void)Broker_Publish(personality->broker, personality->module, twinDPMsg);
+                }
+            }
+            else
+            {
+                LogError("Received Update Twin Properties but failed to add properties into message");
+            }
+        }
+    }
+}
+
+#define RESPONSE_STATES "invoked method"
+
+int IoTHub_TwinMethodCallback(const char* method_name, const unsigned char* payload, size_t size, unsigned char** response, size_t* response_size, void* userContextCallback)
+{
+    PERSONALITY_PTR personality = (PERSONALITY_PTR)userContextCallback;
+    // TODO: write logic to send message to bus
+    MESSAGE_CONFIG msgConfig;
+    MAP_HANDLE propertiesMap = Map_Create(NULL);
+    if(propertiesMap == NULL)
+    {
+        LogError("unable to create a Map");
+    }
+    else
+    {
+        if (Map_AddOrUpdate(propertiesMap, "twin-invoke-method", "true") != MAP_OK)
+        {
+            LogError("unable to Map_AddOrUpdate");
+        }
+        else
+        {
+            if (Map_Add(propertiesMap, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "deviceName", STRING_c_str(personality->deviceName)) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "deviceKey", STRING_c_str(personality->deviceKey)) == MAP_OK
+              && Map_AddOrUpdate(propertiesMap, "method", method_name) == MAP_OK)
+            {
+                msgConfig.size = size;
+                msgConfig.source = (unsigned char*)payload;
+                msgConfig.sourceProperties = propertiesMap;
+                MESSAGE_HANDLE twinDPMsg = Message_Create(&msgConfig);
+                if (twinDPMsg == NULL)
+                {
+                    LogError("unable to create \"twin desired properties\" message");
+                }
+                else
+                {
+                    (void)Broker_Publish(personality->broker, personality->module, twinDPMsg);
+                }
+            }
+            else
+            {
+                LogError("Received method invocation but failed to create message");
+            }
+        }
+    }
+    *response = (unsigned char*)RESPONSE_STATES;
+    *response_size = strlen(RESPONSE_STATES);
+    return 0;
+}
+
 /*returns non-null if PERSONALITY has been properly populated*/
 static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* deviceKey, IOTHUB_HANDLE_DATA* moduleHandleData)
 {
@@ -572,6 +675,27 @@ static PERSONALITY_PTR PERSONALITY_create(const char* deviceName, const char* de
                     /*it is all fine*/
                     result->broker = moduleHandleData->broker;
                     result->module = moduleHandleData;
+                    if (moduleHandleData->transportProvider==MQTT_Protocol)
+                    {
+                        // add twin properties and invoke method call back
+                        if (IoTHubClient_SetDeviceTwinCallback(result->iothubHandle, IoTHub_TwinPropertiesCallback, result) != IOTHUB_CLIENT_OK)
+                        {
+                            /* error handling */
+                            LogError("Failed to SetDeviceTwinCallback");
+                        }
+                        else
+                        {
+                            if(IoTHubClient_SetDeviceMethodCallback(result->iothubHandle, IoTHub_TwinMethodCallback, result) != IOTHUB_CLIENT_OK)
+                            {
+                            /* error handling */
+                                LogError("Failed to SetDeviceTwinMethod");
+                            }
+                            else
+                            {
+                                LogInfo("Current Protocol is MQTT so that Device Twin Callback registrated.");
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -752,24 +876,32 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                         }
                         else
                         {
-                            IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
-                            if (iotHubMessage == NULL)
+                            const char* isInitialRegist = ConstMap_GetValue(properties,"initial-registration");
+                            if (isInitialRegist != NULL&&strcmp(isInitialRegist,"true")==0)
                             {
-                                LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
+                                LogInfo("Registed Device:%d", deviceName);
                             }
                             else
                             {
-                                /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
-                                if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
+                                IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
+                                if (iotHubMessage == NULL)
                                 {
-                                    /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
-                                    LogError("unable to IoTHubClient_SendEventAsync");
+                                    LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
                                 }
                                 else
                                 {
-                                    /*all is fine, message has been accepted for delivery*/
+                                    /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+                                    if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
+                                    {
+                                        /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
+                                        LogError("unable to IoTHubClient_SendEventAsync");
+                                    }
+                                    else
+                                    {
+                                        /*all is fine, message has been accepted for delivery*/
+                                    }
+                                    IoTHubMessage_Destroy(iotHubMessage);
                                 }
-                                IoTHubMessage_Destroy(iotHubMessage);
                             }
                         }
                     }

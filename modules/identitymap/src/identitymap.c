@@ -491,6 +491,52 @@ static void * IdentityMap_ParseConfigurationFromJson(const char* configuration)
     return result;
 }
 
+static void IdentityMap_Start(MODULE_HANDLE module)
+{
+    IDENTITY_MAP_DATA * idModule = (IDENTITY_MAP_DATA*)module;
+    for (size_t i=0;i<idModule->mappingSize;i++)
+    {
+        IDENTITY_MAP_CONFIG*  macToDevIdArray = (idModule->macToDevIdArray) + i;
+        MESSAGE_CONFIG msgConfig;
+        MAP_HANDLE propertiesMap = Map_Create(NULL);
+        if(propertiesMap == NULL)
+        {
+            LogError("unable to create a Map");
+        }
+        else
+        {
+            if (Map_AddOrUpdate(propertiesMap, "initial-registration", "true") != MAP_OK)
+            {
+                LogError("unable to Map_AddOrUpdate");
+            }
+            else
+            {
+                if (Map_AddOrUpdate(propertiesMap, "deviceName", macToDevIdArray->deviceId) == MAP_OK)
+                {
+                    if (Map_AddOrUpdate(propertiesMap, "deviceKey", macToDevIdArray->deviceKey) == MAP_OK)
+                    {
+                        if (Map_AddOrUpdate(propertiesMap, GW_SOURCE_PROPERTY, GW_IDMAP_MODULE)==MAP_OK)
+                        {
+                            msgConfig.size = (size_t)strlen("-");
+                            msgConfig.source = (unsigned char*)"-";
+                            msgConfig.sourceProperties = propertiesMap;
+                            
+                            MESSAGE_HANDLE irMsg = Message_Create(&msgConfig);
+                            if (irMsg == NULL)
+                            {
+                                LogError("unable to create \"intial registration message\" message");
+                            }
+                            else
+                            {
+                                (void)Broker_Publish(idModule->broker, module, irMsg);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 static void IdentityMap_FreeConfiguration(void * configuration)
 {
@@ -824,7 +870,7 @@ static const MODULE_API_1 IdentityMap_APIS_all =
     IdentityMap_Create,
     IdentityMap_Destroy,
     IdentityMap_Receive,
-    NULL
+    IdentityMap_Start
 };
 
 /*Codes_SRS_IDMAP_26_001: [ `Module_GetApi` shall return a pointer to `MODULE_API` structure. ]*/
