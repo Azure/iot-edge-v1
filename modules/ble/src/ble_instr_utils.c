@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "azure_c_shared_utility/vector.h"
 #include "azure_c_shared_utility/base64.h"
@@ -61,7 +63,6 @@ bool parse_write(
     size_t index
 )
 {
-    (void)index;
     bool result;
     ble_instr->instruction_type = type;
     const char* base64_encoded_data = json_object_get_string(instr, "data");
@@ -96,7 +97,6 @@ bool parse_instruction(
     size_t index
 )
 {
-    (void)index;
     bool result;
     if (strcmp(type, "read_once") == 0)
     {
@@ -203,24 +203,50 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                     }
                     else
                     {
-                        const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
-                        if (characteristic_uuid == NULL)
+                        if ( strcmp(type, "sequential") == 0)
                         {
-                            /*Codes_SRS_BLE_05_009: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
-                            LogError("json_object_get_string returned NULL for the property 'characteristic_uuid' for instruction number %zu", i);
-                            free_instructions(result);
-                            VECTOR_destroy(result);
-                            result = NULL;
-                            break;
+                            JSON_Array* seq_instructions = json_object_get_array(instr, "instructions");
+                            VECTOR_HANDLE seqInsts = parse_instructions(seq_instructions);
+                            if (seqInsts!=NULL)
+                            {
+                                size_t numOfSeqs = VECTOR_size(seqInsts);
+                                if (numOfSeqs>0)
+                                {
+  									BLE_INSTRUCTION* prev_instr = (BLE_INSTRUCTION*)VECTOR_element(seqInsts, 0);
+									BLE_INSTRUCTION firstInstr = { 0 };
+									firstInstr.instruction_type = prev_instr->instruction_type;
+									firstInstr.characteristic_uuid = STRING_clone(prev_instr->characteristic_uuid);
+									firstInstr.nextInst = NULL;
+									memcpy(&(firstInstr.data), &(prev_instr->data), sizeof(prev_instr->data));
+									prev_instr = &firstInstr;
+									if (numOfSeqs > 1)
+                                    {
+										for (size_t c = 1; c < numOfSeqs; c++)
+                                        {
+											BLE_INSTRUCTION* current = (BLE_INSTRUCTION*)VECTOR_element(seqInsts, c);
+											BLE_INSTRUCTION* currentInstr = (BLE_INSTRUCTION*)malloc(sizeof(BLE_INSTRUCTION));
+											currentInstr->instruction_type = current->instruction_type;
+											currentInstr->characteristic_uuid = STRING_clone(current->characteristic_uuid);
+											memcpy(&(currentInstr->data), &(current->data), sizeof(current->data));
+											prev_instr->nextInst = currentInstr;
+											prev_instr = currentInstr;
+										}
+									}
+									if (VECTOR_push_back(result, &firstInstr, 1) != 0)
+                                    {
+                                        LogError("VECTOR_push_back return not zero for the property 'characteristic_uuid' for instruction number %zu", i);
+									}
+                                }
+                                VECTOR_destroy(seqInsts);
+                            }
                         }
                         else
                         {
-                            BLE_INSTRUCTION ble_instr = { 0 };
-                            ble_instr.characteristic_uuid = STRING_construct(characteristic_uuid);
-                            if (ble_instr.characteristic_uuid == NULL)
+                            const char* characteristic_uuid = json_object_get_string(instr, "characteristic_uuid");
+                            if (characteristic_uuid == NULL)
                             {
-                                /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-                                LogError("STRING_construct returned NULL while processing instruction %zu", i);
+                                /*Codes_SRS_BLE_05_009: [ BLE_CreateFromJson shall return NULL if a given instruction does not have a characteristic_uuid property. ]*/
+                                LogError("json_object_get_string returned NULL for the property 'characteristic_uuid' for instruction number %zu", i);
                                 free_instructions(result);
                                 VECTOR_destroy(result);
                                 result = NULL;
@@ -228,10 +254,12 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                             }
                             else
                             {
-                                if (parse_instruction(type, instr, &ble_instr, i) == false)
+                                BLE_INSTRUCTION ble_instr = { 0 };
+                                ble_instr.characteristic_uuid = STRING_construct(characteristic_uuid);
+                                if (ble_instr.characteristic_uuid == NULL)
                                 {
-                                    LogError("parse_instruction returned false while processing instruction %zu", i);
-                                    STRING_delete(ble_instr.characteristic_uuid);
+                                    /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+                                    LogError("STRING_construct returned NULL while processing instruction %zu", i);
                                     free_instructions(result);
                                     VECTOR_destroy(result);
                                     result = NULL;
@@ -239,16 +267,28 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
                                 }
                                 else
                                 {
-                                    // if we get here then we have a valid instruction
-                                    if (VECTOR_push_back(result, &ble_instr, 1) != 0)
+                                    if (parse_instruction(type, instr, &ble_instr, i) == false)
                                     {
-                                        /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
-                                        LogError("VECTOR_push_back returned a non-zero value while processing instruction %zu", i);
-                                        free_instruction(&ble_instr);
+                                        LogError("parse_instruction returned false while processing instruction %zu", i);
+                                        STRING_delete(ble_instr.characteristic_uuid);
                                         free_instructions(result);
                                         VECTOR_destroy(result);
                                         result = NULL;
                                         break;
+                                    }
+                                    else
+                                    {
+                                        // if we get here then we have a valid instruction
+                                        if (VECTOR_push_back(result, &ble_instr, 1) != 0)
+                                        {
+                                            /*Codes_SRS_BLE_05_002: [ BLE_CreateFromJson shall return NULL if any of the underlying platform calls fail. ]*/
+                                            LogError("VECTOR_push_back returned a non-zero value while processing instruction %zu", i);
+                                            free_instruction(&ble_instr);
+                                            free_instructions(result);
+                                            VECTOR_destroy(result);
+                                            result = NULL;
+                                            break;
+                                        }
                                     }
                                 }
                             }
