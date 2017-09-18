@@ -10,17 +10,27 @@ High level design
 This module provides a connection to IoT Hub for all mapped devices known to the gateway. When a device wants to publish events to IoT Hub, it must
 send a message with the following properties:
 
->| PropertyName | Description                                                                  |
->|--------------|------------------------------------------------------------------------------|
->| source       | The module only processes messages that have source set to "mapping".        |
->| deviceName   | The device ID registered with IoT Hub                                        |
->| deviceKey    | The device key registered with IoT Hub                                       |
+>| PropertyName    | Description                                                                  |
+>|-----------------|------------------------------------------------------------------------------|
+>| source          | The module only processes messages that have source set to "mapping".        |
+>| deviceName      | The device ID registered with IoT Hub                                        |
+>| deviceKey       | The device key registered with IoT Hub                                       |
+>| iotHubMessageId | Message id (optional)                                                        |
 
 The body of the message will be sent to IoT Hub on behalf of the given device.
 
 The IotHub module dynamically creates per-device instances of IoTHubClient. It can be configured to use any of the protocols supported by 
 IoTHubClient. Note that the AMQP and HTTP transports will share one TCP connection for all devices; the MQTT transport will create a new
 TCP connection for each device.
+
+If iotHubMessageId property is defined, IotHub sends 'MessageDelivered'-notifaction message back to sender when message is delivered successfully or an error is reported.
+
+>| PropertyName                | Description                                                      |
+>|-----------------------------|------------------------------------------------------------------|
+>| source                      | "iotHub".                                                        |
+>| iotHubMessageDeliveryStatus | Delivery status of the sent message (OK or FAIL)                 |
+>| iotHubMessageId             | Message id of the sent message                                   |
+
 
 #### Device registration
 
