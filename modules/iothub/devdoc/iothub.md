@@ -23,12 +23,12 @@ The IotHub module dynamically creates per-device instances of IoTHubClient. It c
 IoTHubClient. Note that the AMQP and HTTP transports will share one TCP connection for all devices; the MQTT transport will create a new
 TCP connection for each device.
 
-If iotHubMessageId property is defined, IotHub sends 'MessageDelivered'-notifaction message back to sender when message is delivered successfully or an error is reported.
+If iotHubMessageId property is defined, IotHub sends 'MessageDelivered'-notification message back to the sender when the message is delivered successfully or an error is reported.
 
 >| PropertyName                | Description                                                      |
 >|-----------------------------|------------------------------------------------------------------|
 >| source                      | "iotHub".                                                        |
->| iotHubMessageDeliveryStatus | Delivery status of the sent message (OK or FAIL)                 |
+>| iotHubMessageDeliveryStatus | Delivery status of the sent message ("OK" or "FAIL")             |
 >| iotHubMessageId             | Message id of the sent message                                   |
 
 
