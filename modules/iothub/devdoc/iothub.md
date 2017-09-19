@@ -147,6 +147,12 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_IOTHUBMODULE_02_021: [** If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_02_022: [** If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_99_003: [** If a new personality is created, then retry policy will be set by calling `IoTHubClient_SetRetryPolicy`. **]**
+**SRS_IOTHUBMODULE_99_004: [** If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters **]**
+**SRS_IOTHUBMODULE_99_005: [** If the message does not contain property "iotHubMessageId" then no callback function is given to `IoTHubClient_SendEventAsync` as a parameter **]**
+**SRS_IOTHUBMODULE_99_006: [** If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" **]**
+**SRS_IOTHUBMODULE_99_007: [** If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" **]**
+**SRS_IOTHUBMODULE_99_008: [** If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message **]**
+
 
 
 ### IotHub_ReceiveMessageCallback

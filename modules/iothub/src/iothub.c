@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "azure_c_shared_utility/gballoc.h"
+#include "azure_c_shared_utility/crt_abstractions.h"
 
 #include "iothub.h"
 #include "iothub_client.h"
@@ -700,27 +701,36 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
     return result;
 }
 
-static void receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
+static void SendEventAsync_receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
 {
-    MESSAGE_DELIVERED_CALLBACK_CONTEXT* callbackContext;
     if (!userContextCallback)
     {
         LogError("Context was null");
         return;
     }
 
-    char deliveryStatus[5];
+    char* deliveryStatus;
     if (result != IOTHUB_CLIENT_CONFIRMATION_OK)
     {
+        /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
         LogError("Message was not delivered due to error: %d", result);
-        strcpy(deliveryStatus, "FAIL");
+        if (mallocAndStrcpy_s(&deliveryStatus, "FAIL") != 0)
+        {
+            LogError("Cannot copy deliveryStatus code");
+            return;
+        }
     }
     else
     {
-        strcpy(deliveryStatus, "OK");
+        /*Codes_SRS_IOTHUBMODULE_99_006: [ If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" ]*/
+        if (mallocAndStrcpy_s(&deliveryStatus, "OK") != 0)
+        {
+            LogError("Cannot copy deliveryStatus code");
+            return;
+        }
     }
 
-    callbackContext = (MESSAGE_DELIVERED_CALLBACK_CONTEXT*)userContextCallback;
+    MESSAGE_DELIVERED_CALLBACK_CONTEXT* callbackContext = (MESSAGE_DELIVERED_CALLBACK_CONTEXT*)userContextCallback;
     if (callbackContext->iotHubMessageId == NULL)
     {
         LogError("MessageId was not defined");
@@ -753,6 +763,7 @@ static void receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION_RESULT result,
         Map_Destroy(propertiesMap);
         free(callbackContext->iotHubMessageId);
         free(callbackContext);
+        return;
     }
 
     if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_MESSAGE_ID, callbackContext->iotHubMessageId))
@@ -869,19 +880,36 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
                             {
                                 MESSAGE_DELIVERED_CALLBACK_CONTEXT* userContextCallback = NULL;
                                 IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK eventConfirmationCallback = NULL;
-                                // if 'iotHubMessageId' property is found, register receiveConfirmation function for IoTHubClient_SendEventAsync
+
+                                /*Codes_SRS_IOTHUBMODULE_99_004: [ If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters ]*/
+                                /*Codes_SRS_IOTHUBMODULE_99_005: [ If the message does not contain property "iotHubMessageId" then no callback function is given to `IoTHubClient_SendEventAsync` as a parameter ]*/
                                 const char* iotHubMessageId = ConstMap_GetValue(properties, GW_IOTHUB_MESSAGE_ID);
                                 if (iotHubMessageId)
                                 {
                                     userContextCallback = malloc(sizeof(MESSAGE_DELIVERED_CALLBACK_CONTEXT));
-                                    if (userContextCallback)
+                                    if (userContextCallback == NULL)
                                     {
-                                        eventConfirmationCallback = receiveMessageConfirmation;
-                                        userContextCallback->moduleData = moduleHandleData;
-                                        userContextCallback->iotHubMessageId = malloc(strlen(iotHubMessageId)+1);
-                                        strcpy(userContextCallback->iotHubMessageId, iotHubMessageId);
+                                        /*Codes_SRS_IOTHUBMODULE_99_008: [ If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message ]*/
+                                        LogError("Failed to create MESSAGE_DELIVERED_CALLBACK_CONTEXT");
+                                        IoTHubMessage_Destroy(iotHubMessage);
+                                        ConstMap_Destroy(properties);
+                                        return;
                                     }
+
+                                    if (mallocAndStrcpy_s(&(userContextCallback->iotHubMessageId), iotHubMessageId) != 0)
+                                    {
+                                        /*Codes_SRS_IOTHUBMODULE_99_008: [ If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message ]*/
+                                        LogError("Failed to allocate/copy iotHubMessageId");
+                                        free(userContextCallback);
+                                        IoTHubMessage_Destroy(iotHubMessage);
+                                        ConstMap_Destroy(properties);
+                                        return;
+                                    }
+
+                                    eventConfirmationCallback = SendEventAsync_receiveMessageConfirmation;
+                                    userContextCallback->moduleData = moduleHandleData;
                                 }
+
                                 /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
                                 if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, eventConfirmationCallback, userContextCallback) != IOTHUB_CLIENT_OK)
                                 {

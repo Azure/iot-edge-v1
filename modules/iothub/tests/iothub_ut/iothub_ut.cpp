@@ -28,6 +28,7 @@ extern "C" void* gballoc_malloc(size_t size);
 extern "C" void* gballoc_calloc(size_t nmemb, size_t size);
 extern "C" void* gballoc_realloc(void* ptr, size_t size);
 extern "C" void gballoc_free(void* ptr);
+extern "C" int mallocAndStrcpy_s(char** destination, const char*source);
 
 namespace BASEIMPLEMENTATION
 {
@@ -70,6 +71,8 @@ static size_t currentIoTHubClient_Create_call;
 static size_t whenShallIoTHubClient_Create_fail;
 
 static IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC IotHub_Receive_message_callback_function;
+static IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK IoTHub_sendEventAsync_callback_function;
+static void* IoTHub_sendEventAsync_callback_userContext;
 static void * IotHub_Receive_message_userContext;
 static const char * IotHub_Receive_message_content;
 static size_t IotHub_Receive_message_size;
@@ -94,6 +97,13 @@ typedef struct IOTHUB_HANDLE_DATA_TAG
     TRANSPORT_HANDLE transportHandle;
     BROKER_HANDLE broker;
 }IOTHUB_HANDLE_DATA;
+
+typedef struct MESSAGE_DELIVERED_CALLBACK_CONTEXT_TAG
+{
+   IOTHUB_HANDLE_DATA* moduleData;
+   char* iotHubMessageId;
+
+} MESSAGE_DELIVERED_CALLBACK_CONTEXT;
 
 // NOTE Each of these dummy transport provider functions have to do something a
 // little different (e.g. return a different ptr value), or else the optimizer
@@ -144,6 +154,14 @@ static IOTHUB_MESSAGE_HANDLE IOTHUB_MESSAGE_HANDLE_VALID_2 = ((IOTHUB_MESSAGE_HA
 static MAP_HANDLE MAP_HANDLE_VALID_2 = ((MAP_HANDLE)(7));
 static const char* CONSTMAP_KEYS_VALID_2[3] = { "source", "deviceName", "deviceKey"};
 static const char* CONSTMAP_VALUES_VALID_2[3] = { "mapping", "secondDevice", "red"};
+
+static MAP_HANDLE TEST_MAP_HANDLE = (MAP_HANDLE)0x4242;
+
+#define MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID ((MESSAGE_HANDLE)(8))
+#define CONSTMAP_HANDLE_WITH_IOTHUBMESSAGEID ((CONSTMAP_HANDLE)(8))
+
+static const char* CONSTMAP_KEYS_WITH_IOTHUBMESSAGEID[4] = { "source", "deviceName", "deviceKey", "iotHubMessageId"};
+static const char* CONSTMAP_VALUES_WITH_IOTHUBMESSAGEID[4] = { "mapping", "secondDevice", "red", "messageId1234"};
 
 /*these are simple cached variables*/
 static pfModule_ParseConfigurationFromJson Module_ParseConfigurationFromJson = NULL; /*gets assigned in TEST_SUITE_INITIALIZE*/
@@ -204,12 +222,28 @@ public:
         BASEIMPLEMENTATION::gballoc_free(ptr);
     MOCK_VOID_METHOD_END()
 
+    // crt_abstractions.h
+    MOCK_STATIC_METHOD_2(, int, mallocAndStrcpy_s, char**, destination, const char*, source)
+
+        int r = 0;
+        *destination = (char*)BASEIMPLEMENTATION::gballoc_malloc(strlen(source) + 1);
+        strcpy(*destination, source);
+
+    MOCK_METHOD_END(int,r)
+
     // ConstMap mocks
     MOCK_STATIC_METHOD_1(, CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle)
     MOCK_METHOD_END(CONSTMAP_HANDLE, handle)
 
     MOCK_STATIC_METHOD_1(, void, ConstMap_Destroy, CONSTMAP_HANDLE, map)
     MOCK_VOID_METHOD_END()
+
+    MOCK_STATIC_METHOD_1(, void, Map_Destroy, MAP_HANDLE, map)
+    MOCK_VOID_METHOD_END()
+
+    MOCK_STATIC_METHOD_1(, MAP_HANDLE, Map_Create, MAP_FILTER_CALLBACK, mapFilterFunc)
+    MOCK_METHOD_END(MAP_HANDLE, TEST_MAP_HANDLE)
+
 
     MOCK_STATIC_METHOD_4(, CONSTMAP_RESULT, ConstMap_GetInternals, CONSTMAP_HANDLE, handle, const char*const**, keys, const char*const**, values, size_t*, count)
         if (handle == CONSTMAP_HANDLE_VALID_1)
@@ -223,6 +257,12 @@ public:
             *keys = CONSTMAP_KEYS_VALID_2;
             *values = CONSTMAP_VALUES_VALID_2;
             *count = 3;
+        }
+        else if (handle == CONSTMAP_HANDLE_WITH_IOTHUBMESSAGEID)
+        {
+            *keys = CONSTMAP_KEYS_WITH_IOTHUBMESSAGEID;
+            *values = CONSTMAP_VALUES_WITH_IOTHUBMESSAGEID;
+            *count = 4;
         }
         else
         {
@@ -347,6 +387,10 @@ public:
         {
             result2 = CONSTMAP_HANDLE_VALID_2;
         }
+        else if (message == MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID)
+        {
+            result2 = CONSTMAP_HANDLE_WITH_IOTHUBMESSAGEID;
+        }
         else
         {
             result2 = NULL;
@@ -396,6 +440,19 @@ public:
                 }
             }
         }
+        else if (handle == CONSTMAP_HANDLE_WITH_IOTHUBMESSAGEID)
+        {
+            size_t i;
+            result2 = NULL;
+            for (i = 0; i < sizeof(CONSTMAP_KEYS_WITH_IOTHUBMESSAGEID)/sizeof(CONSTMAP_KEYS_WITH_IOTHUBMESSAGEID[0]); i++)
+            {
+                if (strcmp(CONSTMAP_KEYS_WITH_IOTHUBMESSAGEID[i], key) == 0)
+                {
+                    result2 = CONSTMAP_VALUES_WITH_IOTHUBMESSAGEID[i];
+                    break;
+                }
+            }
+        }
         else
         {
             result2 = NULL;
@@ -409,6 +466,8 @@ public:
     MOCK_METHOD_END(MAP_RESULT, MAP_OK)
 
     MOCK_STATIC_METHOD_4(, IOTHUB_CLIENT_RESULT, IoTHubClient_SendEventAsync, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_MESSAGE_HANDLE, eventMessageHandle, IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK, eventConfirmationCallback, void*, userContextCallback)
+        IoTHub_sendEventAsync_callback_function = eventConfirmationCallback;
+        IoTHub_sendEventAsync_callback_userContext = userContextCallback;
     MOCK_METHOD_END(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_OK)
 
     MOCK_STATIC_METHOD_3(, IOTHUB_CLIENT_RESULT, IoTHubClient_SetMessageCallback, IOTHUB_CLIENT_HANDLE, iotHubClientHandle, IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC, messageCallback, void*, userContextCallback)
@@ -436,6 +495,10 @@ public:
         else if (message == MESSAGE_HANDLE_VALID_2)
         {
             result2 = CONSTBUFFER_VALID_2;
+        }
+        else if (message == MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID)
+        {
+            result2 = CONSTBUFFER_VALID_1;
         }
         else
         {
@@ -550,8 +613,11 @@ public:
 
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void*, gballoc_malloc, size_t, size);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, gballoc_free, void*, ptr);
+DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , int, mallocAndStrcpy_s, char**, destination, const char*, source);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , CONSTMAP_HANDLE, ConstMap_Clone, CONSTMAP_HANDLE, handle);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, ConstMap_Destroy, CONSTMAP_HANDLE, map);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , void, Map_Destroy, MAP_HANDLE, map);
+DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , MAP_HANDLE, Map_Create, MAP_FILTER_CALLBACK, callback);
 DECLARE_GLOBAL_MOCK_METHOD_1(IotHubMocks, , VECTOR_HANDLE, VECTOR_create, size_t, elementSize)
 DECLARE_GLOBAL_MOCK_METHOD_3(IotHubMocks, , int, VECTOR_push_back, VECTOR_HANDLE, handle, const void*, elements, size_t, numElements)
 DECLARE_GLOBAL_MOCK_METHOD_2(IotHubMocks, , void*, VECTOR_element, VECTOR_HANDLE, handle, size_t, index)
@@ -2046,6 +2112,11 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1);
         }
 
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
         /*finally, send the message*/
         STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL, NULL))
             .IgnoreArgument(1)
@@ -2216,6 +2287,7 @@ BEGIN_TEST_SUITE(iothub_ut)
     /*Tests_SRS_IOTHUBMODULE_02_017: [ Otherwise `IotHub_Receive` shall not create a new personality. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
     /*Tests_SRS_IOTHUBMODULE_02_022: [ If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_005: [ If the message does not contain property "iotHubMessageId" then no callback function is given to `IoTHubClient_SendEventAsync` as a parameter ]*/
     TEST_FUNCTION(IotHub_Receive_after_receive_succeeds)
     {
         ///arrange
@@ -2282,6 +2354,12 @@ BEGIN_TEST_SUITE(iothub_ut)
                 .IgnoreArgument(1);
         }
 
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn((const char*)NULL);
+
         /*finally, send the message*/
         STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL, NULL))
             .IgnoreArgument(1)
@@ -2296,6 +2374,863 @@ BEGIN_TEST_SUITE(iothub_ut)
         ///cleanup
         Module_Destroy(module);
 
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_008: [ If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message ]*/
+    TEST_FUNCTION(IotHub_Receive_after_receive_iothub_messageid_malloc_fails)
+    {
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
+
+        /*VECTOR_find_if incurs a STRING_c_str until it find the deviceName. None in this test*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        /*because the deviceName is brand new, it will be added as a new personality*/
+        {/*separate scope for personality building*/
+            /* create a new PERSONALITY */
+            STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG))
+                .IgnoreArgument(1);
+
+            /*making a copy of the deviceName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("firstDevice"));
+            /*making a copy of the deviceKey*/
+            STRICT_EXPECTED_CALL(mocks, STRING_construct("cheiaDeLaPoartaVerde"));
+
+            /*getting the stored IoTHubName*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            /*getting the stored IoTHubSuffix*/
+            STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*creating the IOTHUB_CLIENT_HANDLE associated with the device*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_CreateWithTransport(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetMessageCallback(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+
+            STRICT_EXPECTED_CALL(mocks, IoTHubClient_SetRetryPolicy(IGNORED_PTR_ARG, IOTHUB_CLIENT_RETRY_INTERVAL, IGNORED_NUM_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2)
+                .IgnoreArgument(3);
+        }
+
+        /*adding the personality to the VECTOR or personalities*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_push_back(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 1))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /*getting the location of the personality in the VECTOR*/
+        STRICT_EXPECTED_CALL(mocks, VECTOR_back(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        { /*scope for creating the IOTHUBMESSAGE from GWMESSAGE*/
+
+            /*gettng the GW message content*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetContent(MESSAGE_HANDLE_VALID_1));
+
+            /*creating a new IOTHUB_MESSAGE*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_CreateFromByteArray(IGNORED_PTR_ARG, 1))
+                .ValidateArgumentBuffer(1, CONSTBUFFER_VALID_CONTENT1.buffer, 1);
+
+            /*every creation has its destruction - this one actually happens AFTER SendEventAsync*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the IOTHUBMESSAGE properties*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Properties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW message properties*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetProperties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW keys and values*/
+            STRICT_EXPECTED_CALL(mocks, ConstMap_GetInternals(CONSTMAP_HANDLE_VALID_1, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(2)
+                .IgnoreArgument(3)
+                .IgnoreArgument(4);
+
+            /*add "source"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "source", "mapping"))
+                .IgnoreArgument(1);
+
+            /*add "somethingExtra"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "somethingExtra", "blue"))
+                .IgnoreArgument(1);
+        }
+
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn("messageId1234");
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MESSAGE_DELIVERED_CALLBACK_CONTEXT)))
+            .SetReturn((void*)NULL);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_008: [ If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message ]*/
+    TEST_FUNCTION(IotHub_Receive_after_receive_iothub_messageid_mallocstrcopy_fails)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
+
+        /*VECTOR_find_if incurs a STRING_c_str until it find the deviceName. One in this test*/
+        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        { /*scope for creating the IOTHUBMESSAGE from GWMESSAGE*/
+
+          /*gettng the GW message content*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetContent(MESSAGE_HANDLE_VALID_1));
+
+            /*creating a new IOTHUB_MESSAGE*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_CreateFromByteArray(IGNORED_PTR_ARG, 1))
+                .ValidateArgumentBuffer(1, CONSTBUFFER_VALID_CONTENT1.buffer, 1);
+
+            /*every creation has its destruction - this one actually happens AFTER SendEventAsync*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the IOTHUBMESSAGE properties*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Properties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW message properties*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetProperties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW keys and values*/
+            STRICT_EXPECTED_CALL(mocks, ConstMap_GetInternals(CONSTMAP_HANDLE_VALID_1, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(2)
+                .IgnoreArgument(3)
+                .IgnoreArgument(4);
+
+            /*add "source"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "source", "mapping"))
+                .IgnoreArgument(1);
+
+            /*add "somethingExtra"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "somethingExtra", "blue"))
+                .IgnoreArgument(1);
+        }
+
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn((const char*)"messageId0123");
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MESSAGE_DELIVERED_CALLBACK_CONTEXT)));
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(1); // fail
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_004: [ If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters ]*/
+    TEST_FUNCTION(IotHub_Receive_after_receive_iothub_messageid)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, Message_GetProperties(MESSAGE_HANDLE_VALID_1));
+        STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "source"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceFunction"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceName"));
+
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(CONSTMAP_HANDLE_VALID_1, "deviceKey"));
+
+        /*VECTOR_find_if incurs a STRING_c_str until it find the deviceName. One in this test*/
+        STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, VECTOR_find_if(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreAllArguments();
+
+        { /*scope for creating the IOTHUBMESSAGE from GWMESSAGE*/
+
+          /*gettng the GW message content*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetContent(MESSAGE_HANDLE_VALID_1));
+
+            /*creating a new IOTHUB_MESSAGE*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_CreateFromByteArray(IGNORED_PTR_ARG, 1))
+                .ValidateArgumentBuffer(1, CONSTBUFFER_VALID_CONTENT1.buffer, 1);
+
+            /*every creation has its destruction - this one actually happens AFTER SendEventAsync*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the IOTHUBMESSAGE properties*/
+            STRICT_EXPECTED_CALL(mocks, IoTHubMessage_Properties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW message properties*/
+            STRICT_EXPECTED_CALL(mocks, Message_GetProperties(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+            STRICT_EXPECTED_CALL(mocks, ConstMap_Destroy(IGNORED_PTR_ARG))
+                .IgnoreArgument(1);
+
+            /*getting the GW keys and values*/
+            STRICT_EXPECTED_CALL(mocks, ConstMap_GetInternals(CONSTMAP_HANDLE_VALID_1, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(2)
+                .IgnoreArgument(3)
+                .IgnoreArgument(4);
+
+            /*add "source"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "source", "mapping"))
+                .IgnoreArgument(1);
+
+            /*add "somethingExtra"*/
+            STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "somethingExtra", "blue"))
+                .IgnoreArgument(1);
+        }
+
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn((const char*)"messageId0123");
+
+        MESSAGE_DELIVERED_CALLBACK_CONTEXT callbackContext;
+        STRICT_EXPECTED_CALL(mocks, gballoc_malloc(sizeof(MESSAGE_DELIVERED_CALLBACK_CONTEXT)))
+            .SetReturn((void*)&callbackContext);
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /*finally, send the message*/
+        STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, (void*)&callbackContext))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3)
+            .ValidateArgument(4);
+
+        ///act
+        Module_Receive(module, MESSAGE_HANDLE_VALID_1);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_malloccopystr_fail_1)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_OK, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_malloccopystr_fail_2)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_iotHubMessageId_fail)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        ((MESSAGE_DELIVERED_CALLBACK_CONTEXT*)IoTHub_sendEventAsync_callback_userContext)->iotHubMessageId = NULL;
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_properties_fail)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetReturn((MAP_HANDLE)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_map_fail_1)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3)
+            .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_map_fail_2)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3)
+            .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_map_fail_3)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3)
+            .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_message_fail)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .SetReturn((MESSAGE_HANDLE)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_004: [ If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_006: [ If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" ]*/
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_ok)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        /* add source */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "OK"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /* add message id */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Broker_Publish(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_OK, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_destroy)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        /* add source */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /* add message id */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Broker_Publish(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_timeout)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        /* add source */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /* add message id */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Broker_Publish(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
+    }
+
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_error)
+    {
+        ///arrange
+        IotHubMocks mocks;
+        AutoConfig config;
+        auto module = Module_Create(BROKER_HANDLE_VALID, config);
+        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
+        mocks.ResetAllCalls();
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        /* add source */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        /* add message id */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Broker_Publish(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .IgnoreArgument(3);
+
+        STRICT_EXPECTED_CALL(mocks, Message_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_ERROR, IoTHub_sendEventAsync_callback_userContext);
+
+        ///assert
+        mocks.AssertActualAndExpectedCalls();
+
+        ///cleanup
+        Module_Destroy(module);
     }
 
     /*Tests_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
@@ -2406,6 +3341,11 @@ BEGIN_TEST_SUITE(iothub_ut)
             STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "source", "mapping"))
                 .IgnoreArgument(1);
         }
+
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         /*finally, send the message*/
         STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL, NULL))
@@ -2528,6 +3468,11 @@ BEGIN_TEST_SUITE(iothub_ut)
             STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, "somethingExtra", "blue"))
                 .IgnoreArgument(1);
         }
+
+        /*Check iotHubMessageId property*/
+        STRICT_EXPECTED_CALL(mocks, ConstMap_GetValue(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+                .IgnoreArgument(1)
+                .IgnoreArgument(2);
 
         /*finally, send the message*/
         STRICT_EXPECTED_CALL(mocks, IoTHubClient_SendEventAsync(IGNORED_PTR_ARG, IGNORED_PTR_ARG, NULL, NULL))
