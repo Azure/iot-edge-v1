@@ -710,22 +710,53 @@ static void SendEventAsync_receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION
     }
 
     char* deliveryStatus;
-    if (result != IOTHUB_CLIENT_CONFIRMATION_OK)
+    switch (result)
     {
-        /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
-        LogError("Message was not delivered due to error: %d", result);
-        if (mallocAndStrcpy_s(&deliveryStatus, "FAIL") != 0)
+        case IOTHUB_CLIENT_CONFIRMATION_OK:
         {
-            LogError("Cannot copy deliveryStatus code");
-            return;
+            if (mallocAndStrcpy_s(&deliveryStatus, "OK") != 0)
+            {
+                LogError("Cannot copy deliveryStatus code");
+                return;
+            }
+            break;
         }
-    }
-    else
-    {
-        /*Codes_SRS_IOTHUBMODULE_99_006: [ If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" ]*/
-        if (mallocAndStrcpy_s(&deliveryStatus, "OK") != 0)
+        case IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY:
         {
-            LogError("Cannot copy deliveryStatus code");
+            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY");
+            if (mallocAndStrcpy_s(&deliveryStatus, "DESTROY") != 0)
+            {
+                LogError("Cannot copy deliveryStatus code");
+                return;
+            }
+            break;
+        }
+        case IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT:
+        {
+            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT");
+            if (mallocAndStrcpy_s(&deliveryStatus, "TIMEOUT") != 0)
+            {
+                LogError("Cannot copy deliveryStatus code");
+                return;
+            }
+            break;
+        }
+        case IOTHUB_CLIENT_CONFIRMATION_ERROR:
+        {
+            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_ERROR");
+            if (mallocAndStrcpy_s(&deliveryStatus, "ERROR") != 0)
+            {
+                LogError("Cannot copy deliveryStatus code");
+                return;
+            }
+            break;
+        }
+        default:
+        {
+            LogError("Message was not delivered due to unknown error code");
             return;
         }
     }

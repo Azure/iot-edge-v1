@@ -3047,7 +3047,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_007: SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
     TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_destroy)
     {
         ///arrange
@@ -3071,7 +3071,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(3);
 
         /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "DESTROY"))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 
@@ -3109,7 +3109,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
     TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_timeout)
     {
         ///arrange
@@ -3133,7 +3133,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(3);
 
         /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "TIMEOUT"))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 
@@ -3171,7 +3171,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
     TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_error)
     {
         ///arrange
@@ -3195,7 +3195,7 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(3);
 
         /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "FAIL"))
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "ERROR"))
             .IgnoreArgument(1)
             .IgnoreArgument(2);
 

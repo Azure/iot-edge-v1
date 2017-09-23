@@ -150,7 +150,7 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_IOTHUBMODULE_99_004: [** If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters **]**
 **SRS_IOTHUBMODULE_99_005: [** If the message does not contain property "iotHubMessageId" then no callback function is given to `IoTHubClient_SendEventAsync` as a parameter **]**
 **SRS_IOTHUBMODULE_99_006: [** If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" **]**
-**SRS_IOTHUBMODULE_99_007: [** If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "FAIL" **]**
+**SRS_IOTHUBMODULE_99_007: [** If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" **]**
 **SRS_IOTHUBMODULE_99_008: [** If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message **]**
 
 
