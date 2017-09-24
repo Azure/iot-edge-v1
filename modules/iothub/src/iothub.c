@@ -699,79 +699,58 @@ static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
     }
     else
     {
+        /*properties is !=NULL by contract of Message*/
         CONSTMAP_HANDLE properties = Message_GetProperties(messageHandle);
-        const char* source = ConstMap_GetValue(properties, SOURCE); /*properties is !=NULL by contract of Message*/
-        const char* deviceFunction = ConstMap_GetValue(properties, DEVICEFUNCTION); /*properties is !=NULL by contract of Message*/
+        const char* deviceName = ConstMap_GetValue(properties, DEVICENAME);
+        const char* deviceKey = ConstMap_GetValue(properties, DEVICEKEY);
+        if (deviceName == NULL || deviceKey == NULL)
+        {
+            /*Codes_SRS_IOTHUBMODULE_02_011: [ If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
+            /*Codes_SRS_IOTHUBMODULE_02_012: [ If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
 
-        /*Codes_SRS_IOTHUBMODULE_02_010: [ If message properties do not contain a property called "source" set to "mapping" or "deviceFunction" set to "register" then IotHub_Receive shall do nothing.. ]*/
-        if (source == NULL && deviceFunction == NULL)
-        {
-            /*do nothing, the properties do not contain "source" or "deviceFunction" */
-        }
-        else if (
-                 (source != NULL && strcmp(source, MAPPING)!=0) ||
-                 (deviceFunction != NULL && strcmp(deviceFunction, DEVICE_REGISTER) != 0)
-                )
-        {
-            /*do nothing, the properties do not contain "source":"mapping" or "deviceFunction":"register"*/
+            /*do nothing, not a message for this module*/
         }
         else
         {
-            /*Codes_SRS_IOTHUBMODULE_02_011: [ If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
-            const char* deviceName = ConstMap_GetValue(properties, DEVICENAME);
-            if (deviceName == NULL)
+            IOTHUB_HANDLE_DATA* moduleHandleData = moduleHandle;
+            /*Codes_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
+
+            PERSONALITY* whereIsIt = PERSONALITY_find_or_create(moduleHandleData, deviceName, deviceKey);
+            if (whereIsIt == NULL)
             {
-                /*do nothing, not a message for this module*/
+                /*Codes_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
+                /*do nothing, device was not added to the GW*/
+                LogError("unable to PERSONALITY_find_or_create");
             }
             else
             {
-                /*Codes_SRS_IOTHUBMODULE_02_012: [ If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. ]*/
-                const char* deviceKey = ConstMap_GetValue(properties, DEVICEKEY);
-                if (deviceKey == NULL)
+                const char* deviceFunction = ConstMap_GetValue(properties, DEVICEFUNCTION);
+
+                /*Codes_SRS_IOTHUBMODULE_17_024: [ If the message contains a property "deviceFunction" set to "register". then IoTHub_Receive shall return, the processing is complete. ] */
+                if (deviceFunction != NULL && strcmp(deviceFunction, DEVICE_REGISTER) == 0)
                 {
-                    /*do nothing, missing device key*/
+                    /* do nothing, processing is complete. */
                 }
                 else
                 {
-                    IOTHUB_HANDLE_DATA* moduleHandleData = moduleHandle;
-                    /*Codes_SRS_IOTHUBMODULE_02_013: [ If no personality exists with a device ID equal to the value of the `deviceName` property of the message, then `IotHub_Receive` shall create a new `PERSONALITY` with the ID and key values from the message. ]*/
-
-                    PERSONALITY* whereIsIt = PERSONALITY_find_or_create(moduleHandleData, deviceName, deviceKey);
-                    if (whereIsIt == NULL)
+                    IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
+                    if (iotHubMessage == NULL)
                     {
-                        /*Codes_SRS_IOTHUBMODULE_02_014: [ If creating the personality fails then `IotHub_Receive` shall return. ]*/
-                        /*do nothing, device was not added to the GW*/
-                        LogError("unable to PERSONALITY_find_or_create");
+                        LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
                     }
                     else
                     {
-                        /*Codes_SRS_IOTHUBMODULE_17_024: [ If the message contains a property "deviceFunction" set to "register". then IoTHub_Receive shall return, the processing is complete. ] */
-                        if (deviceFunction != NULL && strcmp(deviceFunction, DEVICE_REGISTER) == 0)
+                        /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
+                        if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
                         {
-                            /* do nothing, processing is complete. */
+                            /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
+                            LogError("unable to IoTHubClient_SendEventAsync");
                         }
                         else
                         {
-                            IOTHUB_MESSAGE_HANDLE iotHubMessage = IoTHubMessage_CreateFromGWMessage(messageHandle);
-                            if (iotHubMessage == NULL)
-                            {
-                                LogError("unable to IoTHubMessage_CreateFromGWMessage (internal)");
-                            }
-                            else
-                            {
-                                /*Codes_SRS_IOTHUBMODULE_02_020: [ `IotHub_Receive` shall call IoTHubClient_SendEventAsync passing the IOTHUB_MESSAGE_HANDLE. ]*/
-                                if (IoTHubClient_SendEventAsync(whereIsIt->iothubHandle, iotHubMessage, NULL, NULL) != IOTHUB_CLIENT_OK)
-                                {
-                                    /*Codes_SRS_IOTHUBMODULE_02_021: [ If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. ]*/
-                                    LogError("unable to IoTHubClient_SendEventAsync");
-                                }
-                                else
-                                {
-                                    /*all is fine, message has been accepted for delivery*/
-                                }
-                                IoTHubMessage_Destroy(iotHubMessage);
-                            }
+                            /*all is fine, message has been accepted for delivery*/
                         }
+                        IoTHubMessage_Destroy(iotHubMessage);
                     }
                 }
             }

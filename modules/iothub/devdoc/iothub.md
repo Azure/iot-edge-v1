@@ -12,7 +12,6 @@ send a message with the following properties:
 
 >| PropertyName | Description                                                                  |
 >|--------------|------------------------------------------------------------------------------|
->| source       | The module only processes messages that have source set to "mapping".        |
 >| deviceName   | The device ID registered with IoT Hub                                        |
 >| deviceKey    | The device key registered with IoT Hub                                       |
 
@@ -119,7 +118,6 @@ Each {device ID, device key, IoTHubClient handle} triplet is referred to as a "p
 void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 ```
 **SRS_IOTHUBMODULE_02_009: [** If `moduleHandle` or `messageHandle` is `NULL` then `IotHub_Receive` shall do nothing. **]**
-**SRS_IOTHUBMODULE_02_010: [** If message properties do not contain a property called "source" set to "mapping" or "deviceFunction" set to "register" then `IotHub_Receive` shall do nothing. **]**
 **SRS_IOTHUBMODULE_02_011: [** If message properties do not contain a property called "deviceName" having a non-`NULL` value then `IotHub_Receive` shall do nothing. **]**
 **SRS_IOTHUBMODULE_02_012: [** If message properties do not contain a property called "deviceKey" having a non-`NULL` value then `IotHub_Receive` shall do nothing. **]**
 
