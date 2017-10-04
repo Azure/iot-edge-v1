@@ -2692,52 +2692,6 @@ BEGIN_TEST_SUITE(iothub_ut)
 
     }
 
-    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_malloccopystr_fail_1)
-    {
-        ///arrange
-        IotHubMocks mocks;
-        AutoConfig config;
-        auto module = Module_Create(BROKER_HANDLE_VALID, config);
-        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
-        mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .SetReturn(1);
-
-        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_OK, IoTHub_sendEventAsync_callback_userContext);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        Module_Destroy(module);
-    }
-
-    TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_malloccopystr_fail_2)
-    {
-        ///arrange
-        IotHubMocks mocks;
-        AutoConfig config;
-        auto module = Module_Create(BROKER_HANDLE_VALID, config);
-        Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
-        mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2)
-            .SetReturn(1);
-
-        IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
-
-        ///assert
-        mocks.AssertActualAndExpectedCalls();
-
-        ///cleanup
-        Module_Destroy(module);
-    }
-
     TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_iotHubMessageId_fail)
     {
         ///arrange
@@ -2746,10 +2700,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2772,10 +2722,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1)
@@ -2804,10 +2750,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2844,10 +2786,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2889,10 +2827,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2939,10 +2873,6 @@ BEGIN_TEST_SUITE(iothub_ut)
         auto module = Module_Create(BROKER_HANDLE_VALID, config);
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
-
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2995,23 +2925,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "OK"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         /* add source */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(3);
-
-        /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "OK"))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         /* add message id */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
@@ -3057,23 +2983,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "DESTROY"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         /* add source */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(3);
-
-        /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "DESTROY"))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         /* add message id */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
@@ -3119,23 +3041,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "TIMEOUT"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         /* add source */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(3);
-
-        /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "TIMEOUT"))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         /* add message id */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
@@ -3181,23 +3099,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Receive(module, MESSAGE_HANDLE_WITH_IOTHUBMESSAGEID);
         mocks.ResetAllCalls();
 
-        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
-
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        /* add delivery status */
+        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "ERROR"))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2);
 
         /* add source */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(3);
-
-        /* add delivery status */
-        STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "ERROR"))
-            .IgnoreArgument(1)
-            .IgnoreArgument(2);
 
         /* add message id */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "messageId1234"))
