@@ -61,6 +61,8 @@ a module to find out how to get it, who supports it, etc.
 >| Proficy Historian | https://github.com/Azure-Samples/iot-edge-proficy-historian    | 2017-04-27               |
 >| SQLite            | https://github.com/Azure/iot-gateway-sqlite                    | 2017-01-13               |
 >| Batch/Shred       | https://github.com/Azure/iot-gateway-batch-nodejs              | 2017-01-13               |
+>| ZWave             | https://github.com/MaxKhlupnov/SmartHive                       | 2017-04-27               |
+
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 
 more info.
