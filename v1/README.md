@@ -1,3 +1,10 @@
+# 11/15/2017
+Azure IoT Edge V2 public preview is now available. It implements the cloud configuration, deployment, and monitoring features announced at /Build '17. The documentation can be found [here](https://docs.microsoft.com//azure/iot-edge).
+
+V1 will continue to be supported. V1 documentation which used to live on docs.microsoft.com has been moved to this GitHub repo. All documentation on docs.microsoft.com now refers to Azure IoT Edge V2 as that is the latest evolution of the product. V1 code will continue to live in this repo and bugs can continue to be filed on the issues section of this repo.
+
+
+# 5/10/2017
 The Azure IoT Gateway SDK was our first step to enabling edge analytics in IoT solutions. We’re doubling down on, and expanding, this vision as explained in Satya’s Keynote at the Build conference and Sam George’s [blog post](http://blogs.microsoft.com/iot/?p=23040). As part of this evolution, the SDK is becoming an extensible product you can use instead of a set of code you build. To reflect this, we’re changing the name to Azure IoT Edge.
 
 All the important developer concepts are maintained as we continue to improve Azure IoT Edge. Specifically…
