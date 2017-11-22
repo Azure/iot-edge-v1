@@ -13,6 +13,5 @@ tools/build.sh \
     --enable-java-remote-modules \
     --enable-nodejs-remote-modules \
     --run-unittests \
-    --run-e2e-tests \
     "$@" #-x
 [ $? -eq 0 ] || exit $?

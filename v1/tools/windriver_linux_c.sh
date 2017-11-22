@@ -6,7 +6,10 @@
 toolchain_root="/opt/windriver/wrlinux/7.0-intel-baytrail-64"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
 local_install=$build_root/install-deps
-
+target=corei7-64-wrs-linux
+native=x86_64-wrlinuxsdk-linux
+OECORE_TARGET_SYSROOT=${toolchain_root}/sysroots/${target}
+OECORE_NATIVE_SYSROOT=${toolchain_root}/sysroots/${native}
 cd $build_root
 
 usage ()
@@ -93,9 +96,36 @@ fi
 # -----------------------------------------------------------------------------
 # -- Set environment variables
 # -----------------------------------------------------------------------------
-source $toolchain_root/env.sh
+#source $toolchain_root/env.sh
 
-TOOLCHAIN_OPTION="-DCMAKE_TOOLCHAIN_FILE=$OECORE_NATIVE_SYSROOT/usr/share/cmake/OEToolchainConfig.cmake"
+FILE="$build_root/toolchain-wrl.cmake" 
+
+/bin/cat <<EOM >$FILE
+SET(CMAKE_SYSTEM_NAME Linux) 
+
+SET(CMAKE_C_COMPILER ${OECORE_NATIVE_SYSROOT}/usr/bin/x86_64-wrs-linux/x86_64-wrs-linux-gcc)
+SET(CMAKE_CXX_COMPILER ${OECORE_NATIVE_SYSROOT}/usr/bin/x86_64-wrs-linux/x86_64-wrs-linux-g++)
+
+# this is the file system root of the target
+SET(CMAKE_FIND_ROOT_PATH ${OECORE_TARGET_SYSROOT} ${OECORE_NATIVE_SYSROOT})
+SET(CMAKE_SYSROOT ${OECORE_TARGET_SYSROOT})
+
+# search for programs in the build host directories
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
+# for libraries and headers in the target directories
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY) 
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY) 
+list(APPEND CMAKE_MODULE_PATH "${build_root}/tools/toolchain/windriver/cmake")
+
+#set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+#set( CMAKE_SYSTEM_PROCESSOR corei7)
+EOM
+echo "---------- toolchain file --------------"
+
+cat $FILE
+echo "---------- toolchain file --------------"
+TOOLCHAIN_OPTION="-DCMAKE_TOOLCHAIN_FILE=$FILE"
 # -----------------------------------------------------------------------------
 # -- After the environment is set up, we can run cmake.
 # -----------------------------------------------------------------------------
