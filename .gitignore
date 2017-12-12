@@ -203,14 +203,14 @@ tools/jenkins-cli.jar
 **/.idea/
 
 # VS Code stuff
-typings/**
-.vscode/**
+typings/
+.vscode/
 
 # ignore cmake build folder
-.cmake/**
-*build/**
-build_nodejs/**
-build_libuv/**
+.cmake/
+*build/
+build_nodejs/
+build_libuv/
 
 # ignore Atom Editor files
 .atom-build.json
