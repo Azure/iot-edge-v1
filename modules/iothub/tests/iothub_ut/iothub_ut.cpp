@@ -2754,11 +2754,19 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
+
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
             .IgnoreArgument(3)
             .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2790,6 +2798,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
+
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
@@ -2800,6 +2813,9 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(2)
             .IgnoreArgument(3)
             .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2831,6 +2847,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
+
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
@@ -2846,6 +2867,9 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(2)
             .IgnoreArgument(3)
             .SetReturn(MAP_ERROR);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2877,6 +2901,11 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
+
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .IgnoreArgument(2)
@@ -2895,6 +2924,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, Message_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1)
             .SetReturn((MESSAGE_HANDLE)NULL);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
@@ -2927,6 +2959,11 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
 
         /* add delivery status */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "OK"))
@@ -2964,6 +3001,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_OK, IoTHub_sendEventAsync_callback_userContext);
 
         ///assert
@@ -2985,6 +3025,11 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
 
         /* add delivery status */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "DESTROY"))
@@ -3022,6 +3067,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY, IoTHub_sendEventAsync_callback_userContext);
 
         ///assert
@@ -3043,6 +3091,11 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
 
         /* add delivery status */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "TIMEOUT"))
@@ -3080,6 +3133,9 @@ BEGIN_TEST_SUITE(iothub_ut)
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
         IoTHub_sendEventAsync_callback_function(IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT, IoTHub_sendEventAsync_callback_userContext);
 
         ///assert
@@ -3101,6 +3157,11 @@ BEGIN_TEST_SUITE(iothub_ut)
 
         STRICT_EXPECTED_CALL(mocks, Map_Create(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, mallocAndStrcpy_s(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+            .IgnoreArgument(1)
+            .IgnoreArgument(2)
+            .SetReturn(0);
 
         /* add delivery status */
         STRICT_EXPECTED_CALL(mocks, Map_AddOrUpdate(IGNORED_PTR_ARG, IGNORED_PTR_ARG, "ERROR"))
@@ -3130,6 +3191,9 @@ BEGIN_TEST_SUITE(iothub_ut)
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, Map_Destroy(IGNORED_PTR_ARG))
+            .IgnoreArgument(1);
+
+        STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
             .IgnoreArgument(1);
 
         STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))

@@ -703,141 +703,130 @@ static IOTHUB_MESSAGE_HANDLE IoTHubMessage_CreateFromGWMessage(MESSAGE_HANDLE me
 
 static void SendEventAsync_receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback)
 {
-    if (!userContextCallback)
+    MESSAGE_DELIVERED_CALLBACK_CONTEXT* callbackContext;
+    MAP_HANDLE propertiesMap;
+
+    if (!userContextCallback || ((callbackContext = (MESSAGE_DELIVERED_CALLBACK_CONTEXT*)userContextCallback) == NULL))
     {
         LogError("Context was null");
-        return;
     }
-
-    MESSAGE_DELIVERED_CALLBACK_CONTEXT* callbackContext = (MESSAGE_DELIVERED_CALLBACK_CONTEXT*)userContextCallback;
-    if (callbackContext->iotHubMessageId == NULL)
+    else if (callbackContext->iotHubMessageId == NULL)
     {
         LogError("MessageId was not defined");
         free(callbackContext);
-        return;
     }
-
-    MAP_HANDLE propertiesMap = Map_Create(NULL);
-    if (propertiesMap == NULL)
+    else if ((propertiesMap = Map_Create(NULL)) == NULL)
     {
         LogError("Failed  to create properties map");
         free(callbackContext->iotHubMessageId);
         free(callbackContext);
-        return;
     }
-
-    switch (result)
+    else
     {
-        case IOTHUB_CLIENT_CONFIRMATION_OK:
+        int mallocResult = 0;
+        char* statusMessage;
+        switch (result)
         {
-            if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, "OK"))
+            case IOTHUB_CLIENT_CONFIRMATION_OK:
             {
-                LogError("Cannot set deliveryStatus code");
-                Map_Destroy(propertiesMap);
-                free(callbackContext->iotHubMessageId);
-                free(callbackContext);
-                return;
+                mallocResult = mallocAndStrcpy_s(&statusMessage, "OK");
+                break;
             }
-            break;
-        }
-        case IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY:
-        {
-            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
-            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY");
-            if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, "DESTROY"))
+            case IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY:
             {
-                LogError("Cannot set deliveryStatus code");
-                Map_Destroy(propertiesMap);
-                free(callbackContext->iotHubMessageId);
-                free(callbackContext);
-                return;
+                /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+                LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY");
+                mallocResult = mallocAndStrcpy_s(&statusMessage, "DESTROY");
+                break;
             }
-            break;
-        }
-        case IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT:
-        {
-            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
-            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT");
-            if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, "TIMEOUT"))
+            case IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT:
             {
-                LogError("Cannot set deliveryStatus code");
-                Map_Destroy(propertiesMap);
-                free(callbackContext->iotHubMessageId);
-                free(callbackContext);
-                return;
+                /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+                LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT");
+                mallocResult = mallocAndStrcpy_s(&statusMessage, "TIMEOUT");
+                break;
             }
-            break;
-        }
-        case IOTHUB_CLIENT_CONFIRMATION_ERROR:
-        {
-            /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
-            LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_ERROR");
-            if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, "ERROR"))
+            case IOTHUB_CLIENT_CONFIRMATION_ERROR:
             {
-                LogError("Cannot copy deliveryStatus code");
-                Map_Destroy(propertiesMap);
-                free(callbackContext->iotHubMessageId);
-                free(callbackContext);
-                return;
+                /*Codes_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+                LogError("Message was not delivered due to IOTHUB_CLIENT_CONFIRMATION_ERROR");
+                mallocResult = mallocAndStrcpy_s(&statusMessage, "ERROR");
+                break;
             }
-            break;
+            default:
+            {
+                statusMessage = NULL;
+                break;
+            }
         }
-        default:
+
+        if (statusMessage == NULL)
         {
             LogError("Message was not delivered due to unknown error code");
             Map_Destroy(propertiesMap);
             free(callbackContext->iotHubMessageId);
             free(callbackContext);
-            return;
+        }
+        else if (mallocResult != 0)
+        {
+            LogError("Cannot create status code");
+            Map_Destroy(propertiesMap);
+            free(callbackContext->iotHubMessageId);
+            free(callbackContext);
+        }
+        else if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_DELIVERY_STATUS, statusMessage))
+        {
+            LogError("Cannot copy deliveryStatus code");
+            Map_Destroy(propertiesMap);
+            free(callbackContext->iotHubMessageId);
+            free(callbackContext);
+            free(statusMessage);
+        }
+        else if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE))
+        {
+            LogError("Failed  to set source property");
+            Map_Destroy(propertiesMap);
+            free(callbackContext->iotHubMessageId);
+            free(callbackContext);
+            free(statusMessage);
+        }
+        else if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_MESSAGE_ID, callbackContext->iotHubMessageId))
+        {
+            LogError("Failed  to set iotHubMessageId property");
+            Map_Destroy(propertiesMap);
+            free(callbackContext->iotHubMessageId);
+            free(callbackContext);
+            free(statusMessage);
+        }
+        else
+        {
+            MESSAGE_CONFIG msgConfig;
+            msgConfig.size = 0;
+            msgConfig.source = NULL;
+            msgConfig.sourceProperties = propertiesMap;
+            MESSAGE_HANDLE message = Message_Create(&msgConfig);
+            if (message == NULL)
+            {
+                LogError("Failed to create message");
+                Map_Destroy(propertiesMap);
+                free(callbackContext->iotHubMessageId);
+                free(callbackContext);
+                free(statusMessage);
+            }
+            else
+            {
+                if (BROKER_OK != Broker_Publish(callbackContext->moduleData->broker, (MODULE_HANDLE)callbackContext->moduleData, message))
+                {
+                    LogError("Failed to publish message");
+                }
+                Message_Destroy(message);
+                Map_Destroy(propertiesMap);
+                free(callbackContext->iotHubMessageId);
+                free(callbackContext);
+                free(statusMessage);
+            }
         }
     }
-
-    if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_SOURCE_PROPERTY, GW_IOTHUB_MODULE))
-    {
-        LogError("Failed  to set source property");
-        Map_Destroy(propertiesMap);
-        free(callbackContext->iotHubMessageId);
-        free(callbackContext);
-        return;
-    }
-
-    if (MAP_OK != Map_AddOrUpdate(propertiesMap, GW_IOTHUB_MESSAGE_ID, callbackContext->iotHubMessageId))
-    {
-        LogError("Failed  to set iotHubMessageId property");
-        Map_Destroy(propertiesMap);
-        free(callbackContext->iotHubMessageId);
-        free(callbackContext);
-        return;
-    }
-
-    MESSAGE_CONFIG msgConfig;
-    msgConfig.size = 0;
-    msgConfig.source = NULL;
-    msgConfig.sourceProperties = propertiesMap;
-    MESSAGE_HANDLE message = Message_Create(&msgConfig);
-    if (message == NULL)
-    {
-        LogError("Failed to create message");
-        Map_Destroy(propertiesMap);
-        free(callbackContext->iotHubMessageId);
-        free(callbackContext);
-        return;
-    }
-
-    if (BROKER_OK != Broker_Publish(callbackContext->moduleData->broker, (MODULE_HANDLE)callbackContext->moduleData, message))
-    {
-        LogError("Failed to publish message");
-        Message_Destroy(message);
-        Map_Destroy(propertiesMap);
-        free(callbackContext->iotHubMessageId);
-        free(callbackContext);
-        return;
-    }
-
-    Message_Destroy(message);
-    Map_Destroy(propertiesMap);
-    free(callbackContext->iotHubMessageId);
-    free(callbackContext);
 }
 
 static void IotHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle)
