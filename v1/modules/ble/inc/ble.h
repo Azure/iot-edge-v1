@@ -29,6 +29,8 @@ typedef struct BLE_INSTRUCTION_TAG
     */
     STRING_HANDLE               characteristic_uuid;
 
+    void* nextInst;
+
     union
     {
         /**

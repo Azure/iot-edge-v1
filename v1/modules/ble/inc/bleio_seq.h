@@ -49,6 +49,12 @@ typedef struct BLEIO_SEQ_INSTRUCTION_TAG
      */
     void*                       context;
 
+	/**
+	* Added by H. Ota
+	* instruction_type is equal to SEQUENTIAL then context hold next instructin
+	*/
+    void* nextInst;
+
     union
     {
         /**
