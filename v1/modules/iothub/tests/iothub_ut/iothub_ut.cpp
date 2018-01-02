@@ -3013,7 +3013,7 @@ BEGIN_TEST_SUITE(iothub_ut)
         Module_Destroy(module);
     }
 
-    /*Tests_SRS_IOTHUBMODULE_99_007: SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
+    /*Tests_SRS_IOTHUBMODULE_99_007: [ If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" ]*/
     TEST_FUNCTION(IoTHubClient_SendEventAsync_callback_fail_destroy)
     {
         ///arrange

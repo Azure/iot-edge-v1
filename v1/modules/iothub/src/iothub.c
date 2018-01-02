@@ -729,6 +729,7 @@ static void SendEventAsync_receiveMessageConfirmation(IOTHUB_CLIENT_CONFIRMATION
         {
             case IOTHUB_CLIENT_CONFIRMATION_OK:
             {
+                /*Codes_SRS_IOTHUBMODULE_99_006: [ If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" ]*/
                 mallocResult = mallocAndStrcpy_s(&statusMessage, "OK");
                 break;
             }
