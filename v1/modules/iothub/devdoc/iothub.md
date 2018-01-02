@@ -10,17 +10,27 @@ High level design
 This module provides a connection to IoT Hub for all mapped devices known to the gateway. When a device wants to publish events to IoT Hub, it must
 send a message with the following properties:
 
->| PropertyName | Description                                                                  |
->|--------------|------------------------------------------------------------------------------|
->| source       | The module only processes messages that have source set to "mapping".        |
->| deviceName   | The device ID registered with IoT Hub                                        |
->| deviceKey    | The device key registered with IoT Hub                                       |
+>| PropertyName    | Description                                                                  |
+>|-----------------|------------------------------------------------------------------------------|
+>| source          | The module only processes messages that have source set to "mapping".        |
+>| deviceName      | The device ID registered with IoT Hub                                        |
+>| deviceKey       | The device key registered with IoT Hub                                       |
+>| iotHubMessageId | Message id (optional)                                                        |
 
 The body of the message will be sent to IoT Hub on behalf of the given device.
 
 The IotHub module dynamically creates per-device instances of IoTHubClient. It can be configured to use any of the protocols supported by 
 IoTHubClient. Note that the AMQP and HTTP transports will share one TCP connection for all devices; the MQTT transport will create a new
 TCP connection for each device.
+
+If iotHubMessageId property is defined, IotHub sends 'MessageDelivered'-notification message back to the sender when the message is delivered successfully or an error is reported.
+
+>| PropertyName                | Description                                                      |
+>|-----------------------------|------------------------------------------------------------------|
+>| source                      | "iotHub".                                                        |
+>| iotHubMessageDeliveryStatus | Delivery status of the sent message ("OK" or "FAIL")             |
+>| iotHubMessageId             | Message id of the sent message                                   |
+
 
 #### Device registration
 
@@ -137,6 +147,12 @@ void IoTHub_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHandle);
 **SRS_IOTHUBMODULE_02_021: [** If `IoTHubClient_SendEventAsync` fails then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_02_022: [** If `IoTHubClient_SendEventAsync` succeeds then `IotHub_Receive` shall return. **]**
 **SRS_IOTHUBMODULE_99_003: [** If a new personality is created, then retry policy will be set by calling `IoTHubClient_SetRetryPolicy`. **]**
+**SRS_IOTHUBMODULE_99_004: [** If the message contains a property "iotHubMessageId" then callback function `receiveMessageConfirmation` and userContext is given to `IoTHubClient_SendEventAsync` as parameters **]**
+**SRS_IOTHUBMODULE_99_005: [** If the message does not contain property "iotHubMessageId" then no callback function is given to `IoTHubClient_SendEventAsync` as a parameter **]**
+**SRS_IOTHUBMODULE_99_006: [** If "iotHubMessageId" is set and message delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set to "OK" **]**
+**SRS_IOTHUBMODULE_99_007: [** If "iotHubMessageId" is set and message is not delivered successfully 'message delivered' notification is sent with "deliveryStatus" property set "DESTROY", "TIMEOUT" or "ERROR" **]**
+**SRS_IOTHUBMODULE_99_008: [** If memory allocation fail when handling "iotHubMessageId" property, `IoTHubClient_SendEventAsync` returns without sending the message **]**
+
 
 
 ### IotHub_ReceiveMessageCallback
