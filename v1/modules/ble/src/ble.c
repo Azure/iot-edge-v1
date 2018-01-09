@@ -56,11 +56,6 @@ static void on_connect_complete(
     BLEIO_GATT_CONNECT_RESULT connect_result
 );
 
-//static void on_disconnect_complete(
-//    BLEIO_GATT_HANDLE bleio_gatt_handle,
-//    void* context
-//);
-
 static void on_read_complete(
     BLEIO_SEQ_HANDLE bleio_seq_handle,
     void* context,

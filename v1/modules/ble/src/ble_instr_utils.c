@@ -225,12 +225,27 @@ VECTOR_HANDLE parse_instructions(JSON_Array* instructions)
 										for (size_t c = 1; c < numOfSeqs; c++)
                                         {
 											BLE_INSTRUCTION* current = (BLE_INSTRUCTION*)VECTOR_element(seqInsts, c);
-											BLE_INSTRUCTION* currentInstr = (BLE_INSTRUCTION*)malloc(sizeof(BLE_INSTRUCTION));
-											currentInstr->instruction_type = current->instruction_type;
-											currentInstr->characteristic_uuid = STRING_clone(current->characteristic_uuid);
-											memcpy(&(currentInstr->data), &(current->data), sizeof(current->data));
-											prev_instr->nextInst = currentInstr;
-											prev_instr = currentInstr;
+                                            BLE_INSTRUCTION* currentInstr = (BLE_INSTRUCTION*)malloc(sizeof(BLE_INSTRUCTION));
+                                            if (currentInstr==NULL)
+                                            {
+                                                LogError("malloc return NULL for new currentInstr memory allocation.");
+                                            }
+                                            else
+                                            {
+    											currentInstr->instruction_type = current->instruction_type;
+                                                currentInstr->characteristic_uuid = STRING_clone(current->characteristic_uuid);
+                                                if (currentInstr->characteristic_uuid==NULL)
+                                                {
+                                                    LogError("STRING_clone return NULL for current->characteristic_uuid clone.");
+                                                    free(currentInstr);
+                                                }
+                                                else
+                                                {
+    		    									memcpy(&(currentInstr->data), &(current->data), sizeof(current->data));
+	    		    								prev_instr->nextInst = currentInstr;
+                                                    prev_instr = currentInstr;
+                                                }
+                                            }
 										}
 									}
 									if (VECTOR_push_back(result, &firstInstr, 1) != 0)
