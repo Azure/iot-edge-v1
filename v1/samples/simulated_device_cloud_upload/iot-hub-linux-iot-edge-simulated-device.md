@@ -51,21 +51,21 @@ You can now build the IoT Edge runtime and samples on your local machine:
     tools/build.sh --disable-native-remote-modules
     ```
 
-This script uses the **cmake** utility to create a folder called **build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
+This script uses the **cmake** utility to create a folder called **v1/build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
 
 > [!NOTE]
-> Every time you run the **build.sh** script, it deletes and then recreates the **build** folder in the root folder of your local copy of the **iot-edge** repository.
+> Every time you run the **build.sh** script, it deletes and then recreates the **v1/build** folder in the root folder of your local copy of the **iot-edge** repository.
 
 ## How to run the sample
 
-The **build.sh** script generates its output in the **build** folder in your local copy of the **iot-edge** repository. This output includes the four IoT Edge modules used in this sample.
+The **build.sh** script generates its output in the **v1/build** folder in your local copy of the **iot-edge** repository. This output includes the four IoT Edge modules used in this sample.
 
 The build script places the:
 
-* **liblogger.so** in the **build/modules/logger** folder.
-* **libiothub.so** in the **build/modules/iothub** folder.
-* **lib\_identity\_map.so** in the **build/modules/identitymap** folder.
-* **libsimulated\_device.so** in the **build/modules/simulated\_device** folder.
+* **liblogger.so** in the **v1/build/modules/logger** folder.
+* **libiothub.so** in the **v1/build/modules/iothub** folder.
+* **lib\_identity\_map.so** in the **v1/build/modules/identitymap** folder.
+* **libsimulated\_device.so** in the **v1/build/modules/simulated\_device** folder.
 
 Use these paths for the **module path** values as shown in the following JSON settings file:
 
@@ -80,7 +80,7 @@ In a text editor, open the file **samples/simulated\_device\_cloud\_upload\_samp
 * The **mapping** module maps the MAC addresses of your simulated devices to your IoT Hub device ids. Make sure that **deviceId** values match the ids of the two devices you added to your IoT hub, and that the **deviceKey** values contain the keys of your two devices.
 * The **BLE1** and **BLE2** modules are the simulated devices. Note how their MAC addresses match the addresses in the **mapping** module.
 * The **Logger** module logs your gateway activity to a file.
-* The **module path** values shown in the example assume that you run the sample from the **build** folder in your local copy of the **iot-edge** repository.
+* The **module path** values shown in the example assume that you run the sample from the **v1/build** folder in your local copy of the **iot-edge** repository.
 * The **links** array at the bottom of the JSON file connects the **BLE1** and **BLE2** modules to the **mapping** module, and the **mapping** module to the **IoTHub** module. It also ensures that all messages are logged by the **Logger** module.
 
 ```json

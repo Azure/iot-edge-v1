@@ -50,21 +50,21 @@ You can now build the IoT Edge runtime and samples on your local machine:
     tools\build.cmd --disable-native-remote-modules
     ```
 
-This script creates a Visual Studio solution file and builds the solution. You can find the Visual Studio solution in the **build** folder in your local copy of the **iot-edge** repository. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
+This script creates a Visual Studio solution file and builds the solution. You can find the Visual Studio solution in the **v1\build** folder in your local copy of the **iot-edge** repository. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
 
 > [!NOTE]
-> Every time you run the **build.cmd** script, it deletes and then recreates the **build** folder in the root folder of your local copy of the **iot-edge** repository.
+> Every time you run the **build.cmd** script, it deletes and then recreates the **v1\build** folder in the root folder of your local copy of the **iot-edge** repository.
 
 ## Run the sample
 
-The **build.cmd** script generates its output in the **build** folder in your local copy of the **iot-edge** repository. This output includes the four IoT Edge modules used in this sample.
+The **build.cmd** script generates its output in the **v1\build** folder in your local copy of the **iot-edge** repository. This output includes the four IoT Edge modules used in this sample.
 
 The build script creates the following files:
 
-* **logger.dll** in the **build\\modules\\logger\\Debug** folder.
-* **iothub.dll** in the **build\\modules\\iothub\\Debug** folder.
-* **identity\_map.dll** in the **build\\modules\\identitymap\\Debug** folder.
-* **simulated\_device.dll** in the **build\\modules\\simulated\_device\\Debug** folder.
+* **logger.dll** in the **v1\\build\\modules\\logger\\Debug** folder.
+* **iothub.dll** in the **v1\\build\\modules\\iothub\\Debug** folder.
+* **identity\_map.dll** in the **v1\\build\\modules\\identitymap\\Debug** folder.
+* **simulated\_device.dll** in the **v1\\build\\modules\\simulated\_device\\Debug** folder.
 
 Use these paths for the **module path** values as shown in the simulated\_device\_cloud\_upload\_win JSON settings file.
 
@@ -173,7 +173,7 @@ Save the changes you made to the configuration file.
 
 To run the sample:
 
-1. At a command prompt, navigate to the **build** folder in your local copy of the **iot-edge** repository.
+1. At a command prompt, navigate to the **v1\build** folder in your local copy of the **iot-edge** repository.
 2. Run the following command:
    
     ```cmd

@@ -47,19 +47,19 @@ You can now build the IoT Edge runtime and samples on your local machine:
 1. Run the build script as follows:
 
     ```cmd
-    tools\build.cmd --disable-native-remote-modules
+    v1\tools\build.cmd --disable-native-remote-modules
     ```
 
-This script creates a Visual Studio solution file and builds the solution. You can find the Visual Studio solution in the **build** folder in your local copy of the **iot-edge** repository. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
+This script creates a Visual Studio solution file and builds the solution. You can find the Visual Studio solution in the **v1\build** folder in your local copy of the **iot-edge** repository. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
 
 > [!NOTE]
-> Every time you run the **build.cmd** script, it deletes and then recreates the **build** folder in the root folder of your local copy of the **iot-edge** repository.
+> Every time you run the **build.cmd** script, it deletes and then recreates the **v1\build** folder in the root folder of your local copy of the **iot-edge** repository.
 
 ## Run the sample
 
-The **build.cmd** script generates its output in the **build** folder in your local copy of the **iot-edge** repository. This output includes many files, but this sample focuses on three:
-- Two IoT Edge modules: **build\\modules\\logger\\Debug\\logger.dll** and **build\\modules\\hello_world\\Debug\\hello\_world.dll**. 
-- An executable file: **build\\samples\\hello\_world\\Debug\\hello\_world\_sample.exe**. This process takes a JSON configuration file as a command-line argument.
+The **build.cmd** script generates its output in the **v1\build** folder in your local copy of the **iot-edge** repository. This output includes many files, but this sample focuses on three:
+- Two IoT Edge modules: **v1\\build\\modules\\logger\\Debug\\logger.dll** and **v1\\build\\modules\\hello_world\\Debug\\hello\_world.dll**. 
+- An executable file: **v1\\build\\samples\\hello\_world\\Debug\\hello\_world\_sample.exe**. This process takes a JSON configuration file as a command-line argument.
 
 The fourth file that you use in this sample isn't in the build folder, but was included when you cloned it iot-edge repository:
 - A JSON configuration file: **samples\\hello\_world\\src\\hello\_world\_win.json**. This file contains the paths to the two modules. It also declares where logger.dll writes its output to. The default is **log.txt** in your current working directory. 
@@ -69,7 +69,7 @@ The fourth file that you use in this sample isn't in the build folder, but was i
 
 To run the sample, follow these steps:
 
-1. Navigate to the **build** folder in the root of your local copy of the **iot-edge** repository.
+1. Navigate to the **v1\build** folder in the root of your local copy of the **iot-edge** repository.
 
 1. Run the following command:
 

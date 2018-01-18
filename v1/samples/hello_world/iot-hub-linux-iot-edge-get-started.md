@@ -48,19 +48,19 @@ You can now build the IoT Edge runtime and samples on your local machine:
 1. Run the build script as follows:
 
     ```sh
-    tools/build.sh --disable-native-remote-modules
+    v1/tools/build.sh --disable-native-remote-modules
     ```
 
-This script uses the **cmake** utility to create a folder called **build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
+This script uses the **cmake** utility to create a folder called **v1/build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
 
 > [!NOTE]
-> Every time you run the **build.sh** script, it deletes and then recreates the **build** folder in the root folder of your local copy of the **iot-edge** repository.
+> Every time you run the **build.sh** script, it deletes and then recreates the **v1/build** folder in the root folder of your local copy of the **iot-edge** repository.
 
 ## How to run the sample
 
-The **build.sh** script generates its output in the **build** folder in your local copy of the **iot-edge** repository. This output includes the two IoT Edge modules used in this sample.
+The **build.sh** script generates its output in the **v1/build** folder in your local copy of the **iot-edge** repository. This output includes the two IoT Edge modules used in this sample.
 
-The build script places **liblogger.so** in the **build/modules/logger/** folder and **libhello\_world.so** in the **build/modules/hello_world/** folder. Use these paths for the **module path** values as shown in the example JSON settings file.
+The build script places **liblogger.so** in the **v1/build/modules/logger/** folder and **libhello\_world.so** in the **v1/build/modules/hello_world/** folder. Use these paths for the **module path** values as shown in the example JSON settings file.
 
 The hello\_world\_sample process takes the path to a JSON configuration file as a command-line argument. The following example JSON file is provided in the SDK repository at **samples/hello\_world/src/hello\_world\_lin.json**. This configuration file works as is unless you modify the build script to place the IoT Edge modules or sample executables in non-default locations.
 
@@ -102,7 +102,7 @@ The hello\_world\_sample process takes the path to a JSON configuration file as 
 }
 ```
 
-1. Navigate to the **build** folder in the root of your local copy of the **iot-edge** repository.
+1. Navigate to the **v1/build** folder in the root of your local copy of the **iot-edge** repository.
 
 1. Run the following command:
 
