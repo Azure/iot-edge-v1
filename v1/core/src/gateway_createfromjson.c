@@ -24,6 +24,7 @@
 #define LINKS_KEY "links"
 #define SOURCE_KEY "source"
 #define SINK_KEY "sink"
+#define LINK_MSGTYPE_KEY "message.type"
 
 #define PARSE_JSON_RESULT_VALUES \
     PARSE_JSON_SUCCESS, \
@@ -555,6 +556,7 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                                 route = json_array_get_object(links_array, links_index);
                                 const char* module_source = json_object_get_string(route, SOURCE_KEY);
                                 const char* module_sink = json_object_get_string(route, SINK_KEY);
+                                const char* message_type = json_object_get_string(route, LINK_MSGTYPE_KEY);
 
                                 if (module_source != NULL && module_sink != NULL)
                                 {
@@ -562,6 +564,12 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                                         module_source,
                                         module_sink
                                     };
+                                    if (message_type != NULL&&strcmp(message_type, "thread-message") == 0) {
+                                        entry.message_type = GATEWAY_LINK_ENTRY_MESSAGE_TYPE_THREAD;
+                                    }
+                                    else {
+                                        entry.message_type = GATEWAY_LINK_ENTRY_MESSAGE_TYPE_DEFAULT;
+                                    }
 
                                     /* Codes_SRS_GATEWAY_JSON_04_002: [ The function shall add all modules source and sink to GATEWAY_PROPERTIES inside gateway_links. ] */
                                     if (VECTOR_push_back(out_properties->gateway_links, &entry, 1) == 0)
