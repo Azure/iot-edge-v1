@@ -710,72 +710,73 @@ static int thread_message_control_receiver_thread_worker(void* context)
 {
     THREAD_MESSAGE_HANDLING_RECEIVER* receiverContext = (THREAD_MESSAGE_HANDLING_RECEIVER*)context;
     BROKER_MODULEINFO* receiver_module_info = (BROKER_MODULEINFO*)receiverContext->module_info;
-    while (true) {
-        THREAD_MESSAGE_CTRL* msgCtrl = NULL;
-        if (Lock(receiverContext->lock) != LOCK_OK) {
-            LogError("lock for receiverContext in thread_message_control_receiver_thread_worker failed");
-        }
-        else {
+    if (Lock(receiverContext->lock) != LOCK_OK) {
+        LogError("lock for receiverContext in thread_message_control_receiver_thread_worker failed");
+    }
+    else {
+        while (true) {
+            THREAD_MESSAGE_CTRL* msgCtrl = NULL;
             if (!receiverContext->toContinue)
             {
-                if (Unlock(receiverContext->lock) != LOCK_OK) {
-                    LogError("Unlock for receiverContext in thread_message_control_receiver_thread_worker failed");
-                }
+                LogInfo("thread_message_control_receiver_thread_worker to be terminated.");
                 break;
             }
-            COND_RESULT cond_result = Condition_Wait(receiverContext->condition, receiverContext->lock, 0);
-            if (cond_result != COND_OK) {
+            if (Condition_Wait(receiverContext->condition, receiverContext->lock, 0) != COND_OK) {
                 LogError("Wait for condition for receiverContext in thread_message_control_receiver_thread_worker failed");
             }
             else {
                 THREAD_MESSAGE_CTRL* pre_receive_msg = NULL;
                 THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* sender = receiverContext->senders;
                 while (sender != NULL) {
-                    Lock(sender->sender_module_info->senderThMsg->lock);
-                    THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* current_receiver = sender->sender_module_info->senderThMsg->receivers;
-                    while (current_receiver != NULL) {
-                        if (current_receiver->receiver == receiverContext) {
-                            if (msgCtrl == NULL) {
-                                msgCtrl = current_receiver->sendingMessages;
-                                pre_receive_msg = msgCtrl;
-                            }
-                            else {
-                                pre_receive_msg->next = current_receiver->sendingMessages;
-                                pre_receive_msg = pre_receive_msg->next;
-                            }
-                            THREAD_MESSAGE_CTRL* current_sending_msg = pre_receive_msg;
-                            while (current_sending_msg != NULL) {
-                                if (current_sending_msg->next == NULL) {
-                                    pre_receive_msg = current_sending_msg;
+                    if (Lock(sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
+                        LogError("Lock for senderThMsg in thread_message_control_receiver_thread_worker failed");
+                    }
+                    else {
+                        THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* current_receiver = sender->sender_module_info->senderThMsg->receivers;
+                        while (current_receiver != NULL) {
+                            if (current_receiver->receiver == receiverContext) {
+                                if (msgCtrl == NULL) {
+                                    msgCtrl = current_receiver->sendingMessages;
+                                    pre_receive_msg = msgCtrl;
                                 }
-                                current_sending_msg = current_sending_msg->next;
+                                else {
+                                    pre_receive_msg->next = current_receiver->sendingMessages;
+                                    pre_receive_msg = pre_receive_msg->next;
+                                }
+                                THREAD_MESSAGE_CTRL* current_sending_msg = pre_receive_msg;
+                                while (current_sending_msg != NULL) {
+                                    if (current_sending_msg->next == NULL) {
+                                        pre_receive_msg = current_sending_msg;
+                                    }
+                                    current_sending_msg = current_sending_msg->next;
+                                }
+                                current_receiver->sendingMessages = NULL;
+                                break;
                             }
-                            current_receiver->sendingMessages = NULL;
-                            break;
+                        }
+                        THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* current_sender = sender;
+                        sender = sender->next;
+                        if (Unlock(current_sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
+                            LogError("Unock for senderThMsg in thread_message_control_receiver_thread_worker failed");
                         }
                     }
-                    THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* current_sender = sender;
-                    sender = sender->next;
-                    if (Unlock(current_sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
-                        LogError("Unock for senderThMsg in thread_message_control_receiver_thread_worker failed");
-                    }
                 }
-                if (Unlock(receiverContext->lock) != LOCK_OK) {
-                    LogError("Unlock for receiverContext in thread_message_control_receiver_thread_worker failed");
+                THREAD_MESSAGE_CTRL* current_msg = msgCtrl;
+                while (current_msg != NULL) {
+                    MODULE_RECEIVE(receiver_module_info->module->module_apis)(receiver_module_info->module->module_handle, current_msg->msg);
+                    ThreadAPI_Sleep(0);
+                    THREAD_MESSAGE_CTRL* tmp_msg = current_msg;
+                    current_msg = current_msg->next;
+                    Message_Destroy(tmp_msg->msg);
+                    free((void*)tmp_msg);
                 }
             }
         }
-        THREAD_MESSAGE_CTRL* current_msg = msgCtrl;
-        while (current_msg != NULL) {
-            MODULE_RECEIVE(receiver_module_info->module->module_apis)(receiver_module_info->module->module_handle, current_msg->msg);
-            ThreadAPI_Sleep(0);
-            THREAD_MESSAGE_CTRL* tmp_msg = current_msg;
-            current_msg = current_msg->next;
-            Message_Destroy(tmp_msg->msg);
-            free((void*)tmp_msg);
+        LOCK_RESULT lock_result = Unlock(receiverContext->lock);
+        if (lock_result != LOCK_OK) {
+            LogError("Unlock for receiverContext in thread_message_control_receiver_thread_worker failed");
         }
     }
-
     Condition_Deinit(receiverContext->condition);
     if (Lock_Deinit(receiverContext->lock) != LOCK_OK) {
         LogError("Deinit for receiverContext in thread_message_control_receiver_thread_worker failed");
@@ -1018,59 +1019,67 @@ BROKER_RESULT Broker_RemoveLink(BROKER_HANDLE broker, const BROKER_LINK_DATA* li
 //                      result = BROKER_OK;
 //                  }
                     if (module_info->receiverThMsg != NULL&&source_module_info->senderThMsg != NULL) {
-                        Lock(module_info->receiverThMsg->lock);
-                        THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* sender = module_info->receiverThMsg->senders;
-                        THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* pre_sender = NULL;
-                        while (sender != NULL) {
-                            if (sender->sender_module_info == source_module_info) {
-                                if (pre_sender == NULL) {
-                                    module_info->receiverThMsg->senders = sender->next;
-                                }
-                                else {
-                                    pre_sender->next = sender->next;
-                                }
-                                break;
-                            }
-                            pre_sender = sender;
-                            sender = sender->next;
-                        }
-                        Unlock(module_info->receiverThMsg->lock);
-
-                        Lock(source_module_info->senderThMsg->lock);
-                        THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* receiver = source_module_info->senderThMsg->receivers;
-                        THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* pre_receiver = NULL;
-                        while (receiver!=NULL)
-                        {
-                            if (receiver->receiver->module_info == module_info) {
-                                if (pre_receiver != NULL) {
-                                    pre_receiver->next = receiver->next;
-                                }
-                                else {
-                                    source_module_info->senderThMsg->receivers = receiver->next;
-                                }
-                                break;
-                            }
-                            pre_receiver = receiver;
-                            receiver = receiver->next;
-                        }
-                        if (receiver != NULL&&sender != NULL) {
-                            free((void*)sender);
-
-                            THREAD_MESSAGE_CTRL* sendingMsg = receiver->sendingMessages;
-                            while (sendingMsg != NULL) {
-                                THREAD_MESSAGE_CTRL* next = sendingMsg->next;
-                                Message_Destroy(sendingMsg->msg);
-                                free((void*)sendingMsg);
-                                sendingMsg = next;
-                            }
-                            free((void*)receiver);
-                            result = BROKER_OK;
+                        if (Lock(module_info->receiverThMsg->lock) != LOCK_OK) {
+                            LogError("Lock for receiverThMsg failed.");
                         }
                         else {
-                            // may be error but shoudn't be system error
-                            result = BROKER_REMOVE_LINK_ERROR;
+                            THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* sender = module_info->receiverThMsg->senders;
+                            THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* pre_sender = NULL;
+                            while (sender != NULL) {
+                                if (sender->sender_module_info == source_module_info) {
+                                    if (pre_sender == NULL) {
+                                        module_info->receiverThMsg->senders = sender->next;
+                                    }
+                                    else {
+                                        pre_sender->next = sender->next;
+                                    }
+                                    break;
+                                }
+                                pre_sender = sender;
+                                sender = sender->next;
+                            }
+                            Unlock(module_info->receiverThMsg->lock);
+
+                            if (Lock(source_module_info->senderThMsg->lock) != LOCK_OK) {
+                                LogError("Lock senderThMsg failed.");
+                            }
+                            else {
+                                THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* receiver = source_module_info->senderThMsg->receivers;
+                                THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* pre_receiver = NULL;
+                                while (receiver != NULL)
+                                {
+                                    if (receiver->receiver->module_info == module_info) {
+                                        if (pre_receiver != NULL) {
+                                            pre_receiver->next = receiver->next;
+                                        }
+                                        else {
+                                            source_module_info->senderThMsg->receivers = receiver->next;
+                                        }
+                                        break;
+                                    }
+                                    pre_receiver = receiver;
+                                    receiver = receiver->next;
+                                }
+                                if (receiver != NULL&&sender != NULL) {
+                                    free((void*)sender);
+
+                                    THREAD_MESSAGE_CTRL* sendingMsg = receiver->sendingMessages;
+                                    while (sendingMsg != NULL) {
+                                        THREAD_MESSAGE_CTRL* next = sendingMsg->next;
+                                        Message_Destroy(sendingMsg->msg);
+                                        free((void*)sendingMsg);
+                                        sendingMsg = next;
+                                    }
+                                    free((void*)receiver);
+                                    result = BROKER_OK;
+                                }
+                                else {
+                                    // may be error but shoudn't be system error
+                                    result = BROKER_REMOVE_LINK_ERROR;
+                                }
+                                Unlock(source_module_info->senderThMsg->lock);
+                            }
                         }
-                        Unlock(source_module_info->senderThMsg->lock);
                     }
                     else {
                         // error
@@ -1155,41 +1164,56 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
             bool normalMessaging = true;
             if (source_info->senderThMsg != NULL) {
                 // TODO: current version is not support nanomsg and thread messaging.
-                Lock(source_info->senderThMsg->lock);
-                THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* target_receiver = source_info->senderThMsg->receivers;
-                while (target_receiver != NULL) {
-                    THREAD_MESSAGE_CTRL* current_msg = (THREAD_MESSAGE_CTRL*)malloc(sizeof(THREAD_MESSAGE_CTRL));
-                    if (current_msg == NULL) {
-                        LogError("malloc current_msg in Broker_Publish failed.");
-                    }
-                    else {
-                        current_msg->next = NULL;
-                        current_msg->msg = Message_Clone(message);
-                        if (current_msg->msg == NULL) {
-                            LogError("clone message in Broker_Publish failed.");
-                            free(current_msg);
+                if (Lock(source_info->senderThMsg->lock) != LOCK_OK) {
+                    LogError("Lock senderThMsg in Broker_Publish failed.");
+                }
+                else {
+                    THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* target_receiver = source_info->senderThMsg->receivers;
+                    while (target_receiver != NULL) {
+                        THREAD_MESSAGE_CTRL* current_msg = (THREAD_MESSAGE_CTRL*)malloc(sizeof(THREAD_MESSAGE_CTRL));
+                        if (current_msg == NULL) {
+                            LogError("malloc current_msg in Broker_Publish failed.");
                         }
                         else {
-                            THREAD_MESSAGE_CTRL* last_msg = target_receiver->sendingMessages;
-                            if (last_msg == NULL) {
-                                target_receiver->sendingMessages = current_msg;
+                            current_msg->next = NULL;
+                            current_msg->msg = Message_Clone(message);
+                            if (current_msg->msg == NULL) {
+                                LogError("clone message in Broker_Publish failed.");
+                                free(current_msg);
                             }
                             else {
-                                while (last_msg->next != NULL)
-                                {
-                                    last_msg = last_msg->next;
+                                THREAD_MESSAGE_CTRL* last_msg = target_receiver->sendingMessages;
+                                if (last_msg == NULL) {
+                                    target_receiver->sendingMessages = current_msg;
                                 }
-                                last_msg->next = current_msg;
+                                else {
+                                    while (last_msg->next != NULL)
+                                    {
+                                        last_msg = last_msg->next;
+                                    }
+                                    last_msg->next = current_msg;
+                                }
+                                Unlock(source_info->senderThMsg->lock);
+                                if (Lock(target_receiver->receiver->lock) != LOCK_OK) {
+                                    LogError("Lock receiver in Broker_Publish failed.");
+                                }
+                                else {
+                                    Condition_Post(target_receiver->receiver->condition);
+                                    Unlock(target_receiver->receiver->lock);
+                                }
+                                if (Lock(source_info->senderThMsg->lock) != LOCK_OK) {
+                                    LogError("Lock senderThMsg in Broker_Publish failed.");
+                                }
+                                else {
+                                    target_receiver = target_receiver->next;
+                                }
                             }
-                            Condition_Post(target_receiver->receiver->condition);
-                            target_receiver = target_receiver->next;
                         }
                     }
+                    if (Unlock(source_info->senderThMsg->lock) != LOCK_OK) {
+                        LogError("unlock senderThMsg in Broker_Publish failed.");
+                    }
                 }
-                if (Unlock(source_info->senderThMsg->lock) != LOCK_OK) {
-                    LogError("unlock senderThMsg in Broker_Publish failed.");
-                }
-
                 normalMessaging = false;
                 result = BROKER_OK;
             }
