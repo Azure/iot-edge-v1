@@ -32,7 +32,7 @@ function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDi
             )
         endif()
         if(${res})
-            message(FATAL_ERROR "Error pull submodules: ${res}")
+            message(FATAL_ERROR "Error pulling submodules: ${res}")
         endif()
 
         #Create the build directory to run cmake, and run cmake
@@ -80,7 +80,9 @@ function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDi
             ERROR_FILE error.txt
         )
         if(${res})
-            message(FATAL_ERROR "Error installing ${libraryName}: ${res}")
+            message(FATAL_ERROR "**ERROR installing ${libraryName}. See "
+                "${cmakeRootDirectory}/build/error.txt and "
+                "${cmakeRootDirectory}/build/output.txt.\n")
         endif()
     endif()
 endfunction()
@@ -154,7 +156,7 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
                 RESULT_VARIABLE res
             )
             if(${res})
-                message(FATAL_ERROR "ERROR running cmake for ${libraryName}: ${res}")
+                message(FATAL_ERROR "Error running cmake for ${libraryName}: ${res}")
             endif()
 
             # Install library
