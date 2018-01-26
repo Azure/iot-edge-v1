@@ -85,7 +85,7 @@ The JSON configuration for [.NET Core](https://github.com/dotnet/)  Module will 
 ##Native methods description
 ### Module\_Create
 
-When the **.NET Core Module Host**’s `Module_Create` function is invoked by the
+When the **.NET Core Module Host**'s `Module_Create` function is invoked by the
 gateway process, it:
 
 -  Checks if delegates have been created. 
@@ -100,7 +100,7 @@ gateway process, it:
 
 ### Module\_Start
 
-When the **.NET Core Module Host**’s `Module_Start` function is invoked by the
+When the **.NET Core Module Host**'s `Module_Start` function is invoked by the
 gateway, it:
 
 - Call the `Start` Delegate;
@@ -109,7 +109,7 @@ gateway, it:
 
 ### Module\_Receive
 
-When the **.NET Core Module Host**’s `Module_Receive` function is invoked by the
+When the **.NET Core Module Host**'s `Module_Receive` function is invoked by the
 gateway process, it:
 
 - Serializes (by calling `Message_ToByteArray`) the message content and properties and invokes the `Receive` method implemented by the .NET module (`IGatewayInterface` below). The .NET module will deserialize this byte array into a Message object.
@@ -117,7 +117,7 @@ gateway process, it:
 
 ### Module\_Destroy
 
-When the **.NET Module Host**’s `Module_Destroy` function is invoked by the
+When the **.NET Module Host**'s `Module_Destroy` function is invoked by the
 gateway, it:
 
 - Calls the `Destroy` delegate (which is going to call `Destroy` method implemented by the [.NET Core](https://github.com/dotnet/)  Module); 

@@ -84,7 +84,7 @@ The following block diagram illustrates the device command data flow pipeline:
 To complete this tutorial, you need an active Azure subscription.
 
 > [!NOTE]
-> If you don’t have an account, you can create a free trial account in just a couple of minutes. For details, see [Azure Free Trial][lnk-free-trial].
+> If you don't have an account, you can create a free trial account in just a couple of minutes. For details, see [Azure Free Trial][lnk-free-trial].
 
 You need SSH client on your desktop machine to enable you to remotely access the command line on the Raspberry Pi.
 

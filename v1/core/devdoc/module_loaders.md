@@ -28,7 +28,7 @@ loaded and initialized first.
 
 From the perspective of the gateway, a module loader is a piece of code that
 knows how to load a module instance and hand the gateway a table of function
-pointers used to control it. The gateway doesn’t really care how the module
+pointers used to control it. The gateway doesn't really care how the module
 loader goes about acquiring the said pointers.
 
 Loader Configuration
@@ -109,7 +109,7 @@ referenced using the following loader names:
 
 It is legal to completely omit specifying the `loaders` array in which case the
 default loaders specified above will be made available using default options.
-Here’s an example of a module configuration that makes use of the Java loader:
+Here's an example of a module configuration that makes use of the Java loader:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
 {
@@ -188,7 +188,7 @@ extern const MODULE_LOADER *DynamicLoader_Get(void);
 The gateway, during initialization, creates and populates a vector of
 `MODULE_LOADER` instances so that it has a default set of module loaders to work
 with. As discussed before, the gateway SDK, depending on build options used will
-ship with a set of pre-defined loaders. Here’s an example how this
+ship with a set of pre-defined loaders. Here's an example how this
 initialization code might look like:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ c
@@ -229,14 +229,14 @@ work is given below:
     the gateway as described in the previous section.
 
 2.  Inspect the gateway configuration and create custom loaders. When
-    initializing from JSON, if a loader’s name matches the name of an existing
-    loader then it has the effect of replacing the loader’s configuration. New
-    loaders are added to the gateway’s loaders list (the loader’s function
+    initializing from JSON, if a loader's name matches the name of an existing
+    loader then it has the effect of replacing the loader's configuration. New
+    loaders are added to the gateway's loaders list (the loader's function
     pointer table is copied over from the corresponding *default* loader with
     the same loader type).
 
-3.  When initializing from JSON, each loader’s configuration is parsed by
-    invoking the `ParseConfigurationFromJson` function from the loader’s API.
+3.  When initializing from JSON, each loader's configuration is parsed by
+    invoking the `ParseConfigurationFromJson` function from the loader's API.
 
 ### Loading Modules
 
@@ -245,28 +245,28 @@ The process of loading a given gateway module is described below:
 ![Loading Module Sequence](./media/module_loader_create.png)
 
 1.  When initializing the gateway from JSON, it first attempts to parse the
-    module’s entrypoint data by calling the loader’s `ParseEntryPointFromJson`
+    module's entrypoint data by calling the loader's `ParseEntryPointFromJson`
     function.
 
-2.  It then proceeds to load the module by invoking the loader’s `Load` function
+2.  It then proceeds to load the module by invoking the loader's `Load` function
     passing in the entrypoint it acquired in the previous step. Each loader is
     free to do what it needs to in order to load the module. The native loader
     for example will inspect the entrypoint to retrieve the path to the DLL/SO
     that implements the module and loads it into memory. A language binding
-    module’s loader on the other hand might choose to load the binding module
-    implementation and it’s associated runtime and defer the loading of the
+    module's loader on the other hand might choose to load the binding module
+    implementation and it's associated runtime and defer the loading of the
     actual module code till the time when `Module_Create` is called on the
     binding module.
 
-3.  Next, when the gateway is loaded from JSON, the module’s `args` JSON is
-    parsed by invoking `ParseConfigurationFromJson` on the module’s API.
+3.  Next, when the gateway is loaded from JSON, the module's `args` JSON is
+    parsed by invoking `ParseConfigurationFromJson` on the module's API.
 
-4.  Language binding modules expect a configuration structure that’s typically
-    an amalgamation of the entrypoint data and the module loader’s
+4.  Language binding modules expect a configuration structure that's typically
+    an amalgamation of the entrypoint data and the module loader's
     configuration. In order to provide language binding modules an opportunity
     to perform this merging of configuration information, the loader is expected
     to implement the `BuildModuleConfiguration` function. This function is
-    provided with pointers to the entrypoint data and the module loader’s
+    provided with pointers to the entrypoint data and the module loader's
     configuration and it returns a pointer to a merged variant of the
     configuration as expected by the binding module.
 

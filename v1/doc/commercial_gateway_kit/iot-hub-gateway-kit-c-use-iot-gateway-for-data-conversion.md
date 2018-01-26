@@ -21,7 +21,7 @@ ms.author: xshi
 # Use IoT gateway for sensor data transformation with Azure IoT Edge
 
 > [!NOTE]
-> Before you start this tutorial, make sure you’ve completed the following lessons in sequence:
+> Before you start this tutorial, make sure you've completed the following lessons in sequence:
 > * [Set up Intel NUC as an IoT gateway](iot-hub-gateway-kit-c-lesson1-set-up-nuc.md)
 > * [Use IoT gateway to connect things to the cloud - SensorTag to Azure IoT Hub](iot-hub-gateway-kit-c-iot-gateway-connect-device-to-cloud.md)
 
@@ -141,4 +141,4 @@ You get a `libmy_module.so` file after the compile is completed. Make a note of 
 
 ## Next steps
 
-You’ve successfully use the IoT gateway to convert the message from SensorTag into the .json format.
+You've successfully use the IoT gateway to convert the message from SensorTag into the .json format.

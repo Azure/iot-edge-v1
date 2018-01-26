@@ -1,7 +1,5 @@
 # dynamic_library Requirements
 
-
- 
 ## Overview
 dynamic_library is a wrapper for OS system calls for loading, unloading and 
 finding a symbol in a dynamically linked library.

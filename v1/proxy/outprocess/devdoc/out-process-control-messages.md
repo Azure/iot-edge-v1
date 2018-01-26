@@ -39,8 +39,8 @@ The basic structure of the control message is simple. It will look like this:
 +----------------------+   --+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This structure is always transmitted over the “wire” in network byte order (big
-endian). Here’s what each of these fields mean:
+This structure is always transmitted over the "wire" in network byte order (big
+endian). Here's what each of these fields mean:
 
 -   **header1** - This is an unsigned byte containing 0xA1.
 
@@ -159,7 +159,7 @@ Module reply
 This message is sent by the module host process to indicate the status of a module. The message `type` field will have the value
 `CONTROL_MESSAGE_TYPE_MODULE_REPLY` and the body of the message is a 
 single unsigned 8-bit value, with 0 indicating success and any non-zero value 
-indicating failure. Here’s what the struct looks like:
+indicating failure. Here's what the struct looks like:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 typedef struct CONTROL_MESSAGE_MODULE_REPLY_TAG

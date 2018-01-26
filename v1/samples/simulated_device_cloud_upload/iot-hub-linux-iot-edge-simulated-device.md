@@ -45,13 +45,13 @@ You can now build the IoT Edge runtime and samples on your local machine:
 
 1. Navigate to the root folder in your local copy of the **iot-edge** repository.
 
-1. Run the build script as follows:
+1. Run the build script as follows:
 
     ```sh
     tools/build.sh --disable-native-remote-modules
     ```
 
-This script uses the **cmake** utility to create a folder called **v1/build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
+This script uses the **cmake** utility to create a folder called **v1/build** in the root folder of your local copy of the **iot-edge** repository and generate a makefile. The script then builds the solution, skipping unit tests and end to end tests. If you want to build and run the unit tests, add the `--run-unittests` parameter. If you want to build and run the end to end tests, add the `--run-e2e-tests`.
 
 > [!NOTE]
 > Every time you run the **build.sh** script, it deletes and then recreates the **v1/build** folder in the root folder of your local copy of the **iot-edge** repository.

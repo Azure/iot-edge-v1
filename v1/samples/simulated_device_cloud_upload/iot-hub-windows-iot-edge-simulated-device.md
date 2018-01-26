@@ -44,7 +44,7 @@ You can now build the IoT Edge runtime and samples on your local machine:
 
 1. Navigate to the root folder in your local copy of the **iot-edge** repository.
 
-1. Run the build script as follows:
+1. Run the build script as follows:
 
     ```cmd
     tools\build.cmd --disable-native-remote-modules

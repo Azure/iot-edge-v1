@@ -5,9 +5,9 @@ V1 will continue to be supported. V1 documentation which used to live on docs.mi
 
 
 # 5/10/2017
-The Azure IoT Gateway SDK was our first step to enabling edge analytics in IoT solutions. We’re doubling down on, and expanding, this vision as explained in Satya’s Keynote at the Build conference and Sam George’s [blog post](http://blogs.microsoft.com/iot/?p=23040). As part of this evolution, the SDK is becoming an extensible product you can use instead of a set of code you build. To reflect this, we’re changing the name to Azure IoT Edge.
+The Azure IoT Gateway SDK was our first step to enabling edge analytics in IoT solutions. We're doubling down on, and expanding, this vision as explained in Satya's Keynote at the Build conference and Sam George's [blog post](http://blogs.microsoft.com/iot/?p=23040). As part of this evolution, the SDK is becoming an extensible product you can use instead of a set of code you build. To reflect this, we're changing the name to Azure IoT Edge.
 
-All the important developer concepts are maintained as we continue to improve Azure IoT Edge. Specifically…
+All the important developer concepts are maintained as we continue to improve Azure IoT Edge. Specifically:
 -	modules remain units compute which can be written in your programming language of choice.
 -	traditional cloud services and 3rd party business logic can run as a module.
 -	modules can communicate with each other via declarative message passing.
@@ -51,8 +51,8 @@ The following modules are available in this repository:
 
 ## Create Modules using Packages
 The fastest way to setup your development environment to start writing modules is to leverage our packages for Java, C#, and Node.js. Our [sample apps repo](https://github.com/Azure-Samples/iot-edge-samples) has quick steps on getting started with these packages:
-- [Azure IoT Edge Maven](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-module-base): With this you will be able to run the Azure IoT Edge sample app and start writing Java modules. This package contains the Azure IoT Edge core and links to the module dependencies’ packages for Linux or Windows. Requires the [java binding package](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-java-binding).  
-- [Azure IoT Edge npm](https://www.npmjs.com/package/azure-iot-gateway): With this you will be able to run the Azure IoT Edge sample app and start writing Node.js modules. This package contains the Azure IoT Edge core and auto-installs the module dependencies’ packages for Linux or Windows.
+- [Azure IoT Edge Maven](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-module-base): With this you will be able to run the Azure IoT Edge sample app and start writing Java modules. This package contains the Azure IoT Edge core and links to the module dependencies' packages for Linux or Windows. Requires the [java binding package](https://mvnrepository.com/artifact/com.microsoft.azure.gateway/gateway-java-binding).  
+- [Azure IoT Edge npm](https://www.npmjs.com/package/azure-iot-gateway): With this you will be able to run the Azure IoT Edge sample app and start writing Node.js modules. This package contains the Azure IoT Edge core and auto-installs the module dependencies' packages for Linux or Windows.
 - [Azure IoT Edge NuGet .NET Standard](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Module.NetStandard/): With this you will be able to run the Azure IoT Edge sample app and write .NET Standard modules on Windows ([IoT Edge Core for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Windows.x64/)) or Ubuntu ([IoT Edge Core for Ubuntu](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Ubuntu.x64/)).
 - [Azure IoT Edge NuGet .NET Framework](https://www.nuget.org/packages/Microsoft.Azure.IoT.Gateway.Module): With this you will be able to run the Azure IoT Edge sample app and write .NET Framework modules on Windows, dependent on [IoT Edge Core for Windows](https://www.nuget.org/packages/Microsoft.Azure.Devices.Gateway.Native.Windows.x64/).
 
@@ -65,9 +65,9 @@ a module to find out how to get it, who supports it, etc.
 >| OPC Proxy         | https://github.com/Azure/iot-edge-opc-proxy                    | 2017-04-27               |
 >| Modbus            | https://github.com/Azure/iot-gateway-modbus                    | 2017-01-13               |
 >| GZip Compression  | https://github.com/Azure/iot-gateway-compression-gzip-nodejs   | 2016-12-16               |
->| Proficy Historian | https://github.com/Azure-Samples/iot-edge-proficy-historian    | 2017-04-27               |
->| SQLite            | https://github.com/Azure/iot-gateway-sqlite                    | 2017-01-13               |
->| Batch/Shred       | https://github.com/Azure/iot-gateway-batch-nodejs              | 2017-01-13               |
+>| Proficy Historian | https://github.com/Azure-Samples/iot-edge-proficy-historian    | 2017-04-27               |
+>| SQLite            | https://github.com/Azure/iot-gateway-sqlite                    | 2017-01-13               |
+>| Batch/Shred       | https://github.com/Azure/iot-gateway-batch-nodejs              | 2017-01-13               |
 >| ZWave             | https://github.com/MaxKhlupnov/SmartHive                       | 2017-04-27               | 
 
 We'd love to feature your module here! See our [Contribution guidelines](Contributing.md) for 

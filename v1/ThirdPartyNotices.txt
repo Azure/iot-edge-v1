@@ -1,5 +1,5 @@
 Third Party Notices for the Azure IoT Edge Project
-This Microsoft Open Source project is based on or incorporates material from the project(s) listed below (�Third Party OSS�). The original copyright notice and the license under which Microsoft received such Third Party OSS, are set forth below.  Such licenses and notices are provided for informational purposes only.  Microsoft licenses the Third Party OSS to you under the licensing terms for the Microsoft product or service.  Microsoft reserves all other rights not expressly granted, whether by implication, estoppel or otherwise.  
+This Microsoft Open Source project is based on or incorporates material from the project(s) listed below ("Third Party OSS"). The original copyright notice and the license under which Microsoft received such Third Party OSS, are set forth below.  Such licenses and notices are provided for informational purposes only.  Microsoft licenses the Third Party OSS to you under the licensing terms for the Microsoft product or service.  Microsoft reserves all other rights not expressly granted, whether by implication, estoppel or otherwise.  
 #SensorTag (http://processors.wiki.ti.com/index.php/CC2650_SensorTag_User's_Guide#Data)
 Creative Commons Attribution-ShareAlike 3.0
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
@@ -51,7 +51,7 @@ Microsoft Corporation
 One Microsoft Way
 Redmond, WA 98052 USA
  
-Please write �source for [Third Party IP]� in the memo line of your payment. 
+Please write "source for [Third Party IP]" in the memo line of your payment. 
   -------------------------
 #GDBus-Glib D-Bus (https://developer.gnome.org/glib/stable/glib.html) 
 GNU Lesser General Public License

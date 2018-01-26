@@ -29,7 +29,7 @@ typedef struct BROKER_MODULEINFO_TAG
     CONST MODULE_API*        module_api;
     
     /**
-     * Handle to the thread on which this module’s message processing loop is
+     * Handle to the thread on which this module's message processing loop is
      * running.
      */
     THREAD_HANDLE           thread;
