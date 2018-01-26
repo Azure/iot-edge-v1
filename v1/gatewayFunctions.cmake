@@ -154,7 +154,7 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
                 RESULT_VARIABLE res
             )
             if(${res})
-                message(FATAL_ERROR "Error running cmake for ${libraryName}: ${res}")
+                message(FATAL_ERROR "ERROR running cmake for ${libraryName}: ${res}")
             endif()
 
             # Install library
@@ -167,7 +167,9 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
                 ERROR_FILE error.txt
             )
             if(${res})
-                message(FATAL_ERROR "Error installing ${libraryName}: ${res}")
+                message(FATAL_ERROR "**ERROR installing ${libraryName}. See "
+                    "${cmakeRootDirectory}/build/error.txt and "
+                    "${cmakeRootDirectory}/build/output.txt.\n")
             endif()
 
             #Attempt to find library with the REQUIRED option
