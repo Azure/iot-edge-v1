@@ -75,8 +75,6 @@ where all necessary Java class files are located, `entrypoint.class.name` is the
 of the class that implements the module code. `entrypoint.jvm.options` is
 a JSON object containing any options to be passed to the JVM upon creation.
 
- 
-
 Gateway Module (Java)
 ---------------------
 
@@ -134,8 +132,6 @@ The implementaion of `IGatewayModule` should save the moduleAddr and broker argu
 To simplify this, the Azure IoT Gateway SDK provides an abstract `GatewayModule` class which implements the `IGatewayModule` interface. Module-implementers
 may extend this abstract class when creating a module. If the module extends the `GatewayModule` class the constructor calls `create` method.
 
- 
-
 Exactly like a standard gateway module written in C, the gateway will handle
 making calls to `Module_Create`, `Module_Start`, `Module_Receive`, and 
 `Module_Destroy`. These three functions are implemented by the **Java Module Host** 
@@ -144,7 +140,7 @@ a description of what the **Java Module Host** will do in each of these cases:
 
 ### Module\_Create
 
-When the **Java Module Host**’s `Module_Create` function is invoked by the
+When the **Java Module Host**'s `Module_Create` function is invoked by the
 gateway, it:
 
 -   Creates a JVM with the provided JVM configuration if this is the first Java
@@ -152,7 +148,7 @@ gateway, it:
 
 -   Constructs a `Broker` Java object using the `BROKER_HANDLE`.
 
--   Finds the module’s class with the name specified by the `entrypoint.class.name`,
+-   Finds the module's class with the name specified by the `entrypoint.class.name`,
     finds the constructor that matches these three arguments: the native `MODULE_HANDLE` address,
     the `Broker` object and the JSON args string for that module and invokes it. 
     If the constructor with three parameters is not found, finds no-argument constructor and invokes it and 
@@ -163,7 +159,7 @@ gateway, it:
 
 ### Module\_Start
 
-When the **Java Module Host**’s `Module_Start` function is invoked by the
+When the **Java Module Host**'s `Module_Start` function is invoked by the
 gateway, it:
 
 -   Attaches the current thread to the JVM
@@ -172,7 +168,7 @@ gateway, it:
 
 ### Module\_Receive
 
-When the **Java Module Host**’s `Module_Receive` function is invoked by the
+When the **Java Module Host**'s `Module_Receive` function is invoked by the
 gateway, it:
 
 -   Serializes the `MESSAGE_HANDLE` content and properties and invokes the
@@ -180,7 +176,7 @@ gateway, it:
 
 ### Module\_Destroy
 
-When the **Java Module Host**’s `Module_Destroy` function is invoked by the
+When the **Java Module Host**'s `Module_Destroy` function is invoked by the
 gateway, it:
 
 -   Attaches the current thread to the JVM

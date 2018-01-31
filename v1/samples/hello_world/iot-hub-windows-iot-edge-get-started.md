@@ -44,7 +44,7 @@ You can now build the IoT Edge runtime and samples on your local machine:
 
 1. Navigate to the root folder in your local copy of the **iot-edge** repository.
 
-1. Run the build script as follows:
+1. Run the build script as follows:
 
     ```cmd
     v1\tools\build.cmd --disable-native-remote-modules
@@ -312,8 +312,8 @@ static void Logger_Receive(MODULE_HANDLE moduleHandle, MESSAGE_HANDLE messageHan
 
 In this article, you ran a simple IoT Edge gateway that writes messages to a log file. To run a sample that sends messages to IoT Hub, see:
 
-- [IoT Edge – send device-to-cloud messages with a simulated device using Linux][lnk-gateway-simulated-linux] 
-- [IoT Edge – send device-to-cloud messages with a simulated device using Windows][lnk-gateway-simulated-windows].
+- [IoT Edge - send device-to-cloud messages with a simulated device using Linux][lnk-gateway-simulated-linux] 
+- [IoT Edge - send device-to-cloud messages with a simulated device using Windows][lnk-gateway-simulated-windows].
 
 
 <!-- Links -->

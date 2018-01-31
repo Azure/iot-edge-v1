@@ -59,7 +59,7 @@ The JSON configuration for .NET Module will be similar to the configuration for 
 ##Native methods description
 ### Module\_Create
 
-When the **.NET Module Host**’s `Module_Create` function is invoked by the
+When the **.NET Module Host**'s `Module_Create` function is invoked by the
 gateway process, it:
 
 -   Creates a CLR instance; 
@@ -68,7 +68,7 @@ gateway process, it:
 
 ### Module\_Start
 
-When the **.NET Module Host**’s `Module_Start` function is invoked by the
+When the **.NET Module Host**'s `Module_Start` function is invoked by the
 gateway, it:
 
 - Checks to see if the .NET module has implemented the `Start` method.
@@ -76,14 +76,14 @@ gateway, it:
 
 ### Module\_Receive
 
-When the **.NET Module Host**’s `Module_Receive` function is invoked by the
+When the **.NET Module Host**'s `Module_Receive` function is invoked by the
 gateway process, it:
 
 -   Serializes (by calling `Message_ToByteArray` the message content and properties and invokes the `Receive` method implemented by the .NET module (`IGatewayInterface` below). The .NET module will deserialize this byte_array into a Message object.
 
 ### Module\_Destroy
 
-When the **.NET Module Host**’s `Module_Destroy` function is invoked by the
+When the **.NET Module Host**'s `Module_Destroy` function is invoked by the
 gateway, it:
 
 -   Releases resources allocated and calls the `Destroy` method implemented by the .NET Module.

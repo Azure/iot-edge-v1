@@ -147,7 +147,7 @@ An example of proxy module configuration with activation.type "launch" :
 
 #### Proxy Module Configuration
 
-The proxy module’s configuration will include the following information:
+The proxy module's configuration will include the following information:
 
 - **name**
 
@@ -205,7 +205,7 @@ The proxy module’s configuration will include the following information:
 
 ### Remote Module Host (a.k.a. Proxy Gateway)
 
-The proxy module’s remote counterpart is a remote module host (*known to the remote module as a proxy gateway*). The remote module host implements the communication protocol for control messages and is responsible for running the remote module and brokering communication between that module and the gateway.
+The proxy module's remote counterpart is a remote module host (*known to the remote module as a proxy gateway*). The remote module host implements the communication protocol for control messages and is responsible for running the remote module and brokering communication between that module and the gateway.
 
 The remote module host does the following:
 
@@ -356,7 +356,7 @@ message packet is structured like so:
     to invoke `Module_Destroy` on the module and quit the process.
 
 
-Alternate Approach - Reusing Broker’s Nanomsg Socket
+Alternate Approach - Reusing Broker's Nanomsg Socket
 ----------------------------------------------------
 
 The topic based routing implementation of the message broker today uses a
@@ -367,7 +367,7 @@ with it from the module host. While this approach works it does not appear to
 obviate the need for:
 
 1.  Having a *proxy* module that represents the module being hosted in the
-    external process because we’d still need a way of *activating* the outprocess
+    external process because we'd still need a way of *activating* the outprocess
     module which, with a proxy module, we could implement from the
     `Module_Create` API.
 
@@ -395,7 +395,7 @@ needed so that the module host knows what topic to publish to when the module
 calls `Broker_Publish`.
 
 With this approach we discover that the module host ends up having to
-re-implement a non-trivial portion of the broker in it’s *proxy broker*
+re-implement a non-trivial portion of the broker in it's *proxy broker*
 implementation. It will for instance, need to re-implement the message loop that
 reads from the *nanomsg* subscribe socket, strip out the topic name from the
 message and deserialize and deliver the message to the module. Similarly, when

@@ -44,7 +44,7 @@ we modified the source in a fork of the Node.js project. We essentially added an
 additional callback function as a parameter to `node::Start`. The changes that
 have been done to Node.js to enable this can be seen in [this
 commit](https://github.com/avranju/node/commit/fb272256ef7743c9b1882aff39fe7f1685fb7cba).
-With this change in place we are able to intercept Node.js’s event loop in the
+With this change in place we are able to intercept Node.js's event loop in the
 following manner:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,7 +151,7 @@ modules will however have their *destroy* callback invoked when it is time for
 them to be unloaded.
 
 The configuration for this module will include the path to the root JavaScript
-file that is to be loaded and run when the module starts up. Here’s a sample
+file that is to be loaded and run when the module starts up. Here's a sample
 configuration provided in JSON syntax:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json
@@ -177,12 +177,12 @@ implementation and hands off control to it. In the sample above we are using the
 default Node.js loader that the gateway SDK ships with.
 
 The `main.path` property specifies the path to the root JavaScript file that
-should be loaded and `args` is configuration that’s specific to this gateway
+should be loaded and `args` is configuration that's specific to this gateway
 module.
 
 The code on the JavaScript side of the implementation has access to an API
 provided by the module host. It maybe useful to have the interface definitions
-of this API handy while reviewing the work that the module host’s create,
+of this API handy while reviewing the work that the module host's create,
 receive and destroy functions do. The API definition is provided below using
 TypeScript syntax for expository purposes:
 
@@ -240,14 +240,14 @@ following actions:
 -   If this is the first time that this API is being called, then it starts a
     new thread to run the Node.js engine and starts up Node.js.
 
--   It sets up a callback function to be called from Node.js’s event loop.
+-   It sets up a callback function to be called from Node.js's event loop.
 
 -   When event loop callback is invoked, it creates an instance of a proxy
     object for the message broker (conforming to the `Broker` interface defined
     above).
 
 -   If this is the first time that a Node.js module is being loaded, then it
-    adds an object to V8’s global context that implements the
+    adds an object to V8's global context that implements the
     `GatewayModuleHost` interface (defined in the TypeScript snippet above).
     This object is identified using the name `gatewayHost`.
 
@@ -265,7 +265,7 @@ following actions:
     which now has a handle to the JavaScript object that implements
     `GatewayModule`. The module then proceeds to invoke `GatewayModule.create`
     passing the handle to the `Broker` object and the configuration that it has
-    read from the module’s configuration
+    read from the module's configuration
 
 ### Module\_Receive
 
@@ -276,7 +276,7 @@ constructs an object that implements the `Message` interface and invokes
 ### Module\_Destroy
 
 The call to `Module_Destroy` is simply forwarded on to `GatewayModule.destroy`.
-It then removes the module reference from it’s internal list of modules.
+It then removes the module reference from it's internal list of modules.
 
 ### Publishing of messages to the broker
 
@@ -300,7 +300,7 @@ this, the following is proposed:
     module.
 
 2.  We provide a [Yeoman generator](http://yeoman.io/) that allows developers to
-    quickly scaffold out a project that’s pre-configured with a gateway and a
+    quickly scaffold out a project that's pre-configured with a gateway and a
     sample module implementation.
 
 3.  The gateway executable that we package in the NPM module will include

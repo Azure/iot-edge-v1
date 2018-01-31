@@ -8,12 +8,12 @@ Continuity of concepts allows existing Azure IoT Edge solutions to be easily mig
 
 ## Overview 
 There are six specific changes that must be accounted for when moving a module from V1 to V2:
-1.	Module format – Modules are implemented as containers instead of DLLs, SOs, jars, .js files or .NET assemblies. 
-2.	Module lifetime -  Modules are started by the IoT Edge runtime and run in their own processes instead of running as a thread in the gateway process. 
-3.	Module configuration – Modules fetch their configuration data from a module twin instead of having it provided as an argument at startup.
-4.	Message passing – Modules use the IoT Edge runtime for sending and receiving messages instead of the broker. 
-5.	Declaring routes – The order in which messages are passed between modules is defined by routes on the IoT Edge runtime instead of links.
-6.	Talking to the cloud – Communication with IoT Hub is provided by the IoT Edge runtime instead of a separate module.
+1.	Module format - Modules are implemented as containers instead of DLLs, SOs, jars, .js files or .NET assemblies. 
+2.	Module lifetime - Modules are started by the IoT Edge runtime and run in their own processes instead of running as a thread in the gateway process. 
+3.	Module configuration - Modules fetch their configuration data from a module twin instead of having it provided as an argument at startup.
+4.	Message passing - Modules use the IoT Edge runtime for sending and receiving messages instead of the broker. 
+5.	Declaring routes - The order in which messages are passed between modules is defined by routes on the IoT Edge runtime instead of links.
+6.	Talking to the cloud - Communication with IoT Hub is provided by the IoT Edge runtime instead of a separate module.
 The following diagram illustrates these changes.
 
 ## Specifics
@@ -21,7 +21,7 @@ Details on each of the migration steps are below. The [tutorial on writing a mod
 
 ### Module format
 Modules allow for creation of units of compute in different languages. They started off with language specific formats. For example: C modules were either a DLLs or SOs, Java modules were jars, and .NET modules were assemblies.
-Module format has changed to the industry standard of containers. This has many benefits, primarily containers…
+Module format has changed to the industry standard of containers. This has many benefits, primarily containers...
 * are an industry standard.
 * include mechanisms for distribution.
 * simplify dependency management on the host system since they include all dependencies for code which runs inside the container.
@@ -47,9 +47,9 @@ Each module now has an individual module twin which can be used to provide a mod
 
 ### Message passing
 Modules used to use a broker inside the gateway process to exchange messages. This functionality is now provided by the IoT Edge runtime.
-* Sending message to the runtime – Call `DeviceClient.SendEventAsync` instead of `Broker_Publish`
-* Receiving a message from the runtime – Register a delegate for receiving messages with `DeviceClient.SetInputMessageHandlerAsync` instead of setting the `pfModule_Receive` function pointer in the `MODULE_API` structure.
-Notice that message passing now uses the same device client code that users are already familiar with when interacting with IoT Hub. The consistency simplifies the number of programing module regardless of whether you’re working in the cloud or on the edge. 
+* Sending message to the runtime - Call `DeviceClient.SendEventAsync` instead of `Broker_Publish`
+* Receiving a message from the runtime - Register a delegate for receiving messages with `DeviceClient.SetInputMessageHandlerAsync` instead of setting the `pfModule_Receive` function pointer in the `MODULE_API` structure.
+Notice that message passing now uses the same device client code that users are already familiar with when interacting with IoT Hub. The consistency simplifies the number of programing module regardless of whether you're working in the cloud or on the edge. 
 
 ### Declaring routes
 The original broker used Links specified in the JSON config file to determine how to pass messages between modules. The IoT Edge runtime uses a very similar concept called routes. Use these when declaring your module pipelines. You can find out more about routes in [this article](https://docs.microsoft.com/en-us/azure/iot-edge/module-composition). 

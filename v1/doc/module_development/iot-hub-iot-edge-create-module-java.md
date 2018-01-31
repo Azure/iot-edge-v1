@@ -53,7 +53,7 @@ Since Azure IoT Edge packages are based on Maven, we need to create a typical Ma
 
 The POM inherits from the `com.microsoft.azure.gateway.gateway-module-base` package, which declares all of the dependencies needed by a module project which includes the runtime binaries, the gateway configuration file path, and the execution behavior. This saves us lots of time and eliminate the need to write and rewrite hundreds of lines of code over and over again.
 
-We need to update the pom.xml file by declaring the required dependencies/plugins and the name of the configuration file to be used by our module as shown in the following code snippet.
+We need to update the pom.xml file by declaring the required dependencies/plugins and the name of the configuration file to be used by our module as shown in the following code snippet.
 
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"

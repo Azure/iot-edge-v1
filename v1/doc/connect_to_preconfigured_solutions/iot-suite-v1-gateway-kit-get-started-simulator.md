@@ -37,7 +37,7 @@ In this tutorial, you complete the following steps:
 To complete this tutorial, you need an active Azure subscription.
 
 > [!NOTE]
-> If you don’t have an account, you can create a free trial account in just a couple of minutes. For details, see [Azure Free Trial][lnk-free-trial].
+> If you don't have an account, you can create a free trial account in just a couple of minutes. For details, see [Azure Free Trial][lnk-free-trial].
 
 ### Required software
 
