@@ -43,7 +43,12 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn
     (void)env;
     (void)obj;
 
-    return nn_close(socket);
+    int result;
+    do
+    {
+        result = nn_close(socket);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
 }
 
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1bind
@@ -59,7 +64,12 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn
     (void)env;
     (void)obj;
 
-    return nn_shutdown(socket, endpoint);
+    int result;
+    do
+    {
+        result = nn_shutdown(socket, endpoint);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
 }
 
 JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send
@@ -71,12 +81,15 @@ JNIEXPORT jint JNICALL Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn
         jsize length = (*env)->GetArrayLength(env, buffer);
         jbyte* cbuffer = (*env)->GetByteArrayElements(env, buffer, 0);
 
-        if (cbuffer == NULL)
+        if (cbuffer == NULL) 
         {
             result = -1;
         }
         else {
-            result = nn_send(socket, cbuffer, length, flags);
+            do
+            {
+                result = nn_send(socket, cbuffer, length, flags);
+            } while (result == -1 && nn_errno() == EINTR);
             (*env)->ReleaseByteArrayElements(env, buffer, cbuffer, JNI_ABORT);
         }
     }

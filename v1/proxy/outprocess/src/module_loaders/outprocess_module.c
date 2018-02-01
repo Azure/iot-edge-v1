@@ -50,6 +50,25 @@ typedef struct OUTPROCESS_HANDLE_DATA_TAG
 static void* construct_create_message(OUTPROCESS_HANDLE_DATA* handleData, int32_t * creationMessageSize);
 static void send_start_message(OUTPROCESS_HANDLE_DATA* handleData);
 
+static int nn_really_close(int s)
+{
+    int result;
+    do
+    {
+        result = nn_close(s);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
+}
+
+static int nn_really_send(int s, const void* buf, size_t len, int flags)
+{
+    int result;
+    do
+    {
+        result = nn_send(s, buf, len, flags);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
+}
 
 int outprocessIncomingMessageThread(void *param)
 {
@@ -106,7 +125,7 @@ int outprocessIncomingMessageThread(void *param)
 			if (nbytes < 0)
 			{
 				int receive_error = nn_errno();
-				if (receive_error != ETIMEDOUT)
+				if (receive_error != ETIMEDOUT && receive_error != EINTR)
 					should_continue = 0;
 			}
 			else
@@ -211,7 +230,7 @@ static int outprocessOutgoingMessagesThread(void * param)
 						unsigned char *nn_msg_bytes = (unsigned char *)result;
 						Message_ToByteArray(messageHandle, nn_msg_bytes, msg_size);
 						/*Codes_SRS_OUTPROCESS_MODULE_17_024: [ This function shall send the message on the message channel. ]*/
-						int nbytes = nn_send(handleData->message_socket, &result, NN_MSG, 0);
+						int nbytes = nn_really_send(handleData->message_socket, &result, NN_MSG, 0);
 						if (nbytes != msg_size)
 						{
 							LogError("unable to send buffer to remote for message [%p]", messageHandle);
@@ -303,7 +322,7 @@ static int outprocessCreate(void *param)
 							if (recvBytes < 0)
 							{
 								int recv_error = nn_errno();
-								if (recv_error != EAGAIN  && recv_error != ETIMEDOUT)
+								if (recv_error != EAGAIN && recv_error != ETIMEDOUT && recv_error != EINTR)
 								{
 									LogError("unexpected error on control channel receive: %d", recv_error);
 									should_continue = 0;
@@ -356,7 +375,7 @@ int outprocessControlThread(void *param)
 	OUTPROCESS_HANDLE_DATA * handleData = (OUTPROCESS_HANDLE_DATA*)param;
 	if (handleData == NULL)
 	{
-		LogError("outprocessCreate thread: parameter is NULL");
+		LogError("outprocessControlThread: parameter is NULL");
 	}
 	else
 	{
@@ -516,9 +535,9 @@ static void connection_teardown(OUTPROCESS_HANDLE_DATA* handleData)
 		LogError("could not lock handle data - attempting to destroy module anyway");
 	}
 	if (handleData->message_socket >= 0)
-		(void)nn_close(handleData->message_socket);
+		(void)nn_really_close(handleData->message_socket);
 	if (handleData->control_socket >= 0)
-		(void)nn_close(handleData->control_socket);
+		(void)nn_really_close(handleData->control_socket);
 	(void)Unlock(handleData->handle_lock);
 }
 
@@ -624,7 +643,7 @@ static void send_start_message(OUTPROCESS_HANDLE_DATA* handleData)
     int32_t startMessageSize = 0;
     void * startmessage = construct_start_message(handleData, &startMessageSize);
     /*Codes_SRS_OUTPROCESS_MODULE_17_019: [ This function shall send a Start Message on the control channel. ]*/
-    int nBytes = nn_send(handleData->control_socket, &startmessage, NN_MSG, 0);
+    int nBytes = nn_really_send(handleData->control_socket, &startmessage, NN_MSG, 0);
     if (nBytes != startMessageSize)
     {
         /*Codes_SRS_OUTPROCESS_MODULE_17_021: [ This function shall free any resources created. ]*/

@@ -572,6 +572,9 @@ public:
             rcv_length = (int)len;
         }
     MOCK_METHOD_END(int, rcv_length)
+
+    MOCK_STATIC_METHOD_0(, int, nn_errno)
+    MOCK_METHOD_END(int, 0)
 };
 
 DECLARE_GLOBAL_MOCK_METHOD_1(CBrokerMocks, , void*, gballoc_malloc, size_t, size);
@@ -630,6 +633,7 @@ DECLARE_GLOBAL_MOCK_METHOD_5(CBrokerMocks, , int, nn_setsockopt, int, s, int, le
 DECLARE_GLOBAL_MOCK_METHOD_2(CBrokerMocks, , int, nn_connect, int, s, const char *, addr)
 DECLARE_GLOBAL_MOCK_METHOD_4(CBrokerMocks, , int, nn_send, int, s, const void*, buf, size_t, len, int, flags)
 DECLARE_GLOBAL_MOCK_METHOD_4(CBrokerMocks, , int, nn_recv, int, s, void*, buf, size_t, len, int, flags)
+DECLARE_GLOBAL_MOCK_METHOD_0(CBrokerMocks, , int, nn_errno)
 
 BEGIN_TEST_SUITE(broker_ut)
 
@@ -909,6 +913,46 @@ TEST_FUNCTION(Broker_Create_fails_when_url_create_fails)
     STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_PUB));
+    STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, UniqueId_Generate(IGNORED_PTR_ARG, 37))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, STRING_construct("inproc://"))
+        .SetFailReturn((STRING_HANDLE)NULL);
+
+
+    ///act
+    auto r = Broker_Create();
+
+    ///assert
+    ASSERT_IS_NULL(r);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+    Broker_Destroy(r);
+}
+
+TEST_FUNCTION(Broker_Create_retries_nn_close_when_it_is_interrupted)
+{
+    ///arrange
+    CBrokerMocks mocks;
+
+    STRICT_EXPECTED_CALL(mocks, gballoc_malloc(IGNORED_NUM_ARG)) /*this is for the structure*/
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_create());
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Lock_Init());
+    STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_socket(AF_SP, NN_PUB));
+    STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
+        .IgnoreArgument(1)
+        .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno())
+        .SetFailReturn(EINTR);
     STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, UniqueId_Generate(IGNORED_PTR_ARG, 37))
@@ -1796,7 +1840,56 @@ TEST_FUNCTION(module_publish_worker_exits_on_nn_recv_error)
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
 
+
+    auto result = thread_func_to_call(thread_func_args);
+
+    ASSERT_ARE_EQUAL(int, result, 0);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+    Message_Destroy(message);
+    Broker_RemoveModule(broker, &fake_module);
+    Broker_Destroy(broker);
+}
+
+TEST_FUNCTION(module_publish_worker_retries_when_nn_recv_is_interrupted)
+{
+    CBrokerMocks mocks;
+    auto broker = Broker_Create();
+
+    // setup fake module's validation data
+    unsigned char fake;
+    MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
+    auto message = Message_Create(&c);
+    call_status_for_FakeModule_Receive.module = fake_module.module_handle;
+    call_status_for_FakeModule_Receive.messageHandle = message;
+
+    (void)Broker_AddModule(broker, &fake_module);
+
+    mocks.ResetAllCalls();
+
+    //loop 1
+    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno())
+        .SetFailReturn(EINTR);
+    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_recv(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
 
     auto result = thread_func_to_call(thread_func_args);
 
@@ -2124,6 +2217,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_when_nn_send_fails)
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
     STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
@@ -2142,6 +2236,71 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_when_nn_send_fails)
         .IgnoreArgument(1);
     STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
         .IgnoreArgument(1);
+
+    ///act
+    result = Broker_RemoveModule(broker, &fake_module);
+
+    ///assert
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_OK);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+    Broker_Destroy(broker);
+}
+
+TEST_FUNCTION(Broker_RemoveModule_retries_nn_send_when_it_is_interrupted)
+{
+    ///arrange
+    CBrokerMocks mocks;
+    auto broker = Broker_Create();
+    auto result = Broker_AddModule(broker, &fake_module);
+    mocks.ResetAllCalls();
+
+    // this is for the Broker_RemoveModule call
+    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_find(IGNORED_PTR_ARG, IGNORED_PTR_ARG, &fake_module))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_item_get_value(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno())
+        .SetFailReturn(EINTR);
+    STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, 37, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, STRING_c_str(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG)) /*this is the lock protecting mq_lock*/
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, Lock_Deinit(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, STRING_delete(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, singlylinkedlist_remove(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, gballoc_free(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
 
     ///act
     result = Broker_RemoveModule(broker, &fake_module);
@@ -2246,6 +2405,7 @@ TEST_FUNCTION(Broker_RemoveModule_succeeds_even_when_nn_close_fails)
     STRICT_EXPECTED_CALL(mocks, nn_close(IGNORED_NUM_ARG))
         .IgnoreArgument(1)
         .SetReturn(-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
     STRICT_EXPECTED_CALL(mocks, ThreadAPI_Join(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
         .IgnoreArgument(1)
         .IgnoreArgument(2);
@@ -3296,6 +3456,62 @@ TEST_FUNCTION(Broker_Publish_fails_when_send_fails)
         .IgnoreArgument(1)
         .IgnoreArgument(2)
         .SetFailReturn((int)-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
+
+    ///act
+    result = Broker_Publish(broker, fake_module_handle, message);
+
+    ///assert
+    ASSERT_ARE_EQUAL(BROKER_RESULT, result, BROKER_ERROR);
+    mocks.AssertActualAndExpectedCalls();
+
+    ///cleanup
+    Message_Destroy(message);
+    Broker_RemoveModule(broker, &fake_module);
+    Broker_Destroy(broker);
+}
+
+TEST_FUNCTION(Broker_Publish_retries_when_send_is_interrupted)
+{
+    ///arrange
+    CBrokerMocks mocks;
+
+    auto broker = Broker_Create();
+
+    // create a message to send
+    unsigned char fake;
+    MESSAGE_CONFIG c = { 1, &fake, (MAP_HANDLE)&fake };
+    auto message = Message_Create(&c);
+
+    auto result = Broker_AddModule(broker, &fake_module);
+
+    mocks.ResetAllCalls();
+
+    // this is for Broker_Publish
+    STRICT_EXPECTED_CALL(mocks, Lock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Unlock(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Message_Clone(message));
+    STRICT_EXPECTED_CALL(mocks, Message_Destroy(message));
+    STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, NULL, 0));
+    STRICT_EXPECTED_CALL(mocks, nn_allocmsg(1 + sizeof(MODULE_HANDLE), 0))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, nn_freemsg(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(mocks, Message_ToByteArray(message, IGNORED_PTR_ARG, 1))
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn((int)-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno())
+        .SetFailReturn(EINTR);
+    STRICT_EXPECTED_CALL(mocks, nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetFailReturn((int)-1);
+    STRICT_EXPECTED_CALL(mocks, nn_errno());
 
     ///act
     result = Broker_Publish(broker, fake_module_handle, message);

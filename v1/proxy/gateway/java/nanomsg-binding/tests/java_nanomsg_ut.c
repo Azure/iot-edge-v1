@@ -383,6 +383,29 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1close_s
     ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
 }
 
+TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1close_retries_when_it_is_interrupted)
+{
+    //Arrange
+    umock_c_reset_all_calls();
+
+    jobject jObject = (jobject)0x42;
+    jint socket = (jint)1;
+    jint expectedResult = (jint)0;
+    STRICT_EXPECTED_CALL(nn_close(socket))
+        .SetReturn(-1);
+    STRICT_EXPECTED_CALL(nn_errno())
+        .SetReturn(EINTR);
+    STRICT_EXPECTED_CALL(nn_close(socket))
+        .SetReturn(expectedResult);
+
+    //Act
+    jint result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1close(global_env, jObject, socket);
+
+    //Assert
+    ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1bind_success)
 {
     //Arrange
@@ -448,6 +471,30 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1shutdow
     ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
 }
 
+TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1shutdown_retries_when_it_is_interrupted)
+{
+    //Arrange
+    umock_c_reset_all_calls();
+
+    jobject jObject = (jobject)0x42;
+    jint socket = (jint)1;
+    jint endpoint = (jint)0;
+    jint expectedResult = (jint)0;
+    STRICT_EXPECTED_CALL(nn_shutdown(socket, endpoint))
+        .SetReturn(-1);
+    STRICT_EXPECTED_CALL(nn_errno())
+        .SetReturn(EINTR);
+    STRICT_EXPECTED_CALL(nn_shutdown(socket, endpoint))
+        .SetReturn(expectedResult);
+
+    //Act
+    jint result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1shutdown(global_env, jObject, socket, endpoint);
+
+    //Assert
+    ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+}
+
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send_success)
 {
     //Arrange
@@ -471,6 +518,40 @@ TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send_su
 
     //Assert
     ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
+}
+
+TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send_retries_when_it_is_interrupted)
+{
+    //Arrange
+    umock_c_reset_all_calls();
+
+    jobject jObject = (jobject)0x42;
+    jint socket = (jint)1;
+    jbyteArray buffer = (jbyteArray)0x42;
+    jint flags = (jint)1;
+    jint expectedResult = (jint)sizeof(buffer);
+    STRICT_EXPECTED_CALL(GetArrayLength(IGNORED_PTR_ARG, IGNORED_PTR_ARG))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(GetByteArrayElements(IGNORED_PTR_ARG, IGNORED_PTR_ARG, 0))
+        .IgnoreAllArguments();
+    STRICT_EXPECTED_CALL(nn_send(socket, IGNORED_PTR_ARG, IGNORED_NUM_ARG, flags))
+        .IgnoreArgument(2)
+        .IgnoreArgument(3)
+        .SetReturn(-1);
+    STRICT_EXPECTED_CALL(nn_errno())
+        .SetReturn(EINTR);
+    STRICT_EXPECTED_CALL(nn_send(socket, IGNORED_PTR_ARG, IGNORED_NUM_ARG, flags))
+        .IgnoreArgument(2)
+        .IgnoreArgument(3)
+        .SetReturn(expectedResult);
+    STRICT_EXPECTED_CALL(ReleaseByteArrayElements(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, JNI_ABORT));
+
+    //Act
+    jint result = Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send(global_env, jObject, socket, buffer, flags);
+
+    //Assert
+    ASSERT_ARE_EQUAL(int32_t, expectedResult, result);
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 }
 
 TEST_FUNCTION(Java_com_microsoft_azure_gateway_remote_NanomsgLibrary_nn_1send_not_sent_if_buffer_is_null)

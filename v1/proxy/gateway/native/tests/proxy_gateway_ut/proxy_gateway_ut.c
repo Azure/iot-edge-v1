@@ -571,6 +571,7 @@ TEST_SUITE_INITIALIZE(suite_init)
     REGISTER_UMOCK_ALIAS_TYPE(THREAD_HANDLE, void *);
     REGISTER_UMOCK_ALIAS_TYPE(THREAD_START_FUNC, void *);
     REGISTER_UMOCK_ALIAS_TYPE(THREADAPI_RESULT, int);
+    REGISTER_UMOCK_ALIAS_TYPE(MAP_FILTER_CALLBACK, void*);
 
     //REGISTER_UMOCKC_PAIRED_CREATE_DESTROY_CALLS(ControlMessage_Create, ControlMessage_Destroy);
     //REGISTER_UMOCKC_PAIRED_CREATE_DESTROY_CALLS(Message_Create, Message_Destroy);
@@ -1896,6 +1897,45 @@ TEST_FUNCTION(detach_SCENARIO_success)
     // Cleanup
 }
 
+TEST_FUNCTION(detach_SCENARIO_retries_shutdown_and_close_when_they_are_interrupted)
+{
+    // Arrange
+    static const CONTROL_MESSAGE_MODULE_REPLY REPLY = {
+        {
+            CONTROL_MESSAGE_VERSION_1,
+            CONTROL_MESSAGE_TYPE_MODULE_REPLY
+        },
+        (uint8_t)-1,
+    };
+
+    REMOTE_MODULE_HANDLE remote_module = ProxyGateway_Attach((MODULE_API *)&MOCK_MODULE_APIS, "proxy_gateway_ut");
+    ASSERT_IS_NOT_NULL(remote_module);
+
+    // Expected call listing
+    umock_c_reset_all_calls();
+    expected_calls_send_control_reply((CONTROL_MESSAGE_MODULE_REPLY *)&REPLY);
+    STRICT_EXPECTED_CALL(ThreadAPI_Sleep(1000));
+    expected_calls_disconnect_from_message_channel();
+
+    EXPECTED_CALL(nn_shutdown(IGNORED_NUM_ARG, IGNORED_NUM_ARG)).SetReturn(-1);
+    EXPECTED_CALL(nn_errno()).SetReturn(EINTR);
+    EXPECTED_CALL(nn_shutdown(IGNORED_NUM_ARG, IGNORED_NUM_ARG));
+
+    EXPECTED_CALL(nn_close(IGNORED_NUM_ARG)).SetReturn(-1);
+    EXPECTED_CALL(nn_errno()).SetReturn(EINTR);
+    EXPECTED_CALL(nn_close(IGNORED_NUM_ARG));
+
+    STRICT_EXPECTED_CALL(free(remote_module));
+
+    // Act
+    ProxyGateway_Detach(remote_module);
+
+    // Assert
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    // Cleanup
+}
+
 /* Tests_SRS_PROXY_GATEWAY_027_060: [If unable to halt the worker thread, `ProxyGateway_Detach` shall forcibly free the memory allocated to the worker thread] */
 TEST_FUNCTION(detach_SCENARIO_unable_to_halt_thread)
 {
@@ -2568,6 +2608,48 @@ TEST_FUNCTION(publish_SCENARIO_create_message_success)
     ProxyGateway_Detach(remote_module);
 }
 
+TEST_FUNCTION(Broker_Publish_retries_nn_send_when_it_is_interrupted)
+{
+    // Arrange
+    int data[100];
+    memset(&data, 1, 100);
+
+    static const int32_t msg_size = 100;
+    static const void* allocated_memptr = (void*)0xEBADF00D;
+
+    umock_c_reset_all_calls();
+    STRICT_EXPECTED_CALL(Message_Clone(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+    STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, NULL, 0))
+        .IgnoreArgument(1)
+        .SetReturn(msg_size);
+    STRICT_EXPECTED_CALL(nn_allocmsg(msg_size, 0))
+        .SetReturn((void*)allocated_memptr);
+    STRICT_EXPECTED_CALL(Message_ToByteArray(IGNORED_PTR_ARG, IGNORED_PTR_ARG, msg_size))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2);
+    STRICT_EXPECTED_CALL(nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(-1);
+    STRICT_EXPECTED_CALL(nn_errno())
+        .SetReturn(EINTR);
+    STRICT_EXPECTED_CALL(nn_send(IGNORED_NUM_ARG, IGNORED_PTR_ARG, NN_MSG, 0))
+        .IgnoreArgument(1)
+        .IgnoreArgument(2)
+        .SetReturn(msg_size);
+    STRICT_EXPECTED_CALL(Message_Destroy(IGNORED_PTR_ARG))
+        .IgnoreArgument(1);
+
+    // Act
+    (void)Broker_Publish((BROKER_HANDLE)&data, (MODULE_HANDLE)1, (MESSAGE_HANDLE)1);
+
+    // Assert
+    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
+
+    // Cleanup
+}
+
 
 /* SRS_PROXY_GATEWAY_027_0xx: [`worker_thread` shall obtain the thread mutex in order to initialize the thread by calling `LOCK_RESULT Lock(LOCK_HANDLE handle)`] */
 /* SRS_PROXY_GATEWAY_027_0xx: [If unable to obtain the mutex, then `worker_thread` shall return a non-zero value] */
@@ -2584,4 +2666,3 @@ TEST_FUNCTION(publish_SCENARIO_create_message_success)
 /* SRS_PROXY_GATEWAY_027_0xx: [`worker_thread` shall pass its return value to the caller by calling `void ThreadAPI_Exit(int res)`] */
 
 END_TEST_SUITE(proxy_gateway_ut)
-

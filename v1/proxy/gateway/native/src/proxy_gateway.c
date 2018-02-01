@@ -87,6 +87,36 @@ static size_t strnlen_(const char* s, size_t max)
     return i;
 }
 
+static int nn_really_close(int s)
+{
+    int result;
+    do
+    {
+        result = nn_close(s);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
+}
+
+static int nn_really_shutdown(int s, int how)
+{
+    int result;
+    do
+    {
+        result = nn_shutdown(s, how);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
+}
+
+static int nn_really_send(int s, const void* buf, size_t len, int flags)
+{
+    int result;
+    do
+    {
+        result = nn_send(s, buf, len, flags);
+    } while (result == -1 && nn_errno() == EINTR);
+    return result;
+}
+
 REMOTE_MODULE_HANDLE
 ProxyGateway_Attach (
     const MODULE_API * module_apis,
@@ -157,7 +187,7 @@ ProxyGateway_Attach (
             } else if (0 > (remote_module->control_endpoint = nn_bind(remote_module->control_socket, control_channel_uri))) {
                 /* Codes_SRS_PROXY_GATEWAY_027_014: [If the call to `nn_bind` returns a negative value, then `ProxyGateway_Attach` shall close the socket, free any previously allocated memory and return `NULL`] */
                 LogError("%s: Unable to connect to the gateway control channel!", __FUNCTION__);
-				nn_close(remote_module->control_socket);
+				nn_really_close(remote_module->control_socket);
                 free(remote_module);
                 remote_module = NULL;
             } else {
@@ -205,10 +235,10 @@ ProxyGateway_Detach (
         /* Codes_SRS_PROXY_GATEWAY_027_062: [`ProxyGateway_Detach` shall disconnect from the Azure IoT Gateway message channels] */
         disconnect_from_message_channel(remote_module);
         /* Codes_SRS_PROXY_GATEWAY_027_063: [`ProxyGateway_Detach` shall shutdown the Azure IoT Gateway control channel by calling `int nn_shutdown(int s, int how)`] */
-        (void)nn_shutdown(remote_module->control_socket, remote_module->control_endpoint);
+        (void)nn_really_shutdown(remote_module->control_socket, remote_module->control_endpoint);
         remote_module->control_endpoint = 0;
         /* Codes_SRS_PROXY_GATEWAY_027_064: [`ProxyGateway_Detach` shall close the Azure IoT Gateway control socket by calling `int nn_close(int s)`] */
-        (void)nn_close(remote_module->control_socket);
+        (void)nn_really_close(remote_module->control_socket);
         remote_module->control_socket = 0;
         /* Codes_SRS_PROXY_GATEWAY_027_065: [`ProxyGateway_Detach` shall free the remaining memory dedicated to its instance data] */
         free(remote_module);
@@ -468,7 +498,7 @@ Broker_Publish (
                 Message_ToByteArray(message, nn_msg_bytes, msg_size);
 
                 /* Codes_SRS_BROKER_17_010: [ Broker_Publish shall send a message on the publish_socket. ] */
-                int nbytes = nn_send(remote_module->message_socket, &nn_msg, NN_MSG, 0);
+                int nbytes = nn_really_send(remote_module->message_socket, &nn_msg, NN_MSG, 0);
                 if (nbytes != buf_size)
                 {
                     /* Codes_SRS_BROKER_13_037: [ This function shall return BROKER_ERROR if an underlying API call to the platform causes an error or BROKER_OK otherwise. ] */
@@ -511,7 +541,7 @@ connect_to_message_channel (
         /* SRS_PROXY_GATEWAY_027_0xx: [If a call to `nn_connect` returns a negative value, then `connect_to_message_channel` shall free any previously allocated memory, abandon the control message and prepare for the next create message] */
         LogError("%s: Unable to connect to the gateway message channel!", __FUNCTION__);
         result = __LINE__;
-        (void)nn_close(remote_module->message_socket);
+        (void)nn_really_close(remote_module->message_socket);
         remote_module->message_socket = -1;
     } else {
         /* SRS_PROXY_GATEWAY_027_0xx: [If no errors are encountered, then `connect_to_message_channel` shall return zero] */
@@ -527,10 +557,10 @@ disconnect_from_message_channel (
     REMOTE_MODULE_HANDLE remote_module
 ) {
     /* SRS_PROXY_GATEWAY_027_0xx: [`disconnect_from_message_channel` shall shutdown the Azure IoT Gateway message channel by calling `int nn_shutdown(int s, int how)`] */
-    (void)nn_shutdown(remote_module->message_socket, remote_module->message_endpoint);
+    (void)nn_really_shutdown(remote_module->message_socket, remote_module->message_endpoint);
     remote_module->message_endpoint = -1;
     /* SRS_PROXY_GATEWAY_027_0xx: [`disconnect_from_message_channel` shall close the Azure IoT Gateway message socket by calling `int nn_close(int s)`] */
-    (void)nn_close(remote_module->message_socket);
+    (void)nn_really_close(remote_module->message_socket);
     remote_module->message_socket = -1;
 
     return;
