@@ -30,6 +30,15 @@ extern "C"
 #include <stddef.h>
 #endif
 
+#define BROKER_LINK_MESSAGE_TYPE_VALUES \
+    BROKER_LINK_MESSAGE_TYPE_DEFAULT, \
+    BROKER_LINK_MESSAGE_TYPE_THREAD
+
+/** @brief      Enumeration describing the value of : GATEWA_LINK_ENTRY.message_type
+*/
+DEFINE_ENUM(BROKER_LINK_MESSAGE_TYPE, BROKER_LINK_MESSAGE_TYPE_VALUES);
+
+
 /** @brief    Link Data with #MODULE_HANDLE for source and sink. 
 */
 typedef struct BROKER_LINK_DATA_TAG {
@@ -39,6 +48,9 @@ typedef struct BROKER_LINK_DATA_TAG {
     /** @brief    #MODULE_HANDLE representing the module receiving messages. 
     */
     MODULE_HANDLE module_sink_handle;
+    /** @brief    #message_type representing the message type between sink and source.
+    */
+    BROKER_LINK_MESSAGE_TYPE message_type;
 } BROKER_LINK_DATA;
 
 #define BROKER_RESULT_VALUES \

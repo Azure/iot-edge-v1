@@ -44,7 +44,7 @@ static bool check_if_link_exists(GATEWAY_HANDLE_DATA* gateway_handle, const GATE
     return link_data == NULL ? false : true;
 }
 
-static int add_one_link_to_broker(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_HANDLE source, MODULE_HANDLE sink)
+static int add_one_link_to_broker(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_HANDLE source, MODULE_HANDLE sink, GATEWAY_LINK_ENTRY_MESSAGE_TYPE msg_type)
 {
     int result;
     BROKER_LINK_DATA broker_link_entry =
@@ -52,6 +52,15 @@ static int add_one_link_to_broker(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_HA
         source,
         sink
     };
+    switch (msg_type) {
+    case GATEWAY_LINK_ENTRY_MESSAGE_TYPE_THREAD:
+        broker_link_entry.message_type = BROKER_LINK_MESSAGE_TYPE_THREAD;
+        break;
+    case GATEWAY_LINK_ENTRY_MESSAGE_TYPE_DEFAULT:
+    default:
+        broker_link_entry.message_type = BROKER_LINK_MESSAGE_TYPE_DEFAULT;
+        break;
+    }
     if (Broker_AddLink(gateway_handle->broker, &broker_link_entry) != BROKER_OK)
     {
         LogError("Could not add link to broker [%p] -> [%p]", source, sink);
@@ -107,7 +116,7 @@ static int add_regular_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_L
         }
         else
         {
-            if (add_one_link_to_broker(gateway_handle, (*module_source_handle)->module, (*module_sink_handle)->module) != 0)
+            if (add_one_link_to_broker(gateway_handle, (*module_source_handle)->module, (*module_sink_handle)->module, link_entry->message_type) != 0)
             {
                 LogError("Unable to add link to Broker.");
                 result = __LINE__;
@@ -451,6 +460,7 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
                         MODULE module;
                         module.module_apis = module_apis;
                         module.module_handle = module_handle;
+                        module.module_loader_type = module_entry->module_loader_info.loader->type;
 
                         /*Codes_SRS_GATEWAY_14_017: [The function shall attach the module to the GATEWAY_HANDLE_DATA's broker using a call to Broker_AddModule. ]*/
                         /*Codes_SRS_GATEWAY_14_018: [If the function cannot attach the module to the message broker, the function shall return NULL.]*/
@@ -675,7 +685,7 @@ int add_module_to_any_source(GATEWAY_HANDLE_DATA* gateway_handle, MODULE_DATA* m
             }
             else
             {
-                if (add_one_link_to_broker(gateway_handle, module->module, (*module_sink)->module) != 0)
+                if (add_one_link_to_broker(gateway_handle, module->module, (*module_sink)->module, GATEWAY_LINK_ENTRY_MESSAGE_TYPE_DEFAULT) != 0)
                 {
                     result = __LINE__;
                     break;
@@ -757,7 +767,7 @@ int add_any_source_link(GATEWAY_HANDLE_DATA* gateway_handle, const GATEWAY_LINK_
                 MODULE_DATA **source_module_data = (MODULE_DATA **)VECTOR_element(gateway_handle->modules, m);
                 /*Codes_SRS_GATEWAY_17_005: [ For this link, the sink shall receive all messages publish by other modules. ]*/
                 if ((*source_module_data)->module != (*module_sink_data)->module &&
-                    add_one_link_to_broker(gateway_handle, (*source_module_data)->module, (*module_sink_data)->module) != 0)
+                    add_one_link_to_broker(gateway_handle, (*source_module_data)->module, (*module_sink_data)->module, link_entry->message_type) != 0)
                 {
                     result = __LINE__;
                     break;

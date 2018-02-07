@@ -56,6 +56,13 @@ DEFINE_ENUM(GATEWAY_START_RESULT, GATEWAY_START_RESULT_VALUES);
 */
 DEFINE_ENUM(GATEWAY_UPDATE_FROM_JSON_RESULT, GATEWAY_UPDATE_FROM_JSON_RESULT_VALUES);
 
+#define GATEWAY_LINK_ENTRY_MESSAGE_TYPE_VALUES \
+    GATEWAY_LINK_ENTRY_MESSAGE_TYPE_DEFAULT, \
+    GATEWAY_LINK_ENTRY_MESSAGE_TYPE_THREAD
+
+/** @brief      Enumeration describing the value of : GATEWA_LINK_ENTRY.message_type
+*/
+DEFINE_ENUM(GATEWAY_LINK_ENTRY_MESSAGE_TYPE, GATEWAY_LINK_ENTRY_MESSAGE_TYPE_VALUES);
 
 /** @brief      Struct representing a single link for a gateway. */
 typedef struct GATEWAY_LINK_ENTRY_TAG
@@ -65,6 +72,9 @@ typedef struct GATEWAY_LINK_ENTRY_TAG
 
     /** @brief  The name of the module which is going to receive messages. */
     const char* module_sink;
+
+    /** @brief  The name of the message type between sink and source */
+    GATEWAY_LINK_ENTRY_MESSAGE_TYPE message_type;
 } GATEWAY_LINK_ENTRY;
 
 /** @brief      Struct representing a particular gateway. */

@@ -30,7 +30,7 @@ typedef struct MODULE_API_TAG MODULE_API;
 #include "azure_c_shared_utility/macro_utils.h"
 #include "broker.h"
 #include "message.h"
-
+#include "module_loader.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -47,6 +47,7 @@ extern "C"
         const MODULE_API* module_apis;
         /** @brief  HANDLE for module. */
         MODULE_HANDLE module_handle;
+        MODULE_LOADER_TYPE module_loader_type;
     };
 
     /** @brief      Translates module configuration from a JSON string to a
