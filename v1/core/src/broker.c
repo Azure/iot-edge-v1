@@ -721,10 +721,8 @@ static int thread_message_control_receiver_thread_worker(void* context)
                 LogInfo("thread_message_control_receiver_thread_worker to be terminated.");
                 break;
             }
-            if (Condition_Wait(receiverContext->condition, receiverContext->lock, 0) != COND_OK) {
-                LogError("Wait for condition for receiverContext in thread_message_control_receiver_thread_worker failed");
-            }
-            else {
+            
+            while (msgCtrl == NULL) {
                 THREAD_MESSAGE_CTRL* pre_receive_msg = NULL;
                 THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* sender = receiverContext->senders;
                 while (sender != NULL) {
@@ -760,8 +758,14 @@ static int thread_message_control_receiver_thread_worker(void* context)
                             LogError("Unock for senderThMsg in thread_message_control_receiver_thread_worker failed");
                         }
                     }
+                    if (msgCtrl == NULL) {
+                        if (Condition_Wait(receiverContext->condition, receiverContext->lock, 0) != COND_OK) {
+                            LogError("Wait for condition for receiverContext in thread_message_control_receiver_thread_worker failed");
+                        }
+                    }
                 }
                 THREAD_MESSAGE_CTRL* current_msg = msgCtrl;
+                Unlock(receiverContext->lock);
                 while (current_msg != NULL) {
                     MODULE_RECEIVE(receiver_module_info->module->module_apis)(receiver_module_info->module->module_handle, current_msg->msg);
                     ThreadAPI_Sleep(0);
@@ -770,6 +774,7 @@ static int thread_message_control_receiver_thread_worker(void* context)
                     Message_Destroy(tmp_msg->msg);
                     free((void*)tmp_msg);
                 }
+                Lock(receiverContext->lock);
             }
         }
         LOCK_RESULT lock_result = Unlock(receiverContext->lock);
@@ -1182,22 +1187,22 @@ BROKER_RESULT Broker_Publish(BROKER_HANDLE broker, MODULE_HANDLE source, MESSAGE
                                 free(current_msg);
                             }
                             else {
-                                THREAD_MESSAGE_CTRL* last_msg = target_receiver->sendingMessages;
-                                if (last_msg == NULL) {
-                                    target_receiver->sendingMessages = current_msg;
-                                }
-                                else {
-                                    while (last_msg->next != NULL)
-                                    {
-                                        last_msg = last_msg->next;
-                                    }
-                                    last_msg->next = current_msg;
-                                }
-                                Unlock(source_info->senderThMsg->lock);
                                 if (Lock(target_receiver->receiver->lock) != LOCK_OK) {
                                     LogError("Lock receiver in Broker_Publish failed.");
                                 }
                                 else {
+                                    THREAD_MESSAGE_CTRL* last_msg = target_receiver->sendingMessages;
+                                    if (last_msg == NULL) {
+                                        target_receiver->sendingMessages = current_msg;
+                                    }
+                                    else {
+                                        while (last_msg->next != NULL)
+                                        {
+                                            last_msg = last_msg->next;
+                                        }
+                                        last_msg->next = current_msg;
+                                    }
+                                    Unlock(source_info->senderThMsg->lock);
                                     Condition_Post(target_receiver->receiver->condition);
                                     Unlock(target_receiver->receiver->lock);
                                 }
