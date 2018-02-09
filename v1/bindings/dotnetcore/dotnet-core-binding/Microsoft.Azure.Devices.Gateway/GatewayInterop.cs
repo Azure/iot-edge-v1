@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.IO;
 
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Gateway
         /// </summary>
         public static int UpdateFromJson(IntPtr gw, string file_path)
         {
-            var json_string = File.ReadAllText(file_path);
+            string json_string = File.ReadAllText(file_path);
             return UpdateFromJsonInternal(gw, json_string);
         }
 

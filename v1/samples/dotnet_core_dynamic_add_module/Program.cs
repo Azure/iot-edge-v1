@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Azure.Devices.Gateway;
 
-namespace dotnet_core_managed_gateway
+namespace dotnet_core_dynamic_add_module
 {
     class Program
     {
@@ -24,11 +24,11 @@ namespace dotnet_core_managed_gateway
             else
             {
                 // Create a gateway without configuration.
-                var gateway = GatewayInterop.Create();
+                IntPtr gateway = GatewayInterop.Create();
                 Assert(gateway != IntPtr.Zero, "Null gateway returned");
 
                 // Fill up the module1 configuration
-                var ret = GatewayInterop.UpdateFromJson(gateway, args[0]);
+                int ret = GatewayInterop.UpdateFromJson(gateway, args[0]);
                 Assert(ret == 0, "Module 1 update gateway error");
                 // Module 2 configuraiton
                 ret = GatewayInterop.UpdateFromJson(gateway, args[1]);
