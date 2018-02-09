@@ -1,0 +1,20 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+image: <registry>/azureiotedge-simulated-temperature-sensor:<version>
+manifests:
+  -
+    image: <registry>/azureiotedge-simulated-temperature-sensor:<version>-linux-amd64
+    platform:
+      architecture: amd64
+      os: linux
+  -
+    image: <registry>/azureiotedge-simulated-temperature-sensor:<version>-linux-arm32v7
+    platform:
+      architecture: arm
+      os: linux
+  -
+    image: <registry>/azureiotedge-simulated-temperature-sensor:<version>-windows-amd64
+    platform:
+      architecture: amd64
+      os: windows
