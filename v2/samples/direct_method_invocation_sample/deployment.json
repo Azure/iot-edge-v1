@@ -29,23 +29,23 @@
           }
         },
         "modules": {
-          "engineAnalyzer": {
+          "analyzerModule": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "edgetest.azurecr.io/engineanayzer:varun2",
+              "image": "${CONTAINER_REGISTRY}/analyzermodule:v1",
               "createOptions": ""
             }
           },
-          "engineSimulator": {
+          "engineSimulatorModule": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "edgetest.azurecr.io/enginesimulator:varun1",
+              "image": "${CONTAINER_REGISTRY}/enginesimulatormodule:v1",
               "createOptions": ""
             }
           }
@@ -56,8 +56,8 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "upstreamRoute": "FROM /messages/modules/engineSimulator INTO $upstream",
-          "analyzerRoute": "FROM /messages/modules/engineSimulator INTO BrokeredEndpoint(\"/modules/engineAnalyzer/inputs/input1\")"			
+          "upstreamRoute": "FROM /messages/modules/engineSimulatorModule INTO $upstream",
+          "analyzerRoute": "FROM /messages/modules/engineSimulatorModule INTO BrokeredEndpoint(\"/modules/analyzerModule/inputs/input1\")"			
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

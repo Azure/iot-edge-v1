@@ -26,7 +26,11 @@ Here are the steps to invoke a direct method from one module to another -
 
 - You need to use the ServiceClient to invoke direct methods from a module. The ServiceClient is in the Microsoft.Azure.Devices nuget package which is not added by default, so you need to manually add that. Make sure to add a reference to a preview* version of the nuget package, to get modules support. 
 
-- Create a ServiceClient using the EdgeHubConnectionString that is passed in to the module as an 
+```
+dotnet add package Microsoft.Azure.Devices -Version 1.15.0-preview-001
+```
+
+- Create a ServiceClient using the EdgeHubConnectionString that is passed into the module as an 
 environment variable. 
 ```
 ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -43,6 +47,10 @@ module Id in the property ConnectionModuleId (if the message is from another mod
 use those values to invoke a method on that device or module.
 
 - Receiving direct method invocations from a module is same as if receiving it from the cloud. 
+
+```
+await deviceClient.SetMethodHandlerAsync("Reset", MethodHandler, userContext);
+```
 
 Building and running the sample (Linux)
 ---------------------------

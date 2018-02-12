@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.0.0-runtime-stretch
+FROM microsoft/dotnet:2.0.5-runtime
 
 ARG EXE_DIR=.
 
