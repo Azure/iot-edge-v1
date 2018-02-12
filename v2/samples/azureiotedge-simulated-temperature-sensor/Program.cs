@@ -16,14 +16,18 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System.Net;
 
-namespace azureiotedge_simulated_temperature_sensor
+// disabling async warning as the SendSimulationData is an async method
+// but we don't wait for it
+#pragma warning disable CS4014
+
+namespace AzureIotEdgeSimulatedTemperatureSensor
 {
     class Program
     {
-        static int counter;
+        private static int counter;
 
-        static DesiredProperties desiredProperties;
-        static DataGenerationPolicy generationPolicy = new DataGenerationPolicy();
+        private static volatile DesiredPropertiesData desiredPropertiesData;
+        private static DataGenerationPolicy generationPolicy = new DataGenerationPolicy();
 
         private static volatile bool IsReset = false;
 
@@ -103,11 +107,10 @@ namespace azureiotedge_simulated_temperature_sensor
 
             var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
             var moduleTwinCollection = moduleTwin.Properties.Desired;
-            desiredProperties = new DesiredProperties();
-            desiredProperties.UpdateDesiredProperties(moduleTwinCollection);
+            desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
 
             // callback for updating desired properties through the portal or rest api
-            await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
+            await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
 
             // this direct method will allow to reset the temperature sensor values back to their initial state
             await ioTHubModuleClient.SetMethodHandlerAsync("reset", ResetMethod, null);
@@ -115,11 +118,17 @@ namespace azureiotedge_simulated_temperature_sensor
             // we don't pass ioTHubModuleClient as we're not sending any messages out to the message bus
             await ioTHubModuleClient.SetInputMessageHandlerAsync("control", ControlMessageHandler, null);
 
+            // as this runs in a loop we don't await
+            SendSimulationData(ioTHubModuleClient);
+        }
+
+        private static async Task SendSimulationData(DeviceClient deviceClient)
+        {
             while(true)
             {
                 try
                 {
-                    if(desiredProperties.SendData)
+                    if(desiredPropertiesData.SendData)
                     {
                         counter++;
                         if(counter == 1)
@@ -134,11 +143,11 @@ namespace azureiotedge_simulated_temperature_sensor
                         var messageBytes = Encoding.UTF8.GetBytes(messageString);
                         var message = new Message(messageBytes);
 
-                        await ioTHubModuleClient.SendEventAsync("temperatureOutput", message);
+                        await deviceClient.SendEventAsync("temperatureOutput", message);
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
 
                     }
-                    await Task.Delay(TimeSpan.FromSeconds(desiredProperties.SendInterval));
+                    await Task.Delay(TimeSpan.FromSeconds(desiredPropertiesData.SendInterval));
                 }
                 catch(Exception ex)
                 {
@@ -146,13 +155,15 @@ namespace azureiotedge_simulated_temperature_sensor
                     Console.WriteLine($"\t{ex.ToString()}");
                 }
             }
+
         }
 
-        private static Task onDesiredPropertiesUpdate(TwinCollection twinCollection, object userContext)
+        private static Task OnDesiredPropertiesUpdate(TwinCollection twinCollection, object userContext)
         {
-            desiredProperties.UpdateDesiredProperties(twinCollection);
+            desiredPropertiesData = new DesiredPropertiesData(twinCollection);
             return Task.CompletedTask;
         }
+
 
         private static Task<MethodResponse> ResetMethod(MethodRequest request, object userContext)
         {

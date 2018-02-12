@@ -5,14 +5,14 @@ using System;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace azureiotedge_simulated_temperature_sensor
+namespace AzureIotEdgeSimulatedTemperatureSensor
 {
-    public class DesiredProperties
+    public class DesiredPropertiesData
     {
         private bool _sendData = true;
         private int _sendInterval = 5;
 
-        public void UpdateDesiredProperties(TwinCollection twinCollection)
+        public DesiredPropertiesData(TwinCollection twinCollection)
         {
             Console.WriteLine($"Updating desired properties {twinCollection.ToJson(Formatting.Indented)}");
             try
@@ -45,19 +45,7 @@ namespace azureiotedge_simulated_temperature_sensor
             }
         }
 
-        public bool SendData
-        {
-            get
-            {
-                return _sendData;
-            }
-        }
-        public int SendInterval
-        {
-            get
-            {
-                return _sendInterval;
-            }
-        }
+        public bool SendData => _sendData;
+        public int SendInterval => _sendInterval;
     }
 }

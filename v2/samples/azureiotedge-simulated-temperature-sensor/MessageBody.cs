@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace azureiotedge_simulated_temperature_sensor
+namespace AzureIotEdgeSimulatedTemperatureSensor
 {
     public class MessageBody
     {
