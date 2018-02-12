@@ -35,6 +35,7 @@ namespace EngineSimulatorModule
             AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
 
+            // Begin sending engine data. 
             SendMessages(deviceClient, engine, cts.Token).Wait();
 
             WhenCancelled(cts.Token).Wait();
@@ -96,12 +97,15 @@ namespace EngineSimulatorModule
             DeviceClient ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
             await ioTHubModuleClient.OpenAsync();
 
+            // Setup a handler for the Reset method.
             await ioTHubModuleClient.SetMethodHandlerAsync("Reset", ResetMethodHandler, engine);
             Console.WriteLine("IoT Hub module client initialized.");
 
             return ioTHubModuleClient;
         }
 
+        // This method is called if the Reset method is invoked on this module.
+        // It resets the engine RPM value. 
         private static Task<MethodResponse> ResetMethodHandler(MethodRequest methodrequest, object usercontext)
         {
             Console.WriteLine($"Received reset method call... resetting engine");
@@ -119,6 +123,7 @@ namespace EngineSimulatorModule
             }
         }
 
+        // Sends messages containing simulated Engine data at a fixed interval 
         static async Task SendMessages(DeviceClient ioTHubModuleClient, Engine engine, CancellationToken cancellationToken)
         {
             Console.WriteLine("Sending engine data...");

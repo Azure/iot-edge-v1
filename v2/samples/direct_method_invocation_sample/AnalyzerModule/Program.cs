@@ -61,6 +61,7 @@ namespace AnalyzerModule
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
+            // Create the ServiceClient and pass it to the InputMessageHandler. 
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ReceiveMessage, serviceClient);
 
@@ -69,14 +70,16 @@ namespace AnalyzerModule
 
         static async Task<MessageResponse> ReceiveMessage(Message message, object userContext)
         {
+            // The userContext should contain the ServiceClient.
             var serviceClient = userContext as ServiceClient;
             if (serviceClient == null)
             {
                 throw new InvalidOperationException("UserContext doesn't contain ServiceClient");
             }
 
-            // Here we expect that the sender sends messages with a property "randVal" with values ranging between 0 and 100
-            // If the value is > 70, we invoke a dummy method Poke
+            // Get the message payload which should contain the engine Data. 
+            // Extract the RPM value from the payload. It it is > 100, then invoke the Reset
+            // method on the module that generated this message. 
             byte[] messageBytes = message.GetBytes();
             if (message.MessageSchema == "engineData" &&
                 double.TryParse(Encoding.UTF8.GetString(messageBytes), out double engineRpm))
