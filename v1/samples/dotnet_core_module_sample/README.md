@@ -24,8 +24,15 @@ Prerequisites
 Building the sample
 -------------------
 The sample IoT Edge application and modules are built with the following command:
+
+(Windows)
 ```
 tools\build.cmd --enable-dotnet-core-binding
+```
+
+(Linux or Mac)
+```
+tools/build.sh --enable-dotnet-core-binding
 ```
 
 The [devbox setup](../../doc/devbox_setup.md) guide has more information on how you can build Azure IoT Edge.
@@ -38,10 +45,15 @@ Running the sample (Windows)
 samples\dotnet_core_module_sample\Debug\dotnet_core_module_sample.exe ..\samples\dotnet_core_module_sample\src\dotnet_core_module_sample_win.json
 ```
 
-Running the sample (Linux)
+Running the sample (Linux or macOS)
 ----------------------------
 1. Navigate to the **v1/build/samples/dotnet_core_module_sample** folder in your local copy of the **iot-edge** repository.
-2. Run the following command:
+2. In **../../../samples/dotnet_core_module_sample/src/dotnet_core_module_sample_lin.json**, update the values of `binding.coreclrpath` and `binding.trustedplatformassemblieslocation` under `loaders.configuration`. `binding.coreclrpath` should be the path to libcoreclr.so (libcoreclr.dylib on macOS) in your .NET Core installation, In a typical installation, `binding.trustedplatformassemblieslocation` can be set to parent folder of "coreclrpath". For example (typical installation on macOS):
+```
+    "binding.coreclrpath": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.6/libcoreclr.dylib",
+    "binding.trustedplatformassemblieslocation": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.6"
+```
+3. Run the following command:
 ```
 ./dotnet_core_module_sample ../../../samples/dotnet_core_module_sample/src/dotnet_core_module_sample_lin.json
 ```
@@ -76,7 +88,7 @@ Creating your own module
 }
 ```
 
-6. If you want to override the default locations for the .NET Core binding (dotnetcore.dll/libdotnetcore.so) or the .NET Core runtime (coreclr.dll/libcoreclr.so, and path to trusted platform assemblies), add an item to the `loaders` array in your JSON configuration. For example:
+6. If you want to override the default locations for the .NET Core binding (dotnetcore.dll/libdotnetcore.so/libdotnetcore.dylib) or the .NET Core runtime (coreclr.dll/libcoreclr.so/libcoreclr.dylib, and path to trusted platform assemblies), add an item to the `loaders` array in your JSON configuration. For example:
 ```json
 {
      "loaders": [
@@ -84,8 +96,8 @@ Creating your own module
             "type": "dotnetcore",
             "name": "dotnetcore",
             "configuration": {
-                "binding.path": "path/to/libdotnetcore.so",
-                "binding.coreclrpath": "path/to/libcoreclr.so",
+                "binding.path": "path/to/dotnetcore/binding",
+                "binding.coreclrpath": "path/to/coreclr/library",
                 "binding.trustedplatformassemblieslocation": "path/to/trusted/platform/assemblies"
             }
         }

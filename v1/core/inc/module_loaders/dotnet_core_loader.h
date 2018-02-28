@@ -28,7 +28,7 @@ extern "C"
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
 #define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\coreclr.dll"
 #define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files (x86)\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\"
-#elif APPLE
+#elif __APPLE__
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "libdotnetcore.dylib"
 #define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.1/libcoreclr.so"
 #define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.1/"

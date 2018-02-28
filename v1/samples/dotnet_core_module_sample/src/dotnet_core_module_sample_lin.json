@@ -1,5 +1,15 @@
 {
-  "modules": [
+    "loaders": [
+        {
+            "type": "dotnetcore",
+            "name": "dotnetcore",
+            "configuration": {
+                "binding.coreclrpath": "path/to/coreclr",
+                "binding.trustedplatformassemblieslocation": "path/to/trusted/platform/assemblies"
+            }
+        }
+    ],
+    "modules": [
         {
             "name": "dotnet_sensor_module",
             "loader": {
@@ -10,8 +20,8 @@
                 }
             },
             "args": "module configuration"
-    },
-    {
+        },
+        {
             "name": "dotnet_printer_module",
             "loader": {
                 "name": "dotnetcore",
@@ -21,12 +31,12 @@
                 }
             },
             "args": "module configuration"
-    }
-  ],
-  "links": [
-    {
-      "source": "dotnet_sensor_module",
-      "sink": "dotnet_printer_module"
-    }
-  ]
+        }
+    ],
+    "links": [
+        {
+            "source": "dotnet_sensor_module",
+            "sink": "dotnet_printer_module"
+        }
+    ]
 }
