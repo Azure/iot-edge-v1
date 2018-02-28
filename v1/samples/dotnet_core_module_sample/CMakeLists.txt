@@ -39,6 +39,8 @@ install_binaries(dotnet_core_module_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configu
 
 if(WIN32)
     install_binaries(dotnet_core_module_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_core_host_binding_dll} )
+elseif(APPLE)
+    install_binaries(dotnet_core_module_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_core_host_binding_dylib} )
 else()
     install_binaries(dotnet_core_module_sample ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration) ${dotnet_core_host_binding_so} )
 endif()

@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8.12)
 
 if(WIN32)
     set(dotnetcore_utils_file ./src/adapters/dotnetcore_utils_windows.cpp)
-elseif(LINUX)
+elseif(UNIX) #LINUX or APPLE
     set(dotnetcore_utils_file ./src/adapters/dotnetcore_utils_linux.cpp)
 endif()
 
@@ -26,7 +26,7 @@ include_directories(${GW_INC})
 include_directories(${IOTHUB_CLIENT_INC_FOLDER})
 
 #this builds the dotnet core dynamic library
-add_library(dotnetcore MODULE ${dotnet_core_sources} ${dotnet_core_headers})
+add_library(dotnetcore SHARED ${dotnet_core_sources} ${dotnet_core_headers})
 target_link_libraries(dotnetcore gateway)
 
 #this builds the dotnet core static library
