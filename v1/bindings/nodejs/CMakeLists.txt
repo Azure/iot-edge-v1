@@ -132,7 +132,7 @@ target_include_directories(nodejs_binding_static PUBLIC $ENV{NODE_INCLUDE})
 add_binding_to_solution(nodejs_binding)
 add_binding_to_solution(nodejs_binding_static)
 
-if(${run_unittests})
+if(${run_unittests} OR ${run_e2e_tests})
     add_subdirectory(tests)
 endif()
 
