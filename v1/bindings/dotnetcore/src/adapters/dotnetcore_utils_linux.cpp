@@ -12,6 +12,9 @@
 #include <dirent.h>
 #include <set>
 #include <sys/stat.h>
+#ifdef __APPLE__
+#include <sys/syslimits.h>
+#endif
 
 
 

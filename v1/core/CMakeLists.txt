@@ -283,7 +283,7 @@ if(NOT ${use_xplat_uuid})
 endif()
 
 #this adds the tests to the build process
-if(${run_unittests})
+if(${run_unittests} OR ${run_e2e_tests})
     add_subdirectory(tests)
 endif()
 
