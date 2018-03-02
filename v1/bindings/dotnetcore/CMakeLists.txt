@@ -37,7 +37,7 @@ target_link_libraries(dotnet_core_static gateway)
 linkSharedUtil(dotnetcore)
 linkSharedUtil(dotnet_core_static)
 
-if(${run_unittests})
+if(${run_unittests} OR ${run_e2e_tests})
     add_subdirectory(tests)
 endif()
 

@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 2.8.12)
 
 add_definitions(-DUNDER_TEST)
 
-add_subdirectory(dotnetcore_ut)
+if(${run_unittests})
+    add_subdirectory(dotnetcore_ut)
+endif()
 
-add_subdirectory(dotnetcore_e2e)
+if(${run_e2e_tests})
+    add_subdirectory(dotnetcore_e2e)
+endif()
