@@ -726,10 +726,10 @@ static int thread_message_control_receiver_thread_worker(void* context)
                 THREAD_MESSAGE_CTRL* pre_receive_msg = NULL;
                 THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* sender = receiverContext->senders;
                 while (sender != NULL) {
-                    if (Lock(sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
-                        LogError("Lock for senderThMsg in thread_message_control_receiver_thread_worker failed");
-                    }
-                    else {
+//                  if (Lock(sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
+//                      LogError("Lock for senderThMsg in thread_message_control_receiver_thread_worker failed");
+//                  }
+//                  else {
                         THREAD_MESSAGE_HANDLING_RECIEVERS_IN_SENDER* current_receiver = sender->sender_module_info->senderThMsg->receivers;
                         while (current_receiver != NULL) {
                             if (current_receiver->receiver == receiverContext) {
@@ -754,16 +754,20 @@ static int thread_message_control_receiver_thread_worker(void* context)
                         }
                         THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* current_sender = sender;
                         sender = sender->next;
-                        if (Unlock(current_sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
-                            LogError("Unock for senderThMsg in thread_message_control_receiver_thread_worker failed");
-                        }
+//                      if (Unlock(current_sender->sender_module_info->senderThMsg->lock) != LOCK_OK) {
+//                          LogError("Unock for senderThMsg in thread_message_control_receiver_thread_worker failed");
+//                      }
                     }
                     if (msgCtrl == NULL) {
+                        if (!receiverContext->toContinue) {
+                            LogInfo("Received stop order so that exit message loop!");
+                            break;
+                        }
                         if (Condition_Wait(receiverContext->condition, receiverContext->lock, 0) != COND_OK) {
                             LogError("Wait for condition for receiverContext in thread_message_control_receiver_thread_worker failed");
                         }
                     }
-                }
+//                }
                 THREAD_MESSAGE_CTRL* current_msg = msgCtrl;
                 Unlock(receiverContext->lock);
                 while (current_msg != NULL) {
