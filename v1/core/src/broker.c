@@ -751,6 +751,7 @@ static int thread_message_control_receiver_thread_worker(void* context)
                                 current_receiver->sendingMessages = NULL;
                                 break;
                             }
+                            current_receiver = current_receiver->next;
                         }
                         THREAD_MESSAGE_HANDLING_SENDER_FOR_RECEIVER* current_sender = sender;
                         sender = sender->next;
