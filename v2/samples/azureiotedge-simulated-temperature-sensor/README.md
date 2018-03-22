@@ -2,9 +2,13 @@
 
 This module is an example of a temperature sensor simulation Azure IoT Edge module. You can see its usage in the [Azure IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/). It continuously creates simulated temperature data and sends the message to the `temperatureOutput` endpoint.
 
+## Note about this code 
+
+This code reflects the implementation details of the deployed `microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview` container. It also extends the functionality to showcase the usage of direct methods and module twin property updates. To use the new features you have to build the container yourself and deploy it to a registry of your choice. 
+
 ## Available Endpoints
 
-You can interact with the Temperature Simulator in several ways
+You can interact with the Temperature Simulator in several ways. 
 
 ## Output Queue Endpoints
 
@@ -24,7 +28,36 @@ The temperature simulator is producing a simulation on machine temperature / pre
 }
 ```
 
-## Direct Method Invocation
+## Input Queue Endpoints
+
+You can also **reset** the data to its initial values via a message going through the EdgeHub routing system to the temperature simulation module. To do that you need a module sending the below message through a route to the input endpoint `control`.
+
+### Message Payload
+
+```json
+{
+    "command": "reset"
+}
+```
+
+### Sample Route
+
+Here is a definition of a sample route assuming that you name the Temperature Sensor `tempSensor`. 
+
+```json
+{
+   "routes":{
+      "yourModuleToSensor":"FROM /messages/modules/<YOURMODULE>/outputs/<YOUROUTPUTENDPOINT> INTO BrokeredEndpoint(\"/modules/tempSensor/inputs/control\")",
+      "sensorToIoTHub":"FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO $upstream"
+   }
+}
+```
+
+# Extended functionality
+
+To use the following features you have to deploy a container build from this source code to a registry of your choice. For more information on how to deploy custom modules into Azure IoT Edge see this How-To guide [Use Visual Studio Code to develop a C# module with Azure IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-vscode-develop-csharp-module) 
+
+## Direct Method Invocation (New)
 
 The module provides a direct method handler which will **reset** the data to its initial values. To invoke this method you just create from another module or service a `CloudToDeviceMethod`
 
@@ -37,17 +70,7 @@ var response = await serviceClient.InvokeDeviceMethodAsync(deviceId, moduleId, r
 ...
 ```
 
-## Input Queue Endpoints
-
-You can also **reset** the data to its initial values via a message going through the EdgeHub routing system to the temperature simulation module. You have to send the payload to the input endpoint `control`.
-
-```json
-{
-    "command": "reset"
-}
-```
-
-## Desired Properties Support
+## Desired Properties Support (New)
 
 The sending behavior can be configured using desired properties for the module via the module twin.
 
