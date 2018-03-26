@@ -12,24 +12,4 @@ findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DI
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
 ###############################################################################
-#The azure_iot_sdks repo requires special treatment. Parson submodule must be initialized.
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/deps/parson/README.md)
-    execute_process(
-        COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE res
-    
-    )
-    if(${res})
-        message(FATAL_ERROR "Error pulling iot-sdk-c submodule: ${res}")
-    endif()
-    execute_process(
-        COMMAND git submodule update --init deps/parson
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
-        RESULT_VARIABLE res
-    )
-    if(${res})
-        message(FATAL_ERROR "Error pulling parson submodule: ${res}")
-    endif()
-endif()
 findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Dbuild_as_dynamic=ON -Duse_openssl=OFF -G "${CMAKE_GENERATOR}")

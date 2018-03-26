@@ -89,6 +89,10 @@ if(WIN32)
     set(use_etw OFF)
 endif()
 
+if (${enable_native_remote_modules} OR ${enable_java_remote_modules} OR ${enable_nodejs_remote_modules})
+    set(enable_core_remote_module_support TRUE CACHE INTERNAL "")
+endif()
+
 option(enable_event_system "Build event system (default is ON)" ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -307,11 +311,6 @@ function(install_binaries whatIsBuilding whatIsBuildingLocation whatIsBinaryLoca
           ${whatIsBinaryLocation}
           ${whatIsBuildingLocation})
 endfunction(install_binaries)
-
-
-if (${enable_native_remote_modules} OR ${enable_java_remote_modules} OR ${enable_nodejs_remote_modules})
-    set(enable_core_remote_module_support TRUE CACHE INTERNAL "")
-endif()
 
 add_subdirectory(core)
 
