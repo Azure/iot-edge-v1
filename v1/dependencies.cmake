@@ -120,54 +120,52 @@ updateSubmodule(deps/parson parson.c ${PROJECT_SOURCE_DIR})
 ###############################################################################
 if(${enable_core_remote_module_support})
     updateSubmodule(deps/libuv README.md ${PROJECT_SOURCE_DIR})
-    if(WIN32)
-        if(8 EQUAL CMAKE_SIZEOF_VOID_P)
-            message(STATUS "Building libuv for 64-bit Windows...")
-            set(build_libuv build_libuv.cmd x64)
-        else()
-            message(STATUS "Building libuv for 32-bit Windows...")
-            set(build_libuv build_libuv.cmd)
-        endif()
-    elseif(LINUX)
-        message(STATUS "Building libuv for Linux...")
-        set(build_libuv ./build_libuv.sh)
-    elseif(APPLE)
-        message(STATUS "Building libuv for macOS...")
-        set(XCODE_CONFIG Debug)
-        if(CMAKE_BUILD_TYPE)
-            set(XCODE_CONFIG ${CMAKE_BUILD_TYPE})
-        endif()
-        execute_process(
-            COMMAND ./gyp_uv.py -f xcode
-            COMMAND xcodebuild -ARCHS="x86_64" -project out/uv.xcodeproj -configuration ${XCODE_CONFIG} -target libuv
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/deps/libuv
-            RESULT_VARIABLE res
-            OUTPUT_FILE output.txt
-            ERROR_FILE error.txt
-        )
-        if(${res})
-            message(FATAL_ERROR "**ERROR installing libuv. See "
-                "${PROJECT_SOURCE_DIR}/deps/libuv/error.txt and "
-                "${PROJECT_SOURCE_DIR}/deps/libuv/output.txt.\n")
-        endif()
 
-        file(GLOB LIBUV_LIB LIST_DIRECTORIES false ${PROJECT_SOURCE_DIR}/deps/libuv/build/${XCODE_CONFIG}/*)
-        file(GLOB LIBUV_INC LIST_DIRECTORIES false ${PROJECT_SOURCE_DIR}/deps/libuv/include/*)
-
-        file(COPY ${LIBUV_LIB} DESTINATION ${dependency_install_prefix}/lib)
-        file(COPY ${LIBUV_INC} DESTINATION ${dependency_install_prefix}/include)
+    set(libuv_config Debug)
+    if(CMAKE_BUILD_TYPE)
+        set(libuv_config ${CMAKE_BUILD_TYPE})
     endif()
 
-        # execute_process (
-        #     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
-        #     COMMAND ${build_libuv}
-        #     RESULT_VARIABLE res
-        #     OUTPUT_FILE output.txt
-        #     ERROR_FILE error.txt
-        # )
-        # if(${res})
-        #     message(FATAL_ERROR "**ERROR installing libuv. See "
-        #         "${cmakeRootDirectory}/build/error.txt and "
-        #         "${cmakeRootDirectory}/build/output.txt.\n")
-        # endif()
+    set(libuv_root ${PROJECT_SOURCE_DIR}/deps/libuv)
+
+    if(WIN32)
+        set(libuv_command ${PROJECT_SOURCE_DIR}/tools/build_libuv.cmd ${libuv_config})
+        if(8 EQUAL CMAKE_SIZEOF_VOID_P)
+            list(APPEND libuv_command x64)
+            message(STATUS "Building libuv for 64-bit Windows...")
+        else()
+            message(STATUS "Building libuv for 32-bit Windows...")
+        endif()
+        set(libuv_outdir ${libuv_root}/${libuv_config}/lib)
+    elseif(LINUX)
+        message(STATUS "Building libuv for Linux...")
+        set(libuv_command ${PROJECT_SOURCE_DIR}/tools/build_libuv.sh ${libuv_config})
+        set(libuv_outdir ${libuv_root}/build/${libuv_config})
+    elseif(APPLE)
+        message(STATUS "Building libuv for macOS...")
+        set(libuv_command ${PROJECT_SOURCE_DIR}/tools/build_libuv_macos.sh ${libuv_config})
+        set(libuv_outdir ${libuv_root}/build/${libuv_config})
+    endif()
+
+    file(MAKE_DIRECTORY ${libuv_outdir})
+
+    execute_process(
+        COMMAND ${libuv_command}
+        WORKING_DIRECTORY ${libuv_root}
+        RESULT_VARIABLE res
+        OUTPUT_FILE ${libuv_outdir}/output.txt
+        ERROR_FILE ${libuv_outdir}/error.txt
+    )
+
+    if(${res})
+        file(TO_NATIVE_PATH "${libuv_outdir}/error.txt" libuv_error)
+        file(TO_NATIVE_PATH "${libuv_outdir}/output.txt" libuv_output)
+        message(FATAL_ERROR "**ERROR installing libuv. See ${libuv_error} and ${libuv_output}.\n")
+    endif()
+
+    file(GLOB libuv_lib LIST_DIRECTORIES false ${libuv_outdir}/*)
+    file(GLOB libuv_inc LIST_DIRECTORIES false ${libuv_root}/include/*)
+
+    file(COPY ${libuv_lib} DESTINATION ${dependency_install_prefix}/lib)
+    file(COPY ${libuv_inc} DESTINATION ${dependency_install_prefix}/include)
 endif()

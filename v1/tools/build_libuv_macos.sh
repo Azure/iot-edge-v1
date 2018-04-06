@@ -9,8 +9,5 @@ set -e
 libuv_config=$1
 libuv_root=$(cd "$(dirname "$0")/../deps/libuv" && pwd)
 
-cd $libuv_root
-sh autogen.sh
-./configure --libdir=$libuv_root/build/$libuv_config CFLAGS='-fPIC' CXXFLAGS='-fPIC'
-make -j $(nproc)
-make install
+$libuv_root/gyp_uv.py -f xcode
+xcodebuild -ARCHS="x86_64" -project $libuv_root/uv.xcodeproj -configuration $libuv_config -target libuv

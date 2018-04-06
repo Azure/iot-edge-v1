@@ -8,7 +8,7 @@ else()
 endif()
 
 function(updateSubmodule submoduleRootDirectory testFile workingDirectory)
-    if(NOT EXISTS "${submoduleRootDirectory}/${testFile}")
+    if(NOT EXISTS "${workingDirectory}/${submoduleRootDirectory}/${testFile}")
         execute_process(
             COMMAND git submodule update --init --recursive ${submoduleRootDirectory}
             WORKING_DIRECTORY ${workingDirectory}
@@ -20,7 +20,7 @@ function(updateSubmodule submoduleRootDirectory testFile workingDirectory)
     endif()
 endfunction()
 
-function(buildSubmodule libraryName submoduleRootDirectory cmakeRootDirectory)
+function(buildSubmodule libraryName cmakeRootDirectory)
     message(STATUS "Building ${libraryName}...")
 
     # Update submodule if needed
@@ -80,22 +80,23 @@ function(buildSubmodule libraryName submoduleRootDirectory cmakeRootDirectory)
         ERROR_FILE error.txt
     )
     if(${res})
+        file(TO_NATIVE_PATH "${cmakeRootDirectory}/build/error.txt" error_file)
+        file(TO_NATIVE_PATH "${cmakeRootDirectory}/build/output.txt" output_file)
         message(FATAL_ERROR "**ERROR (${res}) installing ${libraryName}. See "
-            "${cmakeRootDirectory}/build/error.txt and "
-            "${cmakeRootDirectory}/build/output.txt.\n")
+            "${error_file} and ${output_file}.\n")
     endif()
 endfunction()
 
 # Additional arguments to this function will be passed to the library's cmake command
-function(findAndInstallNonFindPkg libraryName submoduleRootDirectory cmakeRootDirectory)
+function(findAndInstallNonFindPkg libraryName cmakeRootDirectory)
     if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/../${libraryName}" OR ${rebuild_deps})
         message(STATUS "${libraryName} not found...")
-        buildSubmodule(${libraryName} ${submoduleRootDirectory} ${cmakeRootDirectory} ${ARGN})
+        buildSubmodule(${libraryName} ${cmakeRootDirectory} ${ARGN})
     endif()
 endfunction()
 
 # Additional arguments to this function will be passed to the library's cmake command
-function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDirectory)
+function(findAndInstall libraryName version cmakeRootDirectory)
     # The azure-iot-sdk-c repo requires special treatment: its Parson submodule must be initialized
     if(${libraryName} STREQUAL azure_iot_sdks)
         updateSubmodule(deps/iot-sdk-c CMakeLists.txt ${PROJECT_SOURCE_DIR})
@@ -110,7 +111,7 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
 
     # Find the library, fail the build if it doesn't exist
     if(NOT ${libraryName}_FOUND OR ${rebuild_deps})
-        buildSubmodule(${libraryName} ${submoduleRootDirectory} ${cmakeRootDirectory} ${ARGN})
+        buildSubmodule(${libraryName} ${cmakeRootDirectory} ${ARGN})
         find_package(${libraryName} ${version} REQUIRED CONFIG HINTS ${dependency_install_prefix})
     endif()
 endfunction()
