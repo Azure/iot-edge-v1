@@ -7,10 +7,13 @@
 set -e
 
 libuv_config=$1
+libuv_install=$2
 libuv_root=$(cd "$(dirname "$0")/../deps/libuv" && pwd)
+make_cores=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 
 cd $libuv_root
-sh autogen.sh
-./configure --libdir=$libuv_root/build/$libuv_config CFLAGS='-fPIC' CXXFLAGS='-fPIC'
-make -j $(nproc)
+
+./autogen.sh
+./configure --prefix="$libuv_install" CFLAGS='-fPIC' CXXFLAGS='-fPIC'
+make -j $make_cores
 make install

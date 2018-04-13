@@ -26,15 +26,18 @@ if defined libuv-config (
 )
 
 set "libuv-arch=%~1"
+set "script-args=nobuild %libuv-arch%"
 
 rem Build libuv
 if defined VisualStudioVersion if "%VisualStudioVersion%"=="15.0" (
-  call vcbuild.bat vs2017 %libuv-config% %libuv-arch%
+  set "script-args=%script-args% vs2017"
 ) else (
   rem The following 2 variables must be un-defined because libuv's
   rem vcbuild.bat skips its VS version detection code if these are
   rem defined and defaults to using VS 2012.
   set WindowsSDKDir=
   set VCINSTALLDIR=
-  call %libuv-root%\vcbuild.bat %libuv-config% %libuv-arch%
 )
+
+call vcbuild.bat %script-args%
+msbuild uv.sln /p:Configuration=%libuv-config% /m

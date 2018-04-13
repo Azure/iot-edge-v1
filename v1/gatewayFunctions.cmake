@@ -26,6 +26,11 @@ function(buildSubmodule libraryName cmakeRootDirectory)
     # Update submodule if needed
     updateSubmodule(${cmakeRootDirectory} "CMakeLists.txt" ${PROJECT_SOURCE_DIR})
 
+    # The azure-iot-sdk-c repo requires special treatment: its Parson submodule must be initialized
+    if(${libraryName} STREQUAL azure_iot_sdks)
+        updateSubmodule(deps/parson README.md ${cmakeRootDirectory})
+    endif()
+
     # Build clean by deleting/recreating the build folder
     file(REMOVE_RECURSE ${cmakeRootDirectory}/build)
     file(MAKE_DIRECTORY ${cmakeRootDirectory}/build)
@@ -97,12 +102,6 @@ endfunction()
 
 # Additional arguments to this function will be passed to the library's cmake command
 function(findAndInstall libraryName version cmakeRootDirectory)
-    # The azure-iot-sdk-c repo requires special treatment: its Parson submodule must be initialized
-    if(${libraryName} STREQUAL azure_iot_sdks)
-        updateSubmodule(deps/iot-sdk-c CMakeLists.txt ${PROJECT_SOURCE_DIR})
-        updateSubmodule(deps/parson README.md ${cmakeRootDirectory})
-    endif()
-
     # Don't bother to call find_package() if the caller requested 'rebuild_deps'
     if(NOT ${libraryName}_FOUND AND NOT ${rebuild_deps})
         message(STATUS "${libraryName} not found...")
