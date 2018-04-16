@@ -1,6 +1,8 @@
 <!--
 Thank you for helping us improve the Azure IoT Edge!
 
+Pull requests are accepted by this project. Azure IoT Edge shares the same [contribution guidelines](https://github.com/Azure/azure-iot-sdk-c/blob/master/.github/CONTRIBUTING.md) as
+the other Azure IoT SDKs. 
 --> 
 
 # Reference/Link to the issue solved with this PR (if any)

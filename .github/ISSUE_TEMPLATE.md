@@ -1,6 +1,8 @@
 <!--
 Hi there! thank you for discovering and submitting an issue!
 
+* A potentially helpful troubleshooting guide may be found at our [Common issues and resolutions page](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
+
 Please use your Azure subscription if you need to share any information from your Azure subscription such as connection strings, service names (IoTHub, Provisioning), etc.
 
 # Need Support?
@@ -24,5 +26,6 @@ Please first tell us a little bit about the environment you're running:
 
 # Console log of the issue:
 <!-- Please share as much logs as posible, that will help debugging -->
+<!-- For V2 issues, we have a list of [diagnostic steps](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot#standard-diagnostic-steps) to help extract useful information. -->
 <!-- Don't forget to remove any connection string information! -->
 
