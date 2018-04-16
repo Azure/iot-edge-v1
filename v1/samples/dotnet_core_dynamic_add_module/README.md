@@ -24,7 +24,7 @@ Building the sample (Linux)
 ---------------------------
 The sample code and dependancies gets build by running:
 ```
-tools\build.sh --enable-dotnet-core-binding --disable-native-remote-modules
+tools\build.sh --enable-dotnet-core-binding
 ```
 
 

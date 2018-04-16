@@ -11,6 +11,7 @@ tools/build.sh \
     --disable-ble-module \
     --enable-java-binding \
     --enable-dotnet-core-binding \
+    --enable-native-remote-modules \
     --enable-java-remote-modules \
     --enable-nodejs-remote-modules \
     --run-unittests \
