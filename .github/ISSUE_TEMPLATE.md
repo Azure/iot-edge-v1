@@ -8,6 +8,7 @@ Please use your Azure subscription if you need to share any information from you
 # Need Support?
 * Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/907045-azure-iot-edge) to help us prioritize.
 * Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-edge) with tag "azure-iot-edge".
+* Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team
 
 Please first tell us a little bit about the environment you're running:
 -->
