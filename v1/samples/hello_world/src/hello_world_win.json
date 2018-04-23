@@ -1,4 +1,8 @@
 {
+    "gateway": {
+        "connection-string": "HostName=egohtaiwan20180320.azure-devices.net;DeviceId=edgev1;SharedAccessKey=PeKkxAQDC9gkDvzLVXyRPDcK7fYFKd+9oKKcVbCUlNs=",
+        "transport": "amqp"
+    },
   "modules": [
     {
       "name": "logger",

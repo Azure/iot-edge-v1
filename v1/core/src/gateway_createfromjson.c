@@ -5,6 +5,8 @@
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/macro_utils.h"
+#include "azure_c_shared_utility/httpapi.h"
+#include "azure_uhttp_c/uhttp.h"
 #include "gateway.h"
 #include "parson.h"
 #include "experimental/event_system.h"
@@ -20,6 +22,10 @@
 #define LOADER_ENTRYPOINT_KEY "entrypoint"
 #define MODULE_PATH_KEY "module.path"
 #define ARG_KEY "args"
+
+#define GATEWAY_KEY "gateway"
+#define GATEWAY_IOTHUB_CONNECTION_STRING_KEY "connection-string"
+#define GATEWAY_IOTHUB_TRANSPORT_KEY "transport"
 
 #define LINKS_KEY "links"
 #define SOURCE_KEY "source"
@@ -38,6 +44,64 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
 static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties, JSON_Value *root);
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties);
 void gateway_destroy_internal(GATEWAY_HANDLE gw);
+
+void gateway_deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE update_state, const unsigned char* payLoad, size_t size, void* userContextCallback)
+{
+	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)userContextCallback;
+    unsigned char* buf = (unsigned char*)malloc(size);
+    memcpy(buf, payLoad, size);
+    if (buf[size - 1] != '}') {
+        int index = size;
+        while (index > 0) {
+            if (buf[--index] == '}') {
+                buf[index + 1] = '\0';
+                break;
+            }
+        }
+//        buf[size - 1] = '\0';
+    }
+    LogInfo("Device Twin Desired Properteis Updated - '%s'", payLoad);
+
+    JSON_Value* root = json_parse_string(buf);
+    JSON_Object* document = json_value_get_object(root);
+    JSON_Object* desiredProperties = json_object_get_object(document, "desired");
+    if (desiredProperties != NULL) {
+        JSON_Object* gwConfig = json_object_get_object(desiredProperties, GATEWAY_KEY);
+        if (gwConfig != NULL) {
+            const char* configValue = json_object_get_string(gwConfig, "configuration");
+            if (configValue != NULL) {
+                HTTPAPI_RESULT httpResult = HTTPAPI_Init();
+                if (httpResult == HTTPAPI_OK) {
+                    HTTP_HANDLE handle = HTTPAPI_CreateConnection( configValue);
+                    unsigned int statusCode;
+                    HTTP_HEADERS_HANDLE responseHeaders = HTTPHeaders_Alloc();
+                    BUFFER_HANDLE responseBuffer = BUFFER_new();
+                    httpResult = HTTPAPI_ExecuteRequest(handle, HTTPAPI_REQUEST_GET, "", NULL, "", 0, &statusCode, responseHeaders, responseBuffer);
+                    if (httpResult == HTTPAPI_OK) {
+                        const unsigned char* receivedContent = BUFFER_u_char(responseBuffer);
+                        LogInfo("Received - '%s'", receivedContent);
+                    }
+                }
+            }
+        }
+    }
+    free(buf);
+}
+
+static int strcmp_i(const char* lhs, const char* rhs)
+{
+	char lc, rc;
+	int cmp;
+
+	do
+	{
+		lc = *lhs++;
+		rc = *rhs++;
+		cmp = tolower(lc) - tolower(rc);
+	} while (cmp == 0 && lc != 0 && rc != 0);
+
+	return cmp;
+}
 
 GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
 {
@@ -67,7 +131,7 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
                 {
                     properties->gateway_modules = NULL;
                     properties->gateway_links = NULL;
-                    if ((parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS) && properties->gateway_modules != NULL && properties->gateway_links != NULL)
+					if ((parse_json_internal(properties, root_value) == PARSE_JSON_SUCCESS) && properties->gateway_modules != NULL && properties->gateway_links != NULL)
                     {
                         /*Codes_SRS_GATEWAY_JSON_14_007: [The function shall use the GATEWAY_PROPERTIES instance to create and return a GATEWAY_HANDLE using the lower level API.]*/
                         /*Codes_SRS_GATEWAY_JSON_17_004: [ The function shall set the module loader to the default dynamically linked library module loader. ]*/
@@ -79,6 +143,7 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
                         }
                         else
                         {
+
                             /*Codes_SRS_GATEWAY_JSON_17_001: [ Upon successful creation, this function shall start the gateway. ]*/
                             GATEWAY_START_RESULT start_result;
                             start_result = Gateway_Start(gw);
@@ -89,6 +154,31 @@ GATEWAY_HANDLE Gateway_CreateFromJson(const char* file_path)
                                 gateway_destroy_internal(gw);
                                 gw = NULL;
                             }
+							else {
+								JSON_Object *json_document = json_value_get_object(root_value);
+								JSON_Object *gwConfig = json_object_get_object(json_document, GATEWAY_KEY);
+								IOTHUB_CLIENT_TRANSPORT_PROVIDER transportProvider = NULL;
+								if (gwConfig != NULL) {
+									const char* connectionString = json_object_get_string(gwConfig, GATEWAY_IOTHUB_CONNECTION_STRING_KEY);
+									const char* iothubTransport = json_object_get_string(gwConfig, GATEWAY_IOTHUB_TRANSPORT_KEY);
+									if (connectionString != NULL && iothubTransport != NULL) {
+										if (strcmp_i(iothubTransport, "AMQP") == 0)
+										{
+											transportProvider = AMQP_Protocol;
+										}
+										else if (strcmp_i(iothubTransport, "MQTT") == 0)
+										{
+											transportProvider = MQTT_Protocol;
+										}
+										if (transportProvider != NULL) {
+											gw->iothub_client = IoTHubClient_CreateFromConnectionString(connectionString, transportProvider);
+											if (gw->iothub_client != NULL) {
+												IoTHubClient_SetDeviceTwinCallback(gw->iothub_client, gateway_deviceTwinCallback, gw);
+											}
+										}
+									}
+								}
+							}
                         }
                     }
                     /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
@@ -607,6 +697,11 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
                 result = PARSE_JSON_MISCONFIGURED_OR_OTHER;
                 LogError("JSON Configuration file is configured incorrectly or some other error occurred while parsing.");
             }
+
+			JSON_Object* gatewayObject = json_object_get_object(json_document, GATEWAY_KEY);
+			if (gatewayObject != NULL) {
+				 
+			}
         }
         /*Codes_SRS_GATEWAY_JSON_14_006: [The function shall return NULL if the JSON_Value contains incomplete information.]*/
         else

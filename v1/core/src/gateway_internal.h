@@ -41,6 +41,10 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
     /** @brief  Vector of LINK_DATA links that the Gateway must track */
     VECTOR_HANDLE links;
+
+	IOTHUB_CLIENT_HANDLE iothub_client;
+
+	int runtime_status;	// 0->initializing, 1->running, 2->terminating
 } GATEWAY_HANDLE_DATA;
 
 typedef struct LINK_DATA_TAG {

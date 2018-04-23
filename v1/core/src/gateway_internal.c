@@ -272,6 +272,17 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
     return gateway;
 }
 
+static void reportedStateCallback(int status_code, void* userContextCallback)
+
+{
+    GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE*)userContextCallback;
+    
+    printf("Device Twin reported properties update completed with result: %d\r\n", status_code);
+    if (gateway_handle->runtime_status == 2) {
+        IoTHubClient_Destroy(gateway_handle->iothub_client);
+    }
+}
+
 void gateway_destroy_internal(GATEWAY_HANDLE gw)
 {
     /*Codes_SRS_GATEWAY_14_005: [If gw is NULL the function shall do nothing.]*/
@@ -279,6 +290,11 @@ void gateway_destroy_internal(GATEWAY_HANDLE gw)
     {
         GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
 
+        if (gateway_handle->iothub_client != NULL) {
+            gateway_handle->runtime_status = 2;
+            const char* reported_status = "{\"edgev1-runtime-status\":\"terminated\"}";
+                IoTHubClient_SendReportedState(gateway_handle->iothub_client, reported_status, strlen(reported_status), reportedStateCallback, gateway_handle);
+        }
         if (gateway_handle->event_system != NULL)
         {
             /* event_system might be NULL here if destroying during failed creation, event system API should cleanly handle that */

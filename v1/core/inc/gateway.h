@@ -20,6 +20,14 @@
 #include "module_loader.h"
 #include "gateway_export.h"
 
+#include "iothub_client.h"
+#include "iothubtransport.h"
+#include "iothubtransporthttp.h"
+#include "iothubtransportamqp.h"
+#include "iothubtransportmqtt.h"
+#include "iothub_message.h"
+
+
 #ifdef __cplusplus
 extern "C"
 {
