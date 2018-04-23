@@ -9,7 +9,7 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-	<PackageVersion>1.0.3</PackageVersion>
+	<PackageVersion>1.0.6</PackageVersion>
   </PropertyGroup>
 
 </Project>

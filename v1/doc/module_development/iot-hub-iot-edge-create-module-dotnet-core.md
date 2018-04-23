@@ -50,7 +50,7 @@ View this [quick video tutorial](https://channel9.msdn.com/Blogs/dotnet/Get-star
 1. Initialize a new `.NET Core` class library C# project:
 	- Open a command prompt (`Windows + R` -> `cmd` -> `enter`).
 	- Navigate to the folder where you'd like to create the `C#` project.
-	- Type **dotnet new classlib -o IoTEdgeConverterModule -f netstandard1.3**. 
+	- Type **dotnet new classlib -o IoTEdgeConverterModule -f netstandard2.0**. 
 	- This command creates an empty class called `Class1.cs` in your projects directory.
 2. Navigate to the folder where we just created the class library project by typing **cd IoTEdgeConverterModule**.
 3. Open the project in `Visual Studio Code` by typing **code .**.
@@ -271,8 +271,8 @@ View this [quick video tutorial](https://channel9.msdn.com/Blogs/dotnet/Get-star
                "name": "dotnetcore",
                "configuration": {
                    "binding.path": "dotnetcore.dll",
-                   "binding.coreclrpath": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\coreclr.dll",
-                   "binding.trustedplatformassemblieslocation": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\"
+                   "binding.coreclrpath": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.7\\coreclr.dll",
+                   "binding.trustedplatformassemblieslocation": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.7\\"
                }
            }
        ],
@@ -344,13 +344,13 @@ View this [quick video tutorial](https://channel9.msdn.com/Blogs/dotnet/Get-star
 24. Copy and paste the following code snippet into the `Untitled-1` file.
 
    ```powershell
-   Copy-Item -Path $env:userprofile\.nuget\packages\microsoft.azure.devices.gateway.native.windows.x64\1.1.3\runtimes\win-x64\native\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\system.runtime.serialization.formatters\4.3.0\lib\netstandard1.4\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\system.runtime.serialization.primitives\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\newtonsoft.json\10.0.2\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\system.componentmodel.typeconverter\4.3.0\lib\netstandard1.5\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\system.collections.nongeneric\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard1.3
-   Copy-Item -Path $env:userprofile\.nuget\packages\system.collections.specialized\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard1.3
+   Copy-Item -Path $env:userprofile\.nuget\packages\microsoft.azure.devices.gateway.native.windows.x64\1.1.3\runtimes\win-x64\native\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\system.runtime.serialization.formatters\4.3.0\lib\netstandard1.4\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\system.runtime.serialization.primitives\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\newtonsoft.json\10.0.2\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\system.componentmodel.typeconverter\4.3.0\lib\netstandard1.5\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\system.collections.nongeneric\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard2.0
+   Copy-Item -Path $env:userprofile\.nuget\packages\system.collections.specialized\4.3.0\lib\netstandard1.3\* -Destination .\bin\Debug\netstandard2.0
    ```
 
 25. Save the file as `binplace.ps1` by pressing `Ctrl` + `Shift` + `S`.
@@ -370,7 +370,7 @@ View this [quick video tutorial](https://channel9.msdn.com/Blogs/dotnet/Get-star
 
 27.  Open the `Visual Studio Code` integrated terminal window by pressing the `Ctrl` + `backtick` keys or using the menus `View` -> `Integrated Terminal` and type **.\binplace.ps1** into the `PowerShell` command prompt. This command copies all our dependencies to the output directory.
 
-28. Navigate to the projects output directory in the `Integrated Terminal` window by typing **cd .\bin\Debug\netstandard1.3**.
+28. Navigate to the projects output directory in the `Integrated Terminal` window by typing **cd .\bin\Debug\netstandard2.0**.
 
 29. Run the sample project by typing **.\gw.exe gw-config.json** into the `Integrated Terminal` window prompt. 
     - If you have followed the steps in this tutorial closely, you should now be running the `Azure IoT Edge BLE Data Converter Module` sample project as seen in the following image:
