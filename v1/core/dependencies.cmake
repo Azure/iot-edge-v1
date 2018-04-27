@@ -8,12 +8,15 @@ findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DI
 ###############################################################################
 findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
 
-#findAndInstall(uhttp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+message(STATUS,"Starting install uhttp!")
+findAndInstall(uhttp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+message(STATUS,"End install uhttp!")
 
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
 ###############################################################################
-#The azure_iot_sdks repo requires special treatment. Parson submodule must be initialized.
+The azure_iot_sdks repo requires special treatment. Parson submodule must be initialized.
+
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/deps/parson/README.md)
     execute_process(
         COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
