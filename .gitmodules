@@ -28,3 +28,6 @@
 [submodule "v1/deps/azure-uhttp-c"]
 	path = v1/deps/uhttp
 	url = https://github.com/Azure/azure-uhttp-c.git
+[submodule "v1\\deps\\uhttp"]
+	path = v1\\deps\\uhttp
+	url = https://github.com/Azure/azure-uhttp-c.git
