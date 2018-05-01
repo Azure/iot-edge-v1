@@ -8,9 +8,9 @@ findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DI
 ###############################################################################
 findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
 
-message(STATUS,"Starting install uhttp!")
-findAndInstall(uhttp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
-message(STATUS,"End install uhttp!")
+#message(STATUS,"Starting install uhttp!")
+#findAndInstall(uhttp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+#message(STATUS,"End install uhttp!")
 
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
