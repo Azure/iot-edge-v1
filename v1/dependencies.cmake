@@ -128,12 +128,12 @@ endif()
 #############################Init uhttp Submodule#############################
 ###############################################################################
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/uhttp/README.md)
-    execute_process(
-        COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/uhttp
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE res   
-    )
-    if(${res})
-        message(FATAL_ERROR "Error pulling uhttp submodule: ${res}")
-    endif()
+#    execute_process(
+#        COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/uhttp
+#        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#        RESULT_VARIABLE res   
+#    )
+#    if(${res})
+#        message(FATAL_ERROR "Error pulling uhttp submodule: ${res}")
+#    endif()
 endif()

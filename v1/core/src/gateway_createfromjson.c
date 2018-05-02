@@ -6,6 +6,8 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/macro_utils.h"
 #include "azure_c_shared_utility/httpapi.h"
+#include "azure_c_shared_utility/socketio.h"
+#include "azure_uhttp_c/uhttp.h"
 #include "azure_uamqp_c/amqp_definitions.h"
 #include "gateway.h"
 #include "parson.h"
@@ -45,6 +47,42 @@ static PARSE_JSON_RESULT parse_json_internal(GATEWAY_PROPERTIES* out_properties,
 static void destroy_properties_internal(GATEWAY_PROPERTIES* properties);
 void gateway_destroy_internal(GATEWAY_HANDLE gw);
 
+static void on_uhttp_connected(void* callback_ctx, HTTP_CALLBACK_REASON connect_result)
+{
+    (void)callback_ctx;
+    if (connect_result == HTTP_CALLBACK_REASON_OK)
+    {
+        LogInfo("HTTP Connected\r\n");
+    }
+    else
+    {
+        LogInfo("HTTP Connection FAILED\r\n");
+    }
+}
+
+static void on_error(void* callback_ctx, HTTP_CALLBACK_REASON error_result)
+{
+    (void)callback_ctx;
+    (void)error_result;
+    LogError("Remote configuration get error via HTTPS");
+}
+
+static void on_uhttp_request_callback(void* callback_ctx, HTTP_CALLBACK_REASON request_result, const unsigned char* content, size_t content_len, unsigned int statusCode, HTTP_HEADERS_HANDLE responseHeadersHandle)
+{
+    (void)responseHeadersHandle;
+    (void)request_result;
+    (void)content_len;
+    (void)statusCode;
+    (void)content;
+    if (callback_ctx != NULL)
+    {
+    }
+    else
+    {
+    }
+}
+
+
 void gateway_deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE update_state, const unsigned char* payLoad, size_t size, void* userContextCallback)
 {
 	GATEWAY_HANDLE gw = (GATEWAY_HANDLE)userContextCallback;
@@ -70,17 +108,65 @@ void gateway_deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE update_state, const uns
         if (gwConfig != NULL) {
             const char* configValue = json_object_get_string(gwConfig, "configuration");
             if (configValue != NULL) {
-                HTTPAPI_RESULT httpResult = HTTPAPI_Init();
-                if (httpResult == HTTPAPI_OK) {
-                    HTTP_HANDLE handle = HTTPAPI_CreateConnection( configValue);
-                    unsigned int statusCode;
-                    HTTP_HEADERS_HANDLE responseHeaders = HTTPHeaders_Alloc();
-                    BUFFER_HANDLE responseBuffer = BUFFER_new();
-                    httpResult = HTTPAPI_ExecuteRequest(handle, HTTPAPI_REQUEST_GET, "", NULL, "", 0, &statusCode, responseHeaders, responseBuffer);
-                    if (httpResult == HTTPAPI_OK) {
-                        const unsigned char* receivedContent = BUFFER_u_char(responseBuffer);
-                        LogInfo("Received - '%s'", receivedContent);
+                char* configValueHost = NULL;
+                const char* configValueRelPath = NULL;
+                int cvIndex = 0;
+                int cvLen = strlen(configValue);
+                const char cvProtocol[9] = { 'h','t','t','p','s',':','/','/','\0' };
+                int cvPLen = strlen(cvProtocol);
+                while (cvIndex < cvPLen) {
+                    if (cvProtocol[cvIndex] != configValue[cvIndex]) {
+                        // error
                     }
+                    cvIndex++;
+                }
+                if (cvIndex == cvPLen) {
+                    configValueHost = &configValue[cvIndex];
+                }
+                while (cvIndex < cvLen) {
+                    if (configValue[cvIndex++] == '/') {
+                        break;
+                    }
+                }
+                if (cvIndex < cvLen) {
+                    int hostLen = cvIndex - cvPLen;
+                    configValueHost = (char*)malloc(hostLen);
+                    memcpy(configValueHost, &configValue[cvPLen], hostLen-1);
+                    configValueHost[hostLen - 1] = '\0';
+                    configValueRelPath = &configValue[cvIndex];
+                }
+                if (configValueHost == NULL || configValueRelPath == NULL) {
+                    LogError("Bad url!");
+                }
+                else {
+                    SOCKETIO_CONFIG socketConfig;
+                    socketConfig.accepted_socket = NULL;
+                    socketConfig.hostname = configValueHost;
+                    socketConfig.port = 443;
+
+                    HTTP_CLIENT_HANDLE httpClient = uhttp_client_create(socketio_get_interface_description(), &socketConfig, on_error, userContextCallback);
+                    HTTP_CLIENT_RESULT uhttpResult = uhttp_client_open(httpClient, socketConfig.hostname, socketConfig.port, on_uhttp_connected, userContextCallback);
+                    uhttpResult = uhttp_client_execute_request(httpClient, HTTP_CLIENT_REQUEST_GET, configValueRelPath, NULL, NULL, 0, on_uhttp_request_callback, userContextCallback);
+                    if (uhttpResult != HTTP_CLIENT_OK) {
+                        LogError("Failed to get config file!");
+                    }
+/*
+                    HTTPAPI_RESULT httpResult = HTTPAPI_Init();
+                    if (httpResult == HTTPAPI_OK) {
+                        HTTP_HANDLE handle = HTTPAPI_CreateConnection(configValue);
+                        unsigned int statusCode;
+                        HTTP_HEADERS_HANDLE responseHeaders = HTTPHeaders_Alloc();
+                        BUFFER_HANDLE responseBuffer = BUFFER_new();
+                        httpResult = HTTPAPI_ExecuteRequest(handle, HTTPAPI_REQUEST_GET, "", NULL, "", 0, &statusCode, responseHeaders, responseBuffer);
+                        if (httpResult == HTTPAPI_OK) {
+                            const unsigned char* receivedContent = BUFFER_u_char(responseBuffer);
+                            LogInfo("Received - '%s'", receivedContent);
+                        }
+                    }
+                    */
+                }
+                if (configValueHost != NULL) {
+                    free(configValueHost);
                 }
             }
         }

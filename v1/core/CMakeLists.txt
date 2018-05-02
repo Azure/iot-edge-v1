@@ -257,8 +257,8 @@ if(${enable_core_remote_module_support})
 endif()
 
 
-target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client)
-target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client)
+target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client uhttp)
+target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client uhttp)
 target_link_libraries(module_host_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
 
 if(NOT WIN32)
