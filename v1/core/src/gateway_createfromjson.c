@@ -150,6 +150,10 @@ void gateway_deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE update_state, const uns
                     if (uhttpResult != HTTP_CLIENT_OK) {
                         LogError("Failed to get config file!");
                     }
+                    else {
+                        uhttp_client_dowork(httpClient);
+
+                    }
 /*
                     HTTPAPI_RESULT httpResult = HTTPAPI_Init();
                     if (httpResult == HTTPAPI_OK) {
