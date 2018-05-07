@@ -18,6 +18,8 @@ Welcome to the home of Azure IoT Edge. The second version of Azure IoT Edge is n
 
 Azure IoT Edge moves cloud analytics and custom business logic to devices so that your organization can focus on business insights instead of data management. Enable your solution to truly scale by configuring your IoT software, deploying it to devices via standard containers, and monitoring it all from the cloud.
 
+We are still putting the finishing touches on the IoT Edge runtime and will be open sourcing it to this repository soon. Stay tuned!
+
 ## Documentation
 Documentation can be found at https://docs.microsoft.com/azure/iot-edge.
 
