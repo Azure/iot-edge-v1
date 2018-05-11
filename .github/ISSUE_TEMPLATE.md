@@ -20,13 +20,13 @@ Please first tell us a little bit about the environment you're running:
 
 - **Version used:** <VERSION> <!-- V1 release tag or commit, V2 image tag i.e (1.0_preview 22) -->
 
-- **V2 Docker version and containter type** <VERSION> <TYPE> <!-- linux or Windows... -->
+- **V2 Docker version and container type** <VERSION> <TYPE> <!-- linux or Windows... -->
 
 # Description of the issue:
 <!-- Please be as detailed as possible: which feature has a problem, how often does it fail,  -->
 
 # Console log of the issue:
-<!-- Please share as much logs as posible, that will help debugging -->
+<!-- Please share as much logs as possible, that will help debugging -->
 <!-- For V2 issues, we have a list of [diagnostic steps](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot#standard-diagnostic-steps) to help extract useful information. -->
 <!-- Don't forget to remove any connection string information! -->
 
