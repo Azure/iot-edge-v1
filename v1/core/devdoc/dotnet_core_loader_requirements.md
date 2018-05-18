@@ -18,12 +18,12 @@ Exposed API
 
 #if WIN32
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "dotnetcore.dll"
-#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\coreclr.dll"
-#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.0.1\\"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.7\\coreclr.dll"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.0.7\\"
 #else
 #define DOTNET_CORE_BINDING_MODULE_NAME                                "./libdotnetcore.so"
-#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/libcoreclr.so"
-#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "/usr/share/dotnet/shared/Microsoft.NETCore.App/1.1.0/"
+#define DOTNET_CORE_CLR_PATH_DEFAULT                                   "/usr/share/dotnet/shared/Microsoft.NETCore.App/2.0.7/libcoreclr.so"
+#define DOTNET_CORE_TRUSTED_PLATFORM_ASSEMBLIES_LOCATION_DEFAULT       "/usr/share/dotnet/shared/Microsoft.NETCore.App/2.0.7/"
 #endif
 
 #define DOTNET_CORE_CLR_PATH_KEY                                "binding.coreclrpath"

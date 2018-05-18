@@ -19,7 +19,7 @@ Other resources:
 Prerequisites
 --------------
 1. Setup your development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
-2. Make sure you have .NET Core installed. Our current version of the binding was tested and loads modules written in .NET Core v1.1.1.
+2. Make sure you have .NET Core installed. Our current version of the binding was tested and loads modules written in .NET Core v2.0.7.
 
 Building the sample
 -------------------
@@ -50,8 +50,8 @@ Running the sample (Linux or macOS)
 1. Navigate to the **v1/build/samples/dotnet_core_module_sample** folder in your local copy of the **iot-edge** repository.
 2. In **../../../samples/dotnet_core_module_sample/src/dotnet_core_module_sample_lin.json**, update the values of `binding.coreclrpath` and `binding.trustedplatformassemblieslocation` under `loaders.configuration`. `binding.coreclrpath` should be the path to libcoreclr.so (libcoreclr.dylib on macOS) in your .NET Core installation, In a typical installation, `binding.trustedplatformassemblieslocation` can be set to parent folder of "coreclrpath". For example (typical installation on macOS):
 ```
-    "binding.coreclrpath": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.6/libcoreclr.dylib",
-    "binding.trustedplatformassemblieslocation": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.1.6"
+    "binding.coreclrpath": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/2.0.7/libcoreclr.dylib",
+    "binding.trustedplatformassemblieslocation": "/usr/local/share/dotnet/shared/Microsoft.NETCore.App/2.0.7"
 ```
 3. Run the following command:
 ```

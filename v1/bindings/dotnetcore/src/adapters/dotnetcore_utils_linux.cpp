@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #ifdef __APPLE__
 #include <sys/syslimits.h>
+#include <mach-o/dyld.h>
 #endif
 
 
@@ -120,7 +121,12 @@ bool initializeDotNetCoreCLR(coreclr_initialize_ptr coreclrInitialize_ptr, const
     char the_p_path[PATH_MAX];
 
     //Ignoring failures of these calls. coreclrInitialize_ptr will fail if folder is not right. 
+#ifdef __APPLE__
+    uint32_t size = PATH_MAX;
+    _NSGetExecutablePath(executableFullPath, &size);
+#else
     (void)readlink("/proc/self/exe", executableFullPath, sizeof(executableFullPath));
+#endif
     getcwd(the_p_path, 255);
     strcat(the_p_path, "/");
 
