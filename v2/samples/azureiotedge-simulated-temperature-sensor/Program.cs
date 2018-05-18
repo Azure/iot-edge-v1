@@ -142,6 +142,8 @@ namespace AzureIotEdgeSimulatedTemperatureSensor
                         var messageString = JsonConvert.SerializeObject(messageBody);
                         var messageBytes = Encoding.UTF8.GetBytes(messageString);
                         var message = new Message(messageBytes);
+                        message.ContentEncoding = "utf-8"; 
+                        message.ContentType = "application/json"; 
 
                         await deviceClient.SendEventAsync("temperatureOutput", message);
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
