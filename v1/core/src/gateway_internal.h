@@ -28,6 +28,16 @@ typedef struct MODULE_DATA_TAG {
     MODULE_HANDLE module;
 } MODULE_DATA;
 
+#define GATEWAY_RUNTIME_STATUS_VALUES \
+	GATEWAY_RUNTIME_STATUS_INITIALIZING, \
+	GATEWAY_RUNTIME_STATUS_UPDATING, \
+	GATEWAY_RUNTIME_STATUS_UPDATED, \
+	GATEWAY_RUNTIME_STATUS_RUNNING, \
+	GATEWAY_RUNTIME_STATUS_TERMINATED, \
+	GATEWAY_RUNTIME_STATUS_REPORTED
+
+DEFINE_ENUM(GATEWAY_RUNTIME_STATUS, GATEWAY_RUNTIME_STATUS_VALUES);
+
 typedef struct GATEWAY_HANDLE_DATA_TAG {
 
     /** @brief  Vector of MODULE_DATA modules that the Gateway must track */
@@ -44,7 +54,13 @@ typedef struct GATEWAY_HANDLE_DATA_TAG {
 
 	IOTHUB_CLIENT_HANDLE iothub_client;
 
-	int runtime_status;	// 0->initializing, 1->running, 2->terminating
+	GATEWAY_RUNTIME_STATUS runtime_status;	// 0->initializing, 1->running, 2->terminating, 3->reported
+
+	STRING_HANDLE modules_local_path;
+
+	JSON_Object* deployConfig;
+
+	LOCK_HANDLE update_lock;
 } GATEWAY_HANDLE_DATA;
 
 typedef struct LINK_DATA_TAG {

@@ -105,6 +105,8 @@ typedef struct GATEWAY_MODULES_ENTRY_TAG
 
     /** @brief  The user-defined configuration object for the module */
     const void* module_configuration;
+
+	const char* module_version;
 } GATEWAY_MODULES_ENTRY;
 
 /** @brief      Struct representing the properties that should be used when
@@ -118,6 +120,8 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 
     /** @brief  Vector of #GATEWAY_LINK_ENTRY objects. */
     VECTOR_HANDLE gateway_links;
+
+	JSON_Object* deployConfig;
 } GATEWAY_PROPERTIES;
 
 /** @brief      Creates a gateway using a JSON configuration file as input
