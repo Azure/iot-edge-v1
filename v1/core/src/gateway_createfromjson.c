@@ -660,9 +660,9 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
             }
             if (modulePath != NULL && (modulePath[0] == 'h'&&modulePath[1] == 't'&&modulePath[2] == 't'&&modulePath[3] == 'p' &&modulePath[4] == 's')) {
                 const char* currentModuleVersion = gateway_get_current_module_version(deployConfig, moduleName);
-                if (strcmp(newModuleVersion, currentModuleVersion) != 0) {
-                    unsigned char* remoteModuleHost;
-                    unsigned char* remoteModulePath;
+                if (currentModuleVersion == NULL || (currentModuleVersion != NULL && strcmp(newModuleVersion, currentModuleVersion) != 0)) {
+                    unsigned char* remoteModuleHost = NULL;
+                    unsigned char* remoteModulePath = NULL;
                     int modulePathIndex = strlen("https://");
                     int modulePathLength = strlen(modulePath);
                     int lastIndex = modulePathIndex;
@@ -713,8 +713,13 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
                                     if (statusCode == 200) {
                                         LogInfo("Received library - %s : %d byte", deployPath, BUFFER_length(resContent));
                                         FILE* fp = fopen(deployPath, "wb");
-                                        fwrite(BUFFER_u_char(resContent), sizeof(unsigned char), BUFFER_length(resContent), fp);
-                                        fclose(fp);
+                                        if (fp != NULL) {
+                                            fwrite(BUFFER_u_char(resContent), sizeof(unsigned char), BUFFER_length(resContent), fp);
+                                            fclose(fp);
+                                        }
+                                        else {
+                                            LogError("Loaded module file can't be stored - %s", deployPath);
+                                        }
                                     }
                                     else {
                                         LogInfo("http access result %d", statusCode);
@@ -737,7 +742,7 @@ static PARSE_JSON_RESULT parse_loader(JSON_Object* loader_json, GATEWAY_MODULE_L
             }
         }
         loader_info->entrypoint = entrypoint_json == NULL ? NULL :
-                    loader->api->ParseEntrypointFromJson(loader, entrypoint_json);
+            loader->api->ParseEntrypointFromJson(loader, entrypoint_json);
 
         // if entrypoint_json is not NULL then loader_info->entrypoint must not be NULL
         if (entrypoint_json != NULL && loader_info->entrypoint == NULL)
