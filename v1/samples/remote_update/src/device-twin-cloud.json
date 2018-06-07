@@ -1,0 +1,4 @@
+"gateway": {
+     "configuration": "<< edge-config-cloud.json url >>"
+
+}

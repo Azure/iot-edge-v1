@@ -1,0 +1,13 @@
+{
+  "gateway": {
+    "connection-string": "<< IoT Hub Connection String >>",
+    "transport": "amqp",
+    "modules-local-path": "<< local path for remote updated module >>"
+  },
+  "modules": [
+    
+  ],
+  "links": [
+    
+  ]
+}
