@@ -197,7 +197,7 @@ function(notFindAndInstall libraryName submoduleRootDirectory cmakeRootDirectory
         # We are interested in doing a "find_package" only if we aren't going
         # to rebuild dependencies anyway.
         if(NOT ${rebuild_deps})
-#            find_package(${libraryName} ${version} QUIET CONFIG HINTS ${dependency_install_prefix})
+#        find_package(${libraryName} QUIET CONFIG HINTS ${dependency_install_prefix})
         endif()
         if(${rebuild_deps} OR NOT ${libraryName}_FOUND)
             if(NOT ${rebuild_deps} )
@@ -270,7 +270,7 @@ function(notFindAndInstall libraryName submoduleRootDirectory cmakeRootDirectory
             endif()
 
             #Attempt to find library with the REQUIRED option
- #           find_package(${libraryName} ${version} REQUIRED CONFIG HINTS ${dependency_install_prefix})
+#            find_package(${libraryName} REQUIRED CONFIG HINTS ${dependency_install_prefix})
         endif()
     endif()
 
