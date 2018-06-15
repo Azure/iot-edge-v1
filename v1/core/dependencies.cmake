@@ -8,10 +8,6 @@ findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DI
 ###############################################################################
 findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
 
-#message(STATUS,"Starting install uhttp!")
-#findAndInstall(uhttp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
-#message(STATUS,"End install uhttp!")
-
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################
 ###############################################################################
@@ -35,17 +31,5 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c/deps/parson/README.md)
     if(${res})
         message(FATAL_ERROR "Error pulling parson submodule: ${res}")
     endif()
-#    execute_process(
-#        COMMAND git submodule update --init deps/uhttp
-#        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c
-#        RESULT_VARIABLE res
-#    )
-#    if(${res})
-#        message(FATAL_ERROR "Error pulling uhttp submodule: ${res}")
-#    endif()
 endif()
 findAndInstall(azure_iot_sdks 1.1.5 ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c ${PROJECT_SOURCE_DIR}/deps/iot-sdk-c -Duse_installed_dependencies=ON -Duse_openssl=OFF -Dbuild_as_dynamic=ON -Dskip_samples=ON -G "${CMAKE_GENERATOR}")
-
-message(STATUS,"Starting install uhttp!")
-notFindAndInstall(uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp ${PROJECT_SOURCE_DIR}/deps/uhttp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
-message(STATUS,"End install uhttp!")
