@@ -5,7 +5,7 @@ using System;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace AzureIotEdgeSimulatedTemperatureSensor
+namespace AzureIotEdgeSimulatedTemperatureSensor.Simulation
 {
     public class DesiredPropertiesData
     {
