@@ -1,3 +1,7 @@
+# 6/27/2018
+Azure IoT Edge V2 is now generally available.
+
+
 # 11/15/2017
 Azure IoT Edge V2 public preview is now available. It implements the cloud configuration, deployment, and monitoring features announced at /Build '17. The documentation can be found [here](https://docs.microsoft.com//azure/iot-edge).
 
