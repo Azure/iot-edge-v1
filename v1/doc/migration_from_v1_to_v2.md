@@ -1,6 +1,6 @@
 # Migrating from V1 to V2 of Azure IoT Edge
 
-Remote configuration, deployment, and monitoring of IoT Edge devices has been on the road map of Azure IoT Edge. These features are now being released as a public preview. Some internal architecture has changed to support these features in an industry standard way; however all of the important developer concepts are maintained:
+Remote configuration, deployment, and monitoring of IoT Edge devices has been on the road map of Azure IoT Edge. These features are now released in the second version of the product. Some internal architecture has changed to support these features in an industry standard way; however all of the important developer concepts are maintained:
 * modules remain units compute which can be written in your programming language of choice.
 * traditional cloud services and 3rd party business logic can run as a module.
 * modules can communicate with each other via declarative message passing
@@ -47,8 +47,8 @@ Each module now has an individual module twin which can be used to provide a mod
 
 ### Message passing
 Modules used to use a broker inside the gateway process to exchange messages. This functionality is now provided by the IoT Edge runtime.
-* Sending message to the runtime - Call `DeviceClient.SendEventAsync` instead of `Broker_Publish`
-* Receiving a message from the runtime - Register a delegate for receiving messages with `DeviceClient.SetInputMessageHandlerAsync` instead of setting the `pfModule_Receive` function pointer in the `MODULE_API` structure.
+* Sending message to the runtime - Call `ModuleClient.SendEventAsync` instead of `Broker_Publish`
+* Receiving a message from the runtime - Register a delegate for receiving messages with `ModuleClient.SetInputMessageHandlerAsync` instead of setting the `pfModule_Receive` function pointer in the `MODULE_API` structure.
 Notice that message passing now uses the same device client code that users are already familiar with when interacting with IoT Hub. The consistency simplifies the number of programing module regardless of whether you're working in the cloud or on the edge. 
 
 ### Declaring routes
