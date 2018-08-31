@@ -13,12 +13,12 @@ Please use your Azure subscription if you need to share any information from you
 Please first tell us a little bit about the environment you're running:
 -->
 
-- **V1 or V2 issue** 
+- **This GitHub is for V1 issue. For V2 issue, please to go: https://github.com/Azure/iotedge/issues** 
 
 - **OS version and architecture used:** <VERSION> <!-- Windows 10, Ubuntu 15.04... -->
 <Architecture> <!-- ARM64, x86_64... -->
 
-- **Version used:** <VERSION> <!-- V1 release tag or commit, V2 image tag i.e (1.0_preview 22) -->
+- **Version used:** <VERSION> <!-- V1 release tag or commit -->
 
 - **V2 Docker version and container type** <VERSION> <TYPE> <!-- linux or Windows... -->
 
@@ -27,6 +27,4 @@ Please first tell us a little bit about the environment you're running:
 
 # Console log of the issue:
 <!-- Please share as much logs as possible, that will help debugging -->
-<!-- For V2 issues, we have a list of [diagnostic steps](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot#standard-diagnostic-steps) to help extract useful information. -->
 <!-- Don't forget to remove any connection string information! -->
-
