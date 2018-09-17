@@ -3,7 +3,7 @@
 
 using System;
 
-namespace AzureIotEdgeSimulatedTemperatureSensor
+namespace AzureIotEdgeSimulatedTemperatureSensor.Simulation
 {
     public class DataGenerationPolicy
     {

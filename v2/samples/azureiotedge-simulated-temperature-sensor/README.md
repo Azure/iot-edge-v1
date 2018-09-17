@@ -1,12 +1,20 @@
 # Simulated Temperature Sensor for Azure IoT Edge
 
-This module is an example of a temperature sensor simulation Azure IoT Edge module. You can see its usage in the [Azure IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/). It continuously creates simulated temperature data and sends the message to the `temperatureOutput` endpoint.
+This Azure IoT Edge module simulates a temperature sensor. You can see its usage in the [Azure IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/). It continuously creates simulated temperature data and sends the message to the `temperatureOutput` endpoint.
 
 ## Note about this code 
 
 This code reflects the implementation details of the deployed `microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview` container. It also extends the functionality to showcase the usage of direct methods and module twin property updates. To use the new features you have to build the container yourself and deploy it to a registry of your choice. 
 
-## Available Endpoints
+## Code Structure
+
+The project incorporates the same structure as the `aziotedgemodule` dotnet core template. The complete simulation logic lives in the `Simulation` folder.
+
+## Building the container image
+
+To build the container image you have to change the registry entry in the `module.json` file. After that you can use for instance Visual Studio Code and the corresponding [Azure IoT Edge tooling](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) to build and publish the image to the registry.
+
+# Available Endpoints
 
 You can interact with the Temperature Simulator in several ways. 
 
@@ -92,17 +100,6 @@ Properties can be set during the set module process in the Azure Portal or via t
 
 **SendInterval** = int value
 - The interval in seconds between messages being pushed into the endpoint.
-
-## Building Multi-Architecture Docker Container
-
-This sample includes the file `multi-arch-manifest.yml` to showcase how to create a multi-architecture docker image.
-
-1. Create for each architecture you want support a docker container using the Dockerfiles provided by the sample
-2. Push the container to the registry of your choice
-3. Replace the parameters `<registry>` and `<version>` with your values.
-4. Get the [Manifest-Tool](https://github.com/estesp/manifest-tool)
-5. Push `multi-arch-manifest.yml` to your registry using the manifest tool
-
 
 # Contributing
 

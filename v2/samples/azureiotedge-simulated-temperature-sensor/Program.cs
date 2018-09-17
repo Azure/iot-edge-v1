@@ -15,6 +15,7 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System.Net;
+using AzureIotEdgeSimulatedTemperatureSensor.Simulation;
 
 // disabling async warning as the SendSimulationData is an async method
 // but we don't wait for it
@@ -33,13 +34,7 @@ namespace AzureIotEdgeSimulatedTemperatureSensor
 
         static async Task Main(string[] args)
         {
-            // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-            var connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
-
-            // Cert verification is not yet fully functional when using Windows OS for the container
-            var bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (!bypassCertVerification) InstallCert();
-            await Init(connectionString, bypassCertVerification);
+            await Init();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -59,52 +54,20 @@ namespace AzureIotEdgeSimulatedTemperatureSensor
         }
 
         /// <summary>
-        /// Add certificate in local cert store for use by client for secure connection to IoT Edge runtime
-        /// </summary>
-        static void InstallCert()
-        {
-            var certPath = Environment.GetEnvironmentVariable("EdgeModuleCACertificateFile");
-            if (string.IsNullOrWhiteSpace(certPath))
-            {
-                // We cannot proceed further without a proper cert file
-                Console.WriteLine($"Missing path to certificate collection file: {certPath}");
-                throw new InvalidOperationException("Missing path to certificate file.");
-            }
-            else if (!File.Exists(certPath))
-            {
-                // We cannot proceed further without a proper cert file
-                Console.WriteLine($"Missing path to certificate collection file: {certPath}");
-                throw new InvalidOperationException("Missing certificate file.");
-            }
-            var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-            store.Open(OpenFlags.ReadWrite);
-            store.Add(new X509Certificate2(X509Certificate2.CreateFromCertFile(certPath)));
-            Console.WriteLine("Added Cert: " + certPath);
-            store.Close();
-        }
-
-
-        /// <summary>
-        /// Initializes the DeviceClient and sets up the callback to receive
+        /// Initializes the ModuleClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Init(string connectionString, bool bypassCertVerification = false)
+        static async Task Init()
         {
-            Console.WriteLine("Connection String {0}", connectionString);
-
-            var mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-            // During dev you might want to bypass the cert verification. It is highly recommended to verify certs systematically in production
-            if (bypassCertVerification)
-            {
-                mqttSetting.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-            }
+            MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             ITransportSettings[] settings = { mqttSetting };
 
             // Open a connection to the Edge runtime
-            var ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
-            await ioTHubModuleClient.OpenAsync();
+            var ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+            ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
+            // initialize module twin properties
             var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
             var moduleTwinCollection = moduleTwin.Properties.Desired;
             desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
@@ -118,11 +81,11 @@ namespace AzureIotEdgeSimulatedTemperatureSensor
             // we don't pass ioTHubModuleClient as we're not sending any messages out to the message bus
             await ioTHubModuleClient.SetInputMessageHandlerAsync("control", ControlMessageHandler, null);
 
-            // as this runs in a loop we don't await
+            // as this runs in a loop we do not await
             SendSimulationData(ioTHubModuleClient);
         }
 
-        private static async Task SendSimulationData(DeviceClient deviceClient)
+        private static async Task SendSimulationData(ModuleClient moduleClient)
         {
             while(true)
             {
@@ -145,7 +108,7 @@ namespace AzureIotEdgeSimulatedTemperatureSensor
                         message.ContentEncoding = "utf-8"; 
                         message.ContentType = "application/json"; 
 
-                        await deviceClient.SendEventAsync("temperatureOutput", message);
+                        await moduleClient.SendEventAsync("temperatureOutput", message);
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
 
                     }
