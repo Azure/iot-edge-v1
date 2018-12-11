@@ -13,19 +13,17 @@ steps:
   displayName: Install prerequisites
 - script: v1/tools/build.sh --run-unittests
   displayName: Run the build
-- task: DownloadBuildArtifacts@0
-  displayName: Download build logs
-  condition: always()
+- task: CopyFiles@2
+  displayName: Collect build logs
   inputs:
-    buildType: current
-    downloadType: specific
-    itemPattern: v1/deps/c-utility/build/*.txt
-    downloadPath: $(System.ArtifactsDirectory)
+    SourceFolder: v1/deps/c-utility/build
+    Contents: '*.txt'
+    TargetFolder: $(Build.ArtifactStagingDirectory)
 - task: PublishBuildArtifacts@1
   displayName: Publish build logs
   condition: always()
   inputs:
-    PathtoPublish: $(System.ArtifactsDirectory)
+    PathtoPublish: $(Build.ArtifactStagingDirectory)
     ArtifactName: build logs
     Parallel: true
     ParallelCount: 8
