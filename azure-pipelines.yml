@@ -19,3 +19,9 @@ steps:
     downloadType: specific
     itemPattern: v1/deps/c-utility/build/*.txt
     downloadPath: $(System.ArtifactsDirectory)
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: $(System.ArtifactsDirectory)
+    ArtifactName: build logs
+    Parallel: true
+    ParallelCount: 8
