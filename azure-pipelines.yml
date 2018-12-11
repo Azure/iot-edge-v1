@@ -10,7 +10,8 @@ steps:
 - script: |
     sudo apt-get update
     sudo apt-get install -y libcurl4-openssl-dev uuid-dev
-    v1/tools/build.sh --run-unittests
+  displayName: Install prerequisites
+- script: v1/tools/build.sh --run-unittests
   displayName: Run the build
 - task: DownloadBuildArtifacts@0
   condition: always()
@@ -20,6 +21,7 @@ steps:
     itemPattern: v1/deps/c-utility/build/*.txt
     downloadPath: $(System.ArtifactsDirectory)
 - task: PublishBuildArtifacts@1
+  condition: always()
   inputs:
     PathtoPublish: $(System.ArtifactsDirectory)
     ArtifactName: build logs
