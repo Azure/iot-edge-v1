@@ -15,6 +15,7 @@ steps:
   displayName: Run the build
 - task: CopyFiles@2
   displayName: Collect build logs
+  condition: always()
   inputs:
     SourceFolder: v1/deps/c-utility/build
     Contents: '*.txt'
