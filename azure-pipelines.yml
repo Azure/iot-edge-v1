@@ -13,6 +13,7 @@ steps:
     v1/tools/build.sh --run-unittests
   displayName: Run the build
 - task: DownloadBuildArtifacts@0
+  condition: always()
   inputs:
     buildType: current
     downloadType: specific
