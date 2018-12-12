@@ -7,12 +7,16 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 steps:
-- script: sudo apt list --installed
-  displayName: list currently installed packages
+- script: |
+    sudo apt-cache madison libssl-dev
+    sudo apt-cache madison openssl
+  displayName: List available package versions for libssl-dev, openssl
 - script: |
     sudo apt-get update
     sudo apt-get install -y libcurl4-openssl-dev uuid-dev
   displayName: Install prerequisites
+- script: sudo apt list --installed
+  displayName: list installed installed packages
 - script: v1/tools/build.sh --run-unittests
   displayName: Run the build
 - task: CopyFiles@2
