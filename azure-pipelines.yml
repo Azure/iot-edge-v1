@@ -20,7 +20,7 @@ steps:
   condition: always()
   inputs:
     SourceFolder: v1/deps
-    Contents: "**/*.txt" # |
+    Contents: "**/build/*.txt" # |
       # "**\build\error.txt"
       # "**\build\output.txt"
     TargetFolder: $(Build.ArtifactStagingDirectory)
