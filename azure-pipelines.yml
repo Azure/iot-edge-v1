@@ -15,13 +15,21 @@ steps:
   displayName: Install prerequisites
 - script: v1/tools/build.sh --run-unittests
   displayName: Run the build
-- task: CopyFiles@2
-  displayName: Collect build logs
-  condition: always()
-  inputs:
-    SourceFolder: v1/deps/c-utility/build
-    Contents: '*.txt'
-    TargetFolder: $(Build.ArtifactStagingDirectory)
+- script: |
+    error_logs=$(find . -name error.txt)
+    output_logs=$(find . -name output.txt)
+    for file in $error_logs; do cp $file $(Build.ArtifactStagingDirectory)/; done
+    for file in $output_logs; do cp $file $(Build.ArtifactStagingDirectory)/; done
+  displayName: Copy all build/error logs
+# - task: CopyFiles@2
+#   displayName: Collect build logs
+#   condition: always()
+#   inputs:
+#     SourceFolder: v1/deps/c-utility/build
+#     Contents: |
+#       error.txt
+#       output.txt
+#     TargetFolder: $(Build.ArtifactStagingDirectory)
 - task: PublishBuildArtifacts@1
   displayName: Publish build logs
   condition: always()
