@@ -16,10 +16,15 @@ steps:
 - script: v1/tools/build.sh --run-unittests
   displayName: Run the build
 - script: |
+    set -x
     error_logs=$(find . -name error.txt)
     output_logs=$(find . -name output.txt)
-    for file in $error_logs; do cp $file $(Build.ArtifactStagingDirectory)/; done
-    for file in $output_logs; do cp $file $(Build.ArtifactStagingDirectory)/; done
+    for file in $error_logs $output_logs
+    do
+      path=$(realpath $(Build.ArtifactStagingDirectory)/$file))
+      mkdir -p $(dirname $path)
+      cp $file $path
+    done
   displayName: Copy all build/error logs
 # - task: CopyFiles@2
 #   displayName: Collect build logs
