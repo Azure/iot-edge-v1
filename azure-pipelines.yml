@@ -20,9 +20,9 @@ steps:
   condition: always()
   inputs:
     SourceFolder: v1/deps
-    Contents: |
-      "**\build\error.txt"
-      "**\build\output.txt"
+    Contents: "**/*.md" # |
+      # "**\build\error.txt"
+      # "**\build\output.txt"
     TargetFolder: $(Build.ArtifactStagingDirectory)
 - task: PublishBuildArtifacts@1
   displayName: Publish build logs
