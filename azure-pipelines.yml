@@ -7,12 +7,10 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 steps:
-- script: find . -name "*.md"
-  displayName: list MD files
 - task: CopyFiles@2
   displayName: Test
   inputs:
-    Contents: '**\*.md'
+    Contents: "**/*.md"
     TargetFolder: $(Build.ArtifactStagingDirectory)
 - script: |
     sudo apt-get update
@@ -39,8 +37,8 @@ steps:
   inputs:
     # SourceFolder: v1/deps/c-utility/build
     Contents: |
-      '**\error.txt'
-      '**\output.txt'
+      "**/error.txt"
+      "**/output.txt"
     TargetFolder: $(Build.ArtifactStagingDirectory)
 - task: PublishBuildArtifacts@1
   displayName: Publish build logs
