@@ -8,6 +8,10 @@ pool:
 
 steps:
 - script: |
+    sudo apt-get update
+    apt-cache madison libssl-dev
+  displayName: List available package versions for libssl-dev
+- script: |
     set -x
     sudo apt-get update
     libssl_version=$(apt-cache policy libssl1.0.0 | grep -e "Installed: 1.0" | head -1 | awk '{print $NF}')
