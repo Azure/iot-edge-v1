@@ -7,6 +7,8 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 steps:
+- script: find . -name "*.md"
+  displayName: list MD files
 - task: CopyFiles@2
   displayName: Test
   inputs:
