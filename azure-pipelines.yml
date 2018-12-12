@@ -8,17 +8,11 @@ pool:
 
 steps:
 - script: |
-    apt-cache madison libssl-dev
-    apt-cache madison openssl
-  displayName: List available package versions for libssl-dev, openssl
-- script: |
+    set -x
     sudo apt-get update
-    sudo apt-get install -y libcurl4-openssl-dev uuid-dev
-  displayName: Install prerequisites
-- script: |
     libssl_version=$(apt-cache madison libssl-dev | grep -e libssl-dev | head -1 | awk '{print $3}')
-    sudo apt-get install -y libssl-dev=$libssl_version
-  displayName: Install 1.0 version of libssl-dev
+    sudo apt-get install -y libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
+  displayName: Install prerequisites
 - script: apt list --installed
   displayName: list installed installed packages
 - script: v1/tools/build.sh --run-unittests
