@@ -9,7 +9,7 @@ pool:
 steps:
 - script: |
     sudo apt-get update
-    # target libssl 1.0 until we can update our azure-iot-sdk-c dependency to a newer version that accepts libssl1.1
+    # target libssl 1.0 until we can update our azure-iot-sdk-c dependency to a newer version that accepts libssl 1.1
     libssl_version=$(apt-cache madison libssl-dev | grep -e "libssl-dev | 1.0" | head -1 | awk '{print $3}')
     sudo apt-get install -y --allow-downgrades libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
   displayName: Install prerequisites
