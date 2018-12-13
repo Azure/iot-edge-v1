@@ -13,7 +13,16 @@ steps:
     libssl_version=$(apt-cache madison libssl-dev | grep -e "libssl-dev | 1.0" | head -1 | awk '{print $3}')
     sudo apt-get install -y --allow-downgrades libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
   displayName: Install prerequisites
-- script: v1/tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding --enable-dotnet-core-binding --enable-java-remote-modules
+- task: DownloadPipelineArtifact@0
+  displayName: Get Node.js
+  inputs:
+    pipelineId: 7
+    artifactName: nodejs
+    targetPath: nodejs
+- script: |
+    NODE_INCLUDE="$(pwd)/nodejs/inc"
+    NODE_LIB="$(pwd)/nodejs/lib"
+    v1/tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding --enable-dotnet-core-binding --enable-java-remote-modules
   displayName: Run the build
 - task: CopyFiles@2
   displayName: Collect build logs
