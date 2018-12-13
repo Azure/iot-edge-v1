@@ -13,6 +13,7 @@ steps:
     libssl_version=$(apt-cache madison libssl-dev | grep -e "libssl-dev | 1.0" | head -1 | awk '{print $3}')
     sudo apt-get install -y --allow-downgrades libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
   displayName: Install prerequisites
+
 - task: DownloadBuildArtifacts@0
   displayName: Get Node.js
   inputs:
@@ -23,13 +24,15 @@ steps:
     branchName: refs/heads/master
     downloadType: single
     artifactName: nodejs
-    downloadPath: nodejs
+    downloadPath: $(System.DefaultWorkingDirectory)
     parallelizationLimit: 8
+
 - script: |
-    NODE_INCLUDE="$(pwd)/nodejs/inc"
-    NODE_LIB="$(pwd)/nodejs/lib"
+    export NODE_INCLUDE="$(pwd)/nodejs/inc"
+    export NODE_LIB="$(pwd)/nodejs/lib"
     v1/tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding --enable-dotnet-core-binding --enable-java-remote-modules
   displayName: Run the build
+
 - task: CopyFiles@2
   displayName: Collect build logs
   condition: always()
@@ -37,6 +40,7 @@ steps:
     SourceFolder: v1/deps
     Contents: "**/build/?(output.txt|error.txt)"
     TargetFolder: $(Build.ArtifactStagingDirectory)
+
 - task: PublishBuildArtifacts@1
   displayName: Publish build logs
   condition: always()
