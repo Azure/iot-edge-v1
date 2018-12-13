@@ -1,7 +1,4 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Build IoT Edge v1
 
 pool:
   vmImage: 'Ubuntu 16.04'
@@ -15,12 +12,12 @@ steps:
   displayName: Install prerequisites
 
 - task: NodeTool@0
-  displayName: Downgrade Node.js to 8.x
+  displayName: Downgrade Node.js to 8.x for remote modules
   inputs:
     versionSpec: '8.x'
 
 - task: DownloadBuildArtifacts@0
-  displayName: Get Node.js
+  displayName: Get Node.js dynamic library for binding
   inputs:
     buildType: specific
     project: iotedge
