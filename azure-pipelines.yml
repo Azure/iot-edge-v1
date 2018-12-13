@@ -13,12 +13,18 @@ steps:
     libssl_version=$(apt-cache madison libssl-dev | grep -e "libssl-dev | 1.0" | head -1 | awk '{print $3}')
     sudo apt-get install -y --allow-downgrades libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
   displayName: Install prerequisites
-- task: DownloadPipelineArtifact@0
+- task: DownloadBuildArtifacts@0
   displayName: Get Node.js
   inputs:
-    pipelineId: 7
+    buildType: specific
+    project: iotedge
+    pipeline: v1 Node.js Library
+    buildVersionToDownload: latestFromBranch
+    branchName: refs/heads/master
+    downloadType: single
     artifactName: nodejs
-    targetPath: nodejs
+    downloadPath: nodejs
+    parallelizationLimit: 8
 - script: |
     NODE_INCLUDE="$(pwd)/nodejs/inc"
     NODE_LIB="$(pwd)/nodejs/lib"
