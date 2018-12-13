@@ -13,7 +13,7 @@ steps:
     libssl_version=$(apt-cache madison libssl-dev | grep -e "libssl-dev | 1.0" | head -1 | awk '{print $3}')
     sudo apt-get install -y --allow-downgrades libcurl4-openssl-dev uuid-dev libssl-dev=$libssl_version
   displayName: Install prerequisites
-- script: v1/tools/build.sh --run-unittests --enable-java-binding --enable-dotnet-core-binding --enable-java-remote-modules
+- script: v1/tools/build.sh --run-unittests --enable-nodejs-binding --enable-java-binding --enable-dotnet-core-binding --enable-nodejs-remote-modules --enable-java-remote-modules
   displayName: Run the build
 - task: CopyFiles@2
   displayName: Collect build logs
