@@ -1,0 +1,71 @@
+# Build Node.js as a dynamic library for use in the Node.js binding
+
+trigger: none
+pr: none
+jobs:
+
+################################################################################
+- job: ubuntu_1604
+################################################################################
+  displayName: Ubuntu 16.04
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: |
+      v1/tools/build_nodejs.sh
+      # Convert thin archives to normal ones
+      libs=`find v1/build_nodejs/dist/lib/ -name '*.a'`
+      for lib in $libs; do
+        ar -t $lib | xargs ar -rs $lib.tmp && mv $lib.tmp $lib
+      done
+    displayName: Build Node.js library
+  - task: PublishBuildArtifacts@1
+    displayName: Publish library files
+    inputs:
+      PathtoPublish: v1/build_nodejs/dist
+      ArtifactName: nodejs-ubuntu1604
+
+################################################################################
+- job: debian_8
+################################################################################
+  displayName: Debian 8
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-debian:latest
+  steps:
+  - script: |
+      v1/tools/build_nodejs.sh
+      # Convert thin archives to normal ones
+      libs=`find v1/build_nodejs/dist/lib/ -name '*.a'`
+      for lib in $libs; do
+        ar -t $lib | xargs ar -rs $lib.tmp && mv $lib.tmp $lib
+      done
+    displayName: Build Node.js library
+  - task: PublishBuildArtifacts@1
+    displayName: Publish library files
+    inputs:
+      PathtoPublish: v1/build_nodejs/dist
+      ArtifactName: nodejs-debian8
+
+################################################################################
+- job: win2012r2_vs2015_x64
+################################################################################
+  displayName: x64 Win Server 2012 R2 + VS2015
+  pool:
+    vmImage: vs2015-win2012r2
+  steps:
+    - script: |
+        set python_uri=https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi
+        for %%i in ("%python_uri%") do set "python_file=%%~nxi"
+        powershell Invoke-WebRequest ^
+          -UseBasicParsing $env:python_uri ^
+          -OutFile $env:python_file
+        start /wait msiexec /i "%python_file%" /qn /l* "%cd%\python-install.txt"
+      displayName: Install Python 2.7
+    - script: powershell v1/tools/build_nodejs.ps1 x64
+      displayName: Build Node.js library
+    - task: PublishBuildArtifacts@1
+      displayName: Publish library files
+      inputs:
+        PathtoPublish: v1/build_nodejs/dist
+        ArtifactName: nodejs-win2012r2
