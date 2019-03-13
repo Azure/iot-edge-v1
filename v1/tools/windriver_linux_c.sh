@@ -3,14 +3,8 @@
 # license. See LICENSE file in the project root for full license 
 # information.
 
-toolchain_root="/opt/windriver/wrlinux/7.0-intel-baytrail-64"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
-local_install=$build_root/install-deps
-target=corei7-64-wrs-linux
-native=x86_64-wrlinuxsdk-linux
-OECORE_TARGET_SYSROOT=${toolchain_root}/sysroots/${target}
-OECORE_NATIVE_SYSROOT=${toolchain_root}/sysroots/${native}
-cd $build_root
+toolchain_root="/opt/windriver/wrlinux/7.0-intel-baytrail-64"
 
 usage ()
 {
@@ -65,7 +59,7 @@ process_args $*
 checkExists() {
     if hash $1 2>/dev/null;
     then
-        return 1
+        return 0
     else
         echo "$1" not found. Please make sure that "$1" is installed and available in the path.
         exit 1
@@ -73,9 +67,7 @@ checkExists() {
 }
 
 # -----------------------------------------------------------------------------
-# -- Check for environment pre-requisites.
-# -- This script requires that the following programs work:
-#    -- curl build-essential(g++,gcc,make) cmake git
+# -- Check for environment prerequisites
 # -----------------------------------------------------------------------------
 checkExists curl
 checkExists g++
@@ -85,60 +77,46 @@ checkExists cmake
 checkExists git
 
 # -----------------------------------------------------------------------------
-# -- Check for existence of tool-chain.
+# -- Check for existence of toolchain
 # -----------------------------------------------------------------------------
 if [ ! -d $toolchain_root ];
 then
-   echo ---------- Wind River linux tool-chain absent ----------
+   echo ---------- Wind River Linux toolchain absent ----------
    exit 1
 fi
 
 # -----------------------------------------------------------------------------
-# -- Set environment variables
+# -- Set up environment
 # -----------------------------------------------------------------------------
-#source $toolchain_root/env.sh
+source $toolchain_root/env.sh
 
-FILE="$build_root/toolchain-wrl.cmake" 
-
-/bin/cat <<EOM >$FILE
-SET(CMAKE_SYSTEM_NAME Linux) 
-
-SET(CMAKE_C_COMPILER ${OECORE_NATIVE_SYSROOT}/usr/bin/x86_64-wrs-linux/x86_64-wrs-linux-gcc)
-SET(CMAKE_CXX_COMPILER ${OECORE_NATIVE_SYSROOT}/usr/bin/x86_64-wrs-linux/x86_64-wrs-linux-g++)
-
-# this is the file system root of the target
-SET(CMAKE_FIND_ROOT_PATH ${OECORE_TARGET_SYSROOT} ${OECORE_NATIVE_SYSROOT})
-SET(CMAKE_SYSROOT ${OECORE_TARGET_SYSROOT})
-
-# search for programs in the build host directories
-SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-
-# for libraries and headers in the target directories
-SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY) 
-SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY) 
-list(APPEND CMAKE_MODULE_PATH "${build_root}/tools/toolchain/windriver/cmake")
-
-#set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-#set( CMAKE_SYSTEM_PROCESSOR corei7)
+# -----------------------------------------------------------------------------
+# -- Create toolchain for CMake
+# -----------------------------------------------------------------------------
+toolchain_file="$build_root/tools/toolchain-windriver.cmake"
+cp "$OECORE_NATIVE_SYSROOT/usr/share/cmake/OEToolchainConfig.cmake" $toolchain_file
+cat <<EOM >>$toolchain_file
+list(INSERT CMAKE_MODULE_PATH 0 "$build_root/tools/toolchain/windriver/cmake")
 EOM
-echo "---------- toolchain file --------------"
-
-cat $FILE
-echo "---------- toolchain file --------------"
-TOOLCHAIN_OPTION="-DCMAKE_TOOLCHAIN_FILE=$FILE"
-# -----------------------------------------------------------------------------
-# -- After the environment is set up, we can run cmake.
-# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # -- Build the SDK
 # -----------------------------------------------------------------------------
 echo ---------- Building the SDK samples ----------
-cmake_root="$build_root"/build
-rm -r -f "$cmake_root"
-mkdir -p "$cmake_root"
-pushd "$cmake_root"
-cmake $TOOLCHAIN_OPTION -Ddependency_install_prefix=$local_install -DCMAKE_BUILD_TYPE=Debug -Drun_unittests:BOOL=OFF -Drun_e2e_tests:BOOL=OFF -Denable_native_remote_modules:BOOL=OFF -Denable_nodejs_remote_modules:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cd $build_root
+rm -rf build/
+mkdir -p build
+[ $? -eq 0 ] || exit $?
+cd build
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=$toolchain_file \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -Ddependency_install_prefix=$build_root/install-deps \
+    -Drun_unittests=OFF \
+    -Drun_e2e_tests=OFF \
+    -Denable_native_remote_modules=OFF \
+    -Drun_valgrind=OFF \
+    ..
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)

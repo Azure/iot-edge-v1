@@ -14,6 +14,8 @@
  ╚═╝ ╚═════╝    ╚═╝       ╚══════╝╚═════╝  ╚═════╝ ╚══════╝
 ```
 
+[![Build Status](https://iotedge.visualstudio.com/iotedge/_apis/build/status/v1%20Checkin?branchName=master)](https://iotedge.visualstudio.com/iotedge/_build/latest?definitionId=6&branchName=master)
+
 Welcome to the home Azure IoT Edge V1. The second version of Azure IoT Edge can be found at https://github.com/azure/azure-iotedge. The second version of Azure IoT Edge is built from the IoT Edge open-source project which can be found at https://github.com/azure/iotedge.  
 
 # [v1](v1/README.md)

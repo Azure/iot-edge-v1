@@ -266,8 +266,18 @@ if(NOT ${use_xplat_uuid})
         target_link_libraries(gateway_static rpcrt4.lib)
         target_link_libraries(module_host_static rpcrt4.lib)
     else()
-        find_package(PkgConfig REQUIRED)
-        pkg_search_module(UUID REQUIRED uuid)
+        if(CMAKE_CROSSCOMPILING)
+            # As mentioned at https://cmake.org/Wiki/CMake_Cross_Compiling the
+            # pkg-config tool can not be used by cmake while cross compiling.
+            message(STATUS "Cross compiling not using pkg-config")
+
+            include_directories(${CMAKE_SYSROOT}/usr/include/uuid)
+            set(UUID_LIBRARIES uuid)
+            set(UUID_LIBRARY_DIRS ${CMAKE_SYSROOT}/usr/lib)
+        else()
+            find_package(PkgConfig REQUIRED)
+            pkg_search_module(UUID REQUIRED uuid)
+        endif()
         link_directories(${UUID_LIBRARY_DIRS})
 
         if(APPLE)
