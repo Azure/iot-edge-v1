@@ -45,9 +45,8 @@ rm -rf $build_root
 mkdir -p $build_root
 
 # build Node.js
-pushd $build_root
-git clone -b $node_version --depth 1 https://github.com/nodejs/node.git
-pushd node
+git -C $build_root clone -b $node_version --depth 1 https://github.com/nodejs/node.git
+pushd $build_root/node
 ./configure --shared
 make -j $(nproc)
 popd
@@ -72,7 +71,10 @@ find $build_root | grep "\\.a$" | xargs -I {file} cp {file} $build_root/dist/lib
 cp $build_root/node/out/Release/lib.target/libnode.so.* $build_root/dist/lib
 
 # make a symlink called libnode.so that points to this file
-ln -s $build_root/dist/lib/libnode.so.$(ls $build_root/dist/lib/libnode.so.* | cut -d . -f 3) $build_root/dist/lib/libnode.so
+# make it relative so it won't break if this is a mounted volume in a docker container
+pushd $build_root/dist/lib
+ln -s libnode.so.$(ls libnode.so.* | cut -d . -f 3) libnode.so
+popd
 
 # export environment variables for where the include/lib files can be found
 echo
@@ -85,4 +87,3 @@ echo
 echo "    export NODE_INCLUDE=\"$build_root/dist/inc\""
 echo "    export NODE_LIB=\"$build_root/dist/lib\""
 echo
-

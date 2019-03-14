@@ -1,0 +1,31 @@
+# Build the traceability tool
+
+trigger: none
+pr: none
+
+pool:
+  vmImage: vs2017-win2016
+
+steps:
+- checkout: none
+- task: NuGetToolInstaller@0
+  displayName: Install NuGet
+  inputs:
+    versionSpec: '4.x' 
+- script: |
+    git clone ^
+      --branch lts_01_2019 ^
+      --depth 1 https://github.com/Azure/azure-iot-sdk-c.git
+  displayName: Get traceability tool sources
+- task: VSBuild@1
+  displayName: Build it
+  inputs:
+    solution: azure-iot-sdk-c\tools\traceabilitytool\traceabilitytool.sln
+    msbuildArgs: /m
+    configuration: Release
+    clean: true
+- task: PublishBuildArtifacts@1
+  displayName: Publish it
+  inputs:
+    PathtoPublish: azure-iot-sdk-c/tools/traceabilitytool/traceability_tool/bin/Release
+    ArtifactName: traceability
