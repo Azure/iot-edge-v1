@@ -214,7 +214,7 @@ jobs:
   - task: NodeTool@0
     displayName: Downgrade Node.js to 8.x for remote modules
     inputs:
-      versionSpec: '8.x'
+      versionSpec: 8.x
   - task: DownloadBuildArtifacts@0
     displayName: Get Node.js dynamic library for binding
     inputs:
@@ -295,13 +295,13 @@ jobs:
   - task: UsePythonVersion@0
     displayName: Install Python 2.7
     inputs:
-      versionSpec: '2.7.x'
+      versionSpec: 2.7.x
       addToPath: true
-      architecture: 'x64'
+      architecture: x64
   - task: NodeTool@0
     displayName: Downgrade Node.js to 8.x for remote modules
     inputs:
-      versionSpec: '8.x'
+      versionSpec: 8.x
   - task: DownloadBuildArtifacts@0
     displayName: Get Node.js dynamic library for binding
     inputs:
