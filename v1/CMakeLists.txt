@@ -76,7 +76,7 @@ option(run_as_a_service "Flags that we have the goal of running gateway as a ser
 option(enable_dotnet_binding "set enable_dotnet_binding to ON to build dotnet binding host binaries (default is OFF)" OFF)
 option(enable_dotnet_core_binding "set enable_dotnet_core_binding to ON to build dotnet core binding host binaries (default is OFF)" OFF)
 option(enable_ble_module "set enable_ble_module to OFF to remove ble module from gateway build (default is ON)" ON)
-option(enable_native_remote_modules "Build the infrastructure required to support native remote modules (default is ON)" ON)
+option(enable_native_remote_modules "Build the infrastructure required to support native remote modules (default is OFF)" OFF)
 option(enable_java_remote_modules "Build the infrastructure required to support java remote modules (default is OFF)" OFF)
 option(enable_nodejs_remote_modules "Build the infrastructure required to support Node.js apps as remote modules (default is OFF)" OFF)
 option(use_amqp "set use_amqp to ON if amqp is to be used, set to OFF to not use amqp" ON)
@@ -87,6 +87,10 @@ option(use_xplat_uuid "use the SDK's platform-independent UUID implementation (d
 if(WIN32)
     # C-SDK requires this to be set for some functions we use.
     set(use_etw OFF)
+endif()
+
+if (${enable_native_remote_modules} OR ${enable_java_remote_modules} OR ${enable_nodejs_remote_modules})
+    set(enable_core_remote_module_support TRUE CACHE INTERNAL "")
 endif()
 
 option(enable_event_system "Build event system (default is ON)" ON)
@@ -307,11 +311,6 @@ function(install_binaries whatIsBuilding whatIsBuildingLocation whatIsBinaryLoca
           ${whatIsBinaryLocation}
           ${whatIsBuildingLocation})
 endfunction(install_binaries)
-
-
-if (${enable_native_remote_modules} OR ${enable_java_remote_modules} OR ${enable_nodejs_remote_modules})
-    set(enable_core_remote_module_support TRUE CACHE INTERNAL "")
-endif()
 
 add_subdirectory(core)
 

@@ -20,6 +20,8 @@ This sample gateway has three modules, the "Hello World" module, which periodica
 
 ### Linux
 
+Make sure you include the `--enable-native-remote-modules` argument when you run `build.sh`.
+
 The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run "proxy\_sample" in one and "proxy\_sample\_remote" in the other.
 
 Terminal 1:
@@ -37,6 +39,8 @@ cd build/samples/proxy_sample
 ```
 
 ### Windows
+
+Make sure you include the `--enable-native-remote-modules` argument when you run `build.cmd`.
 
 Start two command prompts, navigate to the `build\samples\proxy_sample` directory in each and run "proxy\_sample" in one and "proxy\_sample\_remote" in the other.
 

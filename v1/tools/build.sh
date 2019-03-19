@@ -15,7 +15,7 @@ run_valgrind=0
 enable_java_binding=OFF
 enable_dotnet_core_binding=OFF
 enable_nodejs_binding=OFF
-enable_native_remote_modules=ON
+enable_native_remote_modules=OFF
 enable_nodejs_remote_modules=OFF
 enable_java_remote_modules=OFF
 toolchainfile=
@@ -36,19 +36,20 @@ usage ()
     echo "options"
     echo " -cl, --compileoption <val>      Specify a gcc compile option"
     echo "   Example: -cl -O1 -cl ..."
-    echo " -f,  --config <value>           Build configuration (e.g. [Debug], Release)"
+    echo " -f, --config <value>            Build configuration (e.g. [Debug], Release)"
     echo " --disable-ble-module            Do not build the BLE module"
     echo " --enable-dotnet-core-binding    Build the .NET Core binding"
     echo " --enable-java-binding           Build Java binding"
     echo "                                 (JAVA_HOME must be defined in your environment)"
     echo " --enable-nodejs-binding         Build Node.js binding"
     echo "                                 (NODE_INCLUDE, NODE_LIB must be defined)"
-    echo " --disable-native-remote-modules Do not build the infrastructure"
-    echo "                                 required to support native remote modules"
-    echo " --enable-nodejs-remote-modules  Build the infrastructure required to support"
-    echo "                                 Node.js apps as remote modules"
-    echo " --enable-java-remote-modules    Build Java Remote Module SDK"
-    echo "                                 (JAVA_HOME must be defined in your environment)"
+    echo " --enable-native-remote-modules  Build components required to support native"
+    echo "                                 apps as remote modules"
+    echo " --enable-nodejs-remote-modules  Build components required to support Node.js"
+    echo "                                 apps as remote modules"
+    echo " --enable-java-remote-modules    Build components required to support remote"
+    echo "                                 Java modules (JAVA_HOME must be defined in your"
+    echo "                                 environment)"
     echo " --rebuild-deps                  Force rebuild of dependencies"
     echo " --run-e2e-tests                 Build/run end-to-end tests"
     echo " --run-unittests                 Build/run unit tests"
@@ -95,7 +96,7 @@ process_args ()
               "--enable-java-binding" ) enable_java_binding=ON;;
               "--enable-dotnet-core-binding" ) enable_dotnet_core_binding=ON;;
               "--enable-nodejs-binding" ) enable_nodejs_binding=ON;;
-              "--disable-native-remote-modules" ) enable_native_remote_modules=OFF;;
+              "--enable-native-remote-modules" ) enable_native_remote_modules=ON;;
               "--enable-nodejs-remote-modules" ) enable_nodejs_remote_modules=ON;;
               "--enable-java-remote-modules" ) enable_java_remote_modules=ON;;
               "--disable-ble-module" ) enable_ble_module=OFF;;

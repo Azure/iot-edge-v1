@@ -298,7 +298,7 @@ When you have a complete copy of the IoT Edge repository on your Raspberry Pi 3,
 
 ```sh
 cd ~/iot-edge
-./tools/build.sh  --disable-native-remote-modules
+./tools/build.sh
 ```
 
 ### Configure and run the BLE sample on your Raspberry Pi 3

@@ -17,6 +17,8 @@ The two processes must establish a control channel to communicate gateway events
 
 ### Linux
 
+Make sure you include the `--enable-native-remote-modules` argument when you run `build.sh`.
+
 The easiest way to run the sample is to start two terminal sessions, navigate to the `build/samples/proxy_sample` directory in each and run
 "native\_gateway" in one and "native\_host\_sample" in the other.
 
@@ -35,6 +37,8 @@ cd build/samples/proxy_sample
 ```
 
 ### Windows
+
+Make sure you include the `--enable-native-remote-modules` argument when you run `build.cmd`.
 
 Start two command prompts, navigate to the `build\samples\native_host_sample` directory in each and run "native\_gateway" in one and "native\_host\_sample" in the other.
 

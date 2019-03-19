@@ -6,22 +6,14 @@
 
 set -e
 
-build_root=$(cd "$(dirname "$0")/.." && pwd)
-build_root=$build_root/build_libuv
-prefix=$build_root/dist
-libdir=$prefix/lib
+libuv_config=$1
+libuv_install=$2
+libuv_root=$(cd "$(dirname "$0")/../deps/libuv" && pwd)
+make_cores=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 
-# clear the libuv build folder so we have a fresh build
-rm -rf $build_root
-mkdir -p $build_root
+cd $libuv_root
 
-# build libuv
-pushd $build_root
-git clone https://github.com/libuv/libuv.git
-cd libuv
-git checkout -b v1.13.0 tags/v1.13.0
-sh autogen.sh
-./configure --prefix=$prefix --libdir=$libdir CFLAGS='-fPIC' CXXFLAGS='-fPIC'
-make -j $(nproc)
+./autogen.sh
+./configure --prefix="$libuv_install" CFLAGS='-fPIC' CXXFLAGS='-fPIC'
+make -j $make_cores
 make install
-popd

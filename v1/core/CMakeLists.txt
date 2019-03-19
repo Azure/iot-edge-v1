@@ -32,30 +32,6 @@ elseif(UNIX) # LINUX or APPLE
     set(dynamic_library_c_file ./adapters/dynamic_library_linux.c ./adapters/gb_library_linux.c )
 endif()
 
-# Build libuv with an OS-appropriate script
-if (${enable_core_remote_module_support})
-    if(WIN32)
-        if(8 EQUAL CMAKE_SIZEOF_VOID_P)
-            message(STATUS "Building libuv for 64-bit Windows...")
-            set(build_libuv build_libuv.cmd x64)
-        else()
-            message(STATUS "Building libuv for 32-bit Windows...")
-            set(build_libuv build_libuv.cmd)
-        endif()
-    elseif(LINUX)
-        message(STATUS "Building libuv for Linux...")
-        set(build_libuv ./build_libuv.sh)
-    elseif(APPLE)
-        message(STATUS "Building libuv for macOS...")
-        set(build_libuv ./build_libuv_macos.sh)
-    endif()
-
-    execute_process (
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/
-        COMMAND ${build_libuv}
-    )
-endif()
-
 #setting specific libraries to be loaded based on OS (for example, Linux needs "-ldl", windows does not)
 if(UNIX) # LINUX or APPLE
     set(dynamic_loader_library dl)
@@ -198,9 +174,9 @@ if(${enable_core_remote_module_support})
     add_definitions(-DOUTPROCESS_ENABLED)
     include_directories( ../proxy/outprocess/inc)
     include_directories( ../proxy/message/inc)
+    include_directories(${LIBUV_INCLUDEDIR})
 
-    include_directories(${CMAKE_SOURCE_DIR}/build_libuv/dist/include)
-    link_directories(${CMAKE_SOURCE_DIR}/build_libuv/dist/lib)
+    link_directories(${dependency_install_prefix}/lib)
 endif()
 
 set(module_host_sources
@@ -241,13 +217,13 @@ add_library(gateway_static STATIC
 
 if(${enable_core_remote_module_support})
     if(WIN32)
-        target_link_libraries(gateway ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.lib Psapi.lib Iphlpapi.lib Userenv.lib)
-        target_link_libraries(gateway_static ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.lib Psapi.lib Iphlpapi.lib Userenv.lib)
-        target_link_libraries(module_host_static ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.lib Psapi.lib Iphlpapi.lib Userenv.lib)
+        target_link_libraries(gateway libuv Psapi.lib Iphlpapi.lib Userenv.lib)
+        target_link_libraries(gateway_static libuv Psapi.lib Iphlpapi.lib Userenv.lib)
+        target_link_libraries(module_host_static libuv Psapi.lib Iphlpapi.lib Userenv.lib)
     else()
-        target_link_libraries(gateway ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.a)
-        target_link_libraries(gateway_static ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.a)
-        target_link_libraries(module_host_static ${CMAKE_SOURCE_DIR}/build_libuv/dist/lib/libuv.a)
+        target_link_libraries(gateway libuv)
+        target_link_libraries(gateway_static libuv)
+        target_link_libraries(module_host_static libuv)
     endif()
 endif()
 

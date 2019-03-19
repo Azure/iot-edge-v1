@@ -25,3 +25,6 @@
 [submodule "deps/iot-sdk-c"]
 	path = v1/deps/iot-sdk-c
 	url = https://github.com/Azure/azure-iot-sdk-c.git
+[submodule "deps/libuv"]
+	path = v1/deps/libuv
+	url = https://github.com/libuv/libuv.git

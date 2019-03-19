@@ -107,19 +107,108 @@ else()
     endif()
     set(NANOMSG_INCLUDES "${NANOMSG_INCLUDEDIR}"  CACHE INTERNAL "")
 
-
 endif()
 
 ###############################################################################
 #############################Init Parson Submodule#############################
 ###############################################################################
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/deps/parson/parson.c)
+updateSubmodule(deps/parson parson.c ${PROJECT_SOURCE_DIR})
+
+###############################################################################
+########################## Find/Install/Build libuv ###########################
+###############################################################################
+function(installLibuv)
+    updateSubmodule(deps/libuv README.md ${PROJECT_SOURCE_DIR})
+
+    set(libuv_config Debug)
+    if(CMAKE_BUILD_TYPE)
+        set(libuv_config ${CMAKE_BUILD_TYPE})
+    endif()
+
+    set(libuv_root ${PROJECT_SOURCE_DIR}/deps/libuv)
+
+    if(WIN32)
+        set(libuv_command ${PROJECT_SOURCE_DIR}/tools/build_libuv.cmd ${libuv_config})
+        if(8 EQUAL CMAKE_SIZEOF_VOID_P)
+            list(APPEND libuv_command x64)
+            message(STATUS "Building libuv for 64-bit Windows...")
+        else()
+            message(STATUS "Building libuv for 32-bit Windows...")
+        endif()
+        set(libuv_libdir ${libuv_root}/${libuv_config}/lib)
+        set(libuv_incdir ${libuv_root}/include)
+        # libuv's .gitignore doesn't include 'build/'; use 'Debug/' instead
+        set(libuv_logdir ${libuv_root}/Debug)
+    else()
+        message(STATUS "Building libuv for Linux/macOS...")
+        set(libuv_command
+            ${PROJECT_SOURCE_DIR}/tools/build_libuv.sh
+            ${libuv_config}
+            ${dependency_install_prefix})
+        # libuv's .gitignore doesn't include 'build/'; use '.libs/' instead
+        set(libuv_logdir ${libuv_root}/.libs)
+    endif()
+
+    file(MAKE_DIRECTORY ${libuv_logdir})
+
     execute_process(
-        COMMAND git submodule update --init ${PROJECT_SOURCE_DIR}/deps/parson
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE res   
+        COMMAND ${libuv_command}
+        WORKING_DIRECTORY ${libuv_root}
+        RESULT_VARIABLE res
+        OUTPUT_FILE ${libuv_logdir}/output.txt
+        ERROR_FILE ${libuv_logdir}/error.txt
     )
+
     if(${res})
-        message(FATAL_ERROR "Error pulling parson submodule: ${res}")
+        file(TO_NATIVE_PATH "${libuv_logdir}/error.txt" libuv_error)
+        file(TO_NATIVE_PATH "${libuv_logdir}/output.txt" libuv_output)
+        message(FATAL_ERROR "**ERROR installing libuv (${res}). See ${libuv_error} and ${libuv_output}.\n")
+    endif()
+
+    if(WIN32)
+        file(GLOB libuv_lib LIST_DIRECTORIES false ${libuv_libdir}/*)
+        file(GLOB libuv_inc LIST_DIRECTORIES false ${libuv_incdir}/*)
+        file(COPY ${libuv_lib} DESTINATION ${dependency_install_prefix}/lib)
+        file(COPY ${libuv_inc} DESTINATION ${dependency_install_prefix}/include)
+    endif()
+endfunction()
+
+if(${enable_core_remote_module_support})
+    if(WIN32)
+        if(EXISTS "${CMAKE_INSTALL_PREFIX}../libuv/libuv.lib" AND NOT ${rebuild_deps})
+            set(libuv_libdir "${CMAKE_INSTALL_PREFIX}/../libuv")
+            set(libuv_incdir "${CMAKE_INSTALL_PREFIX}/../libuv/include")
+        else()
+            message(STATUS "libuv not found...")
+            set(libuv_libdir "${dependency_install_prefix}/lib")
+            set(libuv_incdir "${dependency_install_prefix}/include")
+            installLibuv()
+        endif()
+
+        add_library(libuv STATIC IMPORTED)
+
+        set(LIBUV_INCLUDEDIR "${libuv_incdir}")
+
+        set_target_properties(libuv PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${LIBUV_INCLUDEDIR}"
+            IMPORTED_LOCATION "${libuv_libdir}/libuv.lib"
+        )
+    else()
+        find_package(PkgConfig REQUIRED)
+        set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+        pkg_search_module(LIBUV QUIET libuv)
+
+        if(NOT LIBUV_FOUND OR ${rebuild_deps})
+            message(STATUS "libuv not found...")
+            installLibuv()
+            pkg_search_module(LIBUV REQUIRED libuv)
+        endif()
+
+        add_library(libuv STATIC IMPORTED)
+
+        set_target_properties(libuv PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${LIBUV_INCLUDEDIR}"
+            IMPORTED_LOCATION "${LIBUV_LIBDIR}/libuv.a"
+        )
     endif()
 endif()
