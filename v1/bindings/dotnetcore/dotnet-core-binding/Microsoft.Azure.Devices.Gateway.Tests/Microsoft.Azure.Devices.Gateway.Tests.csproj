@@ -7,7 +7,7 @@
     <PackageId>Microsoft.Azure.Devices.Gateway.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <PackageTargetFallback>$(PackageTargetFallback);dotnet5.4;portable-net451+win8</PackageTargetFallback>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>1.1.11</RuntimeFrameworkVersion>
 	<PackageVersion>1.0.3</PackageVersion>
   </PropertyGroup>
 

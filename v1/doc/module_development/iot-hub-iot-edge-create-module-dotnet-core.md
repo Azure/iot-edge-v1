@@ -271,8 +271,8 @@ View this [quick video tutorial](https://channel9.msdn.com/Blogs/dotnet/Get-star
                "name": "dotnetcore",
                "configuration": {
                    "binding.path": "dotnetcore.dll",
-                   "binding.coreclrpath": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\coreclr.dll",
-                   "binding.trustedplatformassemblieslocation": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.1\\"
+                   "binding.coreclrpath": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.11\\coreclr.dll",
+                   "binding.trustedplatformassemblieslocation": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\1.1.11\\"
                }
            }
        ],

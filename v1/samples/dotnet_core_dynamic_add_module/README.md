@@ -18,7 +18,7 @@ Other resources:
 Prerequisites
 --------------
 1. Setup your development machine. A guide for doing this can be found [here](../../doc/devbox_setup.md).
-2. Make sure you have .NET Core Framework installed. Our current version of the binding was tested and loads modules written in .NET **Core** v1.1.1.
+2. Make sure you have .NET Core Framework installed. Our current version of the binding was tested and loads modules written in .NET **Core** v1.1.11.
 
 Building the sample (Linux)
 ---------------------------
