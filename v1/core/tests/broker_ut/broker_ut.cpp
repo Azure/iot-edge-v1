@@ -418,7 +418,7 @@ public:
             if (node->next != nullptr)
                 node->next->prev = node->prev;
             delete node;
-            result = 0;
+            result2 = 0;
         }
 
     MOCK_METHOD_END(int, result2)

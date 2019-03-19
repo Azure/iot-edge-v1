@@ -6,12 +6,12 @@ include("../gatewayFunctions.cmake")
 ###############################################################################
 ###########################Find/Install/Build uamqp############################
 ###############################################################################
-findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(uamqp 1.0.25 ${PROJECT_SOURCE_DIR}/deps/uamqp ${PROJECT_SOURCE_DIR}/deps/uamqp -Duse_installed_dependencies=ON -Dskip_samples=ON -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 ###########################Find/Install/Build umqtt############################
 ###############################################################################
-findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -G "${CMAKE_GENERATOR}")
+findAndInstall(umqtt 1.0.25 ${PROJECT_SOURCE_DIR}/deps/umqtt ${PROJECT_SOURCE_DIR}/deps/umqtt -Duse_installed_dependencies=ON -Dskip_samples=ON -G "${CMAKE_GENERATOR}")
 
 ###############################################################################
 #######################Find/Install/Build azure_iot_sdks#######################

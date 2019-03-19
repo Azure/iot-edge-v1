@@ -21,9 +21,8 @@ mkdir %build-root%
 pushd %build-root%
 
 rem Clone libuv
-git clone https://github.com/libuv/libuv.git
+git clone --branch v1.13.0 --depth 1 https://github.com/libuv/libuv.git
 pushd libuv
-git checkout -b v1.13.0 tags/v1.13.0
 
 rem Build libuv
 if defined VisualStudioVersion if "%VisualStudioVersion%"=="15.0" (

@@ -1,0 +1,346 @@
+# Build IoT Edge v1
+
+trigger: none
+pr:
+- master
+jobs:
+
+################################################################################
+- job: submodules
+################################################################################
+  displayName: Check submodules
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - checkout: self
+    clean: true
+    fetchDepth: 0
+    submodules: recursive
+  - script: |
+      sudo npm install -g check_submodules
+      check_submodules . master
+    displayName: Verify consistency of submodule references
+
+################################################################################
+- job: traceability
+################################################################################
+  displayName: Check traceability
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: Get traceability tool
+    inputs:
+      buildType: specific
+      project: iotedge
+      pipeline: v1 Traceability Tool
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: traceability
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - script: |
+      traceability\traceabilitytool.exe ^
+        -i "%cd%\v1" ^
+        -buildcheck ^
+        -e "%cd%\v1\deps;%cd%\v1\bindings\nodejs;%cd%\v1\bindings\dotnetcore\dotnet-core-binding"
+    displayName: Run it
+
+################################################################################
+- job: debian
+################################################################################
+  displayName: Debian
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-debian:latest
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: iotedge
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-debian8
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - script: |
+      export NODE_INCLUDE="$(pwd)/nodejs-debian8/inc"
+      export NODE_LIB="$(pwd)/nodejs-debian8/lib"
+      v1/tools/build.sh \
+        --run-unittests \
+        --enable-nodejs-binding \
+        --enable-java-binding \
+        --enable-dotnet-core-binding \
+        --enable-java-remote-modules \
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: debian
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: intel_edison
+################################################################################
+  displayName: Intel Edison
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-intel-edison:latest
+  steps:
+  - script: |
+      v1/tools/inteledison_c.sh
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: intel_edison
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: raspberry_pi
+################################################################################
+  displayName: Raspberry Pi
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-raspberry-pi:latest
+  steps:
+  - script: |
+      set -e
+      cd v1
+      BUILD_ROOT=$(pwd)
+      COMPILER_PATH='/toolchain/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/bin'
+
+      # Create a CMake toolchain file. See:
+      # https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-linux
+      cat <<EOM >toolchain-rpi.cmake
+      INCLUDE(CMakeForceCompiler)
+
+      SET(CMAKE_SYSTEM_NAME Linux)
+      SET(CMAKE_SYSTEM_VERSION 1)
+
+      SET(CMAKE_C_COMPILER $COMPILER_PATH/arm-linux-gnueabihf-gcc)
+      SET(CMAKE_CXX_COMPILER $COMPILER_PATH/arm-linux-gnueabihf-g++)
+      SET(PKG_CONFIG_EXECUTABLE arm-linux-gnueabihf-pkg-config CACHE PATH "" FORCE)
+
+      SET(CMAKE_FIND_ROOT_PATH $SYSROOT)
+      SET(CMAKE_SYSROOT $SYSROOT)
+      SET(ENV{PKG_CONFIG_PATH} $SYSROOT/usr/lib/arm-linux-gnueabihf/pkgconfig)
+      SET(ENV{PKG_CONFIG_SYSROOT_DIR} $SYSROOT)
+
+      SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+      SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+      SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+      EOM
+
+      mkdir build
+      cd build
+
+      cmake \
+        -Ddependency_install_prefix=$BUILD_ROOT/install-deps \
+        -DCMAKE_TOOLCHAIN_FILE=$BUILD_ROOT/toolchain-rpi.cmake \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -Drun_e2e_tests=OFF \
+        -Drun_unittests=OFF \
+        -Denable_native_remote_modules=OFF \
+        -Drun_valgrind=OFF \
+        -Duse_mqtt=OFF \
+        $BUILD_ROOT
+
+      make --jobs=$(nproc)
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: raspberry_pi
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: ubuntu
+################################################################################
+  displayName: Ubuntu
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: |
+      sudo apt-get update
+      # target libssl 1.0 until we can update our azure-iot-sdk-c dependency to
+      # a newer version that accepts libssl 1.1
+      libssl_version=$( \
+        apt-cache madison libssl-dev | \
+          grep -e "libssl-dev | 1.0" | \
+          head -1 | \
+          awk '{print $3}' \
+      )
+      sudo apt-get install -y --allow-downgrades \
+        libcurl4-openssl-dev \
+        uuid-dev \
+        libssl-dev=$libssl_version
+    displayName: Install prerequisites
+  - task: NodeTool@0
+    displayName: Downgrade Node.js to 8.x for remote modules
+    inputs:
+      versionSpec: 8.x
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: iotedge
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-ubuntu1604
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - script: |
+      export NODE_INCLUDE="$(pwd)/nodejs-ubuntu1604/inc"
+      export NODE_LIB="$(pwd)/nodejs-ubuntu1604/lib"
+      v1/tools/build.sh \
+        --run-unittests \
+        --enable-nodejs-binding \
+        --enable-java-binding \
+        --enable-dotnet-core-binding \
+        --enable-java-remote-modules \
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: ubuntu
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: wind_river
+################################################################################
+  displayName: Wind River Linux
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-wind-river:latest
+  steps:
+  - script: |
+      v1/tools/windriver_linux_c.sh
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: wind_river
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: windows
+################################################################################
+  displayName: Windows
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - task: NuGetToolInstaller@0
+    displayName: Install NuGet tool
+    inputs:
+      versionSpec: 4.x
+  - task: UsePythonVersion@0
+    displayName: Install Python 2.7
+    inputs:
+      versionSpec: 2.7.x
+      addToPath: true
+      architecture: x64
+  - task: NodeTool@0
+    displayName: Downgrade Node.js to 8.x for remote modules
+    inputs:
+      versionSpec: 8.x
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: iotedge
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-win2012r2
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - script: |
+      call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat" ^
+        -arch=x64 -host_arch=x64
+      set "NODE_INCLUDE=%cd%\\nodejs-win2012r2\\inc"
+      set "NODE_LIB=%cd%\\nodejs-win2012r2\\lib"
+      call v1\\tools\\build.cmd ^
+        --platform x64 ^
+        --run-unittests ^
+        --enable-nodejs-binding ^
+        --enable-java-binding ^
+        --enable-dotnet-binding ^
+        --enable-dotnet-core-binding ^
+        --enable-java-remote-modules ^
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: windows
+      Parallel: true
+      ParallelCount: 8

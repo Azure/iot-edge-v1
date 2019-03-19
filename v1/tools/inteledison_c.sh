@@ -3,22 +3,16 @@
 # license. See LICENSE file in the project root for full license 
 # information.
 
-# Tested on Ubuntu version 14.04
-
-toolchain_root="/opt/poky-edison"
 build_root=$(cd "$(dirname "$0")/.." && pwd)
-
-dependency_install_prefix=
-
-cd $build_root
+toolchain_root="/opt/poky-edison"
 
 # -----------------------------------------------------------------------------
-# -- helper subroutines 
+# -- helper subroutines
 # -----------------------------------------------------------------------------
 checkExists() {
     if hash $1 2>/dev/null;
     then
-        return 1
+        return 0
     else
         echo "$1" not found. Please make sure that "$1" is installed and available in the path.
         exit 1
@@ -26,28 +20,7 @@ checkExists() {
 }
 
 # -----------------------------------------------------------------------------
-# -- setup Intel edison Tool chain for cross compilation on Ubuntu
-# -- This method is not called in this script and kept only for showing the set of instructions needed to setup the cross compilation tool chain.
-# -- Tool chain is already installed on the Jenkins node.
-# -- In future, If slave changes ,run these commands manually on new slave to setup the tool chain.
-# -----------------------------------------------------------------------------
-setupIntelEdisonToolChain() {
-   
-    mkdir IntelEdisonSdk
-    cd IntelEdisonSdk
-    wget http://downloadmirror.intel.com/25028/eng/edison-sdk-linux64-ww25.5-15.zip
-    unzip edison-sdk-linux64-ww25.5-15.zip
-    SdkInstallScript=$(ls | grep .sh)
-    printf '\n' | ./$SdkInstallScript
-    DirName=$toolchain_root/$(ls $toolchain_root)
-    EnvFileName=$DirName/$(ls $DirName | grep environment)
-    source $EnvFileName
-}
-
-# -----------------------------------------------------------------------------
-# -- Check for environment pre-requisites.
-# -- This script requires that the following programs work:
-#    -- curl build-essential(g++,gcc,make) cmake git
+# -- Check for environment prerequisites
 # -----------------------------------------------------------------------------
 checkExists curl
 checkExists g++
@@ -57,41 +30,41 @@ checkExists cmake
 checkExists git
 
 # -----------------------------------------------------------------------------
-# -- Check for Intel Edison tool-chain (default directory).
+# -- Check for existence of toolchain
 # -----------------------------------------------------------------------------
 if [ ! -d $toolchain_root ];
 then
-   echo ---------- Intel Edison tool-chain absent ----------
+   echo ---------- Intel Edison toolchain absent ----------
    exit 1
 fi
 
 # -----------------------------------------------------------------------------
-# -- Set environment variable
+# -- Set up environment
 # -----------------------------------------------------------------------------
-DirName=$toolchain_root/$(ls $toolchain_root)
-cd $DirName
-cd $(ls -d */)
-cd core2-32-poky-linux
-export INTELEDISON_ROOT=$(pwd)
+toolchain_root="$toolchain_root/$(ls $toolchain_root)"
+source $toolchain_root/$(ls $toolchain_root | grep environment)
+sysroot="$toolchain_root/sysroots/core2-32-poky-linux"
+toolroot="$toolchain_root/sysroots/x86_64-pokysdk-linux"
 
 # -----------------------------------------------------------------------------
-# -- Create toolchain-inteledison.cmake
+# -- Create the toolchain for CMake
 # -----------------------------------------------------------------------------
 echo ---------- Creating toolchain cmake file ----------
-FILE="$build_root/tools/toolchain-inteledison.cmake"
+toolchain_file="$build_root/tools/toolchain-inteledison.cmake"
 
-/bin/cat <<EOM >$FILE
+/bin/cat <<EOM >$toolchain_file
 INCLUDE(CMakeForceCompiler)
 
-SET(CMAKE_SYSTEM_NAME Linux) # this one is important
-SET(CMAKE_SYSTEM_VERSION 1) # this one not so much
+SET(CMAKE_SYSTEM_NAME Linux)
+SET(CMAKE_SYSTEM_VERSION 1)
 
 # this is the location of the amd64 toolchain targeting the Intel Edison
-SET(CMAKE_C_COMPILER ${INTELEDISON_ROOT}/../x86_64-pokysdk-linux/usr/bin/i586-poky-linux/i586-poky-linux-gcc)
-SET(CMAKE_CXX_COMPILER ${INTELEDISON_ROOT}/../x86_64-pokysdk-linux/usr/bin/i586-poky-linux/i586-poky-linux-g++)
+SET(CMAKE_C_COMPILER $toolroot/usr/bin/i586-poky-linux/i586-poky-linux-gcc)
+SET(CMAKE_CXX_COMPILER $toolroot/usr/bin/i586-poky-linux/i586-poky-linux-g++)
 
 # this is the file system root of the target
-SET(CMAKE_FIND_ROOT_PATH ${INTELEDISON_ROOT})
+SET(CMAKE_FIND_ROOT_PATH $sysroot)
+SET(CMAKE_SYSROOT $sysroot)
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
@@ -105,12 +78,20 @@ EOM
 # -- Build the SDK
 # -----------------------------------------------------------------------------
 echo ---------- Building the SDK samples ----------
-dependency_install_prefix="-Ddependency_install_prefix=$build_root/install-deps"
-cmake_root="$build_root"/build
-rm -r -f "$cmake_root"
-mkdir -p "$cmake_root"
-pushd "$cmake_root"
-cmake $dependency_install_prefix -DCMAKE_TOOLCHAIN_FILE=$FILE -DCMAKE_BUILD_TYPE=Debug -Drun_e2e_tests:BOOL=OFF -Drun_unittests:BOOL=OFF -Denable_native_remote_modules:BOOL=OFF -Denable_nodejs_remote_modules:BOOL=OFF -Drun_valgrind:BOOL=OFF "$build_root"
+cd $build_root
+rm -rf build/
+mkdir -p build
+[ $? -eq 0 ] || exit $?
+cd build
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=$toolchain_file \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -Ddependency_install_prefix=$build_root/install-deps \
+    -Drun_e2e_tests=OFF \
+    -Drun_unittests=OFF \
+    -Denable_native_remote_modules=OFF \
+    -Drun_valgrind=OFF \
+    ..
 [ $? -eq 0 ] || exit $?
 
 make --jobs=$(nproc)
