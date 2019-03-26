@@ -1,0 +1,241 @@
+# Build IoT Edge v1 and run end-to-end tests
+
+trigger:
+- master
+pr: none
+
+jobs:
+
+################################################################################
+- job: debian
+################################################################################
+  displayName: Debian
+  pool:
+    vmImage: ubuntu-16.04
+  container: azureiotedge/v1-build-debian:latest
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: one
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-debian8
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - task: AzureKeyVault@1
+    displayName: Get end-to-end test secrets
+    inputs:
+      azureSubscription: $(az.subscription)
+      keyVaultName: $(az.kv)
+      secretsFilter: >-
+        test-iothub-connection-string,
+        test-iothub-eventhub-connection-string,
+        test-x509-cert-base64,
+        test-x509-key-base64,
+        test-x509-thumbprint
+  - script: |
+      export NODE_INCLUDE="$(pwd)/nodejs-debian8/inc"
+      export NODE_LIB="$(pwd)/nodejs-debian8/lib"
+      export IOTHUB_CONNECTION_STRING="$(test-iothub-connection-string)"
+      export IOTHUB_EVENTHUB_CONNECTION_STRING="$(test-iothub-eventhub-connection-string)"
+      export IOTHUB_E2E_X509_CERT_BASE64="$(test-x509-cert-base64)"
+      export IOTHUB_E2E_X509_PRIVATE_KEY_BASE64="$(test-x509-key-base64)"
+      export IOTHUB_E2E_X509_THUMBPRINT="$(test-x509-thumbprint)"
+      export IOTHUB_PARTITION_COUNT=4
+
+      v1/tools/build.sh \
+        --run-unittests \
+        --run-e2e-tests \
+        --enable-nodejs-binding \
+        --enable-java-binding \
+        --enable-dotnet-core-binding \
+        --enable-java-remote-modules \
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: debian
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: ubuntu
+################################################################################
+  displayName: Ubuntu
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: |
+      sudo apt-get update
+      # target libssl 1.0 until we can update our azure-iot-sdk-c dependency to
+      # a newer version that accepts libssl 1.1
+      libssl_version=$( \
+        apt-cache madison libssl-dev | \
+          grep -e "libssl-dev | 1.0" | \
+          head -1 | \
+          awk '{print $3}' \
+      )
+      sudo apt-get install -y --allow-downgrades \
+        libcurl4-openssl-dev \
+        uuid-dev \
+        libssl-dev=$libssl_version
+    displayName: Install prerequisites
+  - task: NodeTool@0
+    displayName: Downgrade Node.js to 8.x for remote modules
+    inputs:
+      versionSpec: 8.x
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: one
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-ubuntu1604
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - task: AzureKeyVault@1
+    displayName: Get end-to-end test secrets
+    inputs:
+      azureSubscription: $(az.subscription)
+      keyVaultName: $(az.kv)
+      secretsFilter: >-
+        test-iothub-connection-string,
+        test-iothub-eventhub-connection-string,
+        test-x509-cert-base64,
+        test-x509-key-base64,
+        test-x509-thumbprint
+  - script: |
+      export NODE_INCLUDE="$(pwd)/nodejs-ubuntu1604/inc"
+      export NODE_LIB="$(pwd)/nodejs-ubuntu1604/lib"
+      export IOTHUB_CONNECTION_STRING="$(test-iothub-connection-string)"
+      export IOTHUB_EVENTHUB_CONNECTION_STRING="$(test-iothub-eventhub-connection-string)"
+      export IOTHUB_E2E_X509_CERT_BASE64="$(test-x509-cert-base64)"
+      export IOTHUB_E2E_X509_PRIVATE_KEY_BASE64="$(test-x509-key-base64)"
+      export IOTHUB_E2E_X509_THUMBPRINT="$(test-x509-thumbprint)"
+      export IOTHUB_PARTITION_COUNT=4
+
+      v1/tools/build.sh \
+        --run-unittests \
+        --run-e2e-tests \
+        --enable-nodejs-binding \
+        --enable-java-binding \
+        --enable-dotnet-core-binding \
+        --enable-java-remote-modules \
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: ubuntu
+      Parallel: true
+      ParallelCount: 8
+
+################################################################################
+- job: windows
+################################################################################
+  displayName: Windows
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - task: NuGetToolInstaller@0
+    displayName: Install NuGet tool
+    inputs:
+      versionSpec: 4.x
+  - task: UsePythonVersion@0
+    displayName: Install Python 2.7
+    inputs:
+      versionSpec: 2.7.x
+      addToPath: true
+      architecture: x64
+  - task: NodeTool@0
+    displayName: Downgrade Node.js to 8.x for remote modules
+    inputs:
+      versionSpec: 8.x
+  - task: DownloadBuildArtifacts@0
+    displayName: Get Node.js dynamic library for binding
+    inputs:
+      buildType: specific
+      project: one
+      pipeline: v1 Node.js Library
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
+      downloadType: single
+      artifactName: nodejs-win2012r2
+      downloadPath: $(System.DefaultWorkingDirectory)
+      parallelizationLimit: 8
+  - task: AzureKeyVault@1
+    displayName: Get end-to-end test secrets
+    inputs:
+      azureSubscription: $(az.subscription)
+      keyVaultName: $(az.kv)
+      secretsFilter: >-
+        test-iothub-connection-string,
+        test-iothub-eventhub-connection-string,
+        test-x509-cert-base64,
+        test-x509-key-base64,
+        test-x509-thumbprint
+  - script: |
+      call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat" ^
+        -arch=x64 -host_arch=x64
+
+      set "NODE_INCLUDE=%cd%\\nodejs-win2012r2\\inc"
+      set "NODE_LIB=%cd%\\nodejs-win2012r2\\lib"
+      set "IOTHUB_CONNECTION_STRING=$(test-iothub-connection-string)"
+      set "IOTHUB_EVENTHUB_CONNECTION_STRING=$(test-iothub-eventhub-connection-string)"
+      set "IOTHUB_E2E_X509_CERT_BASE64=$(test-x509-cert-base64)"
+      set "IOTHUB_E2E_X509_PRIVATE_KEY_BASE64=$(test-x509-key-base64)"
+      set "IOTHUB_E2E_X509_THUMBPRINT=$(test-x509-thumbprint)"
+      set IOTHUB_PARTITION_COUNT=4
+
+      call v1\\tools\\build.cmd ^
+        --platform x64 ^
+        --run-unittests ^
+        --run-e2e-tests ^
+        --enable-nodejs-binding ^
+        --enable-java-binding ^
+        --enable-dotnet-binding ^
+        --enable-dotnet-core-binding ^
+        --enable-java-remote-modules ^
+        --enable-nodejs-remote-modules
+    displayName: Run the build
+  - task: CopyFiles@2
+    displayName: Collect build logs
+    condition: always()
+    inputs:
+      SourceFolder: v1/deps
+      Contents: "**/build/?(output.txt|error.txt)"
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build logs
+    condition: always()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: windows
+      Parallel: true
+      ParallelCount: 8
