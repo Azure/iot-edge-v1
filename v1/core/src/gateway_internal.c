@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <azure_c_shared_utility/gballoc.h>
 #include <azure_c_shared_utility/xlogging.h>
+#include <azure_c_shared_utility/threadapi.h>
 
 #include <azure_c_shared_utility/vector.h>
 
@@ -149,6 +150,9 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
         /* For freeing up NULL ptrs in case of create failure */
         memset(gateway, 0, sizeof(GATEWAY_HANDLE_DATA));
 
+        gateway->update_lock = Lock_Init();
+        gateway->runtime_status = GATEWAY_RUNTIME_STATUS_INITIALIZING;
+
         /*Codes_SRS_GATEWAY_14_003: [This function shall create a new BROKER_HANDLE for the gateway representing this gateway's message broker. ]*/
         gateway->broker = Broker_Create();
         if (gateway->broker == NULL)
@@ -272,6 +276,17 @@ GATEWAY_HANDLE gateway_create_internal(const GATEWAY_PROPERTIES* properties, boo
     return gateway;
 }
 
+static void reportedStateCallback(int status_code, void* userContextCallback)
+
+{
+    GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE*)userContextCallback;
+    
+    printf("Device Twin reported properties update completed with result: %d\r\n", status_code);
+    Lock(gateway_handle->update_lock);
+    gateway_handle->runtime_status = GATEWAY_RUNTIME_STATUS_TERMINATED;
+    Unlock(gateway_handle->update_lock);
+}
+
 void gateway_destroy_internal(GATEWAY_HANDLE gw)
 {
     /*Codes_SRS_GATEWAY_14_005: [If gw is NULL the function shall do nothing.]*/
@@ -279,6 +294,15 @@ void gateway_destroy_internal(GATEWAY_HANDLE gw)
     {
         GATEWAY_HANDLE_DATA* gateway_handle = (GATEWAY_HANDLE_DATA*)gw;
 
+        if (gateway_handle->iothub_client != NULL) {
+            gateway_handle->runtime_status = GATEWAY_RUNTIME_STATUS_RUNNING;
+            const char* reported_status = "{\"edgev1-runtime-status\":\"terminated\"}";
+            IoTHubClient_SendReportedState(gateway_handle->iothub_client, reported_status, strlen(reported_status), reportedStateCallback, gateway_handle);
+            while (gateway_handle->runtime_status != GATEWAY_RUNTIME_STATUS_TERMINATED) {
+                ThreadAPI_Sleep(1000);
+            }
+            IoTHubClient_Destroy(gateway_handle->iothub_client);
+        }
         if (gateway_handle->event_system != NULL)
         {
             /* event_system might be NULL here if destroying during failed creation, event system API should cleanly handle that */
@@ -325,11 +349,61 @@ void gateway_destroy_internal(GATEWAY_HANDLE gw)
             Broker_Destroy(gateway_handle->broker);
         }
 
+        if (gateway_handle->update_lock != NULL) {
+            Lock_Deinit(gateway_handle->update_lock);
+        }
         free(gateway_handle);
     }
     else
     {
         LogError("Gateway_Destroy(): The GATEWAY_HANDLE is null.");
+    }
+}
+
+unsigned char* gateway_get_current_module_version(JSON_Object* json, const unsigned char* moduleName)
+{
+    if (json == NULL) {
+        return NULL;
+    }
+    unsigned char* version = NULL;
+    JSON_Array* modules = json_object_get_array(json, "modules");
+    int size = json_array_get_count(modules);
+    for (int i = 0; i < size; i++) {
+        JSON_Object* moduleDC = json_array_get_object(modules, i);
+        unsigned char* rModuleName = json_object_get_string(moduleDC, "name");
+        if (strcmp(moduleName, rModuleName) == 0) {
+            version = json_object_get_string(moduleDC, "version");
+            break;
+        }
+    }
+    return version;
+}
+
+static void set_module_version(JSON_Object* json, const unsigned char* moduleName, const unsigned char* moduleVersion)
+{
+    if (json == NULL) {
+        return NULL;
+    }
+    JSON_Object* moduleJson = NULL;
+    JSON_Array* modules = json_object_get_array(json, "modules");
+    int size = json_array_get_count(modules);
+    for (int i = 0; i < size; i++) {
+        JSON_Object* moduleDC = json_array_get_object(modules, i);
+        unsigned char* rModuleName = json_object_get_string(moduleDC, "name");
+        if (strcmp(moduleName, rModuleName) == 0) {
+            moduleJson = moduleDC;
+            break;
+        }
+    }
+    if (moduleJson == NULL) {
+        JSON_Value* newModuleVersion = json_value_init_object();
+        JSON_Object* newModuleVersionObj = json_object(newModuleVersion);
+        json_object_set_string(newModuleVersionObj, "name", moduleName);
+        json_object_set_string(newModuleVersionObj, "version", moduleVersion);
+        json_array_append_value(modules, newModuleVersion);
+    }
+    else {
+        json_object_set_string(moduleJson,"version", moduleVersion);
     }
 }
 
@@ -374,8 +448,16 @@ MODULE_HANDLE gateway_addmodule_internal(GATEWAY_HANDLE_DATA* gateway_handle, co
         //First check if a module with a given name already exists.
         /*Codes_SRS_GATEWAY_04_004: [ If a module with the same module_name already exists, this function shall fail and the GATEWAY_HANDLE will be destroyed. ]*/
         bool moduleExist = checkIfModuleExists(gateway_handle, module_entry->module_name);
+        if (moduleExist) {
+            const unsigned char* modulePreVersion = gateway_get_current_module_version(gateway_handle->deployConfig, module_entry->module_name);
+            if (modulePreVersion == NULL || (modulePreVersion != NULL & strcmp(modulePreVersion, module_entry->module_version) != 0)) {
+                Gateway_RemoveModuleByName(gateway_handle, module_entry->module_name);
+                moduleExist = false;
+            }
+        }
         if (!moduleExist)
         {
+            set_module_version(gateway_handle->deployConfig, module_entry->module_name, module_entry->module_version);
             MODULE_DATA * new_module_data = (MODULE_DATA*)malloc(sizeof(MODULE_DATA));
             if (new_module_data == NULL)
             {

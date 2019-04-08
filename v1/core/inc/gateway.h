@@ -20,6 +20,14 @@
 #include "module_loader.h"
 #include "gateway_export.h"
 
+#include "iothub_client.h"
+#include "iothubtransport.h"
+#include "iothubtransporthttp.h"
+#include "iothubtransportamqp.h"
+#include "iothubtransportmqtt.h"
+#include "iothub_message.h"
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -97,6 +105,8 @@ typedef struct GATEWAY_MODULES_ENTRY_TAG
 
     /** @brief  The user-defined configuration object for the module */
     const void* module_configuration;
+
+	const char* module_version;
 } GATEWAY_MODULES_ENTRY;
 
 /** @brief      Struct representing the properties that should be used when
@@ -110,6 +120,8 @@ typedef struct GATEWAY_PROPERTIES_DATA_TAG
 
     /** @brief  Vector of #GATEWAY_LINK_ENTRY objects. */
     VECTOR_HANDLE gateway_links;
+
+	JSON_Object* deployConfig;
 } GATEWAY_PROPERTIES;
 
 /** @brief      Creates a gateway using a JSON configuration file as input

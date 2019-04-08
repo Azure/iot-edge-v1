@@ -2,6 +2,9 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 2.8.12)
+
+include("dependencies.cmake")
+
 if(POLICY CMP0054)
     cmake_policy(SET CMP0054 OLD)
 endif()
@@ -119,6 +122,8 @@ set(gateway_h_sources
     ${gateway_h_sources}
     ./inc/module_loaders/dynamic_loader.h
 )
+
+include_directories(${IOTHUB_CLIENT_INC_FOLDER})
 
 if(${enable_dotnet_binding})
     set(gateway_c_sources
@@ -251,8 +256,9 @@ if(${enable_core_remote_module_support})
     endif()
 endif()
 
-target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library})
-target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
+
+target_link_libraries(gateway parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client)
+target_link_libraries(gateway_static parson nanomsg aziotsharedutil ${dynamic_loader_library} iothub_client)
 target_link_libraries(module_host_static parson nanomsg aziotsharedutil ${dynamic_loader_library})
 
 if(NOT WIN32)
@@ -291,6 +297,38 @@ if(NOT ${use_xplat_uuid})
         endif()
     endif()
 endif()
+
+######################################
+# Customize for Remote Update
+######################################
+if(${use_amqp})
+    target_link_libraries(gateway_static iothub_client_amqp_transport)
+    target_link_libraries(gateway iothub_client_amqp_transport)
+    linkUAMQP(gateway_static)
+    linkUAMQP(gateway)
+else()
+    add_definitions(-DIOTHUBMODULE_NULL_AMQP)
+endif()
+
+if(${use_http})
+    target_link_libraries(gateway_static iothub_client_http_transport)
+    target_link_libraries(gateway iothub_client_http_transport)
+    linkHttp(gateway_static)
+    linkHttp(gateway)
+else()
+    add_definitions(-DIOTHUBMODULE_NULL_HTTP)
+endif()
+
+if(${use_mqtt})
+    target_link_libraries(gateway_static iothub_client_mqtt_transport)
+    target_link_libraries(gateway iothub_client_mqtt_transport)
+    linkMqttLibrary(gateway_static)
+    linkMqttLibrary(gateway)
+else()
+    add_definitions(-DIOTHUBMODULE_NULL_MQTT)
+endif()
+
+
 
 #this adds the tests to the build process
 if(${run_unittests} OR ${run_e2e_tests})

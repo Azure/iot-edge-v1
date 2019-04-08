@@ -1,0 +1,40 @@
+{
+    "gateway": {
+        "deploy-path": "<< local deploy path >>/deploy.json",
+        "version": "1.0.0"
+    },
+  "modules": [
+    {
+      "name": "logger",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.uri": "<< url for logger.so >>",
+          "module.path": "<< local deploy path >>/logger.so"
+        }
+      },
+      "args": {
+        "filename": "log.txt"
+      },
+      "version": "1.0.0"
+    },
+    {
+      "name": "hello_world",
+      "loader": {
+        "name": "native",
+        "entrypoint": {
+          "module.uri": "<< url for hello_world.so >>",
+          "module.path": "<< local deploy path >>/hello_world.so"
+        }
+      },
+      "args": null,
+      "version": "1.0.1"
+    }
+  ],
+  "links": [
+    {
+      "source": "hello_world",
+      "sink": "logger"
+    }
+  ]
+}

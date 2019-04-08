@@ -3,7 +3,9 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <assert.h>
+#include <ctype.h>
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/xlogging.h"
 
@@ -194,6 +196,7 @@ GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
         EventSystem_ReportEvent(gw->event_system, gw, GATEWAY_STARTED);
         /*Codes_SRS_GATEWAY_17_013: [ This function shall return GATEWAY_START_SUCCESS upon completion. ]*/
         result = GATEWAY_START_SUCCESS;
+        gw->runtime_status = GATEWAY_RUNTIME_STATUS_RUNNING; // 1 means runtime is running
     }
     else
     {
@@ -206,7 +209,7 @@ GATEWAY_START_RESULT Gateway_Start(GATEWAY_HANDLE gw)
 void Gateway_Destroy(GATEWAY_HANDLE gw)
 {
     gateway_destroy_internal(gw);
-    /*Codes_SRS_GATEWAY_17_019: [ The function shall destroy the module loader list. ]*/
+	/*Codes_SRS_GATEWAY_17_019: [ The function shall destroy the module loader list. ]*/
     ModuleLoader_Destroy();
 }
 
