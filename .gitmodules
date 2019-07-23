@@ -25,3 +25,6 @@
 [submodule "deps/iot-sdk-c"]
 	path = v1/deps/iot-sdk-c
 	url = https://github.com/Azure/azure-iot-sdk-c.git
+[submodule "v1/deps/macro-utils"]
+	path = v1/deps/macro-utils
+	url = https://github.com/Azure/azure-macro-utils-c.git

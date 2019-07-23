@@ -8,6 +8,19 @@ endif()
 include("gatewayFunctions.cmake")
 
 ###############################################################################
+###################Find/Install/Build azure-macro-utils     ###################
+###############################################################################
+
+findAndInstall(azure_macro_utils_c 1.1.0
+    ${PROJECT_SOURCE_DIR}/deps/macro-utils
+    ${PROJECT_SOURCE_DIR}/deps/macro-utils
+    -Duse_installed_dependencies=ON
+    -Drun_unittests=${run_unittests}
+    -Dbuild_as_dynamic=ON
+    -Dskip_samples=ON
+    -G "${CMAKE_GENERATOR}")
+
+###############################################################################
 ###################Find/Install/Build azure_c_shared_utility###################
 ###############################################################################
 set(PASSVARS)
