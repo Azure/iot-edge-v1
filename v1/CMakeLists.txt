@@ -65,6 +65,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${CMAKE_CURRENT_BINARY_DIR}/core/
 
 #the following variables are project-wide and can be used with cmake-gui
 option(run_unittests "set run_unittests to ON to run unittests (default is OFF)" OFF)
+option(run_int_tests "set run_int_tests to ON to run intergration tests (default is OFF)" OFF)
 option(rebuild_deps "set rebuild_deps to ON to rebuild dependencies (default is OFF)" OFF)
 option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) " OFF)
 option(nuget_e2e_tests "" OFF)
