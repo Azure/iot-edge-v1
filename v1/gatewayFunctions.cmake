@@ -139,7 +139,9 @@ function(findAndInstall libraryName version submoduleRootDirectory cmakeRootDire
             endif()
 
             if(DEFINED ${dependency_install_prefix})
-                set(CMD ${CMD} -DCMAKE_INSTALL_PREFIX=${dependency_install_prefix})
+		    set(CMD ${CMD} -DCMAKE_INSTALL_PREFIX=${dependency_install_prefix})
+		    set(ENV{CFLAGS} $ENV{CFLAGS} -I${dependency_install_prefix}/include)
+		    set(ENV{CXXFLAGS} $ENV{CXXFLAGS} -I${dependency_install_prefix}/include)
             endif()
             if(CMAKE_TOOLCHAIN_FILE)
                 set(CMD ${CMD} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
